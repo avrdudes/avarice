@@ -1,3 +1,9 @@
+2004-11-12  Nils Kristian Strom  <nilsst@invalid.ed.ntnu.no>
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/main.cc (main): Write lock bits when all other programming
+	tasks are completed.
+
 2004-10-25  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Colin O'Flynn <coflynn@newae.com>]
 

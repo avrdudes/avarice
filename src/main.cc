@@ -378,9 +378,6 @@ int main(int argc, char **argv)
     if (writeFuses)
         jtagWriteFuses(fuses);
 
-    if (writeLockBits)
-        jtagWriteLockBits(lockBits);
-
     // Init JTAG debugger for initial use.
     //   - If we're attaching to a running target, we cannot do this.
     //   - If we're running as a standalone programmer, we don't want
@@ -417,6 +414,10 @@ int main(int argc, char **argv)
 	      "\nERROR: Filename not specified."
 	      " Use the --file option.\n");
     }
+
+    // Write fuses after all programming parts have completed.
+    if (writeLockBits)
+        jtagWriteLockBits(lockBits);
 
     // Quit for operations that don't interact with gdb.
     if (gdbServerMode)
