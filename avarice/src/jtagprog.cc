@@ -336,10 +336,6 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
     bool emptyPage = true;
     unsigned int addr;
 
-    // It is possible to write EEPROM using three pages in one chunk.
-    if (memtype == MEM_EEPROM)
-        page_size =0x0f;//*= 4;
-
     if (! image->has_data)
     {
         fprintf(stderr, "File contains no data.\n");
