@@ -18,6 +18,33 @@
 	* src/main.cc: Have host default to listening on any interface and 
 	port default to DEFAULT_PORT (4242).
 
+2003-07-07  David Gay  <dgay@intel-research.net>
+
+	* src/jtag.h: Add vectors_end to jtag_device_def_type.
+	* src/jtagio.cc: Add vectors_end values to device initializers.
+	* src/remote.cc: Use vectors_end when ignoring interrupts.
+
+2003-07-07  David Gay  <dgay@intel-research.net>
+
+	* src/jtagio.cc: Better fix, comment for device id problem.
+
+2003-07-07  David Gay  <dgay@intel-research.net>
+
+	* src/jtagio.cc: Fix problem with --capture and reading device id.
+
+2003-07-03  David Gay  <dgay@intel-research.net>
+
+	* src/jtagio.cc: Check pointer before passing to strcmp().
+	Update comment for JTAG bitrate.
+	* src/jtagprog.cc: Fix a spelling error.
+	Move "." status out of jtagWrite back to download.
+	* src/jtagrw.cc: Move "." status out of jtagWrite back to download.
+	* src/main.cc: Reset remote target after download (debugging won't work
+	without that reset).
+	* src/remote.cc: Extend interrupt ignore stuff to singlestep, makes it
+	much more useable in gdb. Still need to find extent of interrupt table
+	based on device id.
+
 2003-07-02  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Jake McGuire <jake@boom.net>]
 
