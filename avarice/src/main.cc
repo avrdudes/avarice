@@ -196,7 +196,7 @@ int main(int argc, char **argv)
     
     while (1)
     {
-        int c = getopt_long (argc, argv, "hdDCIf:j:pverW:L:P:",
+        int c = getopt_long (argc, argv, "VhdDCIf:j:pverW:L:P:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -246,6 +246,8 @@ int main(int argc, char **argv)
             case 'P':
                 device_name = optarg;
                 break;
+	    case 'V':
+		exit(0);
             default:
                 fprintf (stderr, "getop() did something screwey");
                 exit (1);
