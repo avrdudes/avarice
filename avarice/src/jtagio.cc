@@ -442,7 +442,8 @@ static uchar *getJtagResponse(int responseSize)
     response = new uchar[responseSize + 1];
     response[responseSize] = '\0';
 
-    numCharsRead = timeout_read(jtagBox, response, responseSize, JTAG_COMM_TIMEOUT);
+    numCharsRead = timeout_read(jtagBox, response, responseSize,
+                                JTAG_RESPONSE_TIMEOUT);
     jtagCheck(numCharsRead);
 
     debugOut("response: ");

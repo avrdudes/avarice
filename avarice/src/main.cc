@@ -141,6 +141,7 @@ int main(int argc, char **argv)
     bool eraseAndQuitOnly = false;
     bool programAndQuitOnly = false;
     bool readFusesAndQuitOnly = false;
+    bool needHostName = true;
     bool detach = false;
     bool capture = false;
 
@@ -189,16 +190,19 @@ int main(int argc, char **argv)
 		     (0 == strcmp("-p", argv[j])))
 	    {
 		programAndQuitOnly = true;
+                needHostName = false;
 	    }
 	    else if ((0 == strcmp("--erase", argv[j])) ||
 		     (0 == strcmp("-e", argv[j])))
 	    {
 		eraseAndQuitOnly = true;
+                needHostName = false;
 	    }
 	    else if ((0 == strcmp("--read-fuses", argv[j])) ||
 		     (0 == strcmp("-r", argv[j])))
             {
                 readFusesAndQuitOnly = true;
+                needHostName = false;
             }
             else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
             {
@@ -225,7 +229,8 @@ int main(int argc, char **argv)
 	    }
 	}
     }
-    if (!hostName || hostPortNumber <= 0)
+
+    if (needHostName && (!hostName || hostPortNumber <= 0))
     {
 	usage(argv[0]);
     }
