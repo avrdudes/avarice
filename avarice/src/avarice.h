@@ -25,6 +25,10 @@
 
 #include "autoconf.h"
 
+#ifndef DEFAULT_PORT
+#define DEFAULT_PORT 4242
+#endif
+
 typedef unsigned char uchar;
 
 /** true iff --debug option specified **/

@@ -78,16 +78,21 @@ static void initSocketAddress(struct sockaddr_in *name,
     memset(name, 0, sizeof(*name));
     name->sin_family = AF_INET;
     name->sin_port = htons(port);
-    hostInfo = gethostbyname(hostname);
-    check(hostInfo != NULL, "Unknown host %s", hostname);
-    name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
+    // Try numeric interpretation (1.2.3.4) first, then
+    // hostname resolution if that failed.
+    if (inet_aton(hostname, &name->sin_addr) == 0)
+    {
+	hostInfo = gethostbyname(hostname);
+	check(hostInfo != NULL, "Unknown host %s", hostname);
+	name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
+    }
 }
 
 
 static void usage(const char *progname)
 {
     fprintf(stderr,
-	    "Usage: %s [OPTION]... <host-name> <port>\n\n",
+	    "Usage: %s [OPTION]... [<host-name> [<port>]]\n\n",
 	    progname);
     fprintf(stderr, "Options:\n");
     fprintf(stderr,
@@ -132,6 +137,10 @@ static void usage(const char *progname)
             "  --part <name>               Target device name (e.g."
             " atmega16)\n\n");
     fprintf(stderr,
+	    "<host-name> defaults to 0.0.0.0 (listen on any interface), "
+	    "<port> to %d.\n\n",
+	    DEFAULT_PORT);
+    fprintf(stderr,
 	    "e.g. %s  --file test.bin  --jtag /dev/ttyS0  localhost 4242\n\n",
 	    progname);
     exit(1);
@@ -144,8 +153,10 @@ int main(int argc, char **argv)
     struct sockaddr_in name;
     char *inFileName = 0;
     char *jtagDeviceName = "/dev/avrjtag";
-    char *hostName = 0;
-    int  hostPortNumber = 0;
+    bool hostNameSet = false;
+    const char *hostName = "0.0.0.0";	/* INADDR_ANY */
+    bool portSet = false;
+    int  hostPortNumber = DEFAULT_PORT;
     bool erase = false;
     bool program = false;
     bool readFuses = false;
@@ -239,12 +250,14 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-	    if (hostName == 0)
+	    if (!hostNameSet)
 	    {
+		hostNameSet = true;
 		hostName = argv[j];
 	    }
-	    else if (!hostPortNumber)
+	    else if (!portSet)
 	    {
+		portSet = true;
 		hostPortNumber = (int)strtol(argv[j],(char **)0, 0);
 	    }
 	    else
