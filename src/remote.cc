@@ -730,6 +730,127 @@ void talkToGdb(void)
 
 	break;
     }
+
+    case 'q':   // general query
+    {
+        uchar* jtagBuffer;
+
+        length = strlen("Ravr.io_reg");
+        if ( strncmp(ptr, "Ravr.io_reg", length) == 0 )
+        {
+            int i, j, regcount;
+            gdb_io_reg_def_type *io_reg_defs;
+
+            debugOut("\nGDB: (io registers) Read %d bytes from 0x%X\n",
+                     0x40, 0x20);
+
+            /* If there is an io_reg_defs for this device then respond */
+
+            io_reg_defs = global_p_device_def->io_reg_defs;
+            if (io_reg_defs)
+            {
+                // count the number of defined registers
+                regcount = 0;
+                while (io_reg_defs[regcount].name)
+                {
+                    regcount++;
+                }
+
+                ptr += length;
+                if (*ptr == '\0')
+                {
+                    sprintf(remcomOutBuffer, "%02x", regcount);
+                }
+                else if (*ptr == ':')
+                {
+                    // Request for a sequence of io registers
+                    int offset;
+                    i = 0; 
+                    j = 0;
+                    unsigned int count;
+                    unsigned int addr;
+
+                    // Find the first register
+                    ptr++;
+                    hexToInt(&ptr,&i);
+
+                    // Confirm presence of ','
+                    if (*ptr++ == ',')
+                    {
+                        hexToInt(&ptr,&j);
+                    }
+
+                    // i is the first register to read
+                    // j is the number of registers to read
+                    while ((j > 0) && (i < regcount))
+                    {
+                        count = 0;
+
+                        if ((io_reg_defs[i].name != 0x00)
+                            && (io_reg_defs[i].flags != 0x00))
+                        {
+                            // Register with special flags set
+                            offset = strlen(remcomOutBuffer);
+                            sprintf(&remcomOutBuffer[offset],
+                                    "[-- %s --],00;", io_reg_defs[i].name);
+                            i++;
+                            j--;
+                        }
+                        else
+                        {
+                            // Get the address of the first io_register to be
+                            // read
+                            addr = io_reg_defs[i].reg_addr;
+
+                            // Count the number of consecutive address,
+                            // no-side effects, valid registers
+
+                            for (count = 0; count < j; count++)
+                            {
+                                if ((io_reg_defs[i+count].name == 0x00) 
+                                    || (io_reg_defs[i+count].flags != 0x00)
+                                    || (io_reg_defs[i+count].reg_addr != addr))
+                                {
+                                    break;
+                                }
+                                addr++;
+                            }
+								
+                            if (count)
+                            {
+                                // Read consecutive address io_registers
+                                jtagBuffer = jtagRead(DATA_SPACE_ADDR_OFFSET +
+                                                      io_reg_defs[i].reg_addr,
+                                                      count);
+								
+                                if (jtagBuffer)
+                                {
+                                    int k = 0;
+                                    // successfully read
+                                    while(count--)
+                                    {
+                                        offset = strlen(remcomOutBuffer);
+                                        sprintf(&remcomOutBuffer[offset],
+                                                "%s,%02x;",
+                                                io_reg_defs[i].name,
+                                                jtagBuffer[k++]);
+                                        i++;
+                                        j--;
+                                    }
+
+                                    delete [] jtagBuffer;
+                                    jtagBuffer = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        break;
+    }
+
     case 'P':   // set the value of a single CPU register - return OK
 	error(1); // error by default
 	if (hexToInt(&ptr, &regno) && *ptr++ == '=')

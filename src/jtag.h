@@ -22,6 +22,8 @@
 #ifndef JTAG_H
 #define JTAG_H
 
+#include "ioreg.h"
+
 typedef struct {
     const char* name;
     const unsigned int device_id;      // Part Number from JTAG Device 
@@ -30,6 +32,8 @@ typedef struct {
     unsigned int flash_page_count;     // Flash memory page count
     unsigned char eeprom_page_size;    // EEPROM page size in bytes
     unsigned int eeprom_page_count;    // EEPROM page count
+
+    gdb_io_reg_def_type *io_reg_defs;
 
     unsigned char dev_desc[126]; // Device descriptor to download to device
 } jtag_device_def_type;
