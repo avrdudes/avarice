@@ -1,3 +1,8 @@
+2003-05-01  Theodore A. Roth  <troth@openavr.org>
+
+	* src/jtagrw.cc: Fix byte order problem when specifying fuses bytes 
+	on the command line.
+
 2003-04-20  Theodore A. Roth  <troth@openavr.org>
 
 	* AUTHORS: Fix a typo.

@@ -248,6 +248,7 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
 void jtagWriteFuses(char *fuses)
 {
+    int temp[3];
     uchar fuseBits[3];
     uchar *readfuseBits;
     unsigned int c;
@@ -255,10 +256,14 @@ void jtagWriteFuses(char *fuses)
     check(fuses,
           "Error: No fuses string given");
 
-    // Convert fuses to hex values
-    c = sscanf(fuses, "%x", fuseBits);
-    check(c == 1,
+    // Convert fuses to hex values (this avoids endianess issues)
+    c = sscanf(fuses, "%02x%02x%02x", temp+2, temp+1, temp );
+    check(c == 3,
           "Error: Fuses specified are not in hexidecimal");
+
+    fuseBits[0] = (uchar)temp[0];
+    fuseBits[1] = (uchar)temp[1];
+    fuseBits[2] = (uchar)temp[2];
                 
     statusOut("\nWriting Fuse Bytes:\n");
     statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
@@ -279,7 +284,8 @@ void jtagWriteFuses(char *fuses)
 
 void jtagWriteLockBits(char *lock)
 {
-    uchar lockBits[3];
+    int temp[1];
+    uchar lockBits[1];
     uchar *readlockBits;
     unsigned int c;
 
@@ -290,9 +296,11 @@ void jtagWriteLockBits(char *lock)
           "Error: Fuses must be one byte exactly");
 
     // Convert lockbits to hex value
-    c = sscanf( lock, "%x", lockBits );
+    c = sscanf(lock, "%02x", temp);
     check(c == 1,
           "Error: Fuses specified are not in hexidecimal");
+
+    lockBits[0] = (uchar)temp[0];
 
     statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
 
