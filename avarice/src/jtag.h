@@ -31,8 +31,8 @@ typedef struct {
 
     /* The following arrays are bitmaps where each bit is a flag denoting
        wether the register can be read or written. Bit 0 of byte 0 represents
-       the IO register at sram addres 0x20, while bit 7 of byte 7 is
-       represents the register at 0x5f. */
+       the IO register at sram addres 0x20, while bit 7 of byte 7 represents
+       the register at 0x5f. */
 
     unsigned char rd[8];               // IO read access.
     unsigned char wr[8];               // IO write access.
