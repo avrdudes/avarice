@@ -1,4 +1,8 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
+
+	* src/remote.cc: Break out of 'g' packet case if an error occurs.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
 [Contributed by James Harris <James.Harris@codan.com.au>]
 
 	* src/remote.cc: When handling a 'g' packet, only read the 32 GPR's,
