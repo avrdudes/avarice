@@ -276,9 +276,7 @@ void jtagWriteFuses(char *fuses)
     fuseBits[2] = (uchar)temp[2];
                 
     statusOut("\nWriting Fuse Bytes:\n");
-    statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
-    statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
-    statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
+    jtagDisplayFuses(fuseBits);
 
     enableProgramming();    
 
@@ -293,6 +291,14 @@ void jtagWriteFuses(char *fuses)
           "Error verifying written fuses");
 
     delete [] readfuseBits;
+}
+
+
+void jtagDisplayFuses(uchar *fuseBits)
+{
+    statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
+    statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
+    statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
 }
 
 

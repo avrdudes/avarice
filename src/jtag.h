@@ -422,6 +422,13 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
 void jtagWriteFuses(char *fuses);
 
 
+/** Display fuses.
+
+    Shows extended, high and low fuse byte.
+*/
+void jtagDisplayFuses(uchar *fuseBits);
+
+
 /** Write lockbits to target.
 
     The input parameter is a string from command-line, as produced by

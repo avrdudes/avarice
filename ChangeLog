@@ -1,3 +1,12 @@
+2003-11-16  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
+
+	* src/jtag.h (jtagDisplayFuses): Add prototype.
+	* src/jtagio.cc (initJtagBox): Use jtagDisplayFuses() instead of
+	calling statusOut() directly.
+	* src/jtagrw.cc (jtagWriteFuses): Ditto.
+	(jtagDisplayFuses): New function.
+
 2003-11-13  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
