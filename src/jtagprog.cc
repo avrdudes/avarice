@@ -278,7 +278,7 @@ static void jtag_create_image(bfd *file, asection *section,
     const char *name;
     unsigned int addr;
     unsigned int size;
-    uchar buf[MAX_IMAGE_SIZE];
+    static uchar buf[MAX_IMAGE_SIZE];
     unsigned int i;
 
     // If section is empty (although unexpected) return
@@ -328,7 +328,7 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                              bool program, bool verify)
 {
     unsigned int page_size = get_page_size(memtype);
-    uchar buf[MAX_IMAGE_SIZE];
+    static uchar buf[MAX_IMAGE_SIZE];
     unsigned int i;
     uchar *response = NULL;
     bool emptyPage = true;
@@ -445,7 +445,7 @@ void downloadToTarget(const char* filename, bool program, bool verify)
     bfd *file;
     asection *p;
 
-    BFDimage flashimg, eepromimg;
+    static BFDimage flashimg, eepromimg;
 
     initImage(&flashimg);
     initImage(&eepromimg);
