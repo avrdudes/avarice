@@ -726,7 +726,7 @@ void initJtagBox(bool attach)
 
     uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
     statusOut("Hardware Version: 0x%02x\n", hw_ver);
-    check(hw_ver == 0xc0, "JTAG ICE: Unknown hardware version");
+    //check(hw_ver == 0xc0, "JTAG ICE: Unknown hardware version");
 
     uchar sw_ver = getJtagParameter(JTAG_P_SW_VERSION);
     statusOut("Software Version: 0x%02x\n", sw_ver);

@@ -581,6 +581,8 @@ void talkToGdb(void)
     char *ptr;
     bool adding = false;
     bool dontSendReply = false;
+    char cmd;
+    static char last_cmd = 0;
 
     ptr = getpacket();
 
@@ -589,7 +591,8 @@ void talkToGdb(void)
     // default empty response
     remcomOutBuffer[0] = 0;
 
-    switch (*ptr++)
+    cmd = *ptr++;
+    switch (cmd)
     {
     default:	// Unknown code.  Return an empty reply message.
 	break;
@@ -611,6 +614,9 @@ void talkToGdb(void)
     case 'M':
     {
 	uchar *jtagBuffer;
+        int lead = 0;
+        static bool last_orphan_pending = false;
+        static uchar last_orphan = 0xff;
 
 	// MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK
 	// TRY TO READ '%x,%x:'.  IF SUCCEED, SET PTR = 0
@@ -625,8 +631,38 @@ void talkToGdb(void)
 	    debugOut("\nGDB: Write %d bytes to 0x%X\n",
 		      length, addr);
 
+            // There is no gaurantee that gdb will send a word aligned stream
+            // of bytes, so we need to try and catch that here. This ugly, but
+            // it would more difficult to change in gdb and probably affect
+            // more than avarice users. This hack will make the gdb 'load'
+            // command less prone to failure.
+
+            if (addr & 1)
+            {
+                // odd addr means there may be a byte from last 'M' to write
+                if ((last_cmd == 'M') && (last_orphan_pending))
+                {
+                    length++;
+                    addr--;
+                    lead = 1;
+                }
+            }
+
+            last_orphan_pending = false;
+
 	    jtagBuffer = new uchar[length];
-	    hex2mem(ptr, jtagBuffer, length);
+	    hex2mem(ptr, jtagBuffer+lead, length);
+            if (lead)
+                jtagBuffer[0] = last_orphan;
+
+            if (length & 1)
+            {
+                // An odd length means we will have an orphan this round.
+                last_orphan_pending = true;
+                last_orphan = jtagBuffer[length];
+                length--;
+            }
+
 	    if (jtagWrite(addr, length, jtagBuffer))
 		ok();
 	    delete [] jtagBuffer;
@@ -661,6 +697,9 @@ void talkToGdb(void)
 
     case 'g':   // return the value of the CPU registers
     {
+        // Make sure that the jtagice box is not running.
+        interruptProgram();
+
 	uchar *jtagBuffer;
         uchar regBuffer[40];
 
@@ -1028,6 +1067,8 @@ void talkToGdb(void)
 	break;
 
     }	// switch
+
+    last_cmd = cmd;
 
     // reply to the request
     if (!dontSendReply)

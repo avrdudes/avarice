@@ -1,3 +1,10 @@
+2003-06-11  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Bump version.
+	* src/jtagio.cc: Remove check failure for jtag ice HW version.
+	* src/remote.cc: Fix handling the 'M' command from GDB to allow for
+	odd addresses and lengths.
+
 2003-06-05  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Check for intl library since linking to bfd may
