@@ -781,7 +781,8 @@ static void deviceAutoConfig(void)
     setDeviceDescriptor(pDevice);
 }
 
-void initJtagBox(bool attach, uchar bitrate)
+
+void initJtagBox(void)
 {
     statusOut("JTAG config starting.\n");
 
@@ -799,60 +800,6 @@ void initJtagBox(bool attach, uchar bitrate)
 
     deviceAutoConfig();
 
-    if (!attach)
-    {
-	// When attaching we can't change fuse bits, etc, as 
-	// enabling+disabling programming resets the processor
-	enableProgramming();
-
-	// Ensure that all lock bits are "unlocked" ie all 1's
-	uchar *lockBits = 0;
-	lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
-
-	if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
-	{
-	    lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
-	    jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
-	}
-
-        statusOut("\nDisabling lock bits:\n");
-        statusOut("  LockBits -> 0x%02x\n", *lockBits);
-
-	if (lockBits)
-	{
-	    delete [] lockBits;
-	    lockBits = 0;
-	}
-
-        // Ensure on-chip debug enable fuse is enabled ie '0'
-        uchar *fuseBits = 0;
-        statusOut("\nEnabling on-chip debugging:\n");
-        fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
-	if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
-	{
-            fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
-            jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
-	}
-
-        jtagDisplayFuses(fuseBits);
-
-	if (fuseBits)
-	{
-	    delete [] fuseBits;
-	    fuseBits = 0;
-	}
-
-        // Set JTAG bitrate
-        setJtagParameter(JTAG_P_CLOCK, bitrate);
-
-	disableProgramming();
-
-	resetProgram();
-	setJtagParameter(JTAG_P_TIMERS_RUNNING, 0x00);
-	resetProgram();
-    }
-
     // Clear out the breakpoints.
     deleteAllBreakpoints();
 
@@ -860,3 +807,58 @@ void initJtagBox(bool attach, uchar bitrate)
 }
 
 
+void initJtagOnChipDebugging(uchar bitrate)
+{
+    statusOut("Preparing the target device for On Chip Debugging.\n");
+
+    // Set JTAG bitrate
+    setJtagParameter(JTAG_P_CLOCK, bitrate);
+
+    // When attaching we can't change fuse bits, etc, as 
+    // enabling+disabling programming resets the processor
+    enableProgramming();
+
+    // Ensure that all lock bits are "unlocked" ie all 1's
+    uchar *lockBits = 0;
+    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+
+    if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
+    {
+        lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
+        jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
+    }
+
+    statusOut("\nDisabling lock bits:\n");
+    statusOut("  LockBits -> 0x%02x\n", *lockBits);
+
+    if (lockBits)
+    {
+        delete [] lockBits;
+        lockBits = 0;
+    }
+
+    // Ensure on-chip debug enable fuse is enabled ie '0'
+    uchar *fuseBits = 0;
+    statusOut("\nEnabling on-chip debugging:\n");
+    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+
+    if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
+    {
+        fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
+        jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
+    }
+
+    jtagDisplayFuses(fuseBits);
+
+    if (fuseBits)
+    {
+        delete [] fuseBits;
+        fuseBits = 0;
+    }
+
+    disableProgramming();
+
+    resetProgram();
+    setJtagParameter(JTAG_P_TIMERS_RUNNING, 0x00);
+    resetProgram();
+}

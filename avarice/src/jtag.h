@@ -289,16 +289,20 @@ uchar *doJtagCommand(uchar *command, int  commandSize, int responseSize);
 bool doSimpleJtagCommand(uchar cmd, int responseSize);
 
 /** Send initial configuration to setup the JTAG box itself. 
-    If attach is true, the currently running program is attached
-    (Note: when attaching, fuse bits cannot be set so debugging must
-    have been enabled earlier)
-
-    The bitrate sets the JTAG bitrate. The bitrate must be less than 1/4 that
-    of the target avr frequency or the jtagice will have problems reading from
-    the target. The problems are usually manifested as failed calls to
-    jtagRead().
  **/
-void initJtagBox(bool attach, uchar bitrate);
+void initJtagBox(void);
+
+/**
+    Send initial configuration to the JTAG box when starting a new
+    debug session.  (Note: when attaching to a running target, fuse
+    bits cannot be set so debugging must have been enabled earlier)
+
+    The bitrate sets the JTAG bitrate. The bitrate must be less than
+    1/4 that of the target avr frequency or the jtagice will have
+    problems reading from the target. The problems are usually
+    manifested as failed calls to jtagRead().
+**/
+void initJtagOnChipDebugging(uchar bitrate);
 
 
 // Breakpoints
@@ -420,6 +424,13 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
     printf("%x", 0xaabbcc );
 **/
 void jtagWriteFuses(char *fuses);
+
+
+/** Read fuses from target.
+
+    Shows extended, high and low fuse byte.
+*/
+void jtagReadFuses(void);
 
 
 /** Display fuses.

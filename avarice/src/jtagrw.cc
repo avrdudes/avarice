@@ -294,6 +294,23 @@ void jtagWriteFuses(char *fuses)
 }
 
 
+void jtagReadFuses(void)
+{
+    uchar *fuseBits = 0;
+
+    enableProgramming();
+    statusOut("\nReading Fuse Bytes:\n");
+    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+    disableProgramming();
+
+    check(fuseBits, "Error reading fuses");
+
+    jtagDisplayFuses(fuseBits);
+
+    delete [] fuseBits;
+}
+
+
 void jtagDisplayFuses(uchar *fuseBits)
 {
     statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
