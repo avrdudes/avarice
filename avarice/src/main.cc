@@ -318,9 +318,11 @@ int main(int argc, char **argv)
 
     if (erase)
     {
+        enableProgramming();
 	statusOut("Erasing program memory.\n");
 	eraseProgramMemory();
 	statusOut("Erase complete.\n");
+        disableProgramming();
     }
 
     if (writeFuses)

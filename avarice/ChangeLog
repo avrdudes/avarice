@@ -1,3 +1,9 @@
+2003-10-20  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Dean Ferreyra <dferreyra@igc.org>]
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/main.cc: Fix to allow erasing the device as a single operation.
+
 2003-09-25  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
