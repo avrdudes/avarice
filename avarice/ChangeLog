@@ -1,3 +1,9 @@
+2003-08-25    <dgay@barnowl.research.intel-research.net>
+
+	* configure.ac: bump version
+	* src/jtagprog.cc: work around cygwin gcc (3.2.3) bug with
+	  large stack allocated locals by making them static
+
 2003-08-21    <dgay@barnowl.research.intel-research.net>
 
 	* doc/ice-insight.1: new file, ice-insight man page
