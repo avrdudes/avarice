@@ -21,28 +21,11 @@
 
 Please feel free to lend a helping hand:
 
-
 If you do like to dabble:
-
-- The JTAG target really needs to be properly encapsulated into an
-  abstract "target" base class and a "jtag" concrete class. This would
-  allow for other targets to be put in place such as Ted Roth's
-  excellent simulator idea. (Planning this for the next release). This
-  will be in version 2. The work has begun but is a background task to
-  getting AVaRICE to be fully functional and stable.
 
 - Porting to other platforms.
 
 - Add support for watches (ie data space breakpoints).
-
-- Fix program space read (ie GDB 'm' command) handling to work correctly
-  with odd length reads.
-
-- Add command line option for setting the JTAG Clock speed. This speed could
-  speed thing up a bit.
-
-- Test various supported devices. Most work is done with mega128, we need 
-  confirmation that other devices work successfully.
 
 - Need to add io register definitions for the following devices (this is
   pretty easy, mindless work, just tedious):
@@ -52,6 +35,8 @@ If you do like to dabble:
     mega32
     mega64
     mega128
+
+- Write a user's manual or some sort of documentation.
 
 - Many many other things!
 
@@ -63,14 +48,7 @@ Protocol:
     [Atmel has now published the protocol in appnote AVR060. It's a rather
     confusing document.]
 
-Auto Testing:
-    One of the major advantages of Aegis (ie test suite support) is
-    currently not used. This is truely unacceptable. I would like to add
-    tests which actually fire up AVaRICE and avr-gdb and maybe even
-    compile a test program and single-step / breakpoints... everything.
-    This would be very cool (Aegis users would say that this is
-    essential. They would be right).
-
 Good old fashioned hands-on testing:
 
-- I can't possibly have tried everything. See if you can break it!
+- We can't possibly have tried everything on every system. See if you can
+  break it!

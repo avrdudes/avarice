@@ -1,6 +1,6 @@
 #
 #	avarice - The "avarice" program.
-#	Copyright (C) 2001 Scott Finneran
+#	Copyright (C) 2001, 2003 Scott Finneran
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 #
 # doc/running.txt
 #
+
+NOTE: This file is _really_ old and hasn't been kept up to date. Start avarice
+with the --help option to get the current list of options.
 
 Using AVaRICE:
 --------------

@@ -3,7 +3,7 @@
 #
 #	avarice - The "avarice" program.
 #	Copyright (C) 2001 Scott Finneran
-#      Copyright (C) 2002, 2003 Intel Corporation
+#	Copyright (C) 2002, 2003 Intel Corporation
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License Version 2
@@ -22,7 +22,7 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.0.20031116cvs)
+AC_INIT(avarice, 2.0.20031206cvs)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])

@@ -1,3 +1,16 @@
+2003-12-06  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* avarice.spec.in (%files): Add avarice man page.
+	* doc/Makefile.am (man_MANS): Add avarice.1.
+	(EXTRA_DIST): Remove install.txt.
+	* doc/avarice.1: New file.
+	* doc/install.txt: Remove file. This file talks about Aegis being the
+	build system which is no longer true since we use autoconf/automake.
+	* doc/running.txt: Add note about this file being out of date.
+	* doc/todo.txt: Remove some entries that have been handled.
+	Add some new entries.
+
 2003-11-16  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
 
