@@ -390,17 +390,25 @@ int main(int argc, char **argv)
 
     if (inFileName != (char *)0)
     {
-        if (program || verify) {
-            downloadToTarget(inFileName, program, verify);
-        }
-        else {
+        if ((program == false) && (verify == false)) {
             /* If --file is given and neither --program or --verify, then we
                program, but not verify so as to be backward compatible with
                the old meaning of --file from before the addition of --program
                and --verify. */
 
-            downloadToTarget(inFileName, true, false);
+            program = true;
         }
+
+        if ((erase == false) && (program == true)) {
+            statusOut("WARNING: The default behaviour has changed.\n"
+                      "Programming no longer erases by default. If you want to"
+                      " erase and program\nin a single step, use the --erase "
+                      "in addition to --program. The reason for\nthis change "
+                      "is to allow programming multiple sections (e.g. "
+                      "application and\nbootloader) in multiple passes.\n\n");
+        }
+
+        downloadToTarget(inFileName, program, verify);
         resetProgram();
     }
     else

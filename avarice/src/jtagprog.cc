@@ -143,6 +143,8 @@ void disableProgramming(void)
 }
 
 
+// This is really a chip-erase which erases flash, lock-bits and eeprom
+// (unless the save-eeprom fuse is set).
 void eraseProgramMemory(void)
 {
     check(doSimpleJtagCommand(0xa5, 1), 
@@ -511,10 +513,7 @@ void downloadToTarget(const char* filename, bool program, bool verify)
         p = p->next;
     }
     
-    // First erase the flash if programming
     enableProgramming();
-    if (program)
-        eraseProgramMemory();
 
     // Write the complete FLASH/EEPROM images to the device.
     if (flashimg.has_data)
