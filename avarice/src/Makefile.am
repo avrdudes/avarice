@@ -23,6 +23,8 @@ bin_PROGRAMS = avarice
 
 avarice_SOURCES =	\
 	avarice.h	\
+	ioreg.cc	\
+	ioreg.h		\
 	jtag.h		\
 	jtagbp.cc	\
 	jtagio.cc	\

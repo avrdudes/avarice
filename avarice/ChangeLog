@@ -1,4 +1,14 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
+[Contributed by James Harris <James.Harris@codan.com.au>]
+
+	* src/Makefile.am (avarice_SOURCES): Add ioreg.cc and ioreg.h.
+	* src/ioreg.cc: New file.
+	* src/ioreg.h: New file.
+	* src/jtag.h: Add io_reg_defs field to jtag_device_def_type struct.
+	* src/jtagio.cc: Add io_reg_defs field initializers.
+	* src/remote.cc: Add 'q' packet handling of "Ravr.io_reg" queries.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
 
 	* src/remote.cc: Break out of 'g' packet case if an error occurs.
 

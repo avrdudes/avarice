@@ -32,6 +32,7 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "ioreg.h"
 
 jtag_device_def_type *global_p_device_def;
 
@@ -46,6 +47,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9403,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+        atmega16_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF,
@@ -73,6 +75,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9404,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xF7, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -100,6 +103,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9405,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xBB, 0xE0, 
@@ -127,6 +131,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9501,
         128, 256,    // 32K flash 
         4,   256,    // 1K EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF, 
@@ -154,6 +159,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9502,
         128, 256,    // 32K flash 
         4,   256,    // 1K EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xFF, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -185,6 +191,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9602,
         256, 256,    // 32K flash 
         8,   256,    // 2K EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xFF, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -213,6 +220,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9702,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -241,6 +249,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x0,
         256, 512,    // 128K flash 
         8,   512,    // 4K EEPROM
+        NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             0xCF, 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -269,6 +278,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0,
         0, 0,
         0, 0,
+        NULL,
         { 0 }
     }
 };
