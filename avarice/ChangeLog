@@ -1,3 +1,20 @@
+2003-04-20  Theodore A. Roth  <troth@openavr.org>
+
+	* AUTHORS: Fix a typo.
+	* INSTALL-FROM-CVS: Add detailed description about using the proper
+	versions of autoconf and automake.
+	* configure.ac: Ran autoscan to generate this file to check for more
+	potential portability problem points.
+	Use autoconf-2.57 and automake-1.7.3 (trying make things work right
+	with any versions is a royal PITA).
+	Have autoheader generate src/autoconf.hin instead of autoconf.h.in so
+	8.3 systems don't puke.
+	* configure.in: Removed (replaced by configure.ac).
+	* .cvsignore: Ignore all diff and patch files.
+	Ignore all autom4te*.cache dirs.
+	* src/.cvsignore: Ignore TAGS and tags files.
+	Ignore autoconf.hin instead of autoconf.h.in.
+
 2003-04-03  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Nils Kristian Strom <nilsst@omegav.ntnu.no>].
 

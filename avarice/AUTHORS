@@ -1,5 +1,5 @@
 Avarice (up to version 1.5) was originally written by Scott Finneran with help
-from Peter Jansen. They did the work or figuring out the jtagice communication
+from Peter Jansen. They did the work of figuring out the jtagice communication
 protocol before Atmel released the spec (appnote AVR060).
 
   Scott Finneran  <scott@klaxoniqa.com>
