@@ -1,0 +1,7 @@
+2003-02-28  Theodore A. Roth  <troth@openavr.org>
+
+	* AUTHORS: New file.
+	* Bootstrap: Allow user to specify which versions of the auto tools
+	to use by setting environment variables.
+	* ChangeLog: New file.
+
