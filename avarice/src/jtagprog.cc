@@ -37,6 +37,11 @@
 #include "avarice.h"
 #include "jtag.h"
 
+// The API changed for this in bfd.h. This is a work around.
+#ifndef bfd_get_section_size
+#  define bfd_get_section_size bfd_get_section_size_before_reloc
+#endif
+
 // Allocate 1 meg for image buffer. This is where the file data is
 // stored before writing occurs.
 #define MAX_IMAGE_SIZE 1000000
@@ -289,7 +294,7 @@ static void jtag_create_image(bfd *file, asection *section,
 
     // Get information about section
     name = bfd_get_section_name(file, section);
-    size = bfd_get_section_size_before_reloc(section);
+    size = bfd_get_section_size(section);
   
     if ((addr = get_section_addr(section, memtype)) != 0xffffff)
     {
