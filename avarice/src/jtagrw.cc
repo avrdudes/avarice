@@ -280,10 +280,14 @@ void jtagWriteFuses(char *fuses)
     statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
     statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
 
+    enableProgramming();    
+
     check(jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits),
           "Error writing fuses");
 
     readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+
+    disableProgramming();
 
     check(memcmp(fuseBits, readfuseBits, 3) == 0,
           "Error verifying written fuses");
@@ -314,10 +318,14 @@ void jtagWriteLockBits(char *lock)
 
     statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
 
+    enableProgramming();
+
     check(jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits),
           "Error writing lockbits" );
 
     readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+
+    disableProgramming();
 
     check(memcmp(lockBits, readlockBits, 1) == 0,
           "Error verifying written lock bits");

@@ -1,3 +1,10 @@
+2003-09-18  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Amedee Louis Beaudoin <deoxy@u.washington.edu>]
+
+	* src/jtagrw.cc (jtagWriteFuses): Enter programming mode before writing
+	and exit program mode after reading.
+	(jtagWriteLockBits): Ditto.
+
 2003-08-25    <dgay@barnowl.research.intel-research.net>
 
 	* configure.ac: bump version
