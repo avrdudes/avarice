@@ -1,4 +1,8 @@
-2004-12-06    <dgay@barnowl.research.intel-research.net>
+2004-12-06  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Set version to 2.3.20041206 for cvs tracking.
+
+2004-12-06  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* src/main.cc (main): resume execution on exit when not in server mode
 
