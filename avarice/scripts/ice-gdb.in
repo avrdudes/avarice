@@ -18,11 +18,16 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 	splice @ARGV, $i, 2;
 	$i--;
     }
-    elsif ($arg eq "--capture") {
-	$ENV{AVARICE_ARGS} = "$ENV{AVARICE_ARGS} --capture";
+    elsif ($arg eq "--capture" || $arg eq "--ignore-intr") {
+	$ENV{AVARICE_ARGS} = "$ENV{AVARICE_ARGS} $arg";
 	splice @ARGV, $i, 1;
 	# Don't load an executable
-	$capture = 1;
+	$capture = 1 if $arg eq "--capture";
+	$i--;
+    }
+    elsif ($arg eq "--external") {
+	$avarice_running = 1;
+	splice @ARGV, $i, 1;
 	$i--;
     }
     elsif (!($arg =~ /^-/)) {
@@ -33,6 +38,6 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 
 $exe = "" if $capture;
 
-system "start-avarice $exe";
+system "start-avarice $exe" unless $avarice_running;
 unshift @ARGV, ($debugger, "-x", "$datadir/avarice/gdb-avarice-script" );
 exec @ARGV;
