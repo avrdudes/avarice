@@ -125,6 +125,9 @@ static void usage(const char *progname)
 	    "  --write-fuses <eehhll>      Write fuses bytes. AVaRICE"
 	    " then exits.\n\n");
     fprintf(stderr,
+	    "  --write-lockbits <ll>       Write lock bits. AVaRICE"
+	    " then exits.\n\n");
+    fprintf(stderr,
             "  --part <name>               Target device name (e.g."
             " atmega16)\n\n");
     fprintf(stderr,
@@ -147,6 +150,8 @@ int main(int argc, char **argv)
     bool readFusesAndQuitOnly = false;
     bool writeFusesAndQuitOnly = false;
     char *fuses;
+    bool writeLockBitsAndQuitOnly = false;
+    char *lockBits;
     bool needHostName = true;
     bool detach = false;
     bool capture = false;
@@ -216,6 +221,12 @@ int main(int argc, char **argv)
                 writeFusesAndQuitOnly = true;
                 needHostName = false;
             }
+            else if (0 == strcmp("--write-lockbits", argv[j]))
+            {
+                lockBits = argv[++j];
+                writeLockBitsAndQuitOnly = true;
+                needHostName = false;
+            }
             else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
             {
                 device_name = argv[++j];
@@ -272,6 +283,14 @@ int main(int argc, char **argv)
     {
         enableProgramming();
         jtagWriteFuses(fuses);
+        disableProgramming();
+
+        exit(0); // All done. Bye now!
+    }
+    if (writeLockBitsAndQuitOnly)
+    {
+        enableProgramming();
+        jtagWriteLockBits(lockBits);
         disableProgramming();
 
         exit(0); // All done. Bye now!
