@@ -87,7 +87,7 @@ jtag_device_def_type deviceDefinitions[] = {
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
         0x70,        // 28 interrupt vectors
-        NULL,        // io reg defs not defined yet
+        atmega162_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xF7, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },

@@ -33,6 +33,7 @@ typedef struct {
 } gdb_io_reg_def_type;
 
 extern gdb_io_reg_def_type atmega16_io_registers[];
+extern gdb_io_reg_def_type atmega162_io_registers[];
 extern gdb_io_reg_def_type atmega169_io_registers[];
 
 #endif /* INCLUDE_IOREG_H */
