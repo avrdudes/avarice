@@ -165,7 +165,7 @@ enum
     // JTAG communication timeouts, in microseconds
     // RESPONSE is for the first response byte
     // COMM is for subsequent response bytes
-    JTAG_RESPONSE_TIMEOUT	      = 500000,
+    JTAG_RESPONSE_TIMEOUT	      = 1000000,
     JTAG_COMM_TIMEOUT		      = 100000
 };
 
