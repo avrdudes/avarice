@@ -78,42 +78,47 @@ void downloadToTarget(const char* filename)
     // box.
     struct stat ifstat;
     bool partiallyFilledPage = false;
+    unsigned int page_size;
 
     unixCheck(stat(filename, &ifstat), "Can't stat() file %s", filename);
 
     // Let's see how big it is.
     int remaining = ifstat.st_size;
 
-    int chunk = 256; // maximum chunk size (equiv to JTAG buffer size).
-
-    uchar *buffer = new uchar[chunk];
-
     // Open the input file.
     int inputFile = open(filename, O_RDONLY);
     unixCheck(inputFile, "Could not open input file %s", filename);
 
     // Configure for JTAG download/programming
-    // XXX: These are device dependent
-    setJtagParameter(0x88, 0x00);
-    setJtagParameter(0x89, 0x01);
-    setJtagParameter(0x8A, 0x08);
+
+    // Set the flash page and eeprom page sizes (These are device dependent)
+    page_size = global_p_device_def->flash_page_size;
+
+    debugOut("Flash page size: 0x%0x\nEEPROM page size: 0x%0x\n", 
+             page_size, global_p_device_def->eeprom_page_size);
+    
+    setJtagParameter(JTAG_P_FLASH_PAGESIZE_LOW, page_size & 0xff);
+    setJtagParameter(JTAG_P_FLASH_PAGESIZE_HIGH, page_size >> 8);
+
+    setJtagParameter(JTAG_P_EEPROM_PAGESIZE,
+                     global_p_device_def->eeprom_page_size);
 
     // First erase the flash
     enableProgramming();
     eraseProgramMemory();
-    disableProgramming();
 
     // And then send down the new image.
 
     statusOut("Downloading to target.");
     statusFlush();
 
-    enableProgramming();
+    int chunk = page_size; // maximum chunk size (equiv to JTAG buffer size).
+    uchar *buffer = new uchar[chunk];
 
     int address = 0;
     while (remaining > 0)
     {
-	int count = remaining > chunk ? chunk : remaining;
+	int count = (remaining > chunk) ? chunk : remaining;
 
 	// In
 	check(read(inputFile, buffer, count) == count,
@@ -132,7 +137,8 @@ void downloadToTarget(const char* filename)
 	    uchar confirmData[] = {0xff, 0xff};
 
 	    // determine last word in page.
-	    int lastPageAddress = address | (chunk - sizeof confirmData);
+            int lastPageAddress = (address & (~(page_size - 1))) +
+                (page_size - sizeof(confirmData));
 
 	    check(jtagWrite(lastPageAddress, sizeof(confirmData), confirmData),
 		  "Error writing to target\n");
