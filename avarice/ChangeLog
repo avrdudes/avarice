@@ -1,3 +1,11 @@
+2003-10-23  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* doc/dev_desc.txt: New file.
+	* src/jtag.h:
+	* src/jtagio.cc:
+	Make the device description arrays into a structures.
+
 2003-10-20  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Dean Ferreyra <dferreyra@igc.org>]
 
