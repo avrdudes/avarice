@@ -1,11 +1,11 @@
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
- *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2002, 2003, 2004 Intel Corporation
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
- *      as published by the Free Software Foundation.
+ *	as published by the Free Software Foundation.
  *
  *	This program is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -354,4 +354,36 @@ void jtagWriteLockBits(char *lock)
           "Error verifying written lock bits");
 
     delete [] readlockBits;
+}
+
+
+void jtagReadLockBits(void)
+{
+    uchar *lockBits = 0;
+
+    enableProgramming();
+    statusOut("\nReading Lock Bits:\n");
+    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+    disableProgramming();
+
+    check(lockBits, "Error reading lock bits");
+
+    jtagDisplayLockBits(lockBits);
+
+    delete [] lockBits;
+}
+
+
+void jtagDisplayLockBits(uchar *lockBits)
+{
+    statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
+
+    statusOut("    Bit 7 [ Reserved ] -> %d\n", (lockBits[0] >> 7) & 1);
+    statusOut("    Bit 6 [ Reserved ] -> %d\n", (lockBits[0] >> 6) & 1);
+    statusOut("    Bit 5 [ BLB12    ] -> %d\n", (lockBits[0] >> 5) & 1);
+    statusOut("    Bit 4 [ BLB11    ] -> %d\n", (lockBits[0] >> 4) & 1);
+    statusOut("    Bit 3 [ BLB02    ] -> %d\n", (lockBits[0] >> 3) & 1);
+    statusOut("    Bit 2 [ BLB01    ] -> %d\n", (lockBits[0] >> 2) & 1);
+    statusOut("    Bit 1 [ LB2      ] -> %d\n", (lockBits[0] >> 1) & 1);
+    statusOut("    Bit 0 [ LB1      ] -> %d\n", (lockBits[0] >> 0) & 1);
 }
