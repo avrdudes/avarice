@@ -1,4 +1,11 @@
 2003-08-15  Theodore A. Roth  <troth@openavr.org>
+
+	* Makefile.am (dist-hook): New rule.
+	* configure.ac (AC_INIT): Bump version.
+	(AC_CONFIG_FILES): Add avarice.spec.
+	* avarice.spec.in: New file.
+
+2003-08-15  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
 
 	* src/main.cc (long_opts): Fix short opts to match usage output.
