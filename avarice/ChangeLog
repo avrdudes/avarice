@@ -1,4 +1,9 @@
 2003-11-08  Theodore A. Roth  <troth@openavr.org>
+
+	* src/main.cc (usage): Make the -B option info fit on a 80 column
+	terminal.
+
+2003-11-08  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
 
 	* configure.ac (AC_INIT): Bump version.
