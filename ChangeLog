@@ -1,3 +1,12 @@
+2003-11-01  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/jtag.h: Add JTAG_BITRATE_1_MHz, JTAG_BITRATE_500_KHz,
+	JTAG_BITRATE_250_KHz and JTAG_BITRATE_125_KHz defs.
+	(initJtagBox): Add bitrate argument.
+	* src/jtagio.cc (initJtagBox): Allow passing the jtag bitrate.
+	* src/main.cc: Add the -B (--jtag-bitrate) option.
+
 2003-10-23  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.

@@ -781,7 +781,7 @@ static void deviceAutoConfig(void)
     setDeviceDescriptor(pDevice);
 }
 
-void initJtagBox(bool attach)
+void initJtagBox(bool attach, uchar bitrate)
 {
     statusOut("JTAG config starting.\n");
 
@@ -817,9 +817,8 @@ void initJtagBox(bool attach)
 	statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
 	statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
 
-	// Set JTAG bitrate to 1MHz
-	// ff: 1MHz, fe: 500kHz, fd: 250khz, fb: 125Khz
-	setJtagParameter(JTAG_P_CLOCK, 0xff);
+	// Set JTAG bitrate
+	setJtagParameter(JTAG_P_CLOCK, bitrate);
 
 	if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
 	{

@@ -119,6 +119,11 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
     fprintf(stderr,
+            "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates with\n"
+            "                                the avr target device. This must be less than 1/4\n"
+            "                                of the frequency of the target. Valid values are\n"
+            "                                1MHz, 500KHz, 250KHz or 125KHz. (default: 1MHz)\n");
+    fprintf(stderr,
 	    "  -p, --program               Erase and program target.\n"
 	    "                                Binary filename must be specified with --file\n"
 	    "                                option.\n");
@@ -158,6 +163,7 @@ static struct option long_opts[] = {
     { "write-lockbits",      1,       0,     'L' },
     { "part",                1,       0,     'P' },
     { "jtag",                1,       0,     'j' },
+    { "jtag-bitrate",        1,       0,     'B' },
     { "ignore-intr",         0,       0,     'I' },
     { "detach",              0,       0,     'D' },
     { "capture",             0,       0,     'C' },
@@ -172,6 +178,7 @@ int main(int argc, char **argv)
     struct sockaddr_in name;
     char *inFileName = 0;
     char *jtagDeviceName = "/dev/avrjtag";
+    uchar jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
     int  hostPortNumber;
     bool erase = false;
@@ -197,7 +204,7 @@ int main(int argc, char **argv)
     
     while (1)
     {
-        int c = getopt_long (argc, argv, "VhdDCIf:j:pverW:L:P:",
+        int c = getopt_long (argc, argv, "VhdDCIf:j:B:pverW:L:P:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -223,6 +230,21 @@ int main(int argc, char **argv)
                 break;
             case 'j':
                 jtagDeviceName = optarg;
+                break;
+            case 'B':
+                if (strncmp ("1MHz", optarg, 4) == 0)
+                    jtagBitrate = JTAG_BITRATE_1_MHz;
+                else if (strncmp ("500KHz", optarg, 6) == 0)
+                    jtagBitrate = JTAG_BITRATE_500_KHz;
+                else if (strncmp ("250KHz", optarg, 6) == 0)
+                    jtagBitrate = JTAG_BITRATE_250_KHz;
+                else if (strncmp ("125KHz", optarg, 6) == 0)
+                    jtagBitrate = JTAG_BITRATE_125_KHz;
+                else
+                {
+                    fprintf (stderr, "Invalid bitrate: %s\n", optarg);
+                    exit (1);
+                }
                 break;
             case 'p':
                 program = true;
@@ -311,10 +333,20 @@ int main(int argc, char **argv)
         usage (progname);
     }
 
+    if (jtagBitrate == 0)
+    {
+        fprintf (stdout,
+                 "Defaulting JTAG bitrate to 1 MHz. Make sure that the target\n"
+                 "frequency is at least 4 MHz or you will likely encounter failures\n"
+                 "controlling the target.\n\n");
+
+        jtagBitrate = JTAG_BITRATE_1_MHz;
+    }
+
     // And say hello to the JTAG box
     initJtagPort(jtagDeviceName);
 
-    initJtagBox(capture);
+    initJtagBox(capture, jtagBitrate);
 
     if (erase)
     {

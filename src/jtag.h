@@ -213,7 +213,15 @@ enum
     // RESPONSE is for the first response byte
     // COMM is for subsequent response bytes
     JTAG_RESPONSE_TIMEOUT	      = 1000000,
-    JTAG_COMM_TIMEOUT		      = 100000
+    JTAG_COMM_TIMEOUT		      = 100000,
+
+    // Set JTAG bitrate to 1MHz
+    // ff: 1MHz, fe: 500kHz, fd: 250khz, fb: 125Khz
+    // JTAG bitrates
+    JTAG_BITRATE_1_MHz                = 0xff,
+    JTAG_BITRATE_500_KHz              = 0xfe,
+    JTAG_BITRATE_250_KHz              = 0xfd,
+    JTAG_BITRATE_125_KHz              = 0xfb
 };
 
 enum {
@@ -284,8 +292,13 @@ bool doSimpleJtagCommand(uchar cmd, int responseSize);
     If attach is true, the currently running program is attached
     (Note: when attaching, fuse bits cannot be set so debugging must
     have been enabled earlier)
+
+    The bitrate sets the JTAG bitrate. The bitrate must be less than 1/4 that
+    of the target avr frequency or the jtagice will have problems reading from
+    the target. The problems are usually manifested as failed calls to
+    jtagRead().
  **/
-void initJtagBox(bool attach);
+void initJtagBox(bool attach, uchar bitrate);
 
 
 // Breakpoints
