@@ -697,9 +697,6 @@ void talkToGdb(void)
 
     case 'g':   // return the value of the CPU registers
     {
-        // Make sure that the jtagice box is not running.
-        interruptProgram();
-
 	uchar *jtagBuffer;
         uchar regBuffer[40];
 
