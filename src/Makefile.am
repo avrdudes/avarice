@@ -35,4 +35,7 @@ avarice_SOURCES =	\
 	main.cc		\
 	remote.cc	\
 	remote.h	\
-	utils.cc
+	utils.cc        \
+	gnu_getopt.c    \
+	gnu_getopt.h    \
+	gnu_getopt1.c
