@@ -1,3 +1,12 @@
+2003-11-13  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/jtagrw.cc (memorySpace): Use symbolic name instead of magic
+	number.
+	* src/remote.cc (talkToGdb): Only allow orphaned bytes when writing to
+	program space. [Thanks to Brian Cuthie <brian@systemix.com> for 
+	reporting this bug.]
+
 2003-11-08  Theodore A. Roth  <troth@openavr.org>
 
 	* src/main.cc (usage): Make the -B option info fit on a 80 column
