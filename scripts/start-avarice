@@ -7,5 +7,5 @@ fi
 if [ "$1" != "" ] ; then
   AVARICE_ARGS="$AVARICE_ARGS -f $1"
 fi
-avarice $AVARICE_ARGS localhost 6423 --detach
+avarice $AVARICE_ARGS localhost:6423 --detach
 
