@@ -177,11 +177,17 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
 	// We don't handle odd lengths or start addresses
 	if ((addr & 1))
+        {
+            debugOut ("\nOdd pgm wr addr\n");
 	    return false;
+        }
 
         // Odd length: Write one more byte.
         if ((numBytes & 1))
-                numBytes+=1;
+        {
+            debugOut ("\nOdd pgm wr length\n");
+            numBytes+=1;
+        }
 
 	addr /= 2;
 	numLocations = numBytes / 2;

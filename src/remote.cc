@@ -45,12 +45,15 @@ enum
     SP		= 33,
     PC		= 34,
 
-    /// Number of bytes of registers.  See GDB tm.h
+    // Number of bytes of registers.  See GDB gdb/avr-tdep.c
     NUMREGBYTES = (NUMREGS + 1 + 2 + 4),
 };
 
 static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
+
+static void ok();
+static void error(int n);
 
 int gdbFileDescriptor = -1;
 
@@ -315,14 +318,64 @@ void gdbOut(const char *fmt, ...)
   va_end(args);
 }
 
+/** Fill 'remcomOutBuffer' with a status report for signal 'sigval'
+
+    Reply with a packet of the form:
+
+      "Tss20:rr;21:llhh;22:aabbccdd;"
+
+    where (all values in hex):
+      ss       = signal number (usually SIGTRAP)
+      rr       = SREG value
+      llhh     = SPL:SPH  (stack pointer)
+      aabbccdd = PC (program counter)
+
+    This actually saves having to read the 32 general registers when stepping
+    over code since gdb won't send a 'g' packet until the PC it is hunting for
+    is found.  */
+
+static void reportStatusExtended(int sigval)
+{
+    uchar *jtagBuffer;
+    unsigned long pc = getProgramCounter();
+
+    fprintf (stderr, "PC -> 0x%x\n", pc);
+
+    // Read in SPL SPH SREG
+    jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+
+    if (jtagBuffer)
+    {
+        // We have SPL SPH SREG and need SREG SPL SPH
+
+        snprintf (remcomOutBuffer, sizeof(remcomOutBuffer),
+                  "T%02x" "20:%02x;" "21:%02x%02x;" "22:%02x%02x%02x%02x;",
+                  sigval & 0xff,
+                  jtagBuffer[2], // SREG
+                  jtagBuffer[0], // SPL
+                  jtagBuffer[1], // SPH
+                  pc & 0xff, (pc >> 8) & 0xff,
+                  (pc >> 16) & 0xff, (pc >> 24) & 0xff);
+
+        delete [] jtagBuffer;
+        jtagBuffer = 0;
+    }
+    else
+    {
+        error(1);
+        return;
+    }
+}
+
 /** Fill 'remcomOutBuffer' with a status report for signal 'sigval' **/
 static void reportStatus(int sigval)
 {
     char *ptr = remcomOutBuffer;
 
-    // We could use 'T'. But this requires reading PC, SP, FP at least, so
+    // We could use 'T'. But this requires reading SREG, SP, PC at least, so
     // won't be significantly faster than the 'g' operation that gdb will
-    // request if we use 'S' here
+    // request if we use 'S' here. [TRoth/2003-06-12: this is not necessarily
+    // true. See above comment for reportStatusExtended().]
 
     *ptr++ = 'S';	// notify gdb with signo
     ptr = byteToHex(sigval, ptr);
@@ -938,7 +991,7 @@ void talkToGdb(void)
 	}
 	if (!jtagSingleStep())
 	    gdbOut("Failed to single-step");
-	reportStatus(SIGTRAP);
+	reportStatusExtended(SIGTRAP);
 	break;
 
     case 'e': //eAA..AA,BB..BB continue until pc leaves [A..B[ range
@@ -952,11 +1005,11 @@ void talkToGdb(void)
 	  {
 	      if (!jtagSingleStep())
 		  gdbOut("Failed to single-step");
-	      reportStatus(SIGTRAP);
+	      reportStatusExtended(SIGTRAP);
 	  }
 	  else
 	      if (stepThrough(start, end))
-		  reportStatus(SIGTRAP);
+		  reportStatusExtended(SIGTRAP);
 	      else
 		  reportStatus(SIGINT);
       }
@@ -981,7 +1034,7 @@ void talkToGdb(void)
             {
                 if (resetProgram())
                 {
-                    reportStatus(SIGTRAP);
+                    reportStatusExtended(SIGTRAP);
                 }
             }
         }
@@ -997,7 +1050,7 @@ void talkToGdb(void)
 	}
 	if (jtagContinue(true))
 	{
-	    reportStatus(SIGTRAP);
+	    reportStatusExtended(SIGTRAP);
 	}
 	else
 	{
