@@ -488,7 +488,8 @@ static bool stepThrough(int start, int end)
 	    if (newPC >= start && newPC < end)
 		break;
 
-	    if (ignoreInterrupts && newPC < 0x60) // an interrupt, we assume
+	    // assume interrupt when PC goes into interrupt table
+	    if (ignoreInterrupts && newPC < global_p_device_def->vectors_end)
 	    {
 		if (!handleInterrupt())
 		    return false;
@@ -508,7 +509,7 @@ static bool singleStep()
     if (codeBreakpointAt(newPC))
 	return true;
     // assume interrupt when PC goes into interrupt table
-    if (ignoreInterrupts && newPC < 0x60) 
+    if (ignoreInterrupts && newPC < global_p_device_def->vectors_end) 
 	return handleInterrupt();
 
     return true;

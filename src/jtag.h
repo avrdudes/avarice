@@ -32,6 +32,7 @@ typedef struct {
     unsigned int flash_page_count;     // Flash memory page count
     unsigned char eeprom_page_size;    // EEPROM page size in bytes
     unsigned int eeprom_page_count;    // EEPROM page count
+    unsigned int vectors_end;	       // End of interrupt vector table
 
     gdb_io_reg_def_type *io_reg_defs;
 
