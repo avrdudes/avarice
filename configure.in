@@ -33,6 +33,15 @@ fi
 
 AC_PROG_CXX
 
+## Some systems need "-lsocket -lnsl" when linking.
+##
+AC_SEARCH_LIBS(gethostbyname, nsl)
+AC_CHECK_FUNC(socket, , [
+    AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket", [
+        AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)
+    ], "$LIBS")
+])
+
 AC_OUTPUT(
 	scripts/Makefile
 	scripts/ice-gdb
