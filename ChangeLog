@@ -1,4 +1,9 @@
 2003-12-08  Theodore A. Roth  <troth@openavr.org>
+
+	* src/main.cc (usage): Fix host name and port spec to denote that
+	host name, not port, is the optional part of host:port. 
+
+2003-12-08  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Kolja Waschk <avus@ixo.de>]
 
 	* configure.ac (AC_INIT): Bump version.

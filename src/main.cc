@@ -92,7 +92,7 @@ static void initSocketAddress(struct sockaddr_in *name,
 static void usage(const char *progname)
 {
     fprintf(stderr,
-	    "Usage: %s [OPTION]... [<host-name>[:<port>]]\n\n", progname);
+	    "Usage: %s [OPTION]... [[HOST_NAME]:PORT]\n\n", progname);
     fprintf(stderr, "Options:\n");
     fprintf(stderr,
 	    "  -h, --help                  Print this message.\n");
@@ -142,8 +142,8 @@ static void usage(const char *progname)
             "  -P, --part <name>           Target device name (e.g."
             " atmega16)\n\n");
     fprintf(stderr,
-	    "<host-name> defaults to 0.0.0.0 (listen on any interface).\n"
-	    "\":<port>\" is required to put avarice into gdb server mode.\n\n");
+	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
+	    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
     fprintf(stderr,
 	    "e.g. %s --program --file test.bin --jtag /dev/ttyS0 :4242\n\n",
 	    progname);
