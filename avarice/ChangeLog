@@ -1,3 +1,14 @@
+2003-07-02  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Joerg Wunsch <joerg_wunsch@uriah.heep.sax.de>]
+
+	* configure.ac: Bump version.
+	* src/jtagprog.cc: SEC_ARCH_BIT_0 and SEC_THREAD_LOCAL are not
+	available on some older bfd libraries.
+	* src/main.cc: BSD always requires the inclusion of <sys/types.h>
+	before <sys/socket.h>.
+	(initSocketAddress): struct sockaddr_in in 4.4BSD contains some padding
+	at the end in a struct field named sin_zero which needs zero'ed out.
+
 2003-06-13  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Bump version.
@@ -40,10 +51,10 @@
 	this.]
 
 2003-05-04  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Alan Willis <willisa@erols.com>.]
 
 	* src/jtagprog.cc: Speed up programming the flash by skipping pages
 	that are all ones.
-	[Contributed by Alan Willis <willisa@erols.com>.]
 
 2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
 

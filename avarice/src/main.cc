@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <termios.h>
 #include <arpa/inet.h>
@@ -32,7 +33,6 @@
 #include <unistd.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
-#include <sys/types.h>
 
 #include "avarice.h"
 #include "remote.h"
@@ -75,6 +75,7 @@ static void initSocketAddress(struct sockaddr_in *name,
 {
     struct hostent *hostInfo;
 
+    memset(name, 0, sizeof(*name));
     name->sin_family = AF_INET;
     name->sin_port = htons(port);
     hostInfo = gethostbyname(hostname);

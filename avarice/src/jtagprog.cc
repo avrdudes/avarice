@@ -203,8 +203,12 @@ char *get_section_flags(asection *section)
     PF (SEC_CLINK, "CLINK");
     PF (SEC_SMALL_DATA, "SMALL_DATA");
     PF (SEC_SHARED, "SHARED");
+#ifdef SEC_ARCH_BIT_0
     PF (SEC_ARCH_BIT_0, "ARCH_BIT_0");
+#endif
+#ifdef SEC_THREAD_LOCAL
     PF (SEC_THREAD_LOCAL, "THREAD_LOCAL");
+#endif
     return flagstr;
 }
 
