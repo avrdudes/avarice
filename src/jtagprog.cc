@@ -316,13 +316,38 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype)
 
     while (addr <= image->last_address-1)
     {
+        bool emptyPage = true;
+
         // Must also convert address to gcc-hacked addr for jtagWrite
         debugOut("Writing page at addr 0x%.4lx size 0x%lx\n", 
                  addr, page_size);
-        check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr, 
-                        page_size,
-                        &image->image[addr]),
-              "Error writing to target");
+
+        // If the page is all ones (0xff) and memtype is flash, no need to
+        // write it since that is the value after an erase.
+
+        if (memtype == MEM_FLASH)
+        {
+            for (unsigned int idx=addr; idx < addr+page_size; idx++)
+            {
+                if (idx >= image->last_address)
+                    break;
+
+                if (image->image[idx] != 0xff)
+                {
+                    emptyPage = false;
+                    break;
+                }
+            }
+        }
+
+        if (!emptyPage)
+        {
+            check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr, 
+                            page_size,
+                            &image->image[addr]),
+                  "Error writing to target");
+        }
+
         addr += page_size;
     }
 

@@ -1,3 +1,9 @@
+2003-05-04  Theodore A. Roth  <troth@openavr.org>
+
+	* src/jtagprog.cc: Speed up programming the flash by skipping pages
+	that are all ones.
+	[Contributed by Alan Willis <willisa@erols.com>.]
+
 2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
 
 	* src/main.cc: Allow all programmer-operations (erase device,
