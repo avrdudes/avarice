@@ -122,6 +122,9 @@ static void usage(const char *progname)
 	    " specified with --file\n"
 	    "                              option.\n\n");
     fprintf(stderr,
+        "  -v, --verify                Verify program in device against image."
+        "\n\n");
+    fprintf(stderr,
 	    "  -e, --erase                 Erase target ONLY. AVaRICE"
 	    " then exits.\n\n");
     fprintf(stderr,

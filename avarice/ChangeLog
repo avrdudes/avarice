@@ -1,5 +1,14 @@
 2003-07-24  Theodore A. Roth  <troth@openavr.org>
 
+	* configure.ac: Bump version.
+	* src/jtagprog.cc (initImage): Fix off by one in for loop.
+	(jtag_create_image): Clean up for loop to use common idiom.
+	(jtag_flash_image): Clean up for loop to use common idiom.
+	When verifying, verify all bytes instead of bombing out at first error.
+	* src/main.cc (usage): Add info for verify option.
+
+2003-07-24  Theodore A. Roth  <troth@openavr.org>
+
 	* src/jtagprog.cc (jtag_create_image): Fix off by one error.
 
 2003-07-10  Theodore A. Roth  <troth@openavr.org>
