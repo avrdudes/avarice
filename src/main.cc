@@ -89,7 +89,6 @@ static void initSocketAddress(struct sockaddr_in *name,
     }
 }
 
-
 static void usage(const char *progname)
 {
     fprintf(stderr,
@@ -119,10 +118,11 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
     fprintf(stderr,
-            "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates with\n"
-            "                                the avr target device. This must be less than 1/4\n"
-            "                                of the frequency of the target. Valid values are\n"
-            "                                1MHz, 500KHz, 250KHz or 125KHz. (default: 1MHz)\n");
+            "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
+            "                                with the avr target device. This must be less\n"
+            "                                than 1/4 of the frequency of the target. Valid\n"
+            "                                values are 1MHz, 500KHz, 250KHz or 125KHz.\n"
+            "                                (default: 1MHz)\n");
     fprintf(stderr,
 	    "  -p, --program               Erase and program target.\n"
 	    "                                Binary filename must be specified with --file\n"
