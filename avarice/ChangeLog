@@ -1,3 +1,9 @@
+2003-09-25  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* doc/Makefile.am (EXTRA_DIST): Add the .txt files.
+	* doc/README.cygwin: New file, from Eric Weddington.
+
 2003-09-18  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
