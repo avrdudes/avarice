@@ -298,7 +298,7 @@ void disableProgramming(void);
 void eraseProgramMemory(void);
 
 /** Download an image contained in the specified file. */
-void downloadToTarget(const char* filename);
+void downloadToTarget(const char* filename, bool program, bool verify);
 
 // Running, single stepping, etc
 // -----------------------------

@@ -1,4 +1,12 @@
 2003-07-10  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom  <nilsst@omegav.ntnu.no>]
+
+	* src/jtag.h:
+	* src/jtagprog.cc:
+	* src/main.cc:
+	Add verification of program and data after downloading to device.
+
+2003-07-10  Theodore A. Roth  <troth@openavr.org>
 
 	* doc/todo.txt: Update todo list.
 
@@ -73,7 +81,8 @@
 	* src/jtagprog.cc: Speed up programming the flash by skipping pages
 	that are all ones.
 
-2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
+2003-05-04  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom  <nilsst@omegav.ntnu.no>]
 
 	* src/main.cc: Allow all programmer-operations (erase device,
 	write memory, write fuses, write lockbits) in one pass.
@@ -86,7 +95,8 @@
 	* src/jtagio.cc: When opening the jtagice device, give a more helpful 
 	failure message.
 
-2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
+2003-05-04  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom  <nilsst@omegav.ntnu.no>]
 
 	* src/jtag.h:
 	* src/jtagprog.cc:

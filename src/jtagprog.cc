@@ -66,16 +66,65 @@ const int BFDmemorySpaceOffset[] = {
     DATA_SPACE_ADDR_OFFSET,
 };
 
+typedef struct {
+    uchar val;
+    bool  used;
+} AVRMemoryByte;
+
 
 // Struct that holds the memory image. We read from file using BFD
 // into this struct, then pass the entire struct to the target writer.
 typedef struct {
-    uchar image[MAX_IMAGE_SIZE];
+    AVRMemoryByte image[MAX_IMAGE_SIZE];
     int last_address;
     int first_address;
     bool first_address_ok;
     bool has_data;
+    const char *name;
 } BFDimage;
+
+
+static void initImage(BFDimage *image)
+{
+    unsigned int i;
+    image->last_address = 0;
+    image->first_address = 0;
+    image->first_address_ok = false;
+    image->has_data = false;
+    for (i=0;i<=MAX_IMAGE_SIZE;i++)
+    {
+        image->image[i].val  = 0x00;
+        image->image[i].used = false;
+    }
+}
+
+
+static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
+                        BFDmemoryType memtype)
+{
+    bool emptyPage = true;
+
+    // Check if page is used
+    for (unsigned int idx=addr; idx<addr+size; idx++)
+    {
+        if (idx >= image->last_address)
+            break;
+        
+        // 1. If this address existed in input file, mark as ! empty.
+        // 2. If we are programming FLASH, and contents == 0xff, we need
+        //    not program (is 0xff after erase).
+        if (image->image[idx].used)
+        {
+            if (!((memtype == MEM_FLASH) &&
+                  (image->image[idx].val == 0xff)))
+            {
+                emptyPage = false;
+                break;
+            }
+        }
+    }
+    return emptyPage;
+}
 
 
 void enableProgramming(void)
@@ -177,42 +226,6 @@ static inline unsigned int page_addr(unsigned int addr, BFDmemoryType memtype)
 }
 
 
-// Return section flag string for bfd section. Useful for debugging.
-char *get_section_flags(asection *section)
-{
-    char *comma = "";
-    static char flagstr[255];
-    char *p = flagstr;
-#define PF(x, y) \
-  if (section->flags & x) { p += sprintf( p, "%s%s", comma, y); comma = ", "; }
-
-    PF (SEC_HAS_CONTENTS, "CONTENTS");
-    PF (SEC_ALLOC, "ALLOC");
-    PF (SEC_CONSTRUCTOR, "CONSTRUCTOR");
-    PF (SEC_LOAD, "LOAD");
-    PF (SEC_RELOC, "RELOC");
-    PF (SEC_READONLY, "READONLY");
-    PF (SEC_CODE, "CODE");
-    PF (SEC_DATA, "DATA");
-    PF (SEC_ROM, "ROM");
-    PF (SEC_DEBUGGING, "DEBUGGING");
-    PF (SEC_NEVER_LOAD, "NEVER_LOAD");
-    PF (SEC_EXCLUDE, "EXCLUDE");
-    PF (SEC_SORT_ENTRIES, "SORT_ENTRIES");
-    PF (SEC_BLOCK, "BLOCK");
-    PF (SEC_CLINK, "CLINK");
-    PF (SEC_SMALL_DATA, "SMALL_DATA");
-    PF (SEC_SHARED, "SHARED");
-#ifdef SEC_ARCH_BIT_0
-    PF (SEC_ARCH_BIT_0, "ARCH_BIT_0");
-#endif
-#ifdef SEC_THREAD_LOCAL
-    PF (SEC_THREAD_LOCAL, "THREAD_LOCAL");
-#endif
-    return flagstr;
-}
-
-
 // Get address of section.
 // We have two different scenarios (both with same result).
 //   1. vma == lma : Normal section
@@ -259,6 +272,8 @@ static void jtag_create_image(bfd *file, asection *section,
     const char *name;
     unsigned int addr;
     unsigned int size;
+    uchar buf[MAX_IMAGE_SIZE];
+    unsigned int c,i;
 
     // If section is empty (although unexpected) return
     if (! section)
@@ -272,8 +287,17 @@ static void jtag_create_image(bfd *file, asection *section,
     {
         debugOut("Getting section contents, addr=0x%lx size=0x%lx\n",
                  addr, size);
-        // Read entire section into image buffer, at correct byte address.
-        bfd_get_section_contents(file, section, &image->image[addr], 0, size);
+
+        // Read entire section into buffer, at correct byte address.
+        bfd_get_section_contents(file, section, buf, 0, size);
+
+        // Copy section into memory struct. Mark as used.
+        i=0;
+        for (c=addr; c<=addr+size; c++)
+        {
+            image->image[c].val = buf[i++];
+            image->image[c].used = true;
+        }
 
         // Remember last address in image
         if (addr+size > image->last_address)
@@ -291,26 +315,22 @@ static void jtag_create_image(bfd *file, asection *section,
         // Indicate image has data
         image->has_data = true;
     }
-    else
-    {
-        debugOut("%s Image create: No data for section %s (vma=0x%lx, "
-                 "lma=0x%lx , size=0x%lx, flags=%s).\n", 
-                 BFDmemoryTypeString[memtype], name, section->vma,
-                 section->lma, size, get_section_flags(section));
-    }
 }
 
 
-static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype)
+static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
+                             bool program, bool verify)
 {
     unsigned int page_size = get_page_size(memtype);
+    uchar buf[MAX_IMAGE_SIZE];
+    unsigned int i,c;
+    uchar *response = NULL;
+    bool emptyPage = true;
+    unsigned int addr;
 
     // It is possible to write EEPROM using three pages in one chunk.
     if (memtype == MEM_EEPROM)
-            page_size =0x0f;//*= 4;
-
-    // First address must start on page boundary.
-    unsigned int addr = page_addr(image->first_address, memtype);
+        page_size =0x0f;//*= 4;
 
     if (! image->has_data)
     {
@@ -318,53 +338,86 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype)
         exit(-1);
     }
 
-    while (addr <= image->last_address-1)
+    
+    if (program)
     {
-        bool emptyPage = true;
+        // First address must start on page boundary.
+        addr = page_addr(image->first_address, memtype);
 
-        // Must also convert address to gcc-hacked addr for jtagWrite
-        debugOut("Writing page at addr 0x%.4lx size 0x%lx\n", 
-                 addr, page_size);
-
-        // If the page is all ones (0xff) and memtype is flash, no need to
-        // write it since that is the value after an erase.
-
-        if (memtype == MEM_FLASH)
+        statusOut("Downloading %s image to target.", image->name);
+        statusFlush();
+    
+        while (addr <= image->last_address-1)
         {
-            for (unsigned int idx=addr; idx < addr+page_size; idx++)
+            if (!pageIsEmpty(image, addr, page_size, memtype))
             {
-                if (idx >= image->last_address)
-                    break;
-
-                if (image->image[idx] != 0xff)
-                {
-                    emptyPage = false;
-                    break;
-                }
+                // Must also convert address to gcc-hacked addr for jtagWrite
+                debugOut("Writing page at addr 0x%.4lx size 0x%lx\n", 
+                         addr, page_size);
+                
+                // Create raw data buffer
+                i=0;
+                for (c=addr; c<=addr+page_size; c++)
+                    buf[i++] = image->image[c].val;
+                
+                check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr, 
+                                page_size,
+                                buf),
+                      "Error writing to target");
+                // No need for statusOut here, since jtagWrite does it.
             }
+            
+            addr += page_size;
+
+            statusOut(".");
+            statusFlush();
         }
 
-        if (!emptyPage)
-        {
-            check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr, 
-                            page_size,
-                            &image->image[addr]),
-                  "Error writing to target");
-
-	    // Show progress.
-	    statusOut(".");
-	    statusFlush();
-        }
-
-        addr += page_size;
+        statusOut("\n");
+        statusFlush();
     }
 
-    statusOut("\n");
-    statusFlush();
+    if (verify)
+    {
+        // First address must start on page boundary.
+        addr = page_addr(image->first_address, memtype);
+
+        statusOut("\nVerifying %s", image->name);
+        statusFlush();
+
+        while (addr <= image->last_address-1)
+        {
+            // Must also convert address to gcc-hacked addr for jtagWrite
+            debugOut("Verifying page at addr 0x%.4lx size 0x%lx\n",
+                     addr, page_size);
+            
+            response = jtagRead(BFDmemorySpaceOffset[memtype] + addr,
+                                page_size);
+                
+            // Verify buffer, but only addresses in use.
+            i=0;
+            for (c=addr; c <= addr+page_size-1; c++)
+            {
+                if (image->image[c].used )
+                    check((image->image[c].val == response[i]),
+                          "Error verifying target addr %.4x.", c);
+                i+=1;
+            }
+            
+            addr += page_size;
+
+            statusOut(".");
+            statusFlush();
+        }
+        delete [] response;
+
+        statusOut("\n");
+        statusFlush();
+    }
 }
 
 
-void downloadToTarget(const char* filename)
+void downloadToTarget(const char* filename, bool program, bool verify)
 {
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.
@@ -378,18 +431,11 @@ void downloadToTarget(const char* filename)
 
     BFDimage flashimg, eepromimg;
 
-    flashimg.last_address = 0;
-    flashimg.first_address = 0;
-    flashimg.first_address_ok = false;
-    flashimg.has_data = false;
-    memset(flashimg.image, 0x00, MAX_IMAGE_SIZE);
+    initImage(&flashimg);
+    initImage(&eepromimg);
 
-    eepromimg.last_address = 0;
-    eepromimg.first_address = 0;
-    eepromimg.first_address_ok = false;
-    eepromimg.has_data = false;
-    memset(eepromimg.image, 0x00, MAX_IMAGE_SIZE);
-    
+    flashimg.name = BFDmemoryTypeString[MEM_FLASH];
+    eepromimg.name = BFDmemoryTypeString[MEM_EEPROM];
 
     unixCheck(stat(filename, &ifstat), "Can't stat() file %s", filename);
 
@@ -440,49 +486,25 @@ void downloadToTarget(const char* filename)
     setJtagParameter(JTAG_P_EEPROM_PAGESIZE,
                      get_page_size(MEM_EEPROM));
 
-    // First erase the flash
-    enableProgramming();
-    eraseProgramMemory();
-
-    // And then send down the new image.
-
-    statusOut("Downloading to target.");
-    statusFlush();
-    
     // Create RAM image by reading all sections in file
     p = file->sections;
-    while( p )
+    while (p)
     {
         jtag_create_image(file, p, &flashimg, MEM_FLASH);
         jtag_create_image(file, p, &eepromimg, MEM_EEPROM);
         p = p->next;
     }
+    
+    // First erase the flash if programming
+    enableProgramming();
+    if (program)
+        eraseProgramMemory();
 
-#ifdef DEBUG_IMAGE
-    debugOut("DEBUG_IMAGE\n");
-    // Debug: Create file with raw dump of image
-    FILE *fh = fopen( "image.txt", "w");
-    int c = 0;
-    int d=0;
-    fprintf(fh, "%.4lx: ", c);
-    while (c<eepromimg.last_address)
-    {
-        fprintf(fh, "%.2x ", eepromimg.image[c++]);
-        if (d++==20)
-        {
-            fprintf(fh, "\n");
-            fprintf(fh, "%.4lx: ", c);
-            d=0;
-        }
-    }
-    fclose(fh);
-#endif
-
-    // Write the complete RAM image to the device.
+    // Write the complete FLASH/EEPROM images to the device.
     if (flashimg.has_data)
-        jtag_flash_image(&flashimg, MEM_FLASH);
+        jtag_flash_image(&flashimg, MEM_FLASH, program, verify);
     if (eepromimg.has_data)
-        jtag_flash_image(&eepromimg, MEM_EEPROM);
+        jtag_flash_image(&eepromimg, MEM_EEPROM, program, verify);
     
     disableProgramming();
 
