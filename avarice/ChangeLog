@@ -1,3 +1,10 @@
+2003-06-13  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Bump version.
+	* src/jtagio.cc: Set JTAG_P_CLOCK param to 0xff instead of 0xfd to
+	speed things up a little bit.
+	* src/remote.cc: Remove a debug output statement.
+
 2003-06-12  Theodore A. Roth  <troth@openavr.org>
 
 	* doc/todo.txt: Remove some items that have been fixed or are now
