@@ -317,7 +317,11 @@ void initJtagPort(char *jtagDeviceName)
     atexit(restoreSerialPort);
 
     memset(&newtio, 0, sizeof(newtio));
-    newtio.c_cflag = B19200 | CS8 | CLOCAL | CREAD;
+    newtio.c_cflag = CS8 | CLOCAL | CREAD;
+
+    // set baud rates in a platform-independent manner
+    jtagCheck(cfsetospeed(&newtio, B19200));
+    jtagCheck(cfsetispeed(&newtio, B19200));
 
     // IGNPAR  : ignore bytes with parity errors
     //           otherwise make device raw (no other input processing)
