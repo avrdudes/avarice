@@ -429,7 +429,7 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
            (according to the linux man page), it seems that errno can be set
            to EAGAIN on some cygwin systems. Thus, we need to catch that
            here. */
-        if ((selected < 0) && (errno == EAGAIN))
+        if ((selected < 0) && (errno == EAGAIN || errno == EINTR))
             continue;
 	jtagCheck(selected);
 
@@ -445,6 +445,33 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
     }
 
     return count;
+}
+
+static int safewrite(int fd, const void *b, int count)
+{
+  char *buffer = (char *)b;
+  int actual = 0;
+  int flags = fcntl(fd, F_GETFL);
+
+  fcntl(fd, F_SETFL, 0); // blocking mode
+  while (count > 0)
+    {
+      int n = write(fd, buffer, count);
+
+      if (n == -1 && errno == EINTR)
+	continue;
+      if (n == -1)
+	{
+	  actual = -1;
+	  break;
+	}
+
+      count -= n;
+      actual += n;
+      buffer += n;
+    }
+  fcntl(fd, F_SETFL, flags); 
+  return actual;
 }
 
 unsigned long decodeAddress(uchar *buf)
@@ -482,10 +509,10 @@ static bool sendJtagCommand(uchar *command, int commandSize, int *tries)
     // before writing, clean up any "unfinished business".
     jtagCheck(tcflush(jtagBox, TCIFLUSH));
 
-    int count = write(jtagBox, command, commandSize);
+    int count = safewrite(jtagBox, command, commandSize);
     if (count < 0)
       jtagCheck(count);
-    else // this shouldn't happen?
+    else // this shouldn't happen
       check(count == commandSize, JTAG_CAUSE);
 
     // And wait for all characters to go to the JTAG box.... can't hurt!
