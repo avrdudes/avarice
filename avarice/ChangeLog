@@ -1,4 +1,8 @@
 2003-07-10  Theodore A. Roth  <troth@openavr.org>
+
+	* doc/todo.txt: Update todo list.
+
+2003-07-10  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Joerg Wunsch <joerg_wunsch@uriah.heep.sax.de>]
 
 	* configure.ac: Bump version.

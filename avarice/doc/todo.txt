@@ -33,27 +33,25 @@ If you do like to dabble:
 
 - Porting to other platforms.
 
-- Add a --quit option. Then modify the --program and --erase options to
-  NOT quit immediately aftwards (as it currently does). This would allow
-  users to combine --quit with either of these so that AVaRICE would
-  function as a simple device programmer. Alternatively, the user could
-  simply choose the --erase option by itself without the --file. It is
-  assumed that GDB would then download the image with 'W' or 'X' GDB
-  debug protocol commands (which are sent when the GDB "load" command is
-  entered).
-
 - Add support for watches (ie data space breakpoints).
 
 - Fix program space read (ie GDB 'm' command) handling to work correctly
   with odd length reads.
 
-- Add support for setting chip configuration fuses.
-  [This very useful feature was John Wood's idea and he is working on
-  this one. Contact John (via the mailing list) if you would like to
-  lend a hand.]
-
 - Add command line option for setting the JTAG Clock speed. This speed could
   speed thing up a bit.
+
+- Test various supported devices. Most work is done with mega128, we need 
+  confirmation that other devices work successfully.
+
+- Need to add io register definitions for the following devices (this is
+  pretty easy, mindless work, just tedious):
+    mega162
+    mega169
+    mega323
+    mega32
+    mega64
+    mega128
 
 - Many many other things!
 
@@ -62,6 +60,8 @@ If coding or porting isn't your thing, you can still help in a big way....
 Protocol:
     Atmel have chosen not to publish an official document on the
     protocol. Any mark-ups to doc/avrIceProtocol.txt would be invaluable!
+    [Atmel has now published the protocol in appnote AVR060. It's a rather
+    confusing document.]
 
 Auto Testing:
     One of the major advantages of Aegis (ie test suite support) is
