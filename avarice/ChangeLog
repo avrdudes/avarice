@@ -1,3 +1,11 @@
+2003-11-08  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/jtagio.cc (initJtagBox): Inform user about the lock bits and
+	fuses that actually *are* programmed, not the ones that were found in
+	the device.
+
 2003-11-01  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.

@@ -808,39 +808,45 @@ void initJtagBox(bool attach, uchar bitrate)
 	// Ensure that all lock bits are "unlocked" ie all 1's
 	uchar *lockBits = 0;
 	lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
-	statusOut("LockBits -> 0x%02x\n", *lockBits);
-
-	uchar *fuseBits = 0;
-	statusOut("\nReading Fuse Bytes:\n");
-	fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-	statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
-	statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
-	statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
-
-	// Set JTAG bitrate
-	setJtagParameter(JTAG_P_CLOCK, bitrate);
 
 	if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
 	{
-	    uchar newValue = LOCK_BITS_ALL_UNLOCKED;
-	    jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, &newValue);
+	    lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
+	    jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
 	}
+
+        statusOut("\nDisabling lock bits:\n");
+        statusOut("  LockBits -> 0x%02x\n", *lockBits);
+
 	if (lockBits)
 	{
 	    delete [] lockBits;
 	    lockBits = 0;
 	}
 
+        // Ensure on-chip debug enable fuse is enabled ie '0'
+        uchar *fuseBits = 0;
+        statusOut("\nEnabling on-chip debugging:\n");
+        fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+
 	if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
 	{
-	    uchar newValue = fuseBits[1] & ~FUSE_OCDEN; // clear bit
-	    jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &newValue);
+            fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
+            jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
 	}
+
+        statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
+        statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
+        statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
+
 	if (fuseBits)
 	{
 	    delete [] fuseBits;
 	    fuseBits = 0;
 	}
+
+        // Set JTAG bitrate
+        setJtagParameter(JTAG_P_CLOCK, bitrate);
 
 	disableProgramming();
 
