@@ -1,3 +1,11 @@
+2003-12-12  Theodore A. Roth  <troth@openavr.org>
+
+	* Release version 2.2.
+
+2003-12-12  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Set version to 2.2.
+
 2003-12-08  Theodore A. Roth  <troth@openavr.org>
 
 	* src/main.cc (usage): Fix host name and port spec to denote that
