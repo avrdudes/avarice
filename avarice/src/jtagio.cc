@@ -644,18 +644,13 @@ static void deviceAutoConfig(void)
     debugOut("Automatic device detection: ");
    
     /* Read in the JTAG device ID to determine device */
-    device_id = getJtagParameter(JTAG_P_JTAGID_BYTE0) +
-        (getJtagParameter(JTAG_P_JTAGID_BYTE1) <<  8) +
-        (getJtagParameter(JTAG_P_JTAGID_BYTE2) << 16) + 
-        (getJtagParameter(JTAG_P_JTAGID_BYTE3) << 24);
-
-    /* Without this, subsequent reads (and who knows what else?) fail
-       (Note that this only shows up with --capture. Without --capture
-       there's a resetProgram anyway).
-       Note also that only the read of parameter JTAG_P_JTAGID_BYTE0
-       causes the problem, the other 3 JTAG id bytes can be read without
-       causing surprises... */
+    device_id = getJtagParameter(JTAG_P_JTAGID_BYTE0);
+    /* Reading the first byte resumes the program (weird, no?) */
     interruptProgram();
+    device_id += (getJtagParameter(JTAG_P_JTAGID_BYTE1) <<  8) +
+      (getJtagParameter(JTAG_P_JTAGID_BYTE2) << 16) + 
+      (getJtagParameter(JTAG_P_JTAGID_BYTE3) << 24);
+
    
     debugOut("JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n", 
              device_id,
