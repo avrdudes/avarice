@@ -1,3 +1,12 @@
+2003-03-25  Theodore A. Roth  <troth@openavr.org>
+[Contributed by James Harris <James.Harris@codan.com.au>]
+
+	* src/jtag.h: Add jtag_device_def_type structure.
+	Add various missing jtag values.
+	* src/jtagio.cc: Add auto detection and configuration of target device.
+	Always report jtag box hw and sw versions.
+	* src/main.cc: Add --part command line option.
+
 2003-03-17  Theodore A. Roth  <troth@openavr.org>
 
 	* Bootstrap: Add "-a -c" to second call to automake so depcomp will be

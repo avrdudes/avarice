@@ -22,6 +22,20 @@
 #ifndef JTAG_H
 #define JTAG_H
 
+typedef struct {
+    const char* name;
+    const unsigned int device_id;      // Part Number from JTAG Device 
+                                       // Identification Register
+    unsigned int flash_page_size;      // Flash memory page size in bytes
+    unsigned int flash_page_count;     // Flash memory page count
+    unsigned char eeprom_page_size;    // EEPROM page size in bytes
+    unsigned int eeprom_page_count;    // EEPROM page count
+
+    unsigned char dev_desc[126]; // Device descriptor to download to device
+} jtag_device_def_type;
+
+extern jtag_device_def_type *global_p_device_def;
+
 // various enums
 enum
 {
@@ -108,7 +122,15 @@ enum
     JTAG_P_BITRATE		      = 'b',
     JTAG_P_SW_VERSION		      = 0x7b,
     JTAG_P_HW_VERSION		      = 0x7a,
+    JTAG_P_IREG_HIGH                  = 0x81,
+    JTAG_P_IREG_LOW                   = 0x82,
+    JTAG_P_OCD_VTARGET                = 0x84,
+    JTAG_P_OCD_BREAK_CAUSE            = 0x85,
     JTAG_P_CLOCK		      = 0x86,
+    JTAG_P_EXTERNAL_RESET             = 0x8b, /* W */
+    JTAG_P_FLASH_PAGESIZE_LOW         = 0x88, /* W */
+    JTAG_P_FLASH_PAGESIZE_HIGH        = 0x89, /* W */
+    JTAG_P_EEPROM_PAGESIZE            = 0x8a, /* W */
     JTAG_P_TIMERS_RUNNING	      = 0xa0,
     JTAG_P_BP_FLOW		      = 0xa1,
     JTAG_P_BP_X_HIGH		      = 0xa2,
@@ -116,6 +138,19 @@ enum
     JTAG_P_BP_Y_HIGH		      = 0xa4,
     JTAG_P_BP_Y_LOW		      = 0xa5,
     JTAG_P_BP_MODE		      = 0xa6,
+    JTAG_P_JTAGID_BYTE0               = 0xa7, /* R */
+    JTAG_P_JTAGID_BYTE1               = 0xa8, /* R */
+    JTAG_P_JTAGID_BYTE2               = 0xa9, /* R */
+    JTAG_P_JTAGID_BYTE3               = 0xaa, /* R */
+    JTAG_P_UNITS_BEFORE               = 0xab, /* W */
+    JTAG_P_UNITS_AFTER                = 0xac, /* W */
+    JTAG_P_BIT_BEFORE                 = 0xad, /* W */
+    JTAG_P_BIT_AFTER                  = 0xae, /* W */
+    JTAG_P_PSB0_LOW                   = 0xaf, /* W */
+    JTAG_P_PSBO_HIGH                  = 0xb0, /* W */
+    JTAG_P_PSB1_LOW                   = 0xb1, /* W */
+    JTAG_P_PSB1_HIGH                  = 0xb2, /* W */
+    JTAG_P_MCU_MODE                   = 0xb3, /* R */
 
     // JTAG commands
     JTAG_C_SET_DEVICE_DESCRIPTOR      = 0xA0,
@@ -155,6 +190,9 @@ extern int jtagBox;
 // Whether we are in "programming mode" (changes how program memory
 // is written, apparently)
 extern bool programmingEnabled;
+
+// Name of the device controlled by the JTAG ICE
+extern char *device_name;
 
 // Basic JTAG I/O
 // -------------
