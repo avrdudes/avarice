@@ -356,6 +356,15 @@ int main(int argc, char **argv)
     // Init JTAG box.
     initJtagBox();
 
+    if (erase)
+    {
+        enableProgramming();
+	statusOut("Erasing program memory.\n");
+	eraseProgramMemory();
+	statusOut("Erase complete.\n");
+        disableProgramming();
+    }
+
     if (readFuses)
     {
         jtagReadFuses();
@@ -378,15 +387,6 @@ int main(int argc, char **argv)
     //     this.
     if( gdbServerMode && ( ! capture ) )
         initJtagOnChipDebugging(jtagBitrate);
-
-    if (erase)
-    {
-        enableProgramming();
-	statusOut("Erasing program memory.\n");
-	eraseProgramMemory();
-	statusOut("Erase complete.\n");
-        disableProgramming();
-    }
 
     if (inFileName != (char *)0)
     {
