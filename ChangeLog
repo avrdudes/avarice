@@ -1,3 +1,12 @@
+2004-12-06  Theodore A. Roth  <troth@openavr.org>
+
+	* Release version 2.3.
+
+2004-12-06  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Set version to 2.3.
+	* configure.ac: Add more lib checks which might be need for libbfd.
+
 2004-11-25  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
