@@ -1,3 +1,10 @@
+2003-06-12  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Bump version.
+	* src/remote.cc: Remove call to interruptProgram() when handling a 'g'
+	packet. This was accidently committed and should not have been since
+	it causes the jtagice box to corrupt the program counter. Not good.
+
 2003-06-11  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Bump version.
