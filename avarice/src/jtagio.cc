@@ -29,6 +29,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 
 #include "avarice.h"
 #include "jtag.h"
@@ -422,12 +423,20 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
 	tmout.tv_usec = timeout % 1000000;
 
 	int selected = select(fd + 1, &readfds, NULL, NULL, &tmout);
+        /* Even though select() is not supposed to set errno to EAGAIN
+           (according to the linux man page), it seems that errno can be set
+           to EAGAIN on some cygwin systems. Thus, we need to catch that
+           here. */
+        if ((selected < 0) && (errno == EAGAIN))
+            continue;
 	jtagCheck(selected);
 
 	if (selected == 0)
 	    return actual;
 
 	ssize_t thisread = read(fd, &buffer[actual], count - actual);
+        if ((thisread < 0) && (errno == EAGAIN))
+            continue;
 	jtagCheck(thisread);
 
 	actual += thisread;

@@ -156,7 +156,11 @@ bool jtagContinue(bool setCodeBreakpoints)
 	// info sent by the program (currently ignored, could be used
 	// for something...)
 	uchar response;
-	while (read(jtagBox, &response, 1) == 1)
+
+        // This read shouldn't need to be a timeout_read(), but some cygwin
+        // systems don't seem to honor the O_NONBLOCK flag on file
+        // descriptors.
+	while (timeout_read(jtagBox, &response, 1, 1) == 1)
 	{
 	    uchar buf[2];
 	    int count;

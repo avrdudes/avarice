@@ -24,6 +24,9 @@
 #ifndef _GNU_GETOPT_H
 #define _GNU_GETOPT_H 1
 
+#ifndef __GETOPT_LONG_H__
+#define __GETOPT_LONG_H__ 1
+
 /* We only use getopt_long(), not getopt(), so we don't need a fully
    prototyped declaration of getopt(). This forces the prototype for getopt()
    to be compatible with all systems. Solaris in particular seems to have a
@@ -148,4 +151,5 @@ extern int _getopt_internal ();
 }
 #endif
 
+#endif /* __GETOPT_LONG_H__ */
 #endif /* gnu_getopt.h */
