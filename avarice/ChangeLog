@@ -1,4 +1,8 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.in: Add checks for libsocket and libnsl.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
 [Contributed by James Harris <James.Harris@codan.com.au>]
 
 	* src/jtag.h: Lengthen JTAG_RESPONSE_TIMEOUT so slower systems have
