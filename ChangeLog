@@ -1,3 +1,8 @@
+2003-03-17  Theodore A. Roth  <troth@openavr.org>
+
+	* Bootstrap: Add "-a -c" to second call to automake so depcomp will be
+	installed if it is missing.
+
 2003-02-28  Theodore A. Roth  <troth@openavr.org>
 
 	* AUTHORS: New file.

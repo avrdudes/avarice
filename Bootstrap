@@ -23,7 +23,7 @@ set -x
     ${ACLOCAL}
     ${AUTOHEADER}
     ${AUTOCONF}
-    ${AUTOMAKE}
+    ${AUTOMAKE} -a -c
     cd ..
 )
 rm -f config.cache src/config.cache
