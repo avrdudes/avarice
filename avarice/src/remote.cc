@@ -683,7 +683,10 @@ void talkToGdb(void)
             jtagBuffer = 0;
         }
         else
+        {
             error (1);
+            break;
+        }
 
         // Read in SPL SPH SREG
         jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
@@ -707,7 +710,10 @@ void talkToGdb(void)
             jtagBuffer = 0;
         }
         else
+        {
             error (1);
+            break;
+        }
 
         // PC
         newPC = getProgramCounter();
