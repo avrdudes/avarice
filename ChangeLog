@@ -1,3 +1,10 @@
+2003-04-01  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Jake McGuire <jake@boom.net>]
+
+	* configure.in: Bump version.
+	* src/jtagio.cc: Don't set serial speed by changing termios structure
+	since this breaks on OS X. Use cfsetospeed() and cfsetispeed().
+
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.in: Add checks for libsocket and libnsl.
