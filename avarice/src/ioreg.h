@@ -1,6 +1,6 @@
 /*
  *	avarice - The "avarice" program.
- *	Copyright (C) 2003 James Harris
+ *	Copyright (C) 2003, 2004 James Harris
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -16,7 +16,9 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains IO Register definitions for use with avr-gdb's 'info
- * io_regsiter' command.
+ * io_register' command.
+ *
+ * $Id$
  */
 
 #ifndef INCLUDE_IOREG_H
@@ -31,5 +33,6 @@ typedef struct {
 } gdb_io_reg_def_type;
 
 extern gdb_io_reg_def_type atmega16_io_registers[];
+extern gdb_io_reg_def_type atmega169_io_registers[];
 
 #endif /* INCLUDE_IOREG_H */

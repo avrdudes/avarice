@@ -1,7 +1,7 @@
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
- *      Copyright (C) 2002 Intel Corporation
+ *      Copyright (C) 2002, 2003, 2004 Intel Corporation
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +17,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -121,7 +123,7 @@ jtag_device_def_type deviceDefinitions[] = {
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
         0x5c,        // 23 interrupt vectors
-        NULL,        // io reg defs not defined yet
+        atmega169_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xBB, 0xE0 }, 
