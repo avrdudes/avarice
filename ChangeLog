@@ -1,17 +1,22 @@
 2003-09-18  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* avarice.spec.in: Add man pages.
+
+2003-09-18  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Amedee Louis Beaudoin <deoxy@u.washington.edu>]
 
 	* src/jtagrw.cc (jtagWriteFuses): Enter programming mode before writing
 	and exit program mode after reading.
 	(jtagWriteLockBits): Ditto.
 
-2003-08-25    <dgay@barnowl.research.intel-research.net>
+2003-08-25  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* configure.ac: bump version
 	* src/jtagprog.cc: work around cygwin gcc (3.2.3) bug with
-	  large stack allocated locals by making them static
+	large stack allocated locals by making them static
 
-2003-08-21    <dgay@barnowl.research.intel-research.net>
+2003-08-21  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* doc/ice-insight.1: new file, ice-insight man page
 	* doc/ice-gdb.1: new file, ice-gdb man page
