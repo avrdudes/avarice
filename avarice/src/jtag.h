@@ -44,16 +44,17 @@ extern jtag_device_def_type *global_p_device_def;
 enum
 {
     // Address space selector values
-    ADDR_PROG_SPACE_PROG_ENABLED      = 0xb0,
-    ADDR_PROG_SPACE_PROG_DISABLED     = 0xa0,
+    ADDR_PROG_SPACE_PROG_ENABLED      = 0xB0,
+    ADDR_PROG_SPACE_PROG_DISABLED     = 0xA0,
     ADDR_DATA_SPACE                   = 0x20,
-    ADDR_EEPROM_SPACE                 = 0x22,
+    ADDR_EEPROM_SPACE                 = 0xB1,
     ADDR_FUSE_SPACE                   = 0xB2,
     ADDR_LOCK_SPACE                   = 0xB3,
     ADDR_SIG_SPACE                    = 0xB4,
     ADDR_BREAKPOINT_SPACE             = 0x60,
 
     // Address space offsets
+    FLASH_SPACE_ADDR_OFFSET           = 0x000000,
     DATA_SPACE_ADDR_OFFSET            = 0x800000,
 
     EEPROM_SPACE_ADDR_OFFSET          = 0x810000,

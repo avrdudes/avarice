@@ -165,6 +165,8 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	return true;
 
     debugOut("jtagWrite ");
+    statusOut(".");
+    statusFlush();
     whichSpace = memorySpace(&addr);
 
     if (whichSpace)
@@ -174,8 +176,12 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	// Writing program memory, which is word (16-bit) addressed
 
 	// We don't handle odd lengths or start addresses
-	if ((numBytes & 1) || (addr & 1))
+	if ((addr & 1))
 	    return false;
+
+        // Odd length: Write one more byte.
+        if ((numBytes & 1))
+                numBytes+=1;
 
 	addr /= 2;
 	numLocations = numBytes / 2;
