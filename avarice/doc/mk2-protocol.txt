@@ -1,0 +1,45 @@
+##
+## $Id$
+##
+## Contrubuted by Colin O'Flynn <coflynn@newae.com>
+##
+
+Get Voltages
+
+1B aa 00 02 00 00 00 0E 03 06 bb cc
+aa seems to increase after each command
+
+
+General Command Syntax
+
+[Sync Byte] [Message Count] [Data] [Checksum LSB] [Checksum MSB]
+
+Sync Byte: 1B
+
+Message Count: Computer increments this every time it sends a message, JTAG responds
+with same value that was sent to it.
+
+Checkmsum: CRC16,
+"initial: 0xFFFF
+poly: 0x1021
+mode: reflect input, reflect remainder
+The CRC is calculated over all bytes(including 0x1B), byte order is LSB, MSB"
+^^ Thanks to "springbob" on AVRFreaks for this!
+
+
+--------DATA SENT TO JTAG-----------
+
+COMMANDS
+00 01 00 00 00 0E 01: Sync
+
+00 01 00 00 00 0E 13: Erase Device
+00 01 00 00 00 0E 14: Enter Programming Mode
+00 01 00 00 00 0E 15: Leave Programming Mode
+
+--------RESPONSES FROM JTAG---------
+
+00 1C 00 00 00 0E 86 01 FF s1L s1h 00 FF s2L s2H 00 00: Sync response including versin info
+
+
+
+00 01 00 00 00 0E 80: OK
