@@ -1,7 +1,7 @@
 .ig
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
-Copyright (C) 2003 Theodore A. Roth
+Copyright (C) 2003, 2004 Theodore A. Roth
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -21,7 +21,7 @@ the original English.
 $Id$
 
 ..
-.TH avarice 1 "December 6, 2003"
+.TH avarice 1 "February 6, 2004"
 .LO 1
 .SH NAME
 avarice \- Provides an interface from avr-gdb to Atmel's JTAGICE box.
@@ -130,11 +130,15 @@ must currently be given.
 NOTE: Current, if the target device doesn't have an extended fuse byte
 (e.g. the atmega16), the you should set ee==ll when writing the fuse bytes.
 .TP
+.BR \-l ,\  \-\-read-lockbits
+Read the lock bits from the target. The individual bits are also displayed
+with names.
+.TP
 .BR \-L ,\  \-\-write-lockbits \ <ll>
 Write lock bits. The lock byte data must be given in two digit hexidecimal
 format with zero padding if needed.
 .TP
-.BR \-P ,\  \-\-part <name>
+.BR \-P ,\  \-\-part \ <name>
 Target device name (e.g. atmega16)
 .PP
 \fIHOST_NAME\fR defaults to 0.0.0.0 (listen on any interface) if not given.

@@ -1,11 +1,11 @@
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
- *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2002, 2003, 2004 Intel Corporation
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
- *      as published by the Free Software Foundation.
+ *	as published by the Free Software Foundation.
  *
  *
  *	This program is distributed in the hope that it will be useful,
@@ -137,6 +137,8 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
+            "  -l, --read-lockbits         Read lock bits.\n");
+    fprintf(stderr,
             "  -L, --write-lockbits <ll>   Write lock bits.\n");
     fprintf(stderr,
             "  -P, --part <name>           Target device name (e.g."
@@ -160,6 +162,7 @@ static struct option long_opts[] = {
     { "erase",               0,       0,     'e' },
     { "read-fuses",          0,       0,     'r' },
     { "write-fuses",         1,       0,     'W' },
+    { "read-lockbits",       0,       0,     'l' },
     { "write-lockbits",      1,       0,     'L' },
     { "part",                1,       0,     'P' },
     { "jtag",                1,       0,     'j' },
@@ -186,6 +189,7 @@ int main(int argc, char **argv)
     bool readFuses = false;
     bool writeFuses = false;
     char *fuses;
+    bool readLockBits = false;
     bool writeLockBits = false;
     bool gdbServerMode = false;
     char *lockBits;
@@ -204,7 +208,7 @@ int main(int argc, char **argv)
     
     while (1)
     {
-        int c = getopt_long (argc, argv, "VhdDCIf:j:B:pverW:L:P:",
+        int c = getopt_long (argc, argv, "VhdDCIf:j:B:pverW:lL:P:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -261,6 +265,9 @@ int main(int argc, char **argv)
             case 'W':
                 fuses = optarg;
                 writeFuses = true;
+                break;
+            case 'l':
+                readLockBits = true;
                 break;
             case 'L':
                 lockBits = optarg;
@@ -352,6 +359,11 @@ int main(int argc, char **argv)
     if (readFuses)
     {
         jtagReadFuses();
+    }
+
+    if (readLockBits)
+    {
+        jtagReadLockBits();
     }
 
     if (writeFuses)

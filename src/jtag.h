@@ -1,11 +1,11 @@
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
- *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2002, 2003, 2004 Intel Corporation
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
- *      as published by the Free Software Foundation.
+ *	as published by the Free Software Foundation.
  *
  *	This program is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -446,5 +446,18 @@ void jtagDisplayFuses(uchar *fuseBits);
     printf("%x", 0xaa);
 **/
 void jtagWriteLockBits(char *lock);
+
+
+/** Read the lock bits from the target and display them.
+**/
+void jtagReadLockBits(void);
+
+
+/** Display lockbits.
+
+    Shows raw value and individual bits.
+**/
+void jtagDisplayLockBits(uchar *lockBits);
+
 
 #endif
