@@ -145,14 +145,14 @@ int main(int argc, char **argv)
     char *jtagDeviceName = "/dev/avrjtag";
     char *hostName = 0;
     int  hostPortNumber = 0;
-    bool eraseAndQuitOnly = false;
-    bool programAndQuitOnly = false;
-    bool readFusesAndQuitOnly = false;
-    bool writeFusesAndQuitOnly = false;
+    bool erase = false;
+    bool program = false;
+    bool readFuses = false;
+    bool writeFuses = false;
     char *fuses;
-    bool writeLockBitsAndQuitOnly = false;
+    bool writeLockBits = false;
+    bool noGdbInteraction = false;
     char *lockBits;
-    bool needHostName = true;
     bool detach = false;
     bool capture = false;
 
@@ -200,32 +200,32 @@ int main(int argc, char **argv)
 	    else if ((0 == strcmp("--program", argv[j])) ||
 		     (0 == strcmp("-p", argv[j])))
 	    {
-		programAndQuitOnly = true;
-                needHostName = false;
+		program = true;
+                noGdbInteraction = true;
 	    }
 	    else if ((0 == strcmp("--erase", argv[j])) ||
 		     (0 == strcmp("-e", argv[j])))
 	    {
-		eraseAndQuitOnly = true;
-                needHostName = false;
+		erase = true;
+                noGdbInteraction = true;
 	    }
 	    else if ((0 == strcmp("--read-fuses", argv[j])) ||
 		     (0 == strcmp("-r", argv[j])))
             {
-                readFusesAndQuitOnly = true;
-                needHostName = false;
+                readFuses = true;
+                noGdbInteraction = true;
             }
             else if (0 == strcmp("--write-fuses", argv[j]))
             {
                 fuses = argv[++j];
-                writeFusesAndQuitOnly = true;
-                needHostName = false;
+                writeFuses = true;
+                noGdbInteraction = true;
             }
             else if (0 == strcmp("--write-lockbits", argv[j]))
             {
                 lockBits = argv[++j];
-                writeLockBitsAndQuitOnly = true;
-                needHostName = false;
+                writeLockBits = true;
+                noGdbInteraction = true;
             }
             else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
             {
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (needHostName && (!hostName || hostPortNumber <= 0))
+    if ((noGdbInteraction == false) && (!hostName || hostPortNumber <= 0))
     {
 	usage(argv[0]);
     }
@@ -263,52 +263,41 @@ int main(int argc, char **argv)
 
     initJtagBox(capture);
 
-    if (eraseAndQuitOnly)
+    // Enable programming mode and quit for operations that don't interact
+    // with gdb.
+    if (noGdbInteraction)
+        enableProgramming();
+
+    if (erase)
     {
 	statusOut("Erasing program memory.\n");
-	enableProgramming();
 	eraseProgramMemory();
-	disableProgramming();
 	statusOut("Erase complete.\n");
-
-	exit(0); // All done. Bye now!
     }
 
-    if (readFusesAndQuitOnly)
-    {
-	exit(0); // All done. Bye now!
-    }
-
-    if (writeFusesAndQuitOnly)
-    {
-        enableProgramming();
+    if (writeFuses)
         jtagWriteFuses(fuses);
-        disableProgramming();
 
-        exit(0); // All done. Bye now!
-    }
-    if (writeLockBitsAndQuitOnly)
-    {
-        enableProgramming();
+    if (writeLockBits)
         jtagWriteLockBits(lockBits);
-        disableProgramming();
 
-        exit(0); // All done. Bye now!
-    }
     if (inFileName != (char *)0)
     {
-	downloadToTarget(inFileName);
-	if (programAndQuitOnly)
-	{
-	    exit(0); // All done. Tschuss!
-	}
-	resetProgram();
+        downloadToTarget(inFileName);
     }
     else
     {
-	check(!programAndQuitOnly,
+	check(!program,
 	      "\nERROR: Filename not specified."
 	      " --program must be used with --file option.\n");
+    }
+
+    // Disable programming mode and quit for operations that don't interact
+    // with gdb.
+    if (noGdbInteraction)
+    {
+        disableProgramming();
+        exit(0); // All done. Bye now!
     }
 
     initSocketAddress(&name, hostName, hostPortNumber);
