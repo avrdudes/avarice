@@ -441,7 +441,7 @@ bool handleInterrupt(void)
 	if (needBP)
 	    deleteBreakpoint(retPC, CODE, 0);
 
-	if (!result) // user interrupt
+	if (!result || !needBP) // user interrupt or hit user BP at retPC
 	    break;
 
 	// We check that SP is > intrSP. If SP <= intrSP, this is just
@@ -469,7 +469,8 @@ static bool stepThrough(int start, int end)
 	}
 	else
 	{
-	    jtagSingleStep();
+	    if (!jtagSingleStep())
+		gdbOut("Failed to single-step");
 
 	    int gdbIn = checkForDebugChar();
 	    if (gdbIn >= 0)
@@ -496,6 +497,21 @@ static bool stepThrough(int start, int end)
 		return true;
 	}
     }
+}
+
+static bool singleStep()
+{
+    if (!jtagSingleStep())
+	gdbOut("Failed to single-step");
+
+    int newPC = getProgramCounter();
+    if (codeBreakpointAt(newPC))
+	return true;
+    // assume interrupt when PC goes into interrupt table
+    if (ignoreInterrupts && newPC < 0x60) 
+	return handleInterrupt();
+
+    return true;
 }
 
 /** Read packet from gdb into remcomInBuffer, check checksum and confirm
@@ -619,6 +635,20 @@ static void error(int n)
     *ptr++ = 'E';
     ptr = byteToHex(n, ptr);
     *ptr = '\0';
+}
+
+static void repStatus(bool breaktime)
+{
+    if (breaktime)
+	reportStatusExtended(SIGTRAP);
+    else
+    {
+	// A breakpoint did not occur. Assume that GDB sent a break.
+	// Halt the target.
+	interruptProgram();
+	// Report this as a user interrupt
+	reportStatusExtended(SIGINT);
+    }
 }
 
 
@@ -987,9 +1017,7 @@ void talkToGdb(void)
 	    if (!setProgramCounter(addr))
 		gdbOut("Failed to set PC");
 	}
-	if (!jtagSingleStep())
-	    gdbOut("Failed to single-step");
-	reportStatusExtended(SIGTRAP);
+	repStatus(singleStep());
 	break;
 
     case 'e': //eAA..AA,BB..BB continue until pc leaves [A..B[ range
@@ -999,17 +1027,7 @@ void talkToGdb(void)
       {
 	  debugOut("single step from %x to %x\n", start, end);
 	  putpacket("OK");
-	  if (start == end)
-	  {
-	      if (!jtagSingleStep())
-		  gdbOut("Failed to single-step");
-	      reportStatusExtended(SIGTRAP);
-	  }
-	  else
-	      if (stepThrough(start, end))
-		  reportStatusExtended(SIGTRAP);
-	      else
-		  reportStatus(SIGINT);
+	  repStatus(start == end ? singleStep() : stepThrough(start, end));
       }
       break;
 
@@ -1046,18 +1064,7 @@ void talkToGdb(void)
 	    if (!setProgramCounter(addr))
 		gdbOut("Failed to set PC");
 	}
-	if (jtagContinue(true))
-	{
-	    reportStatusExtended(SIGTRAP);
-	}
-	else
-	{
-	    // A breakpoint did not occur. Assume that GDB sent a break.
-	    // Halt the target.
-	    interruptProgram();
-	    // Report this as a user interrupt
-	    reportStatus(SIGINT);
-	}
+	repStatus(jtagContinue(true));
 	break;
 
     case 'D':

@@ -285,6 +285,7 @@ int main(int argc, char **argv)
     if (inFileName != (char *)0)
     {
         downloadToTarget(inFileName);
+	resetProgram();
     }
     else
     {
