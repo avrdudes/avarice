@@ -1,3 +1,10 @@
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
+[Contributed by James Harris <James.Harris@codan.com.au>]
+
+	* src/jtag.h: Remove unused deviceType enum.
+	* src/jtagprog.cc: Tell the jtagbox the device dependant flash and
+	eeprom pagesizes based on device definition info.
+
 2003-03-26  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Jeff Rose <rosejn@Colorado.EDU>]
 

@@ -175,15 +175,6 @@ enum {
 // A generic error message when nothing good comes to mind
 #define JTAG_CAUSE "JTAG ICE communication failed"
 
-enum deviceType {
-    DEV_ATMEGA_16,
-    DEV_ATMEGA_162,
-    DEV_ATMEGA_169,
-    DEV_ATMEGA_323,
-    DEV_ATMEGA_32,
-    DEV_ATMEGA_128
-};
-
 // The file descriptor used while talking to the JTAG ICE
 extern int jtagBox;
 
