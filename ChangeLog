@@ -1,3 +1,13 @@
+2003-12-08  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Kolja Waschk <avus@ixo.de>]
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/gnu_getopt.h: Protect against cygwin having already included 
+	getop.h.
+	* src/jtagio.cc (timeout_read): If either select() of read() fail and
+	errno is set to EAGAIN, continue the loop instead of bombing out.
+	* src/jtagrun.cc (jtagContinue): Use timeout_read() instead of read().
+
 2003-12-06  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
