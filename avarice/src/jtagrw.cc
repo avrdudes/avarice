@@ -165,8 +165,6 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	return true;
 
     debugOut("jtagWrite ");
-    statusOut(".");
-    statusFlush();
     whichSpace = memorySpace(&addr);
 
     if (whichSpace)

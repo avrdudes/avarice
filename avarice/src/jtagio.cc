@@ -583,7 +583,7 @@ static bool checkForEmulator(void)
       return false;
 
     response = getJtagResponse(8);
-    result = !strcmp((char *)response, "AVRNOCDA");
+    result = response && !strcmp((char *)response, "AVRNOCDA");
     
     delete [] response;
 
@@ -749,7 +749,7 @@ void initJtagBox(bool attach)
 	statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
 	statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
 
-	// Set JTAG bitrate to 200kHz.
+	// Set JTAG bitrate to 1MHz
 	// ff: 1MHz, fe: 500kHz, fd: 250khz, fb: 125Khz
 	setJtagParameter(JTAG_P_CLOCK, 0xff);
 

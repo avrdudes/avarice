@@ -134,7 +134,7 @@ static int check_file_format(bfd *file)
     
     else if (bfd_get_error () == bfd_error_file_ambiguously_recognized)
     {
-        fprintf(stderr, "File format ambigious: %s\n",
+        fprintf(stderr, "File format ambiguous: %s\n",
                 bfd_errmsg(bfd_get_error()));
     }
     
@@ -350,6 +350,10 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype)
                             page_size,
                             &image->image[addr]),
                   "Error writing to target");
+
+	    // Show progress.
+	    statusOut(".");
+	    statusFlush();
         }
 
         addr += page_size;
