@@ -91,7 +91,7 @@ static void initImage(BFDimage *image)
     image->first_address = 0;
     image->first_address_ok = false;
     image->has_data = false;
-    for (i=0;i<=MAX_IMAGE_SIZE;i++)
+    for (i=0;i<MAX_IMAGE_SIZE;i++)
     {
         image->image[i].val  = 0x00;
         image->image[i].used = false;
@@ -273,7 +273,7 @@ static void jtag_create_image(bfd *file, asection *section,
     unsigned int addr;
     unsigned int size;
     uchar buf[MAX_IMAGE_SIZE];
-    unsigned int c,i;
+    unsigned int i;
 
     // If section is empty (although unexpected) return
     if (! section)
@@ -292,10 +292,10 @@ static void jtag_create_image(bfd *file, asection *section,
         bfd_get_section_contents(file, section, buf, 0, size);
 
         // Copy section into memory struct. Mark as used.
-        i=0;
-        for (c=addr; c<addr+size; c++)
+        for (i=0; i<size; i++)
         {
-            image->image[c].val = buf[i++];
+            unsigned int c = i+addr;
+            image->image[c].val = buf[i];
             image->image[c].used = true;
         }
 
@@ -323,7 +323,7 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
 {
     unsigned int page_size = get_page_size(memtype);
     uchar buf[MAX_IMAGE_SIZE];
-    unsigned int i,c;
+    unsigned int i;
     uchar *response = NULL;
     bool emptyPage = true;
     unsigned int addr;
@@ -347,7 +347,7 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
         statusOut("Downloading %s image to target.", image->name);
         statusFlush();
     
-        while (addr <= image->last_address-1)
+        while (addr < image->last_address)
         {
             if (!pageIsEmpty(image, addr, page_size, memtype))
             {
@@ -356,9 +356,8 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                          addr, page_size);
                 
                 // Create raw data buffer
-                i=0;
-                for (c=addr; c<=addr+page_size; c++)
-                    buf[i++] = image->image[c].val;
+                for (i=0; i<page_size; i++)
+                    buf[i] = image->image[i+addr].val;
                 
                 check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr, 
                                 page_size,
@@ -379,13 +378,15 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
 
     if (verify)
     {
+        bool is_verified = true;
+
         // First address must start on page boundary.
         addr = page_addr(image->first_address, memtype);
 
         statusOut("\nVerifying %s", image->name);
         statusFlush();
 
-        while (addr <= image->last_address-1)
+        while (addr < image->last_address)
         {
             // Must also convert address to gcc-hacked addr for jtagWrite
             debugOut("Verifying page at addr 0x%.4lx size 0x%lx\n",
@@ -395,13 +396,20 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                                 page_size);
                 
             // Verify buffer, but only addresses in use.
-            i=0;
-            for (c=addr; c <= addr+page_size-1; c++)
+            for (i=0; i < page_size; i++)
             {
+                unsigned int c = i + addr;
                 if (image->image[c].used )
-                    check((image->image[c].val == response[i]),
-                          "Error verifying target addr %.4x.", c);
-                i+=1;
+                {
+                    if (image->image[c].val != response[i])
+                    {
+                        statusOut("\nError verifying target addr %.4x. "
+                                  "Expect [0x%02x] Got [0x%02x]",
+                                  c, image->image[c].val, response[i]);
+                        statusFlush();
+                        is_verified = false;
+                    }
+                }
             }
             
             addr += page_size;
@@ -413,6 +421,8 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
 
         statusOut("\n");
         statusFlush();
+
+        check(is_verified, "\nVerification failed!");
     }
 }
 
