@@ -1,3 +1,19 @@
+2003-08-05  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Bump version.
+	* src/Makefile.am (avarice_SOURCES): Add gnu_getopt* files.
+	* src/avarice.h: Delete DEFAULT_PORT.
+	* src/gnu_getopt.c: New file.
+	* src/gnu_getopt.h: New file.
+	* src/gnu_getopt1.c: New file.
+	* src/main.cc: Use gnu getop_long() to parse argv.
+	Clean up usage() output to be more compact.
+	Allow operations (program, erase, verify, write-fuses, etc) to be 
+	performed before going into gdb server mode.
+	Change "[[hostname] port]" options into a single "[[host]:port]"
+	option where ":port" causes avarice to enter server mode.
+	All options now have short and long equivalents.
+
 2003-08-04  Theodore A. Roth  <troth@openavr.org>
 
 	* src/main.cc: Revert program flag to default to false.

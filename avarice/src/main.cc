@@ -37,6 +37,7 @@
 #include "avarice.h"
 #include "remote.h"
 #include "jtag.h"
+#include "gnu_getopt.h"
 
 bool ignoreInterrupts;
 
@@ -92,62 +93,76 @@ static void initSocketAddress(struct sockaddr_in *name,
 static void usage(const char *progname)
 {
     fprintf(stderr,
-	    "Usage: %s [OPTION]... [<host-name> [<port>]]\n\n",
-	    progname);
+	    "Usage: %s [OPTION]... [<host-name>[:<port>]]\n\n", progname);
     fprintf(stderr, "Options:\n");
     fprintf(stderr,
-	    "  --help                      Print this message.\n\n");
+	    "  -h, --help                  Print this message.\n");
     fprintf(stderr,
-	    "  -d, --debug                 Enable printing of debug "
-	    "information.\n\n");
+	    "  -d, --debug                 Enable printing of debug"
+	    " information.\n");
     fprintf(stderr,
-	    "  --detach                    Detach once synced with JTAG ICE\n\n");
+	    "  -D, --detach                Detach once synced with JTAG ICE\n");
     fprintf(stderr,
-	    "  --capture                   Capture running program.\n"
-	    "     Note: debugging must have been enabled prior to starting the program.\n"
-	    "           (e.g., by running avarice earlier)\n\n");
+	    "  -C, --capture               Capture running program.\n"
+	    "                                Note: debugging must have been enabled prior\n"
+            "                                to starting the program. (e.g., by running\n"
+            "                                avarice earlier)\n");
     fprintf(stderr,
-	    "  --ignore-intr               Automatically step over interrupts.\n"
-	    "     Note: EXPERIMENTAL. Hardwired to 128-in-103 interrupt range.\n");
+	    "  -I, --ignore-intr           Automatically step over interrupts.\n"
+	    "                                Note: EXPERIMENTAL. Can not currently handle\n"
+            "                                devices fused for compatibility.\n");
     fprintf(stderr,
-	    "  -f, --file <filename>       Download specified file"
-	    " prior to debugging.\n\n");
+	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
+            "                                --verify options. If --file is passed and\n"
+            "                                neither --program or --verify are given then\n"
+            "                                --program is implied.\n");
     fprintf(stderr,
-	    "  -j, --jtag <devname>        Port attached to JTAG box"
-	    " (default: /dev/avrjtag).\n\n");
+	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
     fprintf(stderr,
-	    "  -p, --program               Erase and program target ONLY."
-	    " AVaRICE then exits.\n"
-	    "                              Binary filename must be"
-	    " specified with --file\n"
-	    "                              option.\n\n");
+	    "  -p, --program               Erase and program target.\n"
+	    "                                Binary filename must be specified with --file\n"
+	    "                                option.\n");
     fprintf(stderr,
-        "  -v, --verify                Verify program in device against image."
-        "\n\n");
+            "  -v, --verify                Verify program in device against file specified\n"
+            "                                with --file option.\n");
     fprintf(stderr,
-	    "  -e, --erase                 Erase target ONLY. AVaRICE"
-	    " then exits.\n\n");
+            "  -e, --erase                 Erase target.\n");
     fprintf(stderr,
-	    "  -r, --read-fuses            Read fuses bytes. AVaRICE"
-	    " then exits.\n\n");
+            "  -r, --read-fuses            Read fuses bytes.\n");
     fprintf(stderr,
-	    "  --write-fuses <eehhll>      Write fuses bytes. AVaRICE"
-	    " then exits.\n\n");
+            "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
-	    "  --write-lockbits <ll>       Write lock bits. AVaRICE"
-	    " then exits.\n\n");
+            "  -L, --write-lockbits <ll>   Write lock bits.\n");
     fprintf(stderr,
-            "  --part <name>               Target device name (e.g."
+            "  -P, --part <name>           Target device name (e.g."
             " atmega16)\n\n");
     fprintf(stderr,
-	    "<host-name> defaults to 0.0.0.0 (listen on any interface), "
-	    "<port> to %d.\n\n",
-	    DEFAULT_PORT);
+	    "<host-name> defaults to 0.0.0.0 (listen on any interface).\n"
+	    "\":<port>\" is required to put avarice into gdb server mode.\n\n");
     fprintf(stderr,
-	    "e.g. %s  --file test.bin  --jtag /dev/ttyS0  localhost 4242\n\n",
+	    "e.g. %s --program --file test.bin --jtag /dev/ttyS0 :4242\n\n",
 	    progname);
     exit(1);
 }
+
+static struct option long_opts[] = {
+    /* name,                 has_arg, flag,   val */
+    { "help",                0,       0,     'h' },
+    { "debug",               0,       0,     'd' },
+    { "version",             0,       0,     'V' },
+    { "program",             0,       0,     'p' },
+    { "verify",              0,       0,     'v' },
+    { "erase",               0,       0,     'e' },
+    { "read-fuses",          0,       0,     'r' },
+    { "write-fuses",         1,       0,     'w' },
+    { "write-lockbits",      1,       0,     'l' },
+    { "part",                1,       0,     'P' },
+    { "jtag",                1,       0,     'j' },
+    { "ignore-intr",         0,       0,     'I' },
+    { "detach",              0,       0,     'D' },
+    { "capture",             0,       0,     'C' },
+    { 0,                     0,       0,      0 }
+};
 
 int main(int argc, char **argv)
 {
@@ -156,130 +171,141 @@ int main(int argc, char **argv)
     struct sockaddr_in name;
     char *inFileName = 0;
     char *jtagDeviceName = "/dev/avrjtag";
-    bool hostNameSet = false;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
-    bool portSet = false;
-    int  hostPortNumber = DEFAULT_PORT;
+    int  hostPortNumber;
     bool erase = false;
     bool program = false;
     bool readFuses = false;
     bool writeFuses = false;
     char *fuses;
     bool writeLockBits = false;
-    bool noGdbInteraction = false;
+    bool gdbServerMode = false;
     char *lockBits;
     bool detach = false;
     bool capture = false;
     bool verify = false;
+    char *progname = argv[0];
+    int  option_index;
 
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
 
     device_name = 0;
 
-    //
-    // Chew over the command line.
-    //
-    for (int j = 1; j < argc; ++j)
+    opterr = 0;                 /* disable default error message */
+    
+    while (1)
     {
-    	if (argv[j][0] == '-')
-	{
-	    if (((0 == strcmp("--file", argv[j]))  ||
-		 (0 == strcmp("-f", argv[j]))) &&
-		(j + 1 < argc))
-	    {
-		inFileName = argv[++j];
-	    }
-	    else if (((0 == strcmp("--jtag", argv[j]))  ||
-		      (0 == strcmp("-j", argv[j]))) &&
-		     (j + 1 < argc))
-	    {
-		jtagDeviceName = argv[++j];
-	    }
-	    else if (0 == strcmp("--detach", argv[j]))
-	    {
-	        detach = true;
-	    }
-	    else if (0 == strcmp("--capture", argv[j]))
-	    {
-	        capture = true;
-	    }
-	    else if (0 == strcmp("--ignore-intr", argv[j]))
-	    {
-	        ignoreInterrupts = true;
-	    }
-	    else if ((0 == strcmp("--debug", argv[j])) ||
-		     (0 == strcmp("-d", argv[j])))
-	    {
-		debugMode = true;
-	    }
-	    else if ((0 == strcmp("--program", argv[j])) ||
-		     (0 == strcmp("-p", argv[j])))
-	    {
-		program = true;
-                noGdbInteraction = true;
-	    }
-	    else if ((0 == strcmp("--verify", argv[j])) ||
-		     (0 == strcmp("-v", argv[j])))
-	    {
+        int c = getopt_long (argc, argv, "hdDCIf:j:pverW:L:P:",
+                             long_opts, &option_index);
+        if (c == -1)
+            break;              /* no more options */
+
+        switch (c) {
+            case 'h':
+            case '?':
+                usage(progname);
+            case 'd':
+                debugMode = true;
+                break;
+            case 'D':
+                detach = true;
+                break;
+            case 'C':
+                capture = true;
+                break;
+            case 'I':
+                ignoreInterrupts = true;
+                break;
+            case 'f':
+                inFileName = optarg;
+                break;
+            case 'j':
+                jtagDeviceName = optarg;
+                break;
+            case 'p':
+                program = true;
+                break;
+            case 'v':
                 verify = true;
-                noGdbInteraction = true;
-	    }
-	    else if ((0 == strcmp("--erase", argv[j])) ||
-		     (0 == strcmp("-e", argv[j])))
-	    {
-		erase = true;
-                noGdbInteraction = true;
-	    }
-	    else if ((0 == strcmp("--read-fuses", argv[j])) ||
-		     (0 == strcmp("-r", argv[j])))
-            {
+                break;
+            case 'e':
+                erase = true;
+                break;
+            case 'r':
                 readFuses = true;
-                noGdbInteraction = true;
-            }
-            else if (0 == strcmp("--write-fuses", argv[j]))
-            {
-                fuses = argv[++j];
+                break;
+            case 'W':
+                fuses = optarg;
                 writeFuses = true;
-                noGdbInteraction = true;
-            }
-            else if (0 == strcmp("--write-lockbits", argv[j]))
-            {
-                lockBits = argv[++j];
+                break;
+            case 'L':
+                lockBits = optarg;
                 writeLockBits = true;
-                noGdbInteraction = true;
-            }
-            else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
-            {
-                device_name = argv[++j];
-            }
-	    else // includes --help ...
-	    {
-		usage(argv[0]);
-	    }
-	}
-	else
-	{
-	    if (!hostNameSet)
-	    {
-		hostNameSet = true;
-		hostName = argv[j];
-	    }
-	    else if (!portSet)
-	    {
-		portSet = true;
-		hostPortNumber = (int)strtol(argv[j],(char **)0, 0);
-	    }
-	    else
-	    {
-		usage(argv[0]);
-	    }
-	}
+                break;
+            case 'P':
+                device_name = optarg;
+                break;
+            default:
+                fprintf (stderr, "getop() did something screwey");
+                exit (1);
+        }
     }
 
-    if ((noGdbInteraction == false) && (!hostName || hostPortNumber <= 0))
-    {
-	usage(argv[0]);
+    if ((optind+1) == argc) {
+        /* Looks like user has given [[host]:port], so parse out the host and
+           port number then enable gdb server mode. */
+
+        int i;
+        char *arg = argv[optind];
+        int len = strlen (arg);
+        char *host = new char[len+1];
+        memset (host, '\0', len+1);
+
+        for (i=0; i<len; i++) {
+            if ((arg[i] == '\0') || (arg[i] == ':'))
+                break;
+
+            host[i] = arg[i];
+        }
+
+        if (strlen (host)) {
+            hostName = host;
+        }
+
+        if (arg[i] == ':') {
+            i++;
+        }
+
+        if (i >= len) {
+            /* No port was given. */
+            fprintf (stderr, "avarice: %s is not a valid host:port value.\n",
+                     arg);
+            exit (1);
+        }
+
+        char *endptr;
+        hostPortNumber = (int)strtol(arg+i, &endptr, 0);
+        if (endptr == arg+i) {
+            /* Invalid convertion. */
+            fprintf (stderr, "avarice: failed to convert port number: %s\n",
+                     arg+i);
+            exit (1);
+        }
+
+        /* Make sure the the port value is not a priviledged port and is not
+           greater than max port value. */
+
+        if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
+            fprintf (stderr, "avarice: invalid port number: %d (must be >= %d"
+                     " and <= %d)\n", hostPortNumber, 1024, 0xffff);
+            exit (1);
+        }
+
+        gdbServerMode = true;
+    }
+    else if (optind != argc) {
+        usage (progname);
     }
 
     // And say hello to the JTAG box
@@ -302,7 +328,17 @@ int main(int argc, char **argv)
 
     if (inFileName != (char *)0)
     {
-        downloadToTarget(inFileName, program, verify);
+        if (program || verify) {
+            downloadToTarget(inFileName, program, verify);
+        }
+        else {
+            /* If --file is given and neither --program or --verify, then we
+               program, but not verify so as to be backward compatible with
+               the old meaning of --file from before the addition of --program
+               and --verify. */
+
+            downloadToTarget(inFileName, true, false);
+        }
         resetProgram();
     }
     else
@@ -313,41 +349,39 @@ int main(int argc, char **argv)
     }
 
     // Quit for operations that don't interact with gdb.
-    if (noGdbInteraction)
+    if (gdbServerMode)
     {
-        exit(0); // All done. Bye now!
+        initSocketAddress(&name, hostName, hostPortNumber);
+        sock = makeSocket(&name, hostPortNumber);
+        statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
+        gdbCheck(listen(sock, 1));
+
+        if (detach)
+        {
+            int child = fork();
+
+            unixCheck(child, "Failed to fork");
+            if (child != 0)
+                _exit(0);
+            else
+                unixCheck(setsid(), "setsid failed - weird bug");
+        }
+
+        // Connection request on original socket.
+        socklen_t size = (socklen_t)sizeof(clientname);
+        int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
+        gdbCheck(gfd);
+        statusOut("Connection opened by host %s, port %hu.\n",
+                  inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port));
+
+        setGdbFile(gfd);
+
+        // Now do the actual processing of GDB messages
+        // We stay here until exiting because of error of EOF on the
+        // gdb connection
+        for (;;)
+            talkToGdb();
     }
-
-    initSocketAddress(&name, hostName, hostPortNumber);
-    sock = makeSocket(&name, hostPortNumber);
-    statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
-    gdbCheck(listen(sock, 1));
-
-    if (detach)
-    {
-	int child = fork();
-
-	unixCheck(child, "Failed to fork");
-	if (child != 0)
-	  _exit(0);
-	else
-	  unixCheck(setsid(), "setsid failed - weird bug");
-    }
-
-    // Connection request on original socket.
-    socklen_t size = (socklen_t)sizeof(clientname);
-    int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
-    gdbCheck(gfd);
-    statusOut("Connection opened by host %s, port %hu.\n",
-	      inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port));
-
-    setGdbFile(gfd);
-
-    // Now do the actual processing of GDB messages
-    // We stay here until exiting because of error of EOF on the
-    // gdb connection
-    for (;;)
-      talkToGdb();
 
     return 0;
 }
