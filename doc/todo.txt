@@ -1,0 +1,94 @@
+#
+#	avarice - The "avarice" program.
+#	Copyright (C) 2001 Scott Finneran
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 2 of the License, or
+#	(at your option) any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+#
+# doc/todo.txt
+#
+
+Please feel free to lend a helping hand:
+
+
+If you do like to dabble:
+
+- The JTAG target really needs to be properly encapsulated into an
+  abstract "target" base class and a "jtag" concrete class. This would
+  allow for other targets to be put in place such as Ted Roth's
+  excellent simulator idea. (Planning this for the next release). This
+  will be in version 2. The work has begun but is a background task to
+  getting AVaRICE to be fully functional and stable.
+
+- Porting to other platforms.
+
+- Adding configure scripts.
+
+- Improving the makefile: Recently David Smead contributed a major
+  rewrite of prog/avarice/Makefile (thanks David). One remaining thing
+  to do is to restore David's original intention of using the -MM option
+  on gcc (rather than -M). Refer to the comment in the makefile itself
+  for details.
+
+- Add a --quit option. Then modify the --program and --erase options to
+  NOT quit immediately aftwards (as it currently does). This would allow
+  users to combine --quit with either of these so that AVaRICE would
+  function as a simple device programmer. Alternatively, the user could
+  simply choose the --erase option by itself without the --file. It is
+  assumed that GDB would then download the image with 'W' or 'X' GDB
+  debug protocol commands (which are sent when the GDB "load" command is
+  entered).
+
+- Support 'W' or even better 'X' protocol commands properly. This will
+  allow the GDB "load" command to be supported. I am pretty sure that
+  this is actually complete but it does need to be tested thoroughly.
+
+- Add support for watches (ie data space breakpoints).
+
+- Add better support for a GDB "break" (ie typing <ctrl>-c at the GDB
+  prompt). Currently the target program is considered killed by GDB and
+  cannot be "continued". I belive it has something to do with the signal
+  that is sent up to GDB when the "break" occurs.
+  See prog/avarice/remote.c for more details.
+
+- Fix program space read (ie GDB 'm' command) handling to work correctly
+  with odd length reads.
+
+- Add support for setting chip configuration fuses.
+  [This very useful feature was John Wood's idea and he is working on
+  this one. Contact John (via the mailing list) if you would like to
+  lend a hand.]
+
+- A smarter file format is needed. I will be adding srecord support in
+  the near future (next release).
+
+- Many many other things!
+
+If coding or porting isn't your thing, you can still help in a big way....
+
+Protocol:
+    Atmel have chosen not to publish an official document on the
+    protocol. Any mark-ups to doc/avrIceProtocol.txt would be invaluable!
+
+Auto Testing:
+    One of the major advantages of Aegis (ie test suite support) is
+    currently not used. This is truely unacceptable. I would like to add
+    tests which actually fire up AVaRICE and avr-gdb and maybe even
+    compile a test program and single-step / breakpoints... everything.
+    This would be very cool (Aegis users would say that this is
+    essential. They would be right).
+
+Good old fashioned hands-on testing:
+
+- I can't possibly have tried everything. See if you can break it!

@@ -1,0 +1,143 @@
+#
+#	avarice - The "avarice" program.
+#	Copyright (C) 2001 Scott Finneran
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 2 of the License, or
+#	(at your option) any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+#
+# doc/running.txt
+#
+
+Using AVaRICE:
+--------------
+
+> bin/avarice
+avrjtagd version 1.0.D084, Nov 12 2001 14:47:08
+
+Usage: bl/bin/avarice [OPTION]... <host-name> <port>
+
+Options:
+  -d, --debug                 Enable printing of debug information
+  -f, --file <filename>       Download specified file prior to debugging
+
+  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag)
+
+Required info:
+<host-name> : This is the name of the machine attached to the JTAG box.
+<port>      : This is a unique spare IP port number on that machine.
+
+e.g. bl/bin/avarice  --file test.bin  --jtag /dev/ttyS0  localhost 4242
+
+Hints/notes:
+- The default jtag port is /dev/avrjtag. Rather than enter a serial port
+every time, why not add a symlink.
+  eg. ln -s /dev/ttyS0 /dev/avrjtag
+
+- VERY IMPORTANT: the file specified on the avarice command line needs
+  to be a BINARY FILE (ie not the elf object file loaded into gdb). This
+  can be easily created from the elf file using avr-objcopy.
+
+
+Up and Running with avr-gdb:
+----------------------------
+1. Apply the standard avr patch to avr-gdb and compile away!
+   I used the standard distro of gdb (http://sources.redhat.com/gdb/)
+   and patched it with:
+   (http://www.amelek.gda.pl/avr/gdb/gdb-5.0-avr-patch-0.1.gz)
+
+note: This patch has a minor problem which breaks the "info registers"
+      command. To fix this, edit gdb/config/avr/tm-avr.h:314 to read:
+      #undef GET_SAVED_REGISTER
+
+note: Ted Roth (troth@verinet.com) has identified a LARGE number of
+      problems with the above patch to gdb. He is currently working on a
+      series of fixes. Snapshots of his latest work can be found at:
+      (http://freesoftware.fsf.org/download/simulavr/gdb-patches/)
+      I would recommend using these over the original patches for
+      now. Feedback would be helpful or better still, lend Ted a hand!
+
+2. Once installed, run avr-gdb and load in your final avr-elf file. The
+simplest way is of course:
+
+avr-gdb target.elf
+
+
+note: Step 3 really is not needed with my latest patches. Also, don't count on
+      .avrgdbinit being around in the future due to changes in gdb's design
+      for 5.2. Just use .gdbinit in the working directory, not
+      ~/.gdbinit or ~/.avrgddinit. TRoth 14 Feb 2002
+
+3. AVR-GDB will need the following config items set (ie enter the following cmds):
+
+    set remoteaddresssize 32
+    set remote Z-packet enable
+
+There are a few ways to do this:
+
+- Enter them manually when you start avr-gdb
+- Dump these commands into a text file and run avr-gdb with the -x option.
+- Dump these commands into ~/.gdbinit.
+  Note: chances are that your hosts' version of gdb also uses the same
+  filename for its config. Probably best not to get the two confused.
+
+  That said, thanks to Ted Roth for suggesting the following:
+
+  In the sources for GDB, add the following 2 lines to gdb/config/avr/tm-avr.h
+  /* Rename .gdbinit to aid in debugging. */
+  #define GDBINIT_FILENAME ".avrgdbinit"
+  This gives avr-gdb a unique config filename.
+
+  He has also submitted an example .avrgdbinit file:
+
+  echo loading demo.elf\n
+  file demo.elf
+
+  echo Setting remote addr size to 32\n
+  set remoteaddresssize 32
+
+  echo Connecting to remote target\n
+  target remote localhost:1212
+
+  echo Downloading program to target\n
+  load
+
+  Please note, at this time, avarice does not support GDB's load
+  command. It is on the todo list.
+
+
+4. Run avarice (refer above):
+
+5. Enter the following command:
+
+target remote HOST:PORT   e.g. target remote localhost:4242
+
+The HOST:PORT need to match the values entered on the avarice command
+line for <host-name> <port> (refer above).
+
+6. Something along these lines should greet you:
+GNU gdb 5.0
+Copyright 2000 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "--host=i686-pc-linux-gnu --target=avr"...
+(gdb) target remote localhost:4242
+Remote debugging using localhost:4242
+0x0 in .__start_of_init__ ()
+
+7. The normal gdb "run" command doesn't seem to have that much meaning
+   here (read the gdb doco with reference to the remote debug
+   protocol). As such, use the "continue" command to kick off your
+   program.

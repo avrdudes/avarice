@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+set -x
+(
+    aclocal
+    autoconf
+    [ -d config-aux ] || mkdir config-aux
+    automake -a -c
+
+    cd src
+    aclocal
+    autoheader
+    autoconf
+    automake -a -c
+    cd ..
+)
+rm -f config.cache src/config.cache
