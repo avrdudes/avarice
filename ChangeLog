@@ -1,3 +1,10 @@
+2004-08-05  Nils Kristian Strom  <nilsst@invalid.ed.ntnu.no>
+
+	* src/jtagio.cc: (deviceDefinitions): Fix flash and eeprom page
+	sizes for mega64 and mega128. (Thanks to Ted Roth for this).
+	* src/jtagprog.cc: (jtag_flash_image): Don't override device specific
+        eeprom page size.
+
 2004-08-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* Bootstrap: export AUTO* variables to make automake happy.

@@ -229,8 +229,8 @@ jtag_device_def_type deviceDefinitions[] = {
     {
         "atmega64",
         0x9602,
-        256, 256,    // 32K flash 
-        8,   256,    // 2K EEPROM
+        256, 256,    // 64K flash 
+        8,   256,    // 2K bytes EEPROM
         0x8c,        // 35 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
@@ -265,8 +265,8 @@ jtag_device_def_type deviceDefinitions[] = {
     {
         "atmega128",
         0x9702,
-        128, 128,    // 16K flash 
-        4,   128,    // 512 bytes EEPROM
+        256, 512,    // 128K flash 
+        8,   512,    // 4K bytes EEPROM
         0x8c,        // 35 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
