@@ -50,8 +50,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_prefix}/share/%{name}/gdb-avarice-script
 %{_mandir}/man1/ice-insight.1
 %{_mandir}/man1/ice-gdb.1
+%{_mandir}/man1/avarice.1
 
 %changelog
+* Sat Dec 06 2003 Theodore A. Roth <troth@openavr.org>
+- Add avarice.1 man page.
+
 * Thu Sep 18 2003 Theodore A. Roth <troth@openavr.org>
 - Add man pages.
 
