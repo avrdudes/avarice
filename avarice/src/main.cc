@@ -167,6 +167,7 @@ int main(int argc, char **argv)
     char *lockBits;
     bool detach = false;
     bool capture = false;
+    bool verify = false;
 
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
@@ -213,6 +214,12 @@ int main(int argc, char **argv)
 		     (0 == strcmp("-p", argv[j])))
 	    {
 		program = true;
+                noGdbInteraction = true;
+	    }
+	    else if ((0 == strcmp("--verify", argv[j])) ||
+		     (0 == strcmp("-v", argv[j])))
+	    {
+                verify = true;
                 noGdbInteraction = true;
 	    }
 	    else if ((0 == strcmp("--erase", argv[j])) ||
@@ -297,14 +304,14 @@ int main(int argc, char **argv)
 
     if (inFileName != (char *)0)
     {
-        downloadToTarget(inFileName);
-	resetProgram();
+        downloadToTarget(inFileName, program, verify);
+        resetProgram();
     }
     else
     {
-	check(!program,
+	check( (!program) && (!verify),
 	      "\nERROR: Filename not specified."
-	      " --program must be used with --file option.\n");
+	      " Use the --file option.\n");
     }
 
     // Disable programming mode and quit for operations that don't interact
