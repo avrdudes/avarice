@@ -1,3 +1,8 @@
+2003-08-08  Theodore A. Roth  <troth@openavr.org>
+[Thanks to James Harris  <James.Harris@codan.com.au>]
+
+	* src/gnu_getopt.h: Define HAVE_DECL_GETOPT to fix declaration clash.
+
 2003-08-06    <dgay@barnowl.research.intel-research.net>
 
 	* src/main.cc (main): actually implement --version
