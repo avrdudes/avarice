@@ -253,8 +253,14 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
         else if (section->lma < FUSE_SPACE_ADDR_OFFSET) // < 0x82...
             sectmemtype = MEM_EEPROM;
         
-        if (memtype == sectmemtype)
+        if (memtype == sectmemtype) {
+            if (sectmemtype == MEM_FLASH) {
+                /* Don't mask the lma or you will not be able to handle more
+                   than 64K of flash. */
+                return (section->lma);
+            }
             return (section->lma &~ ADDR_SPACE_MASK);
+        }
         else
             return 0xffffff;
     }

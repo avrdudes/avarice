@@ -1,4 +1,10 @@
-2003-08-18    <dgay@barnowl.research.intel-research.net>
+2003-08-19  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* src/jtagprog.cc (get_section_addr): Fix to allow programming of upper
+	64k of flash.
+
+2003-08-18  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* src/main.cc (main): Add missing --file option for getopt
 	  [Thanks to Mike Hudson <pontifex@isys.ca>]
@@ -20,12 +26,12 @@
 
 	* src/gnu_getopt.h: Define HAVE_DECL_GETOPT to fix declaration clash.
 
-2003-08-06    <dgay@barnowl.research.intel-research.net>
+2003-08-06  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* src/main.cc (main): actually implement --version
 	* configure.ac: Bump version.
 
-2003-08-05    <dgay@barnowl.research.intel-research.net>
+2003-08-05  David Gay  <dgay@barnowl.research.intel-research.net>
 
 	* scripts/start-avarice: use new host:portname syntax
 
