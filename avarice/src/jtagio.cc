@@ -47,6 +47,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9403,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+	0x2a,	     // 21 interrupt vectors
         atmega16_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -75,6 +76,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9404,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+	0x38,	     // 28 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -103,6 +105,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9405,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+	0x2e,	     // 23 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -131,6 +134,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9501,
         128, 256,    // 32K flash 
         4,   256,    // 1K EEPROM
+	0x28,	     // 20 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -159,6 +163,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9502,
         128, 256,    // 32K flash 
         4,   256,    // 1K EEPROM
+	0x2a,	     // 21 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -188,6 +193,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9602,
         256, 256,    // 32K flash 
         8,   256,    // 2K EEPROM
+	0x46,	     // 35 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -216,6 +222,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x9702,
         128, 128,    // 16K flash 
         4,   128,    // 512 bytes EEPROM
+	0x46,	     // 35 interrupt vectors
         NULL,        // io reg defs not defined yet
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
@@ -274,6 +281,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0,
         0, 0,
         0, 0,
+	0,
         NULL,
         { 0 }
     }
