@@ -23,3 +23,6 @@ SUBDIRS = scripts src
 
 EXTRA_DIST =		\
 	COPYING
+
+dist-hook: avarice.spec
+	cp avarice.spec $(distdir)/avarice.spec

@@ -1,0 +1,54 @@
+## -*- mode: rpm-spec; -*-
+##
+## $Id$
+##
+## @configure_input@
+##
+
+# We don't want rpm stripping any files
+#%define __spec_install_post %{nil}
+
+# Don't build the debuginfo rpm
+%define debug_package %{nil}
+
+Summary: Interface for GDB to Atmel AVR JTAGICE in circuit emulator.
+Name: avarice
+Version: @VERSION@
+Release: 1
+License: GPL
+Group: Avr/Development/Tools
+URL: http://avarice.sourceforge.net/
+Source0: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
+%description
+AVaRICE is a program which interfaces the GNU Debugger with the AVR JTAG ICE
+available from Atmel.
+
+%prep
+%setup -q
+
+%build
+./configure --prefix=%{_prefix}
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make prefix=$RPM_BUILD_ROOT/%{_prefix} install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root,-)
+%doc ChangeLog AUTHORS INSTALL COPYING 
+%{_prefix}/bin/avarice
+%{_prefix}/bin/start-avarice
+%{_prefix}/bin/kill-avarice
+%{_prefix}/bin/ice-gdb
+%{_prefix}/bin/ice-insight
+%{_prefix}/share/%{name}/gdb-avarice-script
+
+%changelog
+* Fri Aug 15 2003 Theodore A. Roth <troth@openavr.org> 
+- Initial build.
