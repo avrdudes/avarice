@@ -1,6 +1,13 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
 [Contributed by James Harris <James.Harris@codan.com.au>]
 
+	* src/remote.cc: When handling a 'g' packet, only read the 32 GPR's,
+	SPL, SPH, and SREG. Reading some other io registers can have side
+	effects.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
+[Contributed by James Harris <James.Harris@codan.com.au>]
+
 	* src/jtag.h: Remove unused deviceType enum.
 	* src/jtagprog.cc: Tell the jtagbox the device dependant flash and
 	eeprom pagesizes based on device definition info.
