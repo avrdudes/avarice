@@ -1,3 +1,8 @@
+2003-08-20  Theodore A. Roth  <troth@openavr.org>
+
+	* src/jtagrun.cc (jtagContinue): Add debug output to show what the 
+	jtag box returned, especially the break status register.
+
 2003-08-19  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.

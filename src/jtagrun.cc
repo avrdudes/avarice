@@ -161,7 +161,7 @@ bool jtagContinue(bool setCodeBreakpoints)
 	    uchar buf[2];
 	    int count;
 
-	    debugOut("JTAG box sent %c\n", response);
+	    debugOut("JTAG box sent %c", response);
 	    switch (response)
 	    {
 	    case JTAG_R_BREAK:
@@ -169,18 +169,22 @@ bool jtagContinue(bool setCodeBreakpoints)
 		jtagCheck(count);
 		check(count == 2, JTAG_CAUSE);
 		breakpoint = true;
+                debugOut(": Break Status Register = 0x%02x%02x\n",
+                         buf[0], buf[1]);
 		break;
 	    case JTAG_R_INFO: case JTAG_R_SLEEP:
 		// we could do something here, esp. for info
 		count = timeout_read(jtagBox, buf, 2, JTAG_RESPONSE_TIMEOUT);
 		jtagCheck(count);
 		check(count == 2, JTAG_CAUSE);
+                debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
 		break;
 	    case JTAG_R_POWER:
 		// apparently no args?
+                debugOut("\n");
 		break;
 	    default:
-		debugOut("Unknown response\n");
+		debugOut(": Unknown response\n");
 		break; 
 	    }
 	}
