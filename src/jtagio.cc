@@ -309,7 +309,7 @@ void initJtagPort(char *jtagDeviceName)
     // tty because we don't want to get killed if linenoise sends
     // CTRL-C.
     jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    jtagCheck(jtagBox);
+    unixCheck(jtagBox, "Failed to open %s", jtagDeviceName);
 
     // save current serial port settings and plan to restore them on exit
     jtagCheck(tcgetattr(jtagBox, &oldtio));

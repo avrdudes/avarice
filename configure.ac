@@ -22,7 +22,7 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.0.20030420cvs)
+AC_INIT(avarice, 2.0.20030504cvs)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])
@@ -49,9 +49,20 @@ AC_CHECK_FUNC(socket, , [
     ], "$LIBS")
 ])
 
+AC_CHECK_LIB([iberty], [xmalloc], ,[ac_found_iberty=no])
+AC_CHECK_LIB([bfd], [bfd_init], , [ac_found_bfd=no], [-liberty])
+
+if test "x$ac_found_bfd" = "xno"; then
+  AC_MSG_ERROR([You need to install libbfd.a from binutils.])
+fi
+
+if test "x$ac_found_iberty" = "xno"; then
+  AC_MSG_ERROR([You need to install libiberty.a from binutils.])
+fi
+
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h bfd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

@@ -1,3 +1,18 @@
+2003-05-04  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Check for libbfd and libiberty, complain if either is
+	missing.
+	Bump version.
+	* src/jtagio.cc: When opening the jtagice device, give a more helpful 
+	failure message.
+
+2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
+
+	* src/jtag.h:
+	* src/jtagprog.cc:
+	* src/jtagrw.cc:
+	Use the bfd library for handling multiple input file formats.
+
 2003-05-01  Theodore A. Roth  <troth@openavr.org>
 
 	* src/jtagrw.cc: Fix byte order problem when specifying fuses bytes 
