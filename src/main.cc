@@ -161,6 +161,7 @@ static struct option long_opts[] = {
     { "ignore-intr",         0,       0,     'I' },
     { "detach",              0,       0,     'D' },
     { "capture",             0,       0,     'C' },
+    { "file",                1,       0,     'f' },
     { 0,                     0,       0,      0 }
 };
 
