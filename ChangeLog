@@ -1,3 +1,9 @@
+2004-10-25  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Colin O'Flynn <coflynn@newae.com>]
+
+	* configure.ac (AC_INIT): Bump version.
+	* doc/mk2-protocol.txt: New file.
+
 2004-08-08  Nils Kristian Strom  <nilsst@invalid.ed.ntnu.no>
 
 	* src/main.cc: Move device erase in front of write fuses in case
@@ -8,7 +14,7 @@
 	* src/jtagio.cc: (deviceDefinitions): Fix flash and eeprom page
 	sizes for mega64 and mega128. (Thanks to Ted Roth for this).
 	* src/jtagprog.cc: (jtag_flash_image): Don't override device specific
-        eeprom page size.
+	eeprom page size.
 
 2004-08-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
