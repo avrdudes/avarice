@@ -1,3 +1,11 @@
+2004-11-25  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* doc/avarice.1: Add at90can128 to supported list.
+	Marked as experimental.
+	* src/jtag.h: Fix typo in comment describing jtag_device_desc_type.
+	* src/jtagio.cc (deviceDefinitions): Add entry for at90can128.
+
 2004-11-21  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
