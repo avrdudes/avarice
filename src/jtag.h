@@ -24,6 +24,50 @@
 
 #include "ioreg.h"
 
+/* The data in this structure will be sent directorly to the jtagice box. */
+
+typedef struct {
+    unsigned char cmd;                 // The jtag command to prefix the desc.
+
+    /* The following arrays are bitmaps where each bit is a flag denoting
+       wether the register can be read or written. Bit 0 of byte 0 represents
+       the IO register at sram addres 0x20, while bit 7 of byte 7 is
+       represents the register at 0x5f. */
+
+    unsigned char rd[8];               // IO read access.
+    unsigned char wr[8];               // IO write access.
+    unsigned char sh_rd[8];            // IO shadow read access.
+    unsigned char sh_wr[8];            // IO shadow write access.
+
+    /* Same as above, except that first bit is register at sram address 0x60
+       and last bit is register at 0xff. */
+
+    unsigned char ext_rd[20];          // Extended IO read access.
+    unsigned char ext_wr[20];          // Extended IO write access.
+    unsigned char ext_sh_rd[20];       // Extended IO shadow read access.
+    unsigned char ext_sh_wr[20];       // Extended IO shadow write access.
+
+    /* Register locations. */
+
+    unsigned char idr_addr;            // IDR address in IO space.
+    unsigned char spmcr_addr;          // SPMCR address in SRAM space.
+    unsigned char rampz_addr;          // RAMPZ address in IO space.
+
+    /* Memory programming page sizes (in bytes). */
+
+    unsigned char flash_pg_sz[2];      // [0]->little end; [1]->big end
+    unsigned char eeprom_pg_sz;
+
+    unsigned char boot_addr[4];        // Boot loader start address.
+                                       // This is a WORD address.
+                                       // [0]->little end; [3]->big end
+
+    unsigned char last_ext_io_addr;    // Last extended IO location, 0 if no
+                                       // extended IO.
+
+    unsigned char eom[2];              // JTAG command terminator.
+} jtag_device_desc_type;
+
 typedef struct {
     const char* name;
     const unsigned int device_id;      // Part Number from JTAG Device 
@@ -36,7 +80,8 @@ typedef struct {
 
     gdb_io_reg_def_type *io_reg_defs;
 
-    unsigned char dev_desc[126]; // Device descriptor to download to device
+    jtag_device_desc_type dev_desc;    // Device descriptor to download to
+                                       // device
 } jtag_device_def_type;
 
 extern jtag_device_def_type *global_p_device_def;

@@ -1,0 +1,152 @@
+This email documents the structure of the device description array. I also
+posted this to the avarice users mailing list:
+
+  http://sourceforge.net/mailarchive/forum.php?thread_id=2685519&forum_id=4568
+
+-------
+
+This should allow us to add support for the mega64.
+
+Ted Roth
+
+---------- Forwarded message ----------
+Date: Mon, 30 Jun 2003 13:22:59 +0200
+From: avr@at...
+To: Theodore A. Roth <troth@op...>, avr@at...
+Subject: RE: jtagice info request
+
+Dear customer,
+
+Find below the device specific data for ATmega64. Note that the last line of
+the definition contains some varables that are expanded into 2- and 4-byte
+values when transmitting them. It is the 'expanded' values that are listed
+in the app note. You can figure everything out from the definition and the
+command handler below. It should also give you some insight in what the
+various data really is. Get back to me if you still have questions. We'll
+get this into the appnote as soon as possible, of cource.
+
+Please keep the complete mail correspondence in your replies.
+
+Best Regards
+Morten Reintz
+Atmel AVR tech support
+
+--------------------------------------------
+AVR support mail		mailto:avr@at...
+Atmel AVR page			http://www.atmel.com/products/avr/
+Info and software		http://www.avrfreaks.net
+Discussion forum		http://www.avrfreaks.net/phorum/
+Distributors			http://www.atmel.com/dyn/general/contact.asp
+
+
+-- Device specific data for ATmega64 --
+
+
+{0xCF,0x2F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+{0xCF,0x27,0xFF,0xFF,0xFF,0xFF,0xFF,0xFE},
+{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+
+{0x3E,0xB5,0x1F,0x37,0xFF,0x1F,0x21,0x2F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00},
+
+{0x3E,0xB5,0x0F,0x27,0xFF,0x1F,0x21,0x27,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00},
+
+{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00},
+
+{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00},
+
+0x22, 0x68, 0x00, 256, 8, 0x7E00, 0x9D,
+
+
+-- Definition of device specific data --
+
+  // Bit 0 in byte 0 is I/O location 0, bit 7 in byte 7 is I/O location 63
+  UCHAR ucRead[8];                // IO read access
+  UCHAR ucWrite[8];               // IO write access
+  UCHAR ucReadShadow[8];          // IO shadow read access
+  UCHAR ucWriteShadow[8];         // IO shadow write access
+
+  // Bit 0 in byte 0 is extended I/O location 96, bit 7 in byte 19 is extended
+  // I/O location 255
+  UCHAR ucExtRead[20];            // Extexded IO read access
+  UCHAR ucExtWrite[20];           // Extendec IO write access
+  UCHAR ucExtReadShadow[20];      // Extended IO shadow read access
+  UCHAR ucExtWriteShadow[20];     // Extended IO shadow write access
+
+  // Register loactions etc.
+  UCHAR ucIDRAddress;             // IDR address in I/O space
+  UCHAR ucSPMCRAddress;           // SPMCR Register address in SRAM space
+  UCHAR ucRAMPZAddress;           // RAMPZ Register address in I/O space
+  ULONG ulFlashPageSize;          // Device Flash Page Size in bytes
+  ULONG ulEepromPageSize;         // Device Eeprom Page Size in bytes
+  ULONG ulBootAddress;            // Device Boot Loader Start Address (word
+                                  // address)
+  UCHAR ucUpperExtIOLoc;          // Topmost (last) extended I/O location, 0
+                                  // if no ext I/O
+ 
+-- Set device descriptor handler ('pD' is pointer to struct containing data
+   above, 'buf' is emitted on the COM port byte by byte) --
+
+  memcpy(buf, pD->ucRead, 8);
+  memcpy(buf+8, pD->ucReadShadow, 8);
+  memcpy(buf+16, pD->ucWrite, 8);
+  memcpy(buf+24, pD->ucWriteShadow, 8);
+
+  memcpy(buf+32, pD->ucExtRead, 20);
+  memcpy(buf+52, pD->ucExtReadShadow, 20);
+  memcpy(buf+72, pD->ucExtWrite, 20);
+  memcpy(buf+92, pD->ucExtWriteShadow, 20);
+
+  buf[112] = pD->ucIDRAddress;
+  buf[113] = pD->ucSPMCRAddress;
+  buf[114] = pD->ucRAMPZAddress;
+
+  buf[115] = (UCHAR)((pD->ulFlashPageSize >> 0) & 0xFF);
+  buf[116] = (UCHAR)((pD->ulFlashPageSize >> 8) & 0xFF);
+
+  buf[117] = (UCHAR)(pD->ulEepromPageSize);
+
+  buf[118] = (UCHAR)((pD->ulBootAddress >> 0) & 0xFF);
+  buf[119] = (UCHAR)((pD->ulBootAddress >> 8) & 0xFF);
+  buf[120] = (UCHAR)((pD->ulBootAddress >> 16) & 0xFF);
+  buf[121] = (UCHAR)((pD->ulBootAddress >> 24) & 0xFF);
+
+  buf[122] = pD->ucUpperExtIOLoc;
+ 
+ 
+> -----Original Message-----
+> From: Theodore A. Roth [mailto:troth@op...]
+> Sent: 26. juni 2003 18:29
+> To: avr@at...
+> Cc: avarice-user@li...
+> Subject: jtagice info request
+>
+>
+> Hi,
+>
+> I help maintain an open source called avarice
+> (http://sourceforge.net/projects/avarice) which is a program for
+> interfacing the jtagice box with the Gnu Debugger
+> (http://sources.redhat.com/gdb/).
+>
+> The avr060 app note has not been updated in quite a while and new
+> devices have begun shipping which we would like to support but are not
+> discussed in the current app note.
+>
+> Could you please send us the current device description information
+> for all devices the jtagice supports?
+>
+> It would also be much more useful to us to have the structure
+> definition for the device descriptions in addition to the list of
+> numbers.
+>
+> Thank you for your time.
+>
+> Ted Roth
+>
+>
+ 
