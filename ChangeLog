@@ -1,4 +1,10 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
+
+	* Bootstrap: Remove need to run autotools in src.
+	* configure.in: Remove need for src/configure.in.
+	* src/configure.in: Remove file.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
 [Contributed by James Harris <James.Harris@codan.com.au>]
 
 	* src/Makefile.am (avarice_SOURCES): Add ioreg.cc and ioreg.h.
