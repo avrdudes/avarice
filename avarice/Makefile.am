@@ -19,7 +19,7 @@
 #
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = scripts src
+SUBDIRS = scripts src doc
 
 EXTRA_DIST =		\
 	COPYING

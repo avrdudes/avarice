@@ -1,3 +1,11 @@
+2003-08-21    <dgay@barnowl.research.intel-research.net>
+
+	* doc/ice-insight.1: new file, ice-insight man page
+	* doc/ice-gdb.1: new file, ice-gdb man page
+	* doc/Makefile.am: new file
+	* Makefile.am (SUBDIRS): make doc subdir
+	* configure.ac: Bump revision, add doc Makefile
+
 2003-08-20  Theodore A. Roth  <troth@openavr.org>
 
 	* src/jtagrun.cc (jtagContinue): Add debug output to show what the 
