@@ -1,3 +1,8 @@
+2003-08-15  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
+
+	* src/main.cc (long_opts): Fix short opts to match usage output.
+
 2003-08-08  Theodore A. Roth  <troth@openavr.org>
 [Thanks to James Harris  <James.Harris@codan.com.au>]
 
