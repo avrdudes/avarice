@@ -244,3 +244,34 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     return true;
 }
 
+
+
+void jtagWriteFuses(char *fuses)
+{
+    uchar fuseBits[3];
+    uchar *readfuseBits;
+    unsigned int c;
+
+    check(fuses,
+          "Error: No fuses string given");
+
+    // Convert fuses to hex values
+    c = sscanf(fuses, "%x", fuseBits);
+    check(c == 1,
+          "Error: Fuses specified are not in hexidecimal");
+                
+    statusOut("\nWriting Fuse Bytes:\n");
+    statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
+    statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
+    statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
+
+    check(jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits),
+          "Error writing fuses");
+
+    readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+
+    check(memcmp(fuseBits, readfuseBits, 3) == 0,
+          "Error verifying of written fuses");
+
+    delete [] readfuseBits;
+}

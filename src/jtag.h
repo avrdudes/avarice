@@ -353,4 +353,12 @@ uchar *jtagRead(unsigned long addr, unsigned int numBytes);
 **/
 bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
 
+
+/** Write fuses to target.
+
+    The input parameter is a string from command-line, as produced by
+    printf("%x", 0xaabbcc );
+**/
+void jtagWriteFuses(char *fuses);
+
 #endif

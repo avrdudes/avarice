@@ -17,7 +17,7 @@
 #	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
 #
 #
-m4_define([AVARICE_VER],[2.0.20030401cvs])
+m4_define([AVARICE_VER],[2.0.20030402cvs])
 
 AC_INIT(avarice, AVARICE_VER)
 AC_CONFIG_AUX_DIR(config-aux)

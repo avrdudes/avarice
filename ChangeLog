@@ -1,7 +1,22 @@
+2003-04-02  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom <nilsst@omegav.ntnu.no>].
+
+	* src/jtag.h:
+	* src/jtagrw.cc:
+	* src/main.cc:
+	Add support for writing fuses from the command line.
+
+2003-04-02  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom <nilsst@omegav.ntnu.no>].
+
+	* configure.in: Bump version.
+	* src/main.cc: Move #include <unistd.h> to fix a build failure on
+	FreeBSD.
+
 2003-04-01  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Jake McGuire <jake@boom.net>]
 
-	* src/main.cc: Ports should be printed as the unsigned values instead of
+	* src/main.cc: Ports should be printed as unsigned values instead of
 	signed.
 
 2003-04-01  Theodore A. Roth  <troth@openavr.org>
