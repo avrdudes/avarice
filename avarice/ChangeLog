@@ -1,5 +1,10 @@
 2003-03-27  Theodore A. Roth  <troth@openavr.org>
 
+	* src/remote.cc: Add handling of 'C' packet. Using 'sig SIGHUP' command
+	from gdb will cause avarice to reset the user program.
+
+2003-03-27  Theodore A. Roth  <troth@openavr.org>
+
 	* Bootstrap: Remove need to run autotools in src.
 	* configure.in: Remove need for src/configure.in.
 	* src/configure.in: Remove file.

@@ -926,6 +926,32 @@ void talkToGdb(void)
       }
       break;
 
+    case 'C':
+    {
+        /* Continue with signal command format:
+           "C<sig>;<addr>" or "S<sig>;<addr>"
+
+           "<sig>" should always be 2 hex digits, possibly zero padded.
+           ";<addr>" part is optional.
+
+           If addr is given, resume at that address, otherwise, resume at
+           current address. */
+
+        int sig;
+
+        if (hexToInt(&ptr, &sig))
+        {
+            if (sig == SIGHUP)
+            {
+                if (resetProgram())
+                {
+                    reportStatus(SIGTRAP);
+                }
+            }
+        }
+        break;
+    }
+
     case 'c':  // cAA..AA    Continue from address AA..AA(optional)
 	// try to read optional parameter, pc unchanged if no parm
 	if (hexToInt(&ptr, &addr))
