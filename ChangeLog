@@ -1,4 +1,9 @@
-2003-07-31    <dgay@intel-research.net>
+2003-08-04  Theodore A. Roth  <troth@openavr.org>
+
+	* src/main.cc: Revert program flag to default to false.
+	Revert setting program flag to false if --verify is given.
+
+2003-07-31  David Gay  <dgay@intel-research.net>
 
 	* src/main.cc (main): when no gdb interaction: don't perform
 	extraneous enableProgramming/disableProgramming

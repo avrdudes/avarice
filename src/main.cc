@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     bool portSet = false;
     int  hostPortNumber = DEFAULT_PORT;
     bool erase = false;
-    bool program = true; // default is to program if a file specified
+    bool program = false;
     bool readFuses = false;
     bool writeFuses = false;
     char *fuses;
@@ -222,7 +222,6 @@ int main(int argc, char **argv)
 	    else if ((0 == strcmp("--verify", argv[j])) ||
 		     (0 == strcmp("-v", argv[j])))
 	    {
-		program = false;
                 verify = true;
                 noGdbInteraction = true;
 	    }
