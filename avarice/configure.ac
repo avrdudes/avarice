@@ -22,7 +22,7 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.2.20041125)
+AC_INIT(avarice, 2.3)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])
@@ -54,19 +54,19 @@ AC_CHECK_FUNC(socket, , [
 AC_SEARCH_LIBS([inet_aton], [resolv])
 
 ## If libbfd was configured with nls, the build might need -lintl. This
-## seems to be the case with cygwin.
+## seems to be the case with cygwin. Also, it seems that on cygwin, libintl
+## needs libiconv. Plus, on some systems libbfd needs -liberty.
 ##
-AC_SEARCH_LIBS([dcgettext], [intl])
-
-AC_CHECK_LIB([iberty], [xmalloc], ,[ac_found_iberty=no])
-AC_CHECK_LIB([bfd], [bfd_init], , [ac_found_bfd=no], [-liberty])
+AC_CHECK_LIB([iconv], [iconv_open], , [ac_found_iconf=no])
+if test "x$ac_found_iconf" = "xno"; then
+  AC_CHECK_LIB([iconv], [libiconv_open])
+fi
+AC_CHECK_LIB([intl], [dcgettext])
+AC_CHECK_LIB([iberty], [xmalloc])
+AC_CHECK_LIB([bfd], [bfd_init], , [ac_found_bfd=no])
 
 if test "x$ac_found_bfd" = "xno"; then
   AC_MSG_ERROR([You need to install libbfd.a from binutils.])
-fi
-
-if test "x$ac_found_iberty" = "xno"; then
-  AC_MSG_ERROR([You need to install libiberty.a from binutils.])
 fi
 
 # Checks for header files.
