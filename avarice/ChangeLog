@@ -1,3 +1,11 @@
+2004-11-21  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac (AC_INIT): Bump version.
+	* doc/avarice.1: Update --program option to note that erase is no
+	longer implicit.
+	Make NOTE bold in note for --write-fuses option.
+	* src/main.cc (usage): Remove erase from --program option.
+
 2004-11-18  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Bump version.
