@@ -737,9 +737,10 @@ void talkToGdb(void)
             if (lead)
                 jtagBuffer[0] = last_orphan;
 
-            if (length & 1)
+            if ((addr < DATA_SPACE_ADDR_OFFSET) && (length & 1))
             {
-                // An odd length means we will have an orphan this round.
+                // An odd length means we will have an orphan this round but
+                // only if we are writing to PROG space.
                 last_orphan_pending = true;
                 last_orphan = jtagBuffer[length];
                 length--;

@@ -44,7 +44,7 @@ static uchar memorySpace(unsigned long *addr)
 
     // We can't just mask the bits off, because 0x10000->0x1ffff are
     // valid code addresses
-    if (*addr & 0x800000)
+    if (*addr & DATA_SPACE_ADDR_OFFSET)
     {
 	mask = *addr & ADDR_SPACE_MASK;
 	*addr &= ~ADDR_SPACE_MASK;
