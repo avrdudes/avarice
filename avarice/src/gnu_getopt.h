@@ -24,6 +24,15 @@
 #ifndef _GNU_GETOPT_H
 #define _GNU_GETOPT_H 1
 
+/* We only use getopt_long(), not getopt(), so we don't need a fully
+   prototyped declaration of getopt(). This forces the prototype for getopt()
+   to be compatible with all systems. Solaris in particular seems to have a
+   prototype for getopt() in unistd.h which conflicts with the one in this
+   file if we don't do this. */
+
+#undef HAVE_DECL_GETOPT
+#define HAVE_DECL_GETOPT 1
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
