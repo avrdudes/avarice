@@ -1,6 +1,6 @@
 #
 #	avarice - The "avarice" program.
-#	Copyright (C) 2001 Scott Finneran
+#	Copyright (C) 2001, 2003 Scott Finneran
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -33,14 +33,6 @@ If you do like to dabble:
 
 - Porting to other platforms.
 
-- Adding configure scripts.
-
-- Improving the makefile: Recently David Smead contributed a major
-  rewrite of prog/avarice/Makefile (thanks David). One remaining thing
-  to do is to restore David's original intention of using the -MM option
-  on gcc (rather than -M). Refer to the comment in the makefile itself
-  for details.
-
 - Add a --quit option. Then modify the --program and --erase options to
   NOT quit immediately aftwards (as it currently does). This would allow
   users to combine --quit with either of these so that AVaRICE would
@@ -50,17 +42,7 @@ If you do like to dabble:
   debug protocol commands (which are sent when the GDB "load" command is
   entered).
 
-- Support 'W' or even better 'X' protocol commands properly. This will
-  allow the GDB "load" command to be supported. I am pretty sure that
-  this is actually complete but it does need to be tested thoroughly.
-
 - Add support for watches (ie data space breakpoints).
-
-- Add better support for a GDB "break" (ie typing <ctrl>-c at the GDB
-  prompt). Currently the target program is considered killed by GDB and
-  cannot be "continued". I belive it has something to do with the signal
-  that is sent up to GDB when the "break" occurs.
-  See prog/avarice/remote.c for more details.
 
 - Fix program space read (ie GDB 'm' command) handling to work correctly
   with odd length reads.
@@ -70,8 +52,8 @@ If you do like to dabble:
   this one. Contact John (via the mailing list) if you would like to
   lend a hand.]
 
-- A smarter file format is needed. I will be adding srecord support in
-  the near future (next release).
+- Add command line option for setting the JTAG Clock speed. This speed could
+  speed thing up a bit.
 
 - Many many other things!
 
