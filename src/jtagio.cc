@@ -755,7 +755,7 @@ void initJtagBox(bool attach)
 
 	// Set JTAG bitrate to 200kHz.
 	// ff: 1MHz, fe: 500kHz, fd: 250khz, fb: 125Khz
-	setJtagParameter(JTAG_P_CLOCK, 0xfd);
+	setJtagParameter(JTAG_P_CLOCK, 0xff);
 
 	if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
 	{

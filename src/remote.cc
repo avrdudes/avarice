@@ -339,8 +339,6 @@ static void reportStatusExtended(int sigval)
     uchar *jtagBuffer;
     unsigned long pc = getProgramCounter();
 
-    fprintf (stderr, "PC -> 0x%x\n", pc);
-
     // Read in SPL SPH SREG
     jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
 
