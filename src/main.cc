@@ -346,7 +346,26 @@ int main(int argc, char **argv)
     // And say hello to the JTAG box
     initJtagPort(jtagDeviceName);
 
-    initJtagBox(capture, jtagBitrate);
+    // Init JTAG box.
+    initJtagBox();
+
+    if (readFuses)
+    {
+        jtagReadFuses();
+    }
+
+    if (writeFuses)
+        jtagWriteFuses(fuses);
+
+    if (writeLockBits)
+        jtagWriteLockBits(lockBits);
+
+    // Init JTAG debugger for initial use.
+    //   - If we're attaching to a running target, we cannot do this.
+    //   - If we're running as a standalone programmer, we don't want
+    //     this.
+    if( gdbServerMode && ( ! capture ) )
+        initJtagOnChipDebugging(jtagBitrate);
 
     if (erase)
     {
@@ -356,12 +375,6 @@ int main(int argc, char **argv)
 	statusOut("Erase complete.\n");
         disableProgramming();
     }
-
-    if (writeFuses)
-        jtagWriteFuses(fuses);
-
-    if (writeLockBits)
-        jtagWriteLockBits(lockBits);
 
     if (inFileName != (char *)0)
     {

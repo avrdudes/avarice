@@ -1,6 +1,23 @@
 2003-11-16  Theodore A. Roth  <troth@openavr.org>
 [Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
 
+	* configure.ac (AC_INIT): Bump version.
+	* src/jtag.h (initJtagBox): Change arguments (no args needed).
+	(initJtagOnChipDebugging): New prototype.
+	(jtagReadFuses): Ditto.
+	* src/jtagio.cc (initJtagBox): Change arguments and move attach code
+	to initJtagOnChipDebugging function.
+	(initJtagOnChipDebugging): New function.
+	* src/jtagrw.cc (jtagReadFuses): New function.
+	* src/main.cc (main): Avoid disabling lock bits and setting FUSE_OCDEN
+	when we are using avarice as a standalone device programmer.
+	Move --write-fuses in front of the jtag debugger initialization, to
+	make it possible to start debugging with all fuses written to their
+	proper settings.
+
+2003-11-16  Theodore A. Roth  <troth@openavr.org>
+[Thanks to Nils Kristian Strom <nilsst@omegav.ntnu.no>]
+
 	* src/jtag.h (jtagDisplayFuses): Add prototype.
 	* src/jtagio.cc (initJtagBox): Use jtagDisplayFuses() instead of
 	calling statusOut() directly.
