@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     bool portSet = false;
     int  hostPortNumber = DEFAULT_PORT;
     bool erase = false;
-    bool program = false;
+    bool program = true; // default is to program if a file specified
     bool readFuses = false;
     bool writeFuses = false;
     char *fuses;
@@ -222,6 +222,7 @@ int main(int argc, char **argv)
 	    else if ((0 == strcmp("--verify", argv[j])) ||
 		     (0 == strcmp("-v", argv[j])))
 	    {
+		program = false;
                 verify = true;
                 noGdbInteraction = true;
 	    }
@@ -287,11 +288,6 @@ int main(int argc, char **argv)
 
     initJtagBox(capture);
 
-    // Enable programming mode and quit for operations that don't interact
-    // with gdb.
-    if (noGdbInteraction)
-        enableProgramming();
-
     if (erase)
     {
 	statusOut("Erasing program memory.\n");
@@ -317,11 +313,9 @@ int main(int argc, char **argv)
 	      " Use the --file option.\n");
     }
 
-    // Disable programming mode and quit for operations that don't interact
-    // with gdb.
+    // Quit for operations that don't interact with gdb.
     if (noGdbInteraction)
     {
-        disableProgramming();
         exit(0); // All done. Bye now!
     }
 

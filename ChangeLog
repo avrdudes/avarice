@@ -1,3 +1,13 @@
+2003-07-31    <dgay@intel-research.net>
+
+	* src/main.cc (main): when no gdb interaction: don't perform
+	extraneous enableProgramming/disableProgramming
+	when gdb interaction: program if a file specified
+	* scripts/gdb-avarice-script: set hardware watch/break limits
+	* scripts/ice-gdb.in: --ignore-intr should not capture,
+	--external flag
+	* scripts/start-avarice: no need for avr-objcopy
+
 2003-07-29  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Bump version.
