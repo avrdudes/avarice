@@ -293,7 +293,7 @@ static void jtag_create_image(bfd *file, asection *section,
 
         // Copy section into memory struct. Mark as used.
         i=0;
-        for (c=addr; c<=addr+size; c++)
+        for (c=addr; c<addr+size; c++)
         {
             image->image[c].val = buf[i++];
             image->image[c].used = true;
