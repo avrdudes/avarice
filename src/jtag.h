@@ -361,4 +361,12 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
 **/
 void jtagWriteFuses(char *fuses);
 
+
+/** Write lockbits to target.
+
+    The input parameter is a string from command-line, as produced by
+    printf("%x", 0xaa);
+**/
+void jtagWriteLockBits(char *lock);
+
 #endif

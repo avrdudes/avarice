@@ -1,3 +1,12 @@
+2003-04-03  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Nils Kristian Strom <nilsst@omegav.ntnu.no>].
+
+	* configure.in: Bump version.
+	* src/jtag.h:
+	* src/jtagrw.cc:
+	* src/main.cc:
+	Add support for writing the lockbits from the command line.
+
 2003-04-02  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Nils Kristian Strom <nilsst@omegav.ntnu.no>].
 

@@ -271,7 +271,38 @@ void jtagWriteFuses(char *fuses)
     readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
 
     check(memcmp(fuseBits, readfuseBits, 3) == 0,
-          "Error verifying of written fuses");
+          "Error verifying written fuses");
 
     delete [] readfuseBits;
+}
+
+
+void jtagWriteLockBits(char *lock)
+{
+    uchar lockBits[3];
+    uchar *readlockBits;
+    unsigned int c;
+
+    check(lock,
+          "Error: No lock bit string given");
+
+    check(strlen(lock) == 2,
+          "Error: Fuses must be one byte exactly");
+
+    // Convert lockbits to hex value
+    c = sscanf( lock, "%x", lockBits );
+    check(c == 1,
+          "Error: Fuses specified are not in hexidecimal");
+
+    statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
+
+    check(jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits),
+          "Error writing lockbits" );
+
+    readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+
+    check(memcmp(lockBits, readlockBits, 1) == 0,
+          "Error verifying written lock bits");
+
+    delete [] readlockBits;
 }
