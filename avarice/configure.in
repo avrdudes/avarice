@@ -17,15 +17,25 @@
 #	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
 #
 #
-AC_INIT(avarice, 2.0)
+m4_define([AVARICE_VER],[2.0.20030327cvs])
+
+AC_INIT(avarice, AVARICE_VER)
 AC_CONFIG_AUX_DIR(config-aux)
-AM_INIT_AUTOMAKE(avarice, 2.0)
+AC_CONFIG_SRCDIR(src/main.cc)
+AC_CONFIG_HEADER(src/autoconf.h)
+
+AM_INIT_AUTOMAKE(avarice, AVARICE_VER)
 
 AC_PATH_PROG(pathperl, perl)
 if test -z "$pathperl" ; then
   AC_MSG_ERROR(I can't find perl); 
 fi
 
-AC_CONFIG_SUBDIRS(src)
+AC_PROG_CXX
 
-AC_OUTPUT(Makefile scripts/Makefile scripts/ice-gdb)
+AC_OUTPUT(
+	scripts/Makefile
+	scripts/ice-gdb
+	src/Makefile
+	Makefile
+)

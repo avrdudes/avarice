@@ -15,15 +15,9 @@ set -e
 set -x
 (
     ${ACLOCAL}
+    ${AUTOHEADER}
     ${AUTOCONF}
     [ -d config-aux ] || mkdir config-aux
     ${AUTOMAKE} -a -c
-
-    cd src
-    ${ACLOCAL}
-    ${AUTOHEADER}
-    ${AUTOCONF}
-    ${AUTOMAKE} -a -c
-    cd ..
 )
-rm -f config.cache src/config.cache
+rm -f config.cache
