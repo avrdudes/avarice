@@ -662,43 +662,65 @@ void talkToGdb(void)
     case 'g':   // return the value of the CPU registers
     {
 	uchar *jtagBuffer;
+        uchar regBuffer[40];
+
+        memset(regBuffer, 0, sizeof(regBuffer));
 
 	// Read the registers directly from memory
 	// R0..R31 are at locations 0..31
-	// SP is at 0x5D
-	// SREG is at 0x5E & 0x5F
+	// SP is at 0x5D & 0x5E
+	// SREG is at 0x5F
 	debugOut("\nGDB: (Registers)Read %d bytes from 0x%X\n",
-		  0x60, 0x00 + DATA_SPACE_ADDR_OFFSET);
-	jtagBuffer = jtagRead(0x00 + DATA_SPACE_ADDR_OFFSET, 0x60);
+		  0x20, 0x00 + DATA_SPACE_ADDR_OFFSET);
+	jtagBuffer = jtagRead(0x00 + DATA_SPACE_ADDR_OFFSET, 0x20);
 
 	if (jtagBuffer)
 	{
-	    // SREG
-	    jtagBuffer[32] = jtagBuffer[0x5F];
+            // Put GPRs into the first 32 locations
+            memcpy(regBuffer, jtagBuffer, 0x20);
 
-	    // SPL
-	    jtagBuffer[33] = jtagBuffer[0x5D]; // correct endian-ness
+            delete [] jtagBuffer;
+            jtagBuffer = 0;
+        }
+        else
+            error (1);
 
-	    // SPH
-	    jtagBuffer[34] = jtagBuffer[0x5E]; // correct endian-ness
+        // Read in SPL SPH SREG
+        jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+     
+        if (jtagBuffer)
+        {
+            // We have SPL SPH SREG and need SREG SPL SPH
 
-	    // PC
-	    newPC = getProgramCounter();
-	    jtagBuffer[35] = (unsigned char)(newPC & 0xff);
-	    jtagBuffer[36] = (unsigned char)((newPC & 0xff00) >> 8);
-	    jtagBuffer[37] = (unsigned char)((newPC & 0xff0000) >> 16);
-	    jtagBuffer[38] = (unsigned char)((newPC & 0xff000000) >> 24);
-	    debugOut("PC = %x\n", newPC);
+            // SREG
+            regBuffer[0x20] = jtagBuffer[0x02];
 
-	    if (newPC == PC_INVALID)
-		error(1);
-	    else
-		mem2hex(jtagBuffer, remcomOutBuffer, 32 + 2 + 4 + 1);
+            // NOTE: Little endian, so SPL comes first.
 
-	    delete [] jtagBuffer;
-	}
-	else
-	    error(1);
+            // SPL
+            regBuffer[0x21] = jtagBuffer[0x00];
+
+            // SPH
+            regBuffer[0x22] = jtagBuffer[0x01];
+
+            delete [] jtagBuffer;
+            jtagBuffer = 0;
+        }
+        else
+            error (1);
+
+        // PC
+        newPC = getProgramCounter();
+        regBuffer[35] = (unsigned char)(newPC & 0xff);
+        regBuffer[36] = (unsigned char)((newPC & 0xff00) >> 8);
+        regBuffer[37] = (unsigned char)((newPC & 0xff0000) >> 16);
+        regBuffer[38] = (unsigned char)((newPC & 0xff000000) >> 24);
+        debugOut("PC = %x\n", newPC);
+
+        if (newPC == PC_INVALID)
+            error(1);
+        else
+            mem2hex(regBuffer, remcomOutBuffer, 32 + 1 + 2 + 4);
 
 	break;
     }
