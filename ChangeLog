@@ -1,3 +1,9 @@
+2003-06-05  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Check for intl library since linking to bfd may
+	require it (this affects cygwin). [Thanks Colid O'Flynn for reporting
+	this.]
+
 2003-05-04  Theodore A. Roth  <troth@openavr.org>
 
 	* src/jtagprog.cc: Speed up programming the flash by skipping pages
