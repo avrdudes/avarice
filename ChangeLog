@@ -1,3 +1,7 @@
+2004-08-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* Bootstrap: export AUTO* variables to make automake happy.
+
 2004-05-26  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Onno van Eijk <onno@gorgoz.org>]
 
