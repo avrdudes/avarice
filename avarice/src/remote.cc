@@ -116,7 +116,7 @@ static void waitForGdbInput(void)
     exit cleanly if EOF detected on gdbFileDescriptor. **/
 int getDebugChar(void)
 {
-    int c = (int)0;
+    uchar c = 0;
     int result;
 
     do
@@ -140,7 +140,7 @@ int getDebugChar(void)
 
 int checkForDebugChar(void)
 {
-    int c = (int)0;
+    uchar c = 0;
     int result;
 
     result = read(gdbFileDescriptor, &c, 1);
