@@ -835,9 +835,7 @@ void initJtagBox(bool attach, uchar bitrate)
             jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
 	}
 
-        statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
-        statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
-        statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
+        jtagDisplayFuses(fuseBits);
 
 	if (fuseBits)
 	{
