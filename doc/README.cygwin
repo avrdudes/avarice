@@ -1,0 +1,71 @@
+##
+## $Id$
+##
+## Contributed by Eric Weddington.
+##
+
+To build avarice for Windows requires the use of Cygwin
+<http://www.cygwin.com/> Specifically, this was built using the Previous
+package of Cygwin. In the Cygwin installer, select the Prev radio button up
+top when installing the packages. This should install cygwin 1.3.22-1, from
+the Base tree in the Cygwin setup.
+
+Get avarice from anonymous CVS as explained on the avarice project web
+page. Then, in the avarice project directory:
+
+    $ export $PREFIX=<your installation directory here>
+    $ ./Bootstrap
+    $ mkdir build
+    $ cd build
+    $ ../configure --prefix=$PREFIX
+    $ make
+    $ make install
+
+If there are errors like: "undefined reference to `_htab_create_alloc'"
+then re-install binutils (and not GCC) from Cygwin and re-run! This error
+means that the libiberty functions that are needed in avarice need to come
+from a binutils version of libiberty and not from a GCC version of libiberty.
+
+This will create avarice.exe, which requires the following DLLs to execute:
+- cygwin1.dll
+- cygintl-2.dll
+- cygiconv-2.dll
+
+In Cygwin, you can check to see what, if any, DLLs are required of an 
+executable by using the program cygcheck.exe that comes with Cygwin. For 
+example if you cd to the $PREFIX/bin directory after building the project, 
+and execute
+
+    $ cygcheck ./avarice.exe
+
+You should get something like (depending on your OS and it's installation 
+location):
+
+    .\avarice.exe
+      .\cygwin1.dll
+        C:\WINNT\System32\KERNEL32.dll
+          C:\WINNT\System32\NTDLL.DLL
+      .\cygintl-2.dll
+        .\cygiconv-2.dll
+
+
+If you want to build avarice with less DLL dependencies, then, in the avarice
+project directory:
+
+    $ export $PREFIX=<your installation directory here>
+    $ ./Bootstrap
+    $ mkdir build
+    $ cd build
+    $ ../configure --prefix=$PREFIX
+    $ make LDFLAGS='-static' LIBS='-lbfd -liberty -lintl -liconv'
+    $ make install
+  
+When you build avarice this way, you can verify what DLLs are required with
+cygcheck in the $PREFIX/bin directory:
+
+    $ cygcheck ./avarice.exe
+
+    .\avarice.exe
+      .\cygwin1.dll
+        C:\WINNT\System32\KERNEL32.dll
+C:\WINNT\System32\NTDLL.DLL

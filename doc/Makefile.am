@@ -21,5 +21,10 @@ AUTOMAKE_OPTIONS = foreign
 
 man_MANS = ice-gdb.1 ice-insight.1
 
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = $(man_MANS) \
+             README.cygwin \
+             avrIceProtocol.txt \
+             install.txt \
+             running.txt \
+             todo.txt
 
