@@ -10,6 +10,10 @@
 : ${AUTOCONF=autoconf}
 : ${AUTOHEADER=autoheader}
 
+# Export them in case someone edited the defaults above; automake is
+# not happy if it cannot find either ${AUTOCONF} or `autoconf'.
+export ACLOCAL AUTOMAKE AUTOCONF AUTOHEADER
+
 set -e
 
 set -x
