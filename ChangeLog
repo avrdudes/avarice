@@ -1,3 +1,11 @@
+2003-03-26  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Jeff Rose <rosejn@Colorado.EDU>]
+
+	* src/jtagio.cc (getJtagResponse): Use JTAG_RESPONSE_TIMEOUT instead
+	of JTAG_COMM_TIMEOUT when reading the response from the jtag box.
+	* src/main.cc: Don't require hostname and portnumber options if they
+	aren't needed.
+
 2003-03-25  Theodore A. Roth  <troth@openavr.org>
 [Contributed by James Harris <James.Harris@codan.com.au>]
 
