@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 
     initSocketAddress(&name, hostName, hostPortNumber);
     sock = makeSocket(&name, hostPortNumber);
-    statusOut("Waiting for connection on port %hd.\n", hostPortNumber);
+    statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
     gdbCheck(listen(sock, 1));
 
     if (detach)
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
     socklen_t size = (socklen_t)sizeof(clientname);
     int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
     gdbCheck(gfd);
-    statusOut("Connection opened by host %s, port %hd.\n",
+    statusOut("Connection opened by host %s, port %hu.\n",
 	      inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port));
 
     setGdbFile(gfd);

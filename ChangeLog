@@ -1,4 +1,10 @@
 2003-04-01  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Jake McGuire <jake@boom.net>]
+
+	* src/main.cc: Ports should be printed as the unsigned values instead of
+	signed.
+
+2003-04-01  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.in: Add check for socklen_t type.
 
