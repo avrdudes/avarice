@@ -29,12 +29,12 @@ available from Atmel.
 %setup -q
 
 %build
-./configure --prefix=%{_prefix}
+./configure --prefix=%{_prefix} --mandir=%{_mandir}
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make prefix=$RPM_BUILD_ROOT/%{_prefix} install
+make prefix=$RPM_BUILD_ROOT%{_prefix} mandir=$RPM_BUILD_ROOT%{_mandir} install
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -48,7 +48,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_prefix}/bin/ice-gdb
 %{_prefix}/bin/ice-insight
 %{_prefix}/share/%{name}/gdb-avarice-script
+%{_mandir}/man1/ice-insight.1
+%{_mandir}/man1/ice-gdb.1
 
 %changelog
+* Thu Sep 18 2003 Theodore A. Roth <troth@openavr.org>
+- Add man pages.
+
 * Fri Aug 15 2003 Theodore A. Roth <troth@openavr.org> 
 - Initial build.
