@@ -29,10 +29,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <unistd.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include "avarice.h"
 #include "remote.h"
@@ -122,7 +122,11 @@ static void usage(const char *progname)
 	    "  -r, --read-fuses            Read fuses bytes. AVaRICE"
 	    " then exits.\n\n");
     fprintf(stderr,
-            "  --part <name>               Microcontroller device name e.g. atmega16\n\n");
+	    "  --write-fuses <eehhll>      Write fuses bytes. AVaRICE"
+	    " then exits.\n\n");
+    fprintf(stderr,
+            "  --part <name>               Target device name (e.g."
+            " atmega16)\n\n");
     fprintf(stderr,
 	    "e.g. %s  --file test.bin  --jtag /dev/ttyS0  localhost 4242\n\n",
 	    progname);
@@ -141,6 +145,8 @@ int main(int argc, char **argv)
     bool eraseAndQuitOnly = false;
     bool programAndQuitOnly = false;
     bool readFusesAndQuitOnly = false;
+    bool writeFusesAndQuitOnly = false;
+    char *fuses;
     bool needHostName = true;
     bool detach = false;
     bool capture = false;
@@ -204,6 +210,12 @@ int main(int argc, char **argv)
                 readFusesAndQuitOnly = true;
                 needHostName = false;
             }
+            else if (0 == strcmp("--write-fuses", argv[j]))
+            {
+                fuses = argv[++j];
+                writeFusesAndQuitOnly = true;
+                needHostName = false;
+            }
             else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
             {
                 device_name = argv[++j];
@@ -256,6 +268,14 @@ int main(int argc, char **argv)
 	exit(0); // All done. Bye now!
     }
 
+    if (writeFusesAndQuitOnly)
+    {
+        enableProgramming();
+        jtagWriteFuses(fuses);
+        disableProgramming();
+
+        exit(0); // All done. Bye now!
+    }
     if (inFileName != (char *)0)
     {
 	downloadToTarget(inFileName);
