@@ -97,11 +97,11 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  --detach                    Detach once synced with JTAG ICE\n\n");
     fprintf(stderr,
-	    "  --capture                   Capture running program."
+	    "  --capture                   Capture running program.\n"
 	    "     Note: debugging must have been enabled prior to starting the program.\n"
 	    "           (e.g., by running avarice earlier)\n\n");
     fprintf(stderr,
-	    "  --ignore-intr               Automatically step over interrupts."
+	    "  --ignore-intr               Automatically step over interrupts.\n"
 	    "     Note: EXPERIMENTAL. Hardwired to 128-in-103 interrupt range.\n");
     fprintf(stderr,
 	    "  -f, --file <filename>       Download specified file"
@@ -121,6 +121,8 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -r, --read-fuses            Read fuses bytes. AVaRICE"
 	    " then exits.\n\n");
+    fprintf(stderr,
+            "  --part <name>               Microcontroller device name e.g. atmega16\n\n");
     fprintf(stderr,
 	    "e.g. %s  --file test.bin  --jtag /dev/ttyS0  localhost 4242\n\n",
 	    progname);
@@ -144,6 +146,8 @@ int main(int argc, char **argv)
 
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
+
+    device_name = 0;
 
     //
     // Chew over the command line.
@@ -195,6 +199,10 @@ int main(int argc, char **argv)
 		     (0 == strcmp("-r", argv[j])))
             {
                 readFusesAndQuitOnly = true;
+            }
+            else if ((0 == strcmp("--part", argv[j])) && (argc > j+1)) 
+            {
+                device_name = argv[++j];
             }
 	    else // includes --help ...
 	    {
