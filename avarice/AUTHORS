@@ -1,0 +1,13 @@
+Avarice (up to version 1.5) was originally written by Scott Finneran with help
+from Peter Jansen. They did the work or figuring out the jtagice communication
+protocol before Atmel released the spec (appnote AVR060).
+
+  Scott Finneran  <scott@klaxoniqa.com>
+  Peter Jansen    <peter@klaxoniqa.com>
+
+David Gay made some major improvements bringing avarice up to 2.0. 
+
+  David Gay       <dgay@intel-research.net>
+
+The source in this distribution is based on David Gay's work.
+
