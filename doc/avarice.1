@@ -109,8 +109,12 @@ This must be less than 1/4 of the frequency of the target. Valid values are
 1MHz, 500KHz, 250KHz or 125KHz. (default: 1MHz)
 .TP
 .BR \-p ,\  \-\-program
-Erase and program target. Binary filename must be specified with --file
-option.
+Program the target. Binary filename must be specified with --file option.
+.br
+.B NOTE:
+The old behaviour of automatically erasing the target before
+programming is no longer done. You must explicitly give the --erase option
+for the target to be erased.
 .TP
 .BR \-v ,\  \-\-verify
 Verify program in device against file specified with --file option.
@@ -127,7 +131,8 @@ fuse byte and \fBll\fR is the low fuse byte. The fuse byte data must be given
 in two digit hexidecimal format with zero padding if needed. All three bytes
 must currently be given.
 .br
-NOTE: Current, if the target device doesn't have an extended fuse byte
+.B NOTE:
+Current, if the target device doesn't have an extended fuse byte
 (e.g. the atmega16), the you should set ee==ll when writing the fuse bytes.
 .TP
 .BR \-l ,\  \-\-read-lockbits
@@ -145,7 +150,7 @@ Target device name (e.g. atmega16)
 .PP
 :\fIPORT\fR is required to put avarice into gdb server mode.
 .SH EXAMPLE USAGE
-avarice --program --file test.bin --jtag /dev/ttyS0 :4242
+avarice --erase --program --file test.bin --jtag /dev/ttyS0 :4242
 .SH DEBUGGING WITH AVARICE
 The JTAG ICE debugging environment has a few restrictions and changes:
 .IP \(bu 4

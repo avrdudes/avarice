@@ -124,7 +124,7 @@ static void usage(const char *progname)
             "                                values are 1MHz, 500KHz, 250KHz or 125KHz.\n"
             "                                (default: 1MHz)\n");
     fprintf(stderr,
-	    "  -p, --program               Erase and program target.\n"
+	    "  -p, --program               Program the target.\n"
 	    "                                Binary filename must be specified with --file\n"
 	    "                                option.\n");
     fprintf(stderr,
