@@ -1,3 +1,10 @@
+2004-03-12    <dgay@barnowl.research.intel-research.net>
+
+	* configure.ac: Bump version.
+
+	* src/jtagio.cc (safewrite): write may write only part of the
+	data (problem tended to show up with USB serial ports). Fix.
+
 2004-03-08    <dgay@barnowl.research.intel-research.net>
 
 	* scripts/start-avarice: add --erase option when programming
