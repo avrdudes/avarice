@@ -1,3 +1,8 @@
+2003-05-04  Nils Kristian Strom  <nilsst@omegav.ntnu.no>
+
+	* src/main.cc: Allow all programmer-operations (erase device,
+	write memory, write fuses, write lockbits) in one pass.
+
 2003-05-04  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Check for libbfd and libiberty, complain if either is
