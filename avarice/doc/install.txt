@@ -1,0 +1,54 @@
+#
+#	avarice - The "avarice" program.
+#	Copyright (C) 2001 Scott Finneran
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 2 of the License, or
+#	(at your option) any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+#
+# doc/install.txt
+#
+
+So far, avarice has only been tested on an Intel system running Redhat
+7.1 Linux. Patches to get it running on other platforms or even a
+configure script would be most welcome.
+
+
+BUILDING WITH MAKE.
+
+Basically, just run make in the prog/avarice directory. This will
+compile the avarice program. Just copy the binary to a directory in
+your search path.
+
+
+BUILDING WITH AEGIS & COOK.
+
+Simply create a new project (avarice) and run "aedist -rec" on the
+supplied .ae file.
+
+The recipies supplied support parallel cooking.
+
+This project needs four of Peter Millers software packages:
+
+- Aegis
+- Cook
+- Fhist
+- Tardy
+
+All are available at http://www.canb.auug.org.au/~millerp/
+
+The final product is bin/avarice.
+
+Unfortunately, due to inconsistant availability of the JTAG hardware, I
+have no host tests for avarice at this time. This will change shortly
+(or even sooner if you send a patch!).

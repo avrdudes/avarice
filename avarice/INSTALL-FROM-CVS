@@ -1,0 +1,15 @@
+To build avarice from the CVS distribution, you need
+automake 
+autoconf 2.50 or later
+
+Directions: in this directory
+./Bootstrap (once only after checkout)
+./configure
+make
+
+To install:
+make install
+
+To make a distribution that doesn't need the above tools:
+make dist
+or: make distdir=<your favourite name for the toplevel directory> dist

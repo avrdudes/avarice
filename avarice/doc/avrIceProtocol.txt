@@ -1,0 +1,408 @@
+/*
+ *	avrjtag - The "avrjtag" program.
+ *	Copyright (C) 2001 Scott Finneran & Peter Jansen
+ *
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+ *
+ * This file contains the AVR JTAG ICE protocol documentation.
+ */
+
+
+AVR JTAG-ICE serial protocol commands
+
+Background: This document outlines the results of a reverse engineering
+effort of the protocol which exists between AVRStudio and the AVR
+JTAG-Ice.
+
+Something to note is that the protocol supports dynamic bitrate
+changes. AVRStudio does indeed change the bitrate "mid-stream".
+Specifically, it seems to speed it up to 115200bps just prior to
+downloading (and possibly uploading) blocks of date to the
+JTAG-Ice. After the download, the bitrate is restored to 19200bps.
+
+This can make Analysing the protocol somewhat painful using a serial line
+sniffer.
+
+Something that the document does lack is detail on the "state" or
+procedural aspect of the protocol. ie "This command must be proceeded
+by blah blah...."
+
+Most commands are of the format <letter> [operands....]. An assumption
+was made that the letters actually mean something (ie W for write, R for
+read).
+
+***************************************************************
+
+Hints for those wishing to help with understanding the protocol:
+
+The thing that made understanding the protocol difficult, is that it
+switches bitrates when writing to memory. As such, a traditional
+protocol analyser or line monitor (which connects to the serial line
+itself) will lose sync when this happens!.
+
+One work-around for this is to use a program like HHD Serial Monitor
+(http://www.hhdsoftware.com). Rather than involve serial hardware, this
+program captures the MS-Windows serial driver requests. As such, you can
+see the data sent and received, without worrying about bitrate changes
+(although you can see driver config requests also, so you know when it
+happens).
+
+***************************************************************
+Formatting:
+
+All commands from the Host end in a Space, Space (shown below as '__')
+
+All commands from the JTAG box start with a 'A' and end in a 'A', except
+when writing to memory, a 'A''A' is sent only after the data is
+written.
+
+Things in [] are hex characters. eg [42] [FA]
+
+Underscores '_' indicate a space. Actual spaces in the text below are
+for the purposes of formatting only.
+
+Serial port works at 19200, N 8 1
+     (until the bitrate change command is issued)
+
+****************************************************************
+This command is either sync (ie serial line sync) or status or
+something. The first command also appears to have a few spaces sent down
+first. Haven't quite worked it out yet.
+
+S__     : Sync
+
+  A AVRNOCD A - the reply
+
+****************************************************************
+Query:
+These commands start with a ASCII 'q' (ie [71])
+
+qz__    : query HW version
+
+  A [c0] A - the reply
+
+
+q [7B] __       : query SW version
+
+  A [66] A
+
+
+q [84] __       : query supply voltage
+
+  A [xx] A - the reply voltage = xx/41
+
+
+q [A7] __       : ????
+
+  A [3f] A
+
+
+q [A8] __       : ????
+
+  A [20] A
+
+
+q [A9] __       : ????
+
+  A [70] A
+
+
+q [AA] __       : ????
+
+  A [29] A
+
+
+
+****************************************************************
+
+Appears to somehow configure the JTAG box. The data probably changes for
+different processors.
+
+[A0] [.(123 bytes).....] __   : ????
+
+  A A
+
+****************************************************************
+
+[A3] __  : Enable program mode.
+
+  A A
+
+****************************************************************
+
+[A4] __  : Disable program mode.
+
+ A A
+
+****************************************************************
+
+[A5] __ : Erase program memory. Program mode must be enabled.
+
+ A A
+
+****************************************************************
+
+
+R [cc] [x][x][y][y] __          : Read memory
+
+  where cc is command
+
+        [B2] - Fuse Bits
+	[B3] - Lock Bits
+	[B4] - Signature Bits
+        [A0] - Program memory if Prog Mode enabled (read words)
+        [B0] - Program memory if Prog Mode disabled (read words)
+        [20] - Data Memory
+        [22] - EEPROM
+
+  x x is the number of locations - 1 (little endian) *1 *2
+  y y is the start address           (big    endian)
+
+  A [....(data)....] [00] A *1
+
+  For data memory, the data returned is a series of bytes (endian-ness
+  does not apply).
+
+  For prog memory, the data returned is a 16-bit big endian.
+
+*1 note: For program memory each location is 16 bits. As such, it will
+ return N words, rather than bytes. These words are little endian. For
+ data space, locations are 8 bits wide, so N bytes are returned.
+*2 AVRStudio only requests 0xff bytes at a time. The reliability of the
+ system to respond to larger numbers is unknown.
+
+****************************************************************
+
+W [cc] [x][x][y][y] __          : Write memory
+
+  where cc is command
+
+        [A0] - Program memory if Prog Mode enabled (write words)
+        [B0] - Program memory if Prog Mode disabled (write words)
+        [B2] - Fuse Bits
+	[B3] - Lock Bits
+	[B4] - Signature Bits
+        [20] - Data memory (write bytes)
+        [22] - EEPROM
+        [60] - first program break point at location y y
+               this needs the data [01] for the following h command
+
+  x x is the numer of locations - 1 (little endian)
+  y y is the start address          (big    endian)
+
+  The reply to this command is a single A
+
+  Then the Host sends h [....(data)....] __ which is the data
+
+  The reply is A A (success) or E E (failure).
+
+  ONLY IN THE CASE OF PROG SPACE WRITE:
+  The data is written into the flash when the flash programming buffer
+  (2048 bits/256 bytes/128 words) is filled. As such, in the event of a
+  prog space page being smaller than an entire page (ie < 0x7F words),
+  AVRStudio sends down a single write to the last location in the page.
+
+notes:
+ - For program memory each location is 16 bits. As such, N words (rather
+ than bytes) need to be sent. These words are little endian.
+ - The object files output from both AVRStudio & GCC are already
+ word-wise little endian.
+
+****************************************************************
+
+
+3 [x][x][x] __  : set PC
+
+  A A           : where xxx is the new value for the PC.
+
+****************************************************************
+
+
+2 __            : get next PC
+
+  A [x][x][x] A : where xxx is the next location to execute (?)
+		 NOTE: APPEARS TO BE INVALID WHEN THE LAST INSTRUCTION
+		 WAS A BRANCH.
+
+****************************************************************
+
+
+1 __            : single step command
+
+  A A
+
+****************************************************************
+
+
+G __            : go command
+
+  The JTAG box replies immediately with a single
+
+  A
+
+
+  If breakpoints have been configured, and a breakpoint "hits", the JTAG
+  box will send
+
+  B [00] [BP]
+
+  [BP]  - which breakpoint was "hit" (refer breakpoint below).
+	[04] - Breakpoint X
+	[08] - Breakpoint Y
+	[10] - Breakpoint Z
+
+****************************************************************
+
+
+F __	        : finish (halt)
+
+  A [00][PCL][PCH] A
+
+        [PCL] - PC Low byte
+        [PCH] - PC High byte
+
+****************************************************************
+
+
+x __    : ???
+
+  A A
+
+****************************************************************
+
+
+"Box Config" commands
+
+These appear to be set actions performed on various configuration
+registers withing the box itself. The generic command appears to be:
+
+B [rn] [val] __          : Box Config
+
+  where rn is the register number, val is the value written.
+
+        [FD] - ???
+        [FF] - ???
+        [FA] - ???
+        [00] - ???
+
+	[62] set bit rate.
+		 val = (FA: 19200, FF: 115200)
+
+	[86] set JTAG port bitrate (AVRStudio calls this the debug freq.)
+		 val = (FA: 100kHz, F3: 50kHz, FD: 200kHz)
+
+	[81] [00] Written after modifying the PC.
+
+        [A1] set break on branch/skip (will run until the next
+                                       branch/skip instruction)
+        [A2] val = Breakpoint X Address -High
+        [A3] val = Breakpoint X Address -Low
+        [A4] val = Breakpoint Y Address -High
+        [A5] val = Breakpoint Y Address -Low
+        [A6] val = BP mode (see Breakpoints below)
+
+	[88] val = ?? (related to config bits. refer below).
+	[89] val = ?? (related to config bits. refer below).
+	[8A] val = ?? (related to config bits. refer below).
+
+
+Programming Mode.
+
+The following sequence (according to AVRStudio), prepares the chip for
+JTAG programming. It appears to only happen once per session (when
+programming mode is enabled).
+
+  Send:  [42] [88] [00] [20] [20]
+  Reply: [41] [41]
+
+  Send:  [42] [89] [01] [20] [20]
+  Reply: [41] [41]
+
+  Send:  [42] [8A] [08] [20] [20]
+  Reply: [41] [41]
+
+
+
+
+Chip Config (Fuse, Signature and Lock) Bits:
+
+  These are access using the normal read & write commands using
+  "special" address space identifiers.Fuse Bits:
+
+  Fuse bits are written/read by accessing address zero of the [B2]
+  address space.
+
+
+
+Signature Bits:
+
+  Signature bits are written/read by accessing address zero of the [B4]
+  address space.
+
+
+
+Lock Bits:
+
+  Lock bits are written/read by accessing address zero of the [B3]
+  address space.
+
+
+Breakpoints:
+
+  note: AVRStudio's first breakpoint is set by writing a 1 to the
+  desired break address using address space 60 (refer Write
+  command). I believe a corresponding write of zero will clear this
+  breakpoint.This is a code space breakpoint only.
+
+  Where BP mode is a bitmask formatted thusly (don't you think the word
+  thusly doesn't get used enough in doco?):
+
+            -------------------------------------------------
+            |     |     |     |     |           |           |
+            |  0  | Mask| BP Active |  BP Mode  |  BP Mode  |
+            |     | Mode|     |     |  (BP X)   |  (BP Y)   |
+            -------------------------------------------------
+
+      Mask Mode:
+	   [0]  = X & Y are seperate Breakpoints (non-masked mode).
+	   [1]  = X is masked with Y to create a single range of
+	         breakpoint addresses.
+
+      BP Active:
+           [00] = No breakpoints enabled
+	   [01] = Masked Mode (must be set to this value if Mask Mode = 1).
+	   [10] = 1 Breakpoint  (Breakpoint X active only)
+	   [11] = 2 Breakpoints (Breakpoints X & Y active)
+
+      BP Mode:
+           [00] = Data Space Read
+	   [01] = Data Space Write
+	   [10] = Data Space Read/Write (ie Data Access)
+	   [11] = Program Space Read
+
+      Examples:
+	        [2C] - Single program BP at [x][x]
+		[3F] - two break points at [x][x] and [y][y]
+		[28] - single data R/W BP at [x][x]
+		[20] - single data R BP at [x][x]
+		[24] - single data W BP at [x][x]
+		[34] - two data BP's one R at [x][x] and one W at [y][y]
+		[35] - two data BP's one R at [x][x] and one R at [y][y]
+		[53] - Masked program read BP at [x][x] mask [y][y]
+		[50] - Masked data read BP at [x][x] mask [y][y]
+		[51] - masked data write BP at [x][x] mask [y][y]
+		[52] - masked data RW BP at [x][x] mask [y][y]
+
+  The reply is A A
