@@ -1,3 +1,8 @@
+2003-07-25  Theodore A. Roth  <troth@openavr.org>
+
+	* configure.ac: Bump Version
+	* src/jtagio.cc: Double all of the vectors_end initializers.
+
 2003-07-24  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac: Bump version.
