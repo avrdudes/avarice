@@ -1,4 +1,9 @@
 2003-07-02  Theodore A. Roth  <troth@openavr.org>
+[Contributed by Jake McGuire <jake@boom.net>]
+
+	* src/jtagio.cc: Add support for mega64.
+
+2003-07-02  Theodore A. Roth  <troth@openavr.org>
 [Contributed by Joerg Wunsch <joerg_wunsch@uriah.heep.sax.de>]
 
 	* configure.ac: Bump version.
