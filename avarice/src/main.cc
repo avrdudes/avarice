@@ -419,10 +419,8 @@ int main(int argc, char **argv)
     if (writeLockBits)
         jtagWriteLockBits(lockBits);
 
-    // Quit & resume mote for operations that don't interact with gdb.
-    if (!gdbServerMode)
-	resumeProgram();
-    else
+    // Quit for operations that don't interact with gdb.
+    if (gdbServerMode)
     {
         initSocketAddress(&name, hostName, hostPortNumber);
         sock = makeSocket(&name, hostPortNumber);
