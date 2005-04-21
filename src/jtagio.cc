@@ -530,7 +530,9 @@ void encodeAddress(uchar *buffer, unsigned long x)
     JTAG_RESPONSE_TIMEOUT, returns false. If response byte is 
     JTAG_R_RESP_OK returns true, otherwise returns false.
 **/
-static bool sendJtagCommand(uchar *command, int commandSize, int *tries)
+enum SendResult { send_failed, send_ok, mcu_data };
+
+static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
 {
     check((*tries)++ < MAX_JTAG_COMM_ATTEMPS,
 	      "JTAG ICE: Cannot synchronise");
@@ -554,24 +556,45 @@ static bool sendJtagCommand(uchar *command, int commandSize, int *tries)
     // And wait for all characters to go to the JTAG box.... can't hurt!
     jtagCheck(tcdrain(jtagBox));
 
-    // We should get RESP_OK. 
-    uchar ok;
-    count = timeout_read(jtagBox, &ok, 1, JTAG_RESPONSE_TIMEOUT);
-    jtagCheck(count);
+    // We should get JTAG_R_OK, but we might get JTAG_R_INFO too (we just
+    // ignore it)
+    for (;;)
+      {
+	uchar ok;
+	count = timeout_read(jtagBox, &ok, 1, JTAG_RESPONSE_TIMEOUT);
+	jtagCheck(count);
 
-    // timed out
-    if (count == 0)
-    {
-	debugOut("Timed out.\n");
-	return false;
-    }
+	// timed out
+	if (count == 0)
+	{
+	    debugOut("Timed out.\n");
+	    return send_failed;
+	}
 
-    if (ok == JTAG_R_OK)
-	return true;
+	switch (ok)
+	{
+	case JTAG_R_OK: return send_ok;
+	case JTAG_R_INFO:
+	    unsigned char infobuf[2];
 
-    debugOut("Out of sync, reponse was `%02x'\n", ok);
-
-    return false;
+	    /* An info ("IDR dirty") response. Ignore it. */
+	    debugOut("Info response: ");
+	    count = timeout_read(jtagBox, infobuf, 2, JTAG_RESPONSE_TIMEOUT);
+	    for (int i = 0; i < count; i++)
+	    {
+		debugOut("%.2X ", infobuf[i]);
+	    }
+	    debugOut("\n");
+	    if (count != 2 || infobuf[1] != JTAG_R_OK)
+		return send_failed;
+	    else
+		return (SendResult)(mcu_data + infobuf[0]);
+	    break;
+	default:
+	    debugOut("Out of sync, reponse was `%02x'\n", ok);
+	    return send_failed;
+	}
+      }
 }
 
 /** Get a 'responseSize' byte response from the JTAG ICE
@@ -619,19 +642,35 @@ uchar *doJtagCommand(uchar *command, int  commandSize, int  responseSize)
     // Send command until we get RESP_OK
     for (;;)
     {
-	if (sendJtagCommand(command, commandSize, &tryCount))
-	    break;
+	uchar *response;
+	static uchar sync[] = { ' ' };
+	static uchar stop[] = { 'S', JTAG_EOM };
 
-	// We're out of sync. Attempt to resync.
-	uchar sync[] = { ' ' };
-	while (!sendJtagCommand(sync, 1, &tryCount)) 
-	    ;
+	switch (sendJtagCommand(command, commandSize, &tryCount))
+	{
+	case send_ok:
+	    response = getJtagResponse(responseSize);
+	    check(response != NULL, JTAG_CAUSE);
+	    return response;
+	case send_failed:
+	    // We're out of sync. Attempt to resync.
+	    while (sendJtagCommand(sync, sizeof sync, &tryCount) != send_ok) 
+		;
+	    break;
+	default:
+	    /* "IDR dirty", aka I/O debug register dirty, aka we got some
+	       data from the target processor. This seems to be
+	       indefinitely repeated if we don't do anything.  Asking for
+	       the sign on seems to shut it up, so we do that.  (another
+	       option is to do a 'forced stop' ('F' command), but that is a
+	       bit more intrusive --- it should be ok, as we currently only
+	       send commands to stopped targets, but...) */
+	    if (sendJtagCommand(stop, sizeof stop, &tryCount) == send_ok)
+		getJtagResponse(8);
+	    break;
+	}
     }
 
-    uchar *response = getJtagResponse(responseSize);
-    check(response != NULL, JTAG_CAUSE);
-
-    return response;
 }
 
 bool doSimpleJtagCommand(unsigned char cmd, int responseSize)
