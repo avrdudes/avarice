@@ -1,3 +1,18 @@
+2005-04-20    <dgay@barnowl.research.intel-research.net>
+
+	* configure.ac: Set version to 20050420.
+
+	* src/jtagio.cc (doJtagCommand): newly connected targets tend to
+	spam JTAG_R_INFO responses, which weren't handled by the debugger
+	(sympton: 'Cannot synchronise' messages). These responses are used
+	to provide a channel from the target program to the debugger, but
+	this is currently unused by avarice (see the IDRD register for
+	details).
+	
+	Fix: detect JTAG_R_INFO response in sendJtagCommand. When this 
+	happens, send an 'S' (get sign on) command. If we don't do this, the
+	JTAG_R_INFO response seems to be repeated indefinitely...
+
 2004-12-06  Theodore A. Roth  <troth@openavr.org>
 
 	* configure.ac (AC_INIT): Set version to 2.3.20041206 for cvs tracking.
