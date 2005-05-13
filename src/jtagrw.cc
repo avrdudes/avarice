@@ -76,7 +76,7 @@ static void swapBytes(uchar *buffer, int count)
 }
 
 
-uchar *jtagRead(unsigned long addr, unsigned int numBytes)
+uchar *jtag::jtagRead(unsigned long addr, unsigned int numBytes)
 {
     uchar *response;
     int whichSpace = 0;
@@ -154,7 +154,7 @@ uchar *jtagRead(unsigned long addr, unsigned int numBytes)
     return NULL;
 }
 
-bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
+bool jtag::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
     uchar *response;
     int whichSpace = 0;
@@ -256,7 +256,7 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
 
 
-void jtagWriteFuses(char *fuses)
+void jtag::jtagWriteFuses(char *fuses)
 {
     int temp[3];
     uchar fuseBits[3];
@@ -294,7 +294,7 @@ void jtagWriteFuses(char *fuses)
 }
 
 
-void jtagReadFuses(void)
+void jtag::jtagReadFuses(void)
 {
     uchar *fuseBits = 0;
 
@@ -311,7 +311,7 @@ void jtagReadFuses(void)
 }
 
 
-void jtagDisplayFuses(uchar *fuseBits)
+void jtag::jtagDisplayFuses(uchar *fuseBits)
 {
     statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
     statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
@@ -319,7 +319,7 @@ void jtagDisplayFuses(uchar *fuseBits)
 }
 
 
-void jtagWriteLockBits(char *lock)
+void jtag::jtagWriteLockBits(char *lock)
 {
     int temp[1];
     uchar lockBits[1];
@@ -357,7 +357,7 @@ void jtagWriteLockBits(char *lock)
 }
 
 
-void jtagReadLockBits(void)
+void jtag::jtagReadLockBits(void)
 {
     uchar *lockBits = 0;
 
@@ -374,7 +374,7 @@ void jtagReadLockBits(void)
 }
 
 
-void jtagDisplayLockBits(uchar *lockBits)
+void jtag::jtagDisplayLockBits(uchar *lockBits)
 {
     statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
 

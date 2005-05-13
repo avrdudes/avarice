@@ -42,23 +42,6 @@
 #  define bfd_get_section_size bfd_get_section_size_before_reloc
 #endif
 
-// Allocate 1 meg for image buffer. This is where the file data is
-// stored before writing occurs.
-#define MAX_IMAGE_SIZE 1000000
-
-
-// This flag is used to select the address space values for the
-// jtagRead() and jtagWrite() commands.
-bool programmingEnabled = false;
-
-
-// Enumerations for target memory type.
-typedef enum {
-    MEM_FLASH = 0,
-    MEM_EEPROM = 1,
-    MEM_RAM = 2,
-} BFDmemoryType;
-
 const char *BFDmemoryTypeString[] = {
     "FLASH", 
     "EEPROM",
@@ -70,24 +53,6 @@ const int BFDmemorySpaceOffset[] = {
     EEPROM_SPACE_ADDR_OFFSET,
     DATA_SPACE_ADDR_OFFSET,
 };
-
-typedef struct {
-    uchar val;
-    bool  used;
-} AVRMemoryByte;
-
-
-// Struct that holds the memory image. We read from file using BFD
-// into this struct, then pass the entire struct to the target writer.
-typedef struct {
-    AVRMemoryByte image[MAX_IMAGE_SIZE];
-    int last_address;
-    int first_address;
-    bool first_address_ok;
-    bool has_data;
-    const char *name;
-} BFDimage;
-
 
 static void initImage(BFDimage *image)
 {
@@ -132,7 +97,7 @@ static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
 }
 
 
-void enableProgramming(void)
+void jtag::enableProgramming(void)
 {
     programmingEnabled = true;
     check(doSimpleJtagCommand(0xa3, 1), 
@@ -140,7 +105,7 @@ void enableProgramming(void)
 }
 
 
-void disableProgramming(void)
+void jtag::disableProgramming(void)
 {
     programmingEnabled = false;
     check(doSimpleJtagCommand(0xa4, 1), 
@@ -150,13 +115,13 @@ void disableProgramming(void)
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void eraseProgramMemory(void)
+void jtag::eraseProgramMemory(void)
 {
     check(doSimpleJtagCommand(0xa5, 1), 
 	  "JTAG ICE: Failed to erase program memory");
 }
 
-void eraseProgramPage(unsigned long address)
+void jtag::eraseProgramPage(unsigned long address)
 {
     uchar *response = NULL;
     uchar command[] = { 0xa1, 0, 0, 0, JTAG_EOM };
@@ -331,7 +296,7 @@ static void jtag_create_image(bfd *file, asection *section,
 }
 
 
-static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
+void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                              bool program, bool verify)
 {
     unsigned int page_size = get_page_size(memtype);
@@ -436,7 +401,7 @@ static void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
 }
 
 
-void downloadToTarget(const char* filename, bool program, bool verify)
+void jtag::downloadToTarget(const char* filename, bool program, bool verify)
 {
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.

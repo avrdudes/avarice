@@ -32,7 +32,7 @@
 #include "avarice.h"
 #include "jtag.h"
 
-void setJtagParameter(uchar item, uchar newValue)
+void jtag::setJtagParameter(uchar item, uchar newValue)
 {
     uchar *response = NULL;
     uchar command[] = {'B', 0, 0, JTAG_EOM };
@@ -46,7 +46,7 @@ void setJtagParameter(uchar item, uchar newValue)
     delete [] response;
 }
 
-uchar getJtagParameter(uchar item)
+uchar jtag::getJtagParameter(uchar item)
 {
     uchar *response = NULL;
     uchar command[] = {'q', 0, JTAG_EOM };

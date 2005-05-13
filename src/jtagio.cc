@@ -39,9 +39,6 @@
 
 jtag_device_def_type *global_p_device_def;
 
-// Name of device controlled by JTAG ICE
-char* device_name;
-
 /* Device descriptor magic from Atmel's documents. Let's hope it's more
    accurate than the rest of that text... */
 jtag_device_def_type deviceDefinitions[] = {
@@ -383,25 +380,18 @@ jtag_device_def_type deviceDefinitions[] = {
     }
 };
 
-// The file descriptor used while talking to the JTAG ICE
-int jtagBox = 0;
-
-// The initial serial port parameters. We restore them on exit.
-static struct termios oldtio;
-static bool oldtioValid = false;
-
-void jtagCheck(int status)
+void jtag::jtagCheck(int status)
 {
     unixCheck(status, JTAG_CAUSE, NULL);
 }
 
-static void restoreSerialPort()
+void jtag::restoreSerialPort()
 {
   if (jtagBox >= 0 && oldtioValid)
       tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-void initJtagPort(char *jtagDeviceName)
+jtag::jtag(const char *jtagDeviceName)
 {
     struct termios newtio;
 
@@ -414,7 +404,6 @@ void initJtagPort(char *jtagDeviceName)
     // save current serial port settings and plan to restore them on exit
     jtagCheck(tcgetattr(jtagBox, &oldtio));
     oldtioValid = true;
-    atexit(restoreSerialPort);
 
     memset(&newtio, 0, sizeof(newtio));
     newtio.c_cflag = CS8 | CLOCAL | CREAD;
@@ -445,7 +434,13 @@ void initJtagPort(char *jtagDeviceName)
     jtagCheck(tcsetattr(jtagBox,TCSANOW,&newtio));
 }
 
-int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
+jtag::~jtag(void)
+{
+  restoreSerialPort();
+}
+
+
+int jtag::timeout_read(void *buf, size_t count, unsigned long timeout)
 {
     char *buffer = (char *)buf;
     size_t actual = 0;
@@ -454,13 +449,13 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
     {
 	fd_set readfds;
 	FD_ZERO(&readfds);
-	FD_SET(fd, &readfds);
+	FD_SET(jtagBox, &readfds);
 
 	struct timeval tmout;
 	tmout.tv_sec = timeout / 1000000;
 	tmout.tv_usec = timeout % 1000000;
 
-	int selected = select(fd + 1, &readfds, NULL, NULL, &tmout);
+	int selected = select(jtagBox + 1, &readfds, NULL, NULL, &tmout);
         /* Even though select() is not supposed to set errno to EAGAIN
            (according to the linux man page), it seems that errno can be set
            to EAGAIN on some cygwin systems. Thus, we need to catch that
@@ -472,7 +467,7 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
 	if (selected == 0)
 	    return actual;
 
-	ssize_t thisread = read(fd, &buffer[actual], count - actual);
+	ssize_t thisread = read(jtagBox, &buffer[actual], count - actual);
         if ((thisread < 0) && (errno == EAGAIN))
             continue;
 	jtagCheck(thisread);
@@ -483,16 +478,16 @@ int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
     return count;
 }
 
-static int safewrite(int fd, const void *b, int count)
+int jtag::safewrite(const void *b, int count)
 {
   char *buffer = (char *)b;
   int actual = 0;
-  int flags = fcntl(fd, F_GETFL);
+  int flags = fcntl(jtagBox, F_GETFL);
 
-  fcntl(fd, F_SETFL, 0); // blocking mode
+  fcntl(jtagBox, F_SETFL, 0); // blocking mode
   while (count > 0)
     {
-      int n = write(fd, buffer, count);
+      int n = write(jtagBox, buffer, count);
 
       if (n == -1 && errno == EINTR)
 	continue;
@@ -506,16 +501,16 @@ static int safewrite(int fd, const void *b, int count)
       actual += n;
       buffer += n;
     }
-  fcntl(fd, F_SETFL, flags); 
+  fcntl(jtagBox, F_SETFL, flags); 
   return actual;
 }
 
-unsigned long decodeAddress(uchar *buf)
+unsigned long jtag::decodeAddress(uchar *buf)
 {
     return buf[0] << 16 | buf[1] << 8 | buf[2];
 }
 
-void encodeAddress(uchar *buffer, unsigned long x)
+void jtag::encodeAddress(uchar *buffer, unsigned long x)
 {
     buffer[0] = x >> 16;
     buffer[1] = x >> 8;
@@ -530,9 +525,8 @@ void encodeAddress(uchar *buffer, unsigned long x)
     JTAG_RESPONSE_TIMEOUT, returns false. If response byte is 
     JTAG_R_RESP_OK returns true, otherwise returns false.
 **/
-enum SendResult { send_failed, send_ok, mcu_data };
 
-static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
+SendResult jtag::sendJtagCommand(uchar *command, int commandSize, int *tries)
 {
     check((*tries)++ < MAX_JTAG_COMM_ATTEMPS,
 	      "JTAG ICE: Cannot synchronise");
@@ -547,7 +541,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     // before writing, clean up any "unfinished business".
     jtagCheck(tcflush(jtagBox, TCIFLUSH));
 
-    int count = safewrite(jtagBox, command, commandSize);
+    int count = safewrite(command, commandSize);
     if (count < 0)
       jtagCheck(count);
     else // this shouldn't happen
@@ -561,7 +555,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     for (;;)
       {
 	uchar ok;
-	count = timeout_read(jtagBox, &ok, 1, JTAG_RESPONSE_TIMEOUT);
+	count = timeout_read(&ok, 1, JTAG_RESPONSE_TIMEOUT);
 	jtagCheck(count);
 
 	// timed out
@@ -579,7 +573,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
 
 	    /* An info ("IDR dirty") response. Ignore it. */
 	    debugOut("Info response: ");
-	    count = timeout_read(jtagBox, infobuf, 2, JTAG_RESPONSE_TIMEOUT);
+	    count = timeout_read(infobuf, 2, JTAG_RESPONSE_TIMEOUT);
 	    for (int i = 0; i < count; i++)
 	    {
 		debugOut("%.2X ", infobuf[i]);
@@ -603,7 +597,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     Returns a dynamically allocated buffer containing the reponse (caller
     must free) otherwise
 **/
-static uchar *getJtagResponse(int responseSize)
+uchar *jtag::getJtagResponse(int responseSize)
 {
     uchar *response;
     int numCharsRead;
@@ -614,7 +608,7 @@ static uchar *getJtagResponse(int responseSize)
     response = new uchar[responseSize + 1];
     response[responseSize] = '\0';
 
-    numCharsRead = timeout_read(jtagBox, response, responseSize,
+    numCharsRead = timeout_read(response, responseSize,
                                 JTAG_RESPONSE_TIMEOUT);
     jtagCheck(numCharsRead);
 
@@ -635,7 +629,7 @@ static uchar *getJtagResponse(int responseSize)
     return response;
 }
 
-uchar *doJtagCommand(uchar *command, int  commandSize, int  responseSize)
+uchar *jtag::doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 {
     int tryCount = 0;
 
@@ -673,7 +667,7 @@ uchar *doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 
 }
 
-bool doSimpleJtagCommand(unsigned char cmd, int responseSize)
+bool jtag::doSimpleJtagCommand(unsigned char cmd, int responseSize)
 {
     uchar *response;
     uchar command[] = { cmd, JTAG_EOM };
@@ -690,7 +684,7 @@ bool doSimpleJtagCommand(unsigned char cmd, int responseSize)
 
 /** Change bitrate of PC's serial port as specified by BIT_RATE_xxx in
     'newBitRate' **/
-static void changeLocalBitRate(uchar newBitRate)
+void jtag::changeLocalBitRate(uchar newBitRate)
 {
     // Change the local port bitrate.
     struct termios tio;
@@ -729,14 +723,14 @@ static void changeLocalBitRate(uchar newBitRate)
 }
 
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
-static void changeBitRate(uchar newBitRate)
+void jtag::changeBitRate(uchar newBitRate)
 {
     setJtagParameter(JTAG_P_BITRATE, newBitRate);
     changeLocalBitRate(newBitRate);
 }
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
-static void setDeviceDescriptor(jtag_device_def_type *dev)
+void jtag::setDeviceDescriptor(jtag_device_def_type *dev)
 {
     uchar *response = NULL;
     uchar *command = (uchar *)(&dev->dev_desc);
@@ -750,7 +744,7 @@ static void setDeviceDescriptor(jtag_device_def_type *dev)
 
 /** Check for emulator using the 'S' command *without* retries
     (used at startup to check sync only) **/
-static bool checkForEmulator(void)
+bool jtag::checkForEmulator(void)
 {
     uchar *response;
     uchar command[] = { 'S', JTAG_EOM };
@@ -769,7 +763,7 @@ static bool checkForEmulator(void)
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
-static bool synchroniseAt(uchar bitrate)
+bool jtag::synchroniseAt(uchar bitrate)
 {
     debugOut("Attempting synchronisation at bitrate %02x\n", bitrate);
 
@@ -792,7 +786,7 @@ static bool synchroniseAt(uchar bitrate)
 }
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
-static void startJtagLink(void)
+void jtag::startJtagLink(void)
 {
     static uchar bitrates[] =
     { BIT_RATE_115200, BIT_RATE_19200, BIT_RATE_57600, BIT_RATE_38400,
@@ -812,7 +806,7 @@ static void startJtagLink(void)
  May be overridden by command line parameter.
 
 */
-static void deviceAutoConfig(void)
+void jtag::deviceAutoConfig(void)
 {
     unsigned int device_id;
     int i;
@@ -895,7 +889,7 @@ static void deviceAutoConfig(void)
 }
 
 
-void initJtagBox(void)
+void jtag::initJtagBox(void)
 {
     statusOut("JTAG config starting.\n");
 
@@ -920,7 +914,7 @@ void initJtagBox(void)
 }
 
 
-void initJtagOnChipDebugging(uchar bitrate)
+void jtag::initJtagOnChipDebugging(uchar bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 

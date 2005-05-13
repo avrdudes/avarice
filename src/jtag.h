@@ -22,6 +22,9 @@
 #ifndef JTAG_H
 #define JTAG_H
 
+#include <bfd.h>
+#include <termios.h>
+
 #include "ioreg.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
@@ -228,86 +231,6 @@ enum {
     PC_INVALID			      = 0xffffffff
 };
 
-// The Sync_CRC/EOP message terminator (no real CRC in sight...)
-#define JTAG_EOM 0x20, 0x20
-
-// A generic error message when nothing good comes to mind
-#define JTAG_CAUSE "JTAG ICE communication failed"
-
-// The file descriptor used while talking to the JTAG ICE
-extern int jtagBox;
-
-// Whether we are in "programming mode" (changes how program memory
-// is written, apparently)
-extern bool programmingEnabled;
-
-// Name of the device controlled by the JTAG ICE
-extern char *device_name;
-
-// Basic JTAG I/O
-// -------------
-
-/** If status < 0: Report JTAG ICE communication error & exit **/
-void jtagCheck(int status);
-
-/** Initialise the serial port specified by jtagDeviceName for JTAG ICE access
- **/
-void initJtagPort(char *jtagDeviceName);
-
-/** A timed-out read from file descriptor 'fd'.
-
-    'timeout' is in microseconds, it is the maximum interval within which
-    the read must make progress (i.e., it's a per-byte timeout)
-
-    Returns the number of bytes read or -1 for errors other than timeout.
-
-    Note: EOF and timeout cannot be distinguished
-**/
-int timeout_read(int fd, void *buf, size_t count, unsigned long timeout);
-
-/** Decode 3-byte big-endian address **/
-unsigned long decodeAddress(uchar *buffer);
-
-/** Encode 3-byte big-endian address **/
-void encodeAddress(uchar *buffer, unsigned long x);
-
-/** Send a command to the jtag, with retries, and return the 'responseSize' 
-    byte response. Aborts avarice in case of to many failed retries.
-
-    Returns a dynamically allocated buffer containing the reponse (caller
-    must free)
-**/
-uchar *doJtagCommand(uchar *command, int  commandSize, int responseSize);
-
-/** Simplified form of doJtagCommand:
-    Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a 
-    'responseSize' byte reponse.
-
-    Return true if responseSize is 0 or if last response byte is
-    JTAG_R_OK
-**/
-bool doSimpleJtagCommand(uchar cmd, int responseSize);
-
-/** Send initial configuration to setup the JTAG box itself. 
- **/
-void initJtagBox(void);
-
-/**
-    Send initial configuration to the JTAG box when starting a new
-    debug session.  (Note: when attaching to a running target, fuse
-    bits cannot be set so debugging must have been enabled earlier)
-
-    The bitrate sets the JTAG bitrate. The bitrate must be less than
-    1/4 that of the target avr frequency or the jtagice will have
-    problems reading from the target. The problems are usually
-    manifested as failed calls to jtagRead().
-**/
-void initJtagOnChipDebugging(uchar bitrate);
-
-
-// Breakpoints
-// -----------
-
 enum bpType
 {
     NONE,           // disabled.
@@ -317,95 +240,273 @@ enum bpType
     ACCESS_DATA,    // read/write data space breakpoint (ie "watch").
 };
 
-/** Clear out the breakpoints. */
-void deleteAllBreakpoints(void);
+/* There are apparently a total of three hardware breakpoints 
+   (the docs claim four, but documents 2 breakpoints accessible via 
+   non-existent parameters). 
 
-/** Delete breakpoint at the specified address. */
-bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
+   In summary, there is one code-only breakpoint, and 2 breakpoints which
+   can be:
+   - 2 code breakpoints
+   - 2 1-byte data breakpoints
+   - 1 code and 1-byte data breakpoint
+   - 1 ranged code breakpoint
+   - 1 ranged data breakpoint
 
-/** Add a code breakpoint at the specified address. */
-bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
+   Currently we're ignoring ranges, so we allow up to 3 breakpoints,
+   of which a maximum of 2 are data breakpoints. This is easily handled
+   by keeping each kind of breakpoint separate.
 
-/** Send the breakpoint details down to the JTAG box. */
-void updateBreakpoints(bool setCodeBreakpoints);
+   In the future, we could support "software" breakpoints too (though it
+   seems mildly painful)
 
-/** True if there is a breakpoint at address */
-bool codeBreakpointAt(unsigned int address);
+   See avrIceProtocol.txt for full details.
+*/
 
-/** True if there is a breakpoint between start (inclusive) and 
-    end (exclusive) */
-bool codeBreakpointBetween(unsigned int start, unsigned int end);
+enum {
+  // We distinguish the total possible breakpoints and those for each type
+  // (code or data) - see above
+  MAX_BREAKPOINTS_CODE = 4,
+  MAX_BREAKPOINTS_DATA = 2,
+  MAX_BREAKPOINTS = 4
+};
 
-bool stopAt(unsigned int address);
+struct breakpoint
+{
+    unsigned int address;
+    bpType type;
+};
 
-// Miscellaneous
-// -------------
+enum SendResult { send_failed, send_ok, mcu_data };
 
-/** Set JTAG ICE parameter 'item' to 'newValue' **/
-void setJtagParameter(uchar item, uchar newValue);
+// Enumerations for target memory type.
+typedef enum {
+    MEM_FLASH = 0,
+    MEM_EEPROM = 1,
+    MEM_RAM = 2,
+} BFDmemoryType;
 
-/** Return value of JTAG ICE parameter 'item' **/
-uchar getJtagParameter(uchar item);
+extern const char *BFDmemoryTypeString[];
+extern const int BFDmemorySpaceOffset[];
 
-// Writing to program memory
-// -------------------------
+// Allocate 1 meg for image buffer. This is where the file data is
+// stored before writing occurs.
+#define MAX_IMAGE_SIZE 1000000
 
-/** Switch to faster programming mode, allows chip erase */
-void enableProgramming(void);
 
-/** Switch back to normal programming mode **/
-void disableProgramming(void);
+typedef struct {
+    uchar val;
+    bool  used;
+} AVRMemoryByte;
 
-/** Erase all chip memory **/
-void eraseProgramMemory(void);
 
-/** Download an image contained in the specified file. */
-void downloadToTarget(const char* filename, bool program, bool verify);
+// Struct that holds the memory image. We read from file using BFD
+// into this struct, then pass the entire struct to the target writer.
+typedef struct {
+    AVRMemoryByte image[MAX_IMAGE_SIZE];
+    int last_address;
+    int first_address;
+    bool first_address_ok;
+    bool has_data;
+    const char *name;
+} BFDimage;
 
-// Running, single stepping, etc
-// -----------------------------
 
-/** Retrieve the current Program Counter value, or PC_INVALID if fails */
-unsigned long getProgramCounter(void);
+// The Sync_CRC/EOP message terminator (no real CRC in sight...)
+#define JTAG_EOM 0x20, 0x20
 
-/** Set program counter to 'pc'. Return true iff successful **/
-bool setProgramCounter(unsigned long pc);
+// A generic error message when nothing good comes to mind
+#define JTAG_CAUSE "JTAG ICE communication failed"
 
-/** Reset AVR. Return true iff successful **/
-bool resetProgram(void);
+class jtag
+{
+  // The initial serial port parameters. We restore them on exit.
+  struct termios oldtio;
+  bool oldtioValid;
 
-/** Interrupt AVR. Return true iff successful **/
-bool interruptProgram(void);
+  friend void ::restoreSerialPort();
 
-/** Resume program execution. Return true iff successful.
-    Note: the gdb 'continue' command is handled by jtagContinue,
-    this is just the low level command to resume after interruptProgram
-**/
-bool resumeProgram(void);
+  breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
+  int numBreakpointsCode, numBreakpointsData;
 
-/** Issue a "single step" command to the JTAG box. 
-    Return true iff successful **/
-bool jtagSingleStep(void);
+  // The file descriptor used while talking to the JTAG ICE
+  int jtagBox;
 
-/** Send the program on it's merry way, and wait for a breakpoint or
-    input from gdb.
-    Return true for a breakpoint, false for gdb input. **/
-bool jtagContinue(bool setCodeBreakpoints);
+  int safewrite(const void *b, int count);
+  SendResult sendJtagCommand(uchar *command, int commandSize, int *tries);
+  uchar *getJtagResponse(int responseSize);
+  void changeLocalBitRate(uchar newBitRate);
+  void changeBitRate(uchar newBitRate);
+  void setDeviceDescriptor(jtag_device_def_type *dev);
+  bool checkForEmulator(void);
+  bool synchroniseAt(uchar bitrate);
+  void startJtagLink(void);
+  void deviceAutoConfig(void);
+  void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
+			bool program, bool verify);
+  void restoreSerialPort(void);
 
-// R/W memory
-// ----------
+  public:
+  jtag(const char *dev);
+  ~jtag(void);
 
-/** Read 'numBytes' from target memory address 'addr'.
+  // Whether we are in "programming mode" (changes how program memory
+  // is written, apparently)
+  bool programmingEnabled;
+
+  // Name of the device controlled by the JTAG ICE
+  char *device_name;
+
+  // Basic JTAG I/O
+  // -------------
+
+  /** If status < 0: Report JTAG ICE communication error & exit **/
+  void jtagCheck(int status);
+
+  /** A timed-out read from file descriptor 'fd'.
+
+  'timeout' is in microseconds, it is the maximum interval within which
+  the read must make progress (i.e., it's a per-byte timeout)
+
+  Returns the number of bytes read or -1 for errors other than timeout.
+
+  Note: EOF and timeout cannot be distinguished
+  **/
+  int timeout_read(void *buf, size_t count, unsigned long timeout);
+
+  /** Decode 3-byte big-endian address **/
+  unsigned long decodeAddress(uchar *buffer);
+
+  /** Encode 3-byte big-endian address **/
+  void encodeAddress(uchar *buffer, unsigned long x);
+
+  /** Send a command to the jtag, with retries, and return the 'responseSize' 
+      byte response. Aborts avarice in case of to many failed retries.
+
+    Returns a dynamically allocated buffer containing the reponse (caller
+    must free)
+  **/
+  uchar *doJtagCommand(uchar *command, int  commandSize, int responseSize);
+
+  /** Simplified form of doJtagCommand:
+      Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a 
+      'responseSize' byte reponse.
+
+      Return true if responseSize is 0 or if last response byte is
+      JTAG_R_OK
+  **/
+  bool doSimpleJtagCommand(uchar cmd, int responseSize);
+
+  /** Send initial configuration to setup the JTAG box itself. 
+   **/
+  void initJtagBox(void);
+
+  /**
+     Send initial configuration to the JTAG box when starting a new
+     debug session.  (Note: when attaching to a running target, fuse
+     bits cannot be set so debugging must have been enabled earlier)
+
+     The bitrate sets the JTAG bitrate. The bitrate must be less than
+     1/4 that of the target avr frequency or the jtagice will have
+     problems reading from the target. The problems are usually
+     manifested as failed calls to jtagRead().
+  **/
+  void initJtagOnChipDebugging(uchar bitrate);
+
+
+  // Breakpoints
+  // -----------
+
+  /** Clear out the breakpoints. */
+  void deleteAllBreakpoints(void);
+
+  /** Delete breakpoint at the specified address. */
+  bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
+
+  /** Add a code breakpoint at the specified address. */
+  bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
+
+  /** Send the breakpoint details down to the JTAG box. */
+  void updateBreakpoints(bool setCodeBreakpoints);
+
+  /** True if there is a breakpoint at address */
+  bool codeBreakpointAt(unsigned int address);
+
+  /** True if there is a breakpoint between start (inclusive) and 
+      end (exclusive) */
+  bool codeBreakpointBetween(unsigned int start, unsigned int end);
+
+  bool stopAt(unsigned int address);
+
+  // Miscellaneous
+  // -------------
+
+  /** Set JTAG ICE parameter 'item' to 'newValue' **/
+  void setJtagParameter(uchar item, uchar newValue);
+
+  /** Return value of JTAG ICE parameter 'item' **/
+  uchar getJtagParameter(uchar item);
+
+  // Writing to program memory
+  // -------------------------
+
+  /** Switch to faster programming mode, allows chip erase */
+  void enableProgramming(void);
+
+  /** Switch back to normal programming mode **/
+  void disableProgramming(void);
+
+  /** Erase all chip memory **/
+  void eraseProgramMemory(void);
+
+  void eraseProgramPage(unsigned long address);
+
+  /** Download an image contained in the specified file. */
+  void downloadToTarget(const char* filename, bool program, bool verify);
+
+  // Running, single stepping, etc
+  // -----------------------------
+
+  /** Retrieve the current Program Counter value, or PC_INVALID if fails */
+  unsigned long getProgramCounter(void);
+
+  /** Set program counter to 'pc'. Return true iff successful **/
+  bool setProgramCounter(unsigned long pc);
+
+  /** Reset AVR. Return true iff successful **/
+  bool resetProgram(void);
+
+  /** Interrupt AVR. Return true iff successful **/
+  bool interruptProgram(void);
+
+  /** Resume program execution. Return true iff successful.
+      Note: the gdb 'continue' command is handled by jtagContinue,
+      this is just the low level command to resume after interruptProgram
+  **/
+  bool resumeProgram(void);
+
+  /** Issue a "single step" command to the JTAG box. 
+      Return true iff successful **/
+  bool jtagSingleStep(void);
+
+  /** Send the program on it's merry way, and wait for a breakpoint or
+      input from gdb.
+      Return true for a breakpoint, false for gdb input. **/
+  bool jtagContinue(bool setCodeBreakpoints);
+
+  // R/W memory
+  // ----------
+
+  /** Read 'numBytes' from target memory address 'addr'.
 
     The memory space is selected by the high order bits of 'addr' (see
     above).
 
     Returns a dynamically allocated buffer with the requested bytes if
     successful (caller must free), or NULL if the read failed.
- **/
-uchar *jtagRead(unsigned long addr, unsigned int numBytes);
+  **/
+  uchar *jtagRead(unsigned long addr, unsigned int numBytes);
 
-/** Write 'numBytes' bytes from 'buffer' to target memory address 'addr'
+  /** Write 'numBytes' bytes from 'buffer' to target memory address 'addr'
 
     The memory space is selected by the high order bits of 'addr' (see
     above).
@@ -414,50 +515,52 @@ uchar *jtagRead(unsigned long addr, unsigned int numBytes);
 
     Note: The current behaviour for program-space writes is pretty
     weird (does not match jtagRead). See comments in jtagrw.cc.
-**/
-bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
+  **/
+  bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
 
 
-/** Write fuses to target.
+  /** Write fuses to target.
 
     The input parameter is a string from command-line, as produced by
     printf("%x", 0xaabbcc );
-**/
-void jtagWriteFuses(char *fuses);
+  **/
+  void jtagWriteFuses(char *fuses);
 
 
-/** Read fuses from target.
-
-    Shows extended, high and low fuse byte.
-*/
-void jtagReadFuses(void);
-
-
-/** Display fuses.
+  /** Read fuses from target.
 
     Shows extended, high and low fuse byte.
-*/
-void jtagDisplayFuses(uchar *fuseBits);
+  */
+  void jtagReadFuses(void);
 
 
-/** Write lockbits to target.
+  /** Display fuses.
+
+    Shows extended, high and low fuse byte.
+  */
+  void jtagDisplayFuses(uchar *fuseBits);
+
+
+  /** Write lockbits to target.
 
     The input parameter is a string from command-line, as produced by
     printf("%x", 0xaa);
-**/
-void jtagWriteLockBits(char *lock);
+  **/
+  void jtagWriteLockBits(char *lock);
 
 
-/** Read the lock bits from the target and display them.
-**/
-void jtagReadLockBits(void);
+  /** Read the lock bits from the target and display them.
+   **/
+  void jtagReadLockBits(void);
 
 
-/** Display lockbits.
+  /** Display lockbits.
 
     Shows raw value and individual bits.
-**/
-void jtagDisplayLockBits(uchar *lockBits);
+  **/
+  void jtagDisplayLockBits(uchar *lockBits);
+};
 
+extern struct jtag *theJtagICE;
 
 #endif
