@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the GDB remote protocol.
+ *
+ * $Id$
  */
 
 #include <stdlib.h>
@@ -134,7 +137,7 @@ int getDebugChar(void)
     if (result == 0) // gdb exited
     {
 	statusOut("gdb exited.\n");
-	resumeProgram();
+	theJtagICE->resumeProgram();
 	exit(0);
     }
 
@@ -156,7 +159,7 @@ int checkForDebugChar(void)
     if (result == 0) // gdb exited
     {
 	statusOut("gdb exited.\n");
-	resumeProgram();
+	theJtagICE->resumeProgram();
 	exit(0);
     }
 
@@ -337,10 +340,10 @@ void gdbOut(const char *fmt, ...)
 static void reportStatusExtended(int sigval)
 {
     uchar *jtagBuffer;
-    unsigned long pc = getProgramCounter();
+    unsigned long pc = theJtagICE->getProgramCounter();
 
     // Read in SPL SPH SREG
-    jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+    jtagBuffer = theJtagICE->jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
 
     if (jtagBuffer)
     {
@@ -383,7 +386,7 @@ static void reportStatus(int sigval)
 // little-endian word read
 unsigned int readLWord(unsigned int address)
 {
-    unsigned char *mem = jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
+    unsigned char *mem = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
 
     if (!mem)
 	return 0;		// hmm
@@ -396,7 +399,7 @@ unsigned int readLWord(unsigned int address)
 // big-endian word read
 unsigned int readBWord(unsigned int address)
 {
-    unsigned char *mem = jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
+    unsigned char *mem = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
 
     if (!mem)
 	return 0;		// hmm
@@ -421,7 +424,7 @@ bool handleInterrupt(void)
     unsigned int retPC = readBWord(intrSP + 1) << 1;
     debugOut("INT SP = %x, retPC = %x\n", intrSP, retPC);
 
-    bool needBP = !codeBreakpointAt(retPC);
+    bool needBP = !theJtagICE->codeBreakpointAt(retPC);
 
     for (;;)
     {
@@ -434,12 +437,12 @@ bool handleInterrupt(void)
 	    // thus leaving is a free hw breakpoint. But if for some reason it
 	    // the add fails, interrupt the program at the interrupt handler
 	    // entry point
-	    if (!addBreakpoint(retPC, CODE, 0))
+	    if (!theJtagICE->addBreakpoint(retPC, CODE, 0))
 		return false;
 	}
-	result = jtagContinue(true);
+	result = theJtagICE->jtagContinue(true);
 	if (needBP)
-	    deleteBreakpoint(retPC, CODE, 0);
+	    theJtagICE->deleteBreakpoint(retPC, CODE, 0);
 
 	if (!result || !needBP) // user interrupt or hit user BP at retPC
 	    break;
@@ -456,20 +459,20 @@ static bool stepThrough(int start, int end)
 {
     // Try and use a breakpoint at end and "break on change of flow"
     // This doesn't seem to provide much benefit...
-    bool flowIntr = !codeBreakpointBetween(start, end);
+    bool flowIntr = !theJtagICE->codeBreakpointBetween(start, end);
 
     for (;;) 
     {
 	if (flowIntr)
 	{
-	    setJtagParameter(JTAG_P_BP_FLOW, 1);
-	    stopAt(end);
-	    if (!jtagContinue(false))
+	    theJtagICE->breakOnChangeFlow();
+	    theJtagICE->stopAt(end);
+	    if (!theJtagICE->jtagContinue(false))
 		return false;
 	}
 	else
 	{
-	    if (!jtagSingleStep())
+	    if (!theJtagICE->jtagSingleStep())
 		gdbOut("Failed to single-step");
 
 	    int gdbIn = checkForDebugChar();
@@ -482,8 +485,8 @@ static bool stepThrough(int start, int end)
 
 	for (;;)
 	{
-	    int newPC = getProgramCounter();
-	    if (codeBreakpointAt(newPC))
+	    int newPC = theJtagICE->getProgramCounter();
+	    if (theJtagICE->codeBreakpointAt(newPC))
 		return true;
 	    if (newPC >= start && newPC < end)
 		break;
@@ -502,11 +505,11 @@ static bool stepThrough(int start, int end)
 
 static bool singleStep()
 {
-    if (!jtagSingleStep())
+    if (!theJtagICE->jtagSingleStep())
 	gdbOut("Failed to single-step");
 
-    int newPC = getProgramCounter();
-    if (codeBreakpointAt(newPC))
+    int newPC = theJtagICE->getProgramCounter();
+    if (theJtagICE->codeBreakpointAt(newPC))
 	return true;
     // assume interrupt when PC goes into interrupt table
     if (ignoreInterrupts && newPC < global_p_device_def->vectors_end) 
@@ -646,7 +649,7 @@ static void repStatus(bool breaktime)
     {
 	// A breakpoint did not occur. Assume that GDB sent a break.
 	// Halt the target.
-	interruptProgram();
+	theJtagICE->interruptProgram();
 	// Report this as a user interrupt
 	reportStatusExtended(SIGINT);
     }
@@ -684,7 +687,7 @@ void talkToGdb(void)
 	break;
 
     case 'R':
-	if (!resetProgram())
+	if (!theJtagICE->resetProgram())
 	    gdbOut("reset failed\n");
         dontSendReply = true;
 	break;
@@ -746,7 +749,7 @@ void talkToGdb(void)
                 length--;
             }
 
-	    if (jtagWrite(addr, length, jtagBuffer))
+	    if (theJtagICE->jtagWrite(addr, length, jtagBuffer))
 		ok();
 	    delete [] jtagBuffer;
 
@@ -764,7 +767,7 @@ void talkToGdb(void)
 	   (hexToInt(&ptr, &length)))
 	{
 	    debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
-	    jtagBuffer = jtagRead(addr, length);
+	    jtagBuffer = theJtagICE->jtagRead(addr, length);
 	    if (jtagBuffer)
 	    {
 		mem2hex(jtagBuffer, remcomOutBuffer, length);
@@ -791,7 +794,7 @@ void talkToGdb(void)
 	// SREG is at 0x5F
 	debugOut("\nGDB: (Registers)Read %d bytes from 0x%X\n",
 		  0x20, 0x00 + DATA_SPACE_ADDR_OFFSET);
-	jtagBuffer = jtagRead(0x00 + DATA_SPACE_ADDR_OFFSET, 0x20);
+	jtagBuffer = theJtagICE->jtagRead(0x00 + DATA_SPACE_ADDR_OFFSET, 0x20);
 
 	if (jtagBuffer)
 	{
@@ -808,7 +811,7 @@ void talkToGdb(void)
         }
 
         // Read in SPL SPH SREG
-        jtagBuffer = jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+        jtagBuffer = theJtagICE->jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
      
         if (jtagBuffer)
         {
@@ -835,7 +838,7 @@ void talkToGdb(void)
         }
 
         // PC
-        newPC = getProgramCounter();
+        newPC = theJtagICE->getProgramCounter();
         regBuffer[35] = (unsigned char)(newPC & 0xff);
         regBuffer[36] = (unsigned char)((newPC & 0xff00) >> 8);
         regBuffer[37] = (unsigned char)((newPC & 0xff0000) >> 16);
@@ -938,7 +941,7 @@ void talkToGdb(void)
                             if (count)
                             {
                                 // Read consecutive address io_registers
-                                jtagBuffer = jtagRead(DATA_SPACE_ADDR_OFFSET +
+                                jtagBuffer = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET +
                                                       io_reg_defs[i].reg_addr,
                                                       count);
 								
@@ -979,26 +982,26 @@ void talkToGdb(void)
             if (regno >= 0 && regno < NUMREGS)
             {
 		hex2mem(ptr, reg, 1);
-                if (jtagWrite(regno+DATA_SPACE_ADDR_OFFSET, 1, reg))
+                if (theJtagICE->jtagWrite(regno+DATA_SPACE_ADDR_OFFSET, 1, reg))
 		    ok();
                 break;
             }
             else if (regno == SREG)
             {
 		hex2mem(ptr, reg, 1);
-                if (jtagWrite(0x5f+DATA_SPACE_ADDR_OFFSET, 1, reg))
+                if (theJtagICE->jtagWrite(0x5f+DATA_SPACE_ADDR_OFFSET, 1, reg))
 		    ok();
             }
 	    else if (regno == SP)
 	    {
 		hex2mem(ptr, reg, 2);
-		if (jtagWrite(0x5d+DATA_SPACE_ADDR_OFFSET, 2, reg))
+		if (theJtagICE->jtagWrite(0x5d+DATA_SPACE_ADDR_OFFSET, 2, reg))
 		    ok();
 	    }
 	    else if (regno == PC)
 	    {
 		hex2mem(ptr, reg, 4);
-		if (setProgramCounter(reg[0] | reg[1] << 8 |
+		if (theJtagICE->setProgramCounter(reg[0] | reg[1] << 8 |
 				      reg[2] << 16 | reg[3] << 24))
 		    ok();
 	    }
@@ -1016,7 +1019,7 @@ void talkToGdb(void)
 	// try to read optional parameter, pc unchanged if no parm
 	if (hexToInt(&ptr, &addr))
 	{
-	    if (!setProgramCounter(addr))
+	    if (!theJtagICE->setProgramCounter(addr))
 		gdbOut("Failed to set PC");
 	}
 	repStatus(singleStep());
@@ -1050,7 +1053,7 @@ void talkToGdb(void)
         {
             if (sig == SIGHUP)
             {
-                if (resetProgram())
+                if (theJtagICE->resetProgram())
                 {
                     reportStatusExtended(SIGTRAP);
                 }
@@ -1063,16 +1066,16 @@ void talkToGdb(void)
 	// try to read optional parameter, pc unchanged if no parm
 	if (hexToInt(&ptr, &addr))
 	{
-	    if (!setProgramCounter(addr))
+	    if (!theJtagICE->setProgramCounter(addr))
 		gdbOut("Failed to set PC");
 	}
-	repStatus(jtagContinue(true));
+	repStatus(theJtagICE->jtagContinue(true));
 	break;
 
     case 'D':
         // Detach, resumes target. Can get control back with step
 	// or continue
-      if (resumeProgram())
+      if (theJtagICE->resumeProgram())
 	    ok();
 	else
 	    error(1);
@@ -1112,12 +1115,12 @@ void talkToGdb(void)
 
 	    if (adding)
 	    {
-		if (addBreakpoint(addr, mode, length))
+		if (theJtagICE->addBreakpoint(addr, mode, length))
 		    ok();
 	    }
 	    else
 	    {
-		if (deleteBreakpoint(addr, mode, length))
+		if (theJtagICE->deleteBreakpoint(addr, mode, length))
 		    ok();
 	    }
 	}

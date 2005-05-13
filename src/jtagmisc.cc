@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -31,8 +34,9 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 
-void setJtagParameter(uchar item, uchar newValue)
+void jtag1::setJtagParameter(uchar item, uchar newValue)
 {
     uchar *response = NULL;
     uchar command[] = {'B', 0, 0, JTAG_EOM };
@@ -46,7 +50,7 @@ void setJtagParameter(uchar item, uchar newValue)
     delete [] response;
 }
 
-uchar getJtagParameter(uchar item)
+uchar jtag1::getJtagParameter(uchar item)
 {
     uchar *response = NULL;
     uchar command[] = {'q', 0, JTAG_EOM };

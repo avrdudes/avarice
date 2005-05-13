@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -18,6 +19,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains the main() & support for avrjtagd.
+ *
+ * $Id$
  */
 
 
@@ -37,6 +40,7 @@
 #include "avarice.h"
 #include "remote.h"
 #include "jtag.h"
+#include "jtag1.h"
 #include "gnu_getopt.h"
 
 bool ignoreInterrupts;
@@ -174,6 +178,8 @@ static struct option long_opts[] = {
     { 0,                     0,       0,      0 }
 };
 
+jtag *theJtagICE;
+
 int main(int argc, char **argv)
 {
     int sock;
@@ -181,6 +187,7 @@ int main(int argc, char **argv)
     struct sockaddr_in name;
     char *inFileName = 0;
     char *jtagDeviceName = "/dev/avrjtag";
+    char *device_name = 0;
     uchar jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
     int  hostPortNumber;
@@ -350,40 +357,54 @@ int main(int argc, char **argv)
         jtagBitrate = JTAG_BITRATE_1_MHz;
     }
 
-    // And say hello to the JTAG box
-    initJtagPort(jtagDeviceName);
+    try
+      {
+	// And say hello to the JTAG box
+	theJtagICE = new jtag1(jtagDeviceName);
 
-    // Init JTAG box.
-    initJtagBox();
+	// Init JTAG box.
+	theJtagICE->initJtagBox();
+      }
+    catch(const char *msg)
+      {
+	fprintf(stderr, "%s\n", msg);
+	return 1;
+      }
+    catch(...)
+      {
+	fprintf(stderr, "Cannot initialize JTAG ICE\n");
+	return 1;
+      }
+    
 
     if (erase)
     {
-        enableProgramming();
+        theJtagICE->enableProgramming();
 	statusOut("Erasing program memory.\n");
-	eraseProgramMemory();
+	theJtagICE->eraseProgramMemory();
 	statusOut("Erase complete.\n");
-        disableProgramming();
+        theJtagICE->disableProgramming();
     }
 
     if (readFuses)
     {
-        jtagReadFuses();
+        theJtagICE->jtagReadFuses();
     }
 
     if (readLockBits)
     {
-        jtagReadLockBits();
+        theJtagICE->jtagReadLockBits();
     }
 
     if (writeFuses)
-        jtagWriteFuses(fuses);
+        theJtagICE->jtagWriteFuses(fuses);
 
     // Init JTAG debugger for initial use.
     //   - If we're attaching to a running target, we cannot do this.
     //   - If we're running as a standalone programmer, we don't want
     //     this.
     if( gdbServerMode && ( ! capture ) )
-        initJtagOnChipDebugging(jtagBitrate);
+        theJtagICE->initJtagOnChipDebugging(jtagBitrate);
 
     if (inFileName != (char *)0)
     {
@@ -405,8 +426,8 @@ int main(int argc, char **argv)
                       "application and\nbootloader) in multiple passes.\n\n");
         }
 
-        downloadToTarget(inFileName, program, verify);
-        resetProgram();
+        theJtagICE->downloadToTarget(inFileName, program, verify);
+        theJtagICE->resetProgram();
     }
     else
     {
@@ -417,11 +438,11 @@ int main(int argc, char **argv)
 
     // Write fuses after all programming parts have completed.
     if (writeLockBits)
-        jtagWriteLockBits(lockBits);
+        theJtagICE->jtagWriteLockBits(lockBits);
 
     // Quit & resume mote for operations that don't interact with gdb.
     if (!gdbServerMode)
-	resumeProgram();
+	theJtagICE->resumeProgram();
     else
     {
         initSocketAddress(&name, hostName, hostPortNumber);
@@ -455,6 +476,8 @@ int main(int argc, char **argv)
         for (;;)
             talkToGdb();
     }
+
+    delete theJtagICE;
 
     return 0;
 }

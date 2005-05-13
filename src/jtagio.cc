@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002, 2003, 2004 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -35,493 +36,8 @@
 
 #include "avarice.h"
 #include "jtag.h"
-#include "ioreg.h"
+#include "jtag1.h"
 
-jtag_device_def_type *global_p_device_def;
-
-// Name of device controlled by JTAG ICE
-char* device_name;
-
-/* Device descriptor magic from Atmel's documents. Let's hope it's more
-   accurate than the rest of that text... */
-jtag_device_def_type deviceDefinitions[] = {
-    {
-        "atmega16",
-        0x9403,
-        128, 128,    // 16K flash 
-        4,   128,    // 512 bytes EEPROM
-        0x54,        // 21 interrupt vectors
-        atmega16_io_registers,
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF },
-            { 0x87, 0x26, 0xFF, 0xEF, 0xFE, 0xFF, 0x3F, 0xFA },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x31,
-            0x57,
-            0x00,
-            { 128, 0 },
-            0,
-            { 0x80, 0x1F, 0x00, 0x00 },
-            0,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATMEGA_162
-    {
-        "atmega162",
-        0x9404,
-        128, 128,    // 16K flash 
-        4,   128,    // 512 bytes EEPROM
-        0x70,        // 28 interrupt vectors
-        atmega162_io_registers,
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xF7, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
-            { 0xF3, 0x66, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFA }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x02, 0x18, 0x00, 0x30, 0xF3, 0x0F, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x02, 0x18, 0x00, 0x20, 0xF3, 0x0F, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x04,
-            0x57,
-            0x00,
-            { 128, 0 },
-            4,
-            { 0x80, 0x1F, 0x00, 0x00 },
-            0x8B,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATMEGA_169
-    {
-        "atmega169",
-        0x9405,
-        128, 128,    // 16K flash 
-        4,   128,    // 512 bytes EEPROM
-        0x5c,        // 23 interrupt vectors
-        atmega169_io_registers,
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xBB, 0xE0 }, 
-            { 0xB6, 0x6D, 0x1B, 0xE0, 0xDF, 0x3C, 0xBA, 0xE0 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x43, 0xDA, 0x00, 0xFF, 0xF7, 0x0F, 0x00, 0x00,
-              0x00, 0x00, 0x4D, 0x07, 0x37, 0x00, 0x00, 0x00, 
-              0xF0, 0xF0, 0xDE, 0x7B },
-            { 0x43, 0xDA, 0x00, 0xFF, 0xF7, 0x0F, 0x00, 0x00,
-              0x00, 0x00, 0x4D, 0x05, 0x36, 0x00, 0x00, 0x00,
-              0xE0, 0xF0, 0xDE, 0x7B },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 }, 
-            0x31,
-            0x57,
-            0x00,
-            { 128, 0 },
-            4,
-            { 0x80, 0x1F, 0x00, 0x00 },
-            0xFE,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATMEGA_323
-    {
-        "atmega323",
-        0x9501,
-        128, 256,    // 32K flash 
-        4,   256,    // 1K EEPROM
-        0x50,        // 20 interrupt vectors
-        NULL,        // io reg defs not defined yet
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF }, 
-            { 0x87, 0x26, 0xFF, 0xEF, 0xFE, 0xFF, 0x3F, 0xFA }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x31,
-            0x57,
-            0x00,
-            { 128, 0 },
-            0,
-            { 0x00, 0x3F, 0x00, 0x00 },
-            0,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATMEGA_32
-    {
-        "atmega32",
-        0x9502,
-        128, 256,    // 32K flash 
-        4,   256,    // 1K EEPROM
-        0x54,        // 21 interrupt vectors
-        atmega32_io_registers,
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xFF, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
-            { 0xFF, 0x66, 0xFF, 0xFF, 0xFF, 0xFF, 0xBF, 0xFA }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x31,
-            0x57,
-            0x00,
-            { 128, 0 },
-            4,
-            { 0x00, 0x3F, 0x00, 0x00 },
-            0,
-            { JTAG_EOM }
-        }
-    },
-
-    // DEV_ATMEGA_64
-    {
-        "atmega64",
-        0x9602,
-        256, 256,    // 64K flash 
-        8,   256,    // 2K bytes EEPROM
-        0x8c,        // 35 interrupt vectors
-        NULL,        // io reg defs not defined yet
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
-            { 0xCF, 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x3E, 0xB5, 0x1F, 0x37, 0xFF, 0x1F, 0x21, 0x2F,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x3E, 0xB5, 0x0F, 0x27, 0xFF, 0x1F, 0x21, 0x27,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x22,
-            0x68,
-            0x00,
-            { 0, 1 },
-            8,
-            { 0x00, 0x7E, 0x00, 0x00 },
-            0x9D,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATMEGA_128
-    {
-        "atmega128",
-        0x9702,
-        256, 512,    // 128K flash 
-        8,   512,    // 4K bytes EEPROM
-        0x8c,        // 35 interrupt vectors
-        NULL,        // io reg defs not defined yet
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
-            { 0xCF, 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 
-            { 0x3E, 0xB5, 0x1F, 0x37, 0xFF, 0x1F, 0x21, 0x2F,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x3E, 0xB5, 0x0F, 0x27, 0xFF, 0x1F, 0x21, 0x27,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 }, 
-            0x22,
-            0x68,
-            0x3B,
-            { 0, 1 },
-            8,
-            { 0x00, 0xFE, 0x00, 0x00 },
-            0x9D,
-            { JTAG_EOM }
-        }
-    },
-    // DEV_ATCAN_128
-    {
-        "at90can128",
-        0x9781,
-        256, 512,    // 128K flash 
-        8,   512,    // 4K bytes EEPROM
-        0x94,        // 37 interrupt vectors
-        NULL,        // io reg defs not defined yet
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x7C, 0xBB, 0xE8 }, 
-            { 0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x7C, 0xBB, 0xE8 }, 
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x43, 0xC3, 0x33, 0xBF, 0xF7, 0x3F, 0xF7, 0x3F,
-              0x00, 0x00, 0x4D, 0x1F, 0x77, 0x77, 0x00, 0xFF,
-              0xFF, 0xFF, 0xFF, 0x07 },
-            { 0x43, 0xC3, 0x33, 0xBC, 0x77, 0x77, 0xF7, 0x3F,
-              0x00, 0x00, 0x4D, 0x1F, 0x00, 0x00, 0x00, 0xCD,
-              0x3C, 0xF0, 0xFF, 0x04 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            0x22,
-            0x57,
-            0x3B,
-            { 0, 1 },
-            8,
-            { 0x00, 0xFE, 0x00, 0x00 },
-            0xFA,
-            { JTAG_EOM }
-        }
-    },
-#if 0
-    // DEV_UNKNOWN - what avarice came with (looks like a garbled 128)
-    {
-        "unknown",
-        0x0,
-        256, 512,    // 128K flash 
-        8,   512,    // 4K EEPROM
-        0x00,        // interrupt vectors
-        NULL,        // io reg defs not defined yet
-        {
-            JTAG_C_SET_DEVICE_DESCRIPTOR,
-            { 0xCF, 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0xCF, 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-            { 0x3E, 0xB5, 0x1F, 0x37, 0xFF, 0x1F, 0x21, 0x3F,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x3E, 0xB5, 0x1F, 0x37, 0xFF, 0x1F, 0x21, 0x3F,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 },
-            { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00 }, 
-            0x22,
-            0x68,
-            0x3B,
-            { 0, 1 },
-            8,
-            { 0x00, 0xFE, 0x00, 0x00 },
-            0x9D,
-            { JTAG_EOM }
-        }
-    },
-#endif
-    // Termination record.
-    { 
-        NULL,                   // name
-        0,                      // id
-        0, 0,                   // flash
-        0, 0,                   // eeprom
-        0,                      // interrupt vectors
-        NULL,                   // io reg defs
-        { 0 }                   // device descriptor information
-    }
-};
-
-// The file descriptor used while talking to the JTAG ICE
-int jtagBox = 0;
-
-// The initial serial port parameters. We restore them on exit.
-static struct termios oldtio;
-static bool oldtioValid = false;
-
-void jtagCheck(int status)
-{
-    unixCheck(status, JTAG_CAUSE, NULL);
-}
-
-static void restoreSerialPort()
-{
-  if (jtagBox >= 0 && oldtioValid)
-      tcsetattr(jtagBox, TCSANOW, &oldtio);
-}
-
-void initJtagPort(char *jtagDeviceName)
-{
-    struct termios newtio;
-
-    // Open modem device for reading and writing and not as controlling
-    // tty because we don't want to get killed if linenoise sends
-    // CTRL-C.
-    jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    unixCheck(jtagBox, "Failed to open %s", jtagDeviceName);
-
-    // save current serial port settings and plan to restore them on exit
-    jtagCheck(tcgetattr(jtagBox, &oldtio));
-    oldtioValid = true;
-    atexit(restoreSerialPort);
-
-    memset(&newtio, 0, sizeof(newtio));
-    newtio.c_cflag = CS8 | CLOCAL | CREAD;
-
-    // set baud rates in a platform-independent manner
-    jtagCheck(cfsetospeed(&newtio, B19200));
-    jtagCheck(cfsetispeed(&newtio, B19200));
-
-    // IGNPAR  : ignore bytes with parity errors
-    //           otherwise make device raw (no other input processing)
-    newtio.c_iflag = IGNPAR;
-
-    // Raw output.
-    newtio.c_oflag = 0;
-
-    // Raw input.
-    newtio.c_lflag = 0;
-
-    // The following configuration should cause read to return if 2
-    // characters are immediately avaible or if the period between
-    // characters exceeds 5 * .1 seconds.
-    newtio.c_cc[VTIME]    = 5;     // inter-character timer unused
-    newtio.c_cc[VMIN]     = 255;   // blocking read until VMIN character
-                                   // arrives
-
-    // now clean the serial line and activate the settings for the port
-    jtagCheck(tcflush(jtagBox, TCIFLUSH));
-    jtagCheck(tcsetattr(jtagBox,TCSANOW,&newtio));
-}
-
-int timeout_read(int fd, void *buf, size_t count, unsigned long timeout)
-{
-    char *buffer = (char *)buf;
-    size_t actual = 0;
-
-    while (actual < count)
-    {
-	fd_set readfds;
-	FD_ZERO(&readfds);
-	FD_SET(fd, &readfds);
-
-	struct timeval tmout;
-	tmout.tv_sec = timeout / 1000000;
-	tmout.tv_usec = timeout % 1000000;
-
-	int selected = select(fd + 1, &readfds, NULL, NULL, &tmout);
-        /* Even though select() is not supposed to set errno to EAGAIN
-           (according to the linux man page), it seems that errno can be set
-           to EAGAIN on some cygwin systems. Thus, we need to catch that
-           here. */
-        if ((selected < 0) && (errno == EAGAIN || errno == EINTR))
-            continue;
-	jtagCheck(selected);
-
-	if (selected == 0)
-	    return actual;
-
-	ssize_t thisread = read(fd, &buffer[actual], count - actual);
-        if ((thisread < 0) && (errno == EAGAIN))
-            continue;
-	jtagCheck(thisread);
-
-	actual += thisread;
-    }
-
-    return count;
-}
-
-static int safewrite(int fd, const void *b, int count)
-{
-  char *buffer = (char *)b;
-  int actual = 0;
-  int flags = fcntl(fd, F_GETFL);
-
-  fcntl(fd, F_SETFL, 0); // blocking mode
-  while (count > 0)
-    {
-      int n = write(fd, buffer, count);
-
-      if (n == -1 && errno == EINTR)
-	continue;
-      if (n == -1)
-	{
-	  actual = -1;
-	  break;
-	}
-
-      count -= n;
-      actual += n;
-      buffer += n;
-    }
-  fcntl(fd, F_SETFL, flags); 
-  return actual;
-}
-
-unsigned long decodeAddress(uchar *buf)
-{
-    return buf[0] << 16 | buf[1] << 8 | buf[2];
-}
-
-void encodeAddress(uchar *buffer, unsigned long x)
-{
-    buffer[0] = x >> 16;
-    buffer[1] = x >> 8;
-    buffer[2] = x;
-}
-    
 /** Send a command to the jtag, and check result.
 
     Increase *tries, abort if reaches MAX_JTAG_COMM_ATTEMPS
@@ -530,9 +46,8 @@ void encodeAddress(uchar *buffer, unsigned long x)
     JTAG_RESPONSE_TIMEOUT, returns false. If response byte is 
     JTAG_R_RESP_OK returns true, otherwise returns false.
 **/
-enum SendResult { send_failed, send_ok, mcu_data };
-
-static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
+ 
+SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
 {
     check((*tries)++ < MAX_JTAG_COMM_ATTEMPS,
 	      "JTAG ICE: Cannot synchronise");
@@ -547,7 +62,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     // before writing, clean up any "unfinished business".
     jtagCheck(tcflush(jtagBox, TCIFLUSH));
 
-    int count = safewrite(jtagBox, command, commandSize);
+    int count = safewrite(command, commandSize);
     if (count < 0)
       jtagCheck(count);
     else // this shouldn't happen
@@ -561,7 +76,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     for (;;)
       {
 	uchar ok;
-	count = timeout_read(jtagBox, &ok, 1, JTAG_RESPONSE_TIMEOUT);
+	count = timeout_read(&ok, 1, JTAG_RESPONSE_TIMEOUT);
 	jtagCheck(count);
 
 	// timed out
@@ -579,7 +94,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
 
 	    /* An info ("IDR dirty") response. Ignore it. */
 	    debugOut("Info response: ");
-	    count = timeout_read(jtagBox, infobuf, 2, JTAG_RESPONSE_TIMEOUT);
+	    count = timeout_read(infobuf, 2, JTAG_RESPONSE_TIMEOUT);
 	    for (int i = 0; i < count; i++)
 	    {
 		debugOut("%.2X ", infobuf[i]);
@@ -603,7 +118,7 @@ static SendResult sendJtagCommand(uchar *command, int commandSize, int *tries)
     Returns a dynamically allocated buffer containing the reponse (caller
     must free) otherwise
 **/
-static uchar *getJtagResponse(int responseSize)
+uchar *jtag1::getJtagResponse(int responseSize)
 {
     uchar *response;
     int numCharsRead;
@@ -614,7 +129,7 @@ static uchar *getJtagResponse(int responseSize)
     response = new uchar[responseSize + 1];
     response[responseSize] = '\0';
 
-    numCharsRead = timeout_read(jtagBox, response, responseSize,
+    numCharsRead = timeout_read(response, responseSize,
                                 JTAG_RESPONSE_TIMEOUT);
     jtagCheck(numCharsRead);
 
@@ -635,7 +150,7 @@ static uchar *getJtagResponse(int responseSize)
     return response;
 }
 
-uchar *doJtagCommand(uchar *command, int  commandSize, int  responseSize)
+uchar *jtag1::doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 {
     int tryCount = 0;
 
@@ -673,7 +188,7 @@ uchar *doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 
 }
 
-bool doSimpleJtagCommand(unsigned char cmd, int responseSize)
+bool jtag1::doSimpleJtagCommand(unsigned char cmd, int responseSize)
 {
     uchar *response;
     uchar command[] = { cmd, JTAG_EOM };
@@ -690,7 +205,7 @@ bool doSimpleJtagCommand(unsigned char cmd, int responseSize)
 
 /** Change bitrate of PC's serial port as specified by BIT_RATE_xxx in
     'newBitRate' **/
-static void changeLocalBitRate(uchar newBitRate)
+void jtag::changeLocalBitRate(uchar newBitRate)
 {
     // Change the local port bitrate.
     struct termios tio;
@@ -729,14 +244,14 @@ static void changeLocalBitRate(uchar newBitRate)
 }
 
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
-static void changeBitRate(uchar newBitRate)
+void jtag1::changeBitRate(uchar newBitRate)
 {
     setJtagParameter(JTAG_P_BITRATE, newBitRate);
     changeLocalBitRate(newBitRate);
 }
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
-static void setDeviceDescriptor(jtag_device_def_type *dev)
+void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
 {
     uchar *response = NULL;
     uchar *command = (uchar *)(&dev->dev_desc);
@@ -750,7 +265,7 @@ static void setDeviceDescriptor(jtag_device_def_type *dev)
 
 /** Check for emulator using the 'S' command *without* retries
     (used at startup to check sync only) **/
-static bool checkForEmulator(void)
+bool jtag1::checkForEmulator(void)
 {
     uchar *response;
     uchar command[] = { 'S', JTAG_EOM };
@@ -769,7 +284,7 @@ static bool checkForEmulator(void)
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
-static bool synchroniseAt(uchar bitrate)
+bool jtag1::synchroniseAt(uchar bitrate)
 {
     debugOut("Attempting synchronisation at bitrate %02x\n", bitrate);
 
@@ -792,7 +307,7 @@ static bool synchroniseAt(uchar bitrate)
 }
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
-static void startJtagLink(void)
+void jtag1::startJtagLink(void)
 {
     static uchar bitrates[] =
     { BIT_RATE_115200, BIT_RATE_19200, BIT_RATE_57600, BIT_RATE_38400,
@@ -812,7 +327,7 @@ static void startJtagLink(void)
  May be overridden by command line parameter.
 
 */
-static void deviceAutoConfig(void)
+void jtag1::deviceAutoConfig(void)
 {
     unsigned int device_id;
     int i;
@@ -895,7 +410,7 @@ static void deviceAutoConfig(void)
 }
 
 
-void initJtagBox(void)
+void jtag1::initJtagBox(void)
 {
     statusOut("JTAG config starting.\n");
 
@@ -920,7 +435,7 @@ void initJtagBox(void)
 }
 
 
-void initJtagOnChipDebugging(uchar bitrate)
+void jtag1::initJtagOnChipDebugging(uchar bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
