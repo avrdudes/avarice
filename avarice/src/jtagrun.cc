@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -32,9 +35,10 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 #include "remote.h"
 
-unsigned long getProgramCounter(void)
+unsigned long jtag1::getProgramCounter(void)
 {
     uchar *response = NULL;
     uchar command[] = {'2', JTAG_EOM };
@@ -59,7 +63,7 @@ unsigned long getProgramCounter(void)
     return result;
 }
 
-bool setProgramCounter(unsigned long pc)
+bool jtag1::setProgramCounter(unsigned long pc)
 {
     uchar *response = NULL;
     uchar command[] = {'3', 0, 0, 0, JTAG_EOM };
@@ -77,29 +81,29 @@ bool setProgramCounter(unsigned long pc)
     return result;
 }
 
-bool resetProgram(void)
+bool jtag1::resetProgram(void)
 {
     return doSimpleJtagCommand('x', 1);
 }
 
-bool interruptProgram(void)
+bool jtag1::interruptProgram(void)
 {
     // Just ignore the returned PC. It appears to be wrong if the most
     // recent instruction was a branch.
     return doSimpleJtagCommand('F', 4);
 }
 
-bool resumeProgram(void)
+bool jtag1::resumeProgram(void)
 {
     return doSimpleJtagCommand('G', 0);
 }
 
-bool jtagSingleStep(void)
+bool jtag1::jtagSingleStep(void)
 {
     return doSimpleJtagCommand('1', 1);
 }
 
-bool jtagContinue(bool setCodeBreakpoints)
+bool jtag1::jtagContinue(bool setCodeBreakpoints)
 {
     updateBreakpoints(setCodeBreakpoints); // download new bp configuration
 
@@ -160,7 +164,7 @@ bool jtagContinue(bool setCodeBreakpoints)
         // This read shouldn't need to be a timeout_read(), but some cygwin
         // systems don't seem to honor the O_NONBLOCK flag on file
         // descriptors.
-	while (timeout_read(jtagBox, &response, 1, 1) == 1)
+	while (timeout_read(&response, 1, 1) == 1)
 	{
 	    uchar buf[2];
 	    int count;
@@ -169,7 +173,7 @@ bool jtagContinue(bool setCodeBreakpoints)
 	    switch (response)
 	    {
 	    case JTAG_R_BREAK:
-		count = timeout_read(jtagBox, buf, 2, JTAG_RESPONSE_TIMEOUT);
+		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
 		jtagCheck(count);
 		check(count == 2, JTAG_CAUSE);
 		breakpoint = true;
@@ -178,7 +182,7 @@ bool jtagContinue(bool setCodeBreakpoints)
 		break;
 	    case JTAG_R_INFO: case JTAG_R_SLEEP:
 		// we could do something here, esp. for info
-		count = timeout_read(jtagBox, buf, 2, JTAG_RESPONSE_TIMEOUT);
+		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
 		jtagCheck(count);
 		check(count == 2, JTAG_CAUSE);
                 debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);

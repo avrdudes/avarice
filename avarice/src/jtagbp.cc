@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -31,47 +34,9 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 
-/* There are apparently a total of three hardware breakpoints 
-   (the docs claim four, but documents 2 breakpoints accessible via 
-   non-existent parameters). 
-
-   In summary, there is one code-only breakpoint, and 2 breakpoints which
-   can be:
-   - 2 code breakpoints
-   - 2 1-byte data breakpoints
-   - 1 code and 1-byte data breakpoint
-   - 1 ranged code breakpoint
-   - 1 ranged data breakpoint
-
-   Currently we're ignoring ranges, so we allow up to 3 breakpoints,
-   of which a maximum of 2 are data breakpoints. This is easily handled
-   by keeping each kind of breakpoint separate.
-
-   In the future, we could support "software" breakpoints too (though it
-   seems mildly painful)
-
-   See avrIceProtocol.txt for full details.
-*/
-
-enum {
-  // We distinguish the total possible breakpoints and those for each type
-  // (code or data) - see above
-  MAX_BREAKPOINTS_CODE = 4,
-  MAX_BREAKPOINTS_DATA = 2,
-  MAX_BREAKPOINTS = 4
-};
-
-struct breakpoint
-{
-    unsigned int address;
-    bpType type;
-};
-
-static breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
-static int numBreakpointsCode, numBreakpointsData;
-
-bool codeBreakpointAt(unsigned int address) 
+bool jtag1::codeBreakpointAt(unsigned int address)
 {
   address /= 2;
   for (int i = 0; i < numBreakpointsCode; i++)
@@ -80,7 +45,7 @@ bool codeBreakpointAt(unsigned int address)
   return false;
 }
 
-bool codeBreakpointBetween(unsigned int start, unsigned int end) 
+bool jtag1::codeBreakpointBetween(unsigned int start, unsigned int end) 
 {
   start /= 2; end /= 2;
   for (int i = 0; i < numBreakpointsCode; i++)
@@ -89,18 +54,18 @@ bool codeBreakpointBetween(unsigned int start, unsigned int end)
   return false;
 }
 
-void deleteAllBreakpoints(void)
+void jtag1::deleteAllBreakpoints(void)
 {
     numBreakpointsData = numBreakpointsCode = 0;
 }
 
-bool stopAt(unsigned int address)
+bool jtag1::stopAt(unsigned int address)
 {
     uchar zero = 0;
     jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
 }
 
-bool addBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag1::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 {
     breakpoint *bp;
 
@@ -145,7 +110,7 @@ bool addBreakpoint(unsigned int address, bpType type, unsigned int length)
 }
 
 
-bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
 {
     breakpoint *bp;
     int *numBp;
@@ -182,7 +147,7 @@ bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
 }
 
 
-void updateBreakpoints(bool setCodeBreakpoints)
+void jtag1::updateBreakpoints(bool setCodeBreakpoints)
 {
     unsigned char bpMode = 0x00;
     int bpC = 0, bpD = 0;
@@ -287,4 +252,9 @@ void updateBreakpoints(bool setCodeBreakpoints)
 
 	setJtagParameter(JTAG_P_BP_MODE, bpMode);
     }
+}
+
+void jtag1::breakOnChangeFlow(void)
+{
+    setJtagParameter(JTAG_P_BP_FLOW, 1);
 }

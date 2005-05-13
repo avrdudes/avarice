@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -32,6 +35,7 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 #include "remote.h"
 
 
@@ -76,7 +80,7 @@ static void swapBytes(uchar *buffer, int count)
 }
 
 
-uchar *jtagRead(unsigned long addr, unsigned int numBytes)
+uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 {
     uchar *response;
     int whichSpace = 0;
@@ -154,7 +158,7 @@ uchar *jtagRead(unsigned long addr, unsigned int numBytes)
     return NULL;
 }
 
-bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
+bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
     uchar *response;
     int whichSpace = 0;
@@ -256,7 +260,7 @@ bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
 
 
-void jtagWriteFuses(char *fuses)
+void jtag1::jtagWriteFuses(char *fuses)
 {
     int temp[3];
     uchar fuseBits[3];
@@ -294,7 +298,7 @@ void jtagWriteFuses(char *fuses)
 }
 
 
-void jtagReadFuses(void)
+void jtag1::jtagReadFuses(void)
 {
     uchar *fuseBits = 0;
 
@@ -311,7 +315,7 @@ void jtagReadFuses(void)
 }
 
 
-void jtagDisplayFuses(uchar *fuseBits)
+void jtag1::jtagDisplayFuses(uchar *fuseBits)
 {
     statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
     statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
@@ -319,7 +323,7 @@ void jtagDisplayFuses(uchar *fuseBits)
 }
 
 
-void jtagWriteLockBits(char *lock)
+void jtag1::jtagWriteLockBits(char *lock)
 {
     int temp[1];
     uchar lockBits[1];
@@ -357,7 +361,7 @@ void jtagWriteLockBits(char *lock)
 }
 
 
-void jtagReadLockBits(void)
+void jtag1::jtagReadLockBits(void)
 {
     uchar *lockBits = 0;
 
@@ -374,7 +378,7 @@ void jtagReadLockBits(void)
 }
 
 
-void jtagDisplayLockBits(uchar *lockBits)
+void jtag1::jtagDisplayLockBits(uchar *lockBits)
 {
     statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
 
