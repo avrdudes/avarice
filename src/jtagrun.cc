@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -32,9 +35,10 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 #include "remote.h"
 
-unsigned long jtag::getProgramCounter(void)
+unsigned long jtag1::getProgramCounter(void)
 {
     uchar *response = NULL;
     uchar command[] = {'2', JTAG_EOM };
@@ -59,7 +63,7 @@ unsigned long jtag::getProgramCounter(void)
     return result;
 }
 
-bool jtag::setProgramCounter(unsigned long pc)
+bool jtag1::setProgramCounter(unsigned long pc)
 {
     uchar *response = NULL;
     uchar command[] = {'3', 0, 0, 0, JTAG_EOM };
@@ -77,29 +81,29 @@ bool jtag::setProgramCounter(unsigned long pc)
     return result;
 }
 
-bool jtag::resetProgram(void)
+bool jtag1::resetProgram(void)
 {
     return doSimpleJtagCommand('x', 1);
 }
 
-bool jtag::interruptProgram(void)
+bool jtag1::interruptProgram(void)
 {
     // Just ignore the returned PC. It appears to be wrong if the most
     // recent instruction was a branch.
     return doSimpleJtagCommand('F', 4);
 }
 
-bool jtag::resumeProgram(void)
+bool jtag1::resumeProgram(void)
 {
     return doSimpleJtagCommand('G', 0);
 }
 
-bool jtag::jtagSingleStep(void)
+bool jtag1::jtagSingleStep(void)
 {
     return doSimpleJtagCommand('1', 1);
 }
 
-bool jtag::jtagContinue(bool setCodeBreakpoints)
+bool jtag1::jtagContinue(bool setCodeBreakpoints)
 {
     updateBreakpoints(setCodeBreakpoints); // download new bp configuration
 

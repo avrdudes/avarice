@@ -5,10 +5,6 @@
 # This is needed since some systems still use autoconf-2.13 and automake-1.4 as
 # the defaults (e.g. debian).
 
-#: ${ACLOCAL=aclocal19}
-#: ${AUTOMAKE=automake19}
-#: ${AUTOCONF=autoconf259}
-#: ${AUTOHEADER=autoheader259}
 : ${ACLOCAL=aclocal}
 : ${AUTOMAKE=automake}
 : ${AUTOCONF=autoconf}

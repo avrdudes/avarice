@@ -2,6 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
+ *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,6 +18,8 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the JTAG box.
+ *
+ * $Id$
  */
 
 
@@ -32,6 +35,7 @@
 
 #include "avarice.h"
 #include "jtag.h"
+#include "jtag1.h"
 #include "remote.h"
 
 
@@ -76,7 +80,7 @@ static void swapBytes(uchar *buffer, int count)
 }
 
 
-uchar *jtag::jtagRead(unsigned long addr, unsigned int numBytes)
+uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 {
     uchar *response;
     int whichSpace = 0;
@@ -154,7 +158,7 @@ uchar *jtag::jtagRead(unsigned long addr, unsigned int numBytes)
     return NULL;
 }
 
-bool jtag::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
+bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
     uchar *response;
     int whichSpace = 0;
@@ -254,136 +258,3 @@ bool jtag::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     return true;
 }
 
-
-
-void jtag::jtagWriteFuses(char *fuses)
-{
-    int temp[3];
-    uchar fuseBits[3];
-    uchar *readfuseBits;
-    unsigned int c;
-
-    check(fuses,
-          "Error: No fuses string given");
-
-    // Convert fuses to hex values (this avoids endianess issues)
-    c = sscanf(fuses, "%02x%02x%02x", temp+2, temp+1, temp );
-    check(c == 3,
-          "Error: Fuses specified are not in hexidecimal");
-
-    fuseBits[0] = (uchar)temp[0];
-    fuseBits[1] = (uchar)temp[1];
-    fuseBits[2] = (uchar)temp[2];
-                
-    statusOut("\nWriting Fuse Bytes:\n");
-    jtagDisplayFuses(fuseBits);
-
-    enableProgramming();    
-
-    check(jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits),
-          "Error writing fuses");
-
-    readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
-    disableProgramming();
-
-    check(memcmp(fuseBits, readfuseBits, 3) == 0,
-          "Error verifying written fuses");
-
-    delete [] readfuseBits;
-}
-
-
-void jtag::jtagReadFuses(void)
-{
-    uchar *fuseBits = 0;
-
-    enableProgramming();
-    statusOut("\nReading Fuse Bytes:\n");
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-    disableProgramming();
-
-    check(fuseBits, "Error reading fuses");
-
-    jtagDisplayFuses(fuseBits);
-
-    delete [] fuseBits;
-}
-
-
-void jtag::jtagDisplayFuses(uchar *fuseBits)
-{
-    statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
-    statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
-    statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
-}
-
-
-void jtag::jtagWriteLockBits(char *lock)
-{
-    int temp[1];
-    uchar lockBits[1];
-    uchar *readlockBits;
-    unsigned int c;
-
-    check(lock,
-          "Error: No lock bit string given");
-
-    check(strlen(lock) == 2,
-          "Error: Fuses must be one byte exactly");
-
-    // Convert lockbits to hex value
-    c = sscanf(lock, "%02x", temp);
-    check(c == 1,
-          "Error: Fuses specified are not in hexidecimal");
-
-    lockBits[0] = (uchar)temp[0];
-
-    statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
-
-    enableProgramming();
-
-    check(jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits),
-          "Error writing lockbits" );
-
-    readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
-
-    disableProgramming();
-
-    check(memcmp(lockBits, readlockBits, 1) == 0,
-          "Error verifying written lock bits");
-
-    delete [] readlockBits;
-}
-
-
-void jtag::jtagReadLockBits(void)
-{
-    uchar *lockBits = 0;
-
-    enableProgramming();
-    statusOut("\nReading Lock Bits:\n");
-    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
-    disableProgramming();
-
-    check(lockBits, "Error reading lock bits");
-
-    jtagDisplayLockBits(lockBits);
-
-    delete [] lockBits;
-}
-
-
-void jtag::jtagDisplayLockBits(uchar *lockBits)
-{
-    statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
-
-    statusOut("    Bit 7 [ Reserved ] -> %d\n", (lockBits[0] >> 7) & 1);
-    statusOut("    Bit 6 [ Reserved ] -> %d\n", (lockBits[0] >> 6) & 1);
-    statusOut("    Bit 5 [ BLB12    ] -> %d\n", (lockBits[0] >> 5) & 1);
-    statusOut("    Bit 4 [ BLB11    ] -> %d\n", (lockBits[0] >> 4) & 1);
-    statusOut("    Bit 3 [ BLB02    ] -> %d\n", (lockBits[0] >> 3) & 1);
-    statusOut("    Bit 2 [ BLB01    ] -> %d\n", (lockBits[0] >> 2) & 1);
-    statusOut("    Bit 1 [ LB2      ] -> %d\n", (lockBits[0] >> 1) & 1);
-    statusOut("    Bit 0 [ LB1      ] -> %d\n", (lockBits[0] >> 0) & 1);
-}
