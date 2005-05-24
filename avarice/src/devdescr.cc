@@ -220,7 +220,7 @@ jtag_device_def_type deviceDefinitions[] = {
         256, 256,    // 64K flash 
         8,   256,    // 2K bytes EEPROM
         0x8c,        // 35 interrupt vectors
-        NULL,        // io reg defs not defined yet
+        atmega128_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
@@ -256,7 +256,7 @@ jtag_device_def_type deviceDefinitions[] = {
         256, 512,    // 128K flash 
         8,   512,    // 4K bytes EEPROM
         0x8c,        // 35 interrupt vectors
-        NULL,        // io reg defs not defined yet
+        atmega128_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
@@ -292,7 +292,7 @@ jtag_device_def_type deviceDefinitions[] = {
         256, 512,    // 128K flash 
         8,   512,    // 4K bytes EEPROM
         0x94,        // 37 interrupt vectors
-        NULL,        // io reg defs not defined yet
+        iocan128_io_registers,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x7C, 0xBB, 0xE8 }, 

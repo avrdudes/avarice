@@ -1,3 +1,9 @@
+2005-05-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: Add IO register entries for ATmega64/128 & CAN128
+	* src/ioreg.cc: Ditto.
+	* src/ioreg.h: Ditto.
+
 2005-05-13  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Encapsulate the mkI protocol in its own C++ class.
