@@ -36,5 +36,7 @@ extern gdb_io_reg_def_type atmega16_io_registers[];
 extern gdb_io_reg_def_type atmega162_io_registers[];
 extern gdb_io_reg_def_type atmega169_io_registers[];
 extern gdb_io_reg_def_type atmega32_io_registers[];
+extern gdb_io_reg_def_type atmega128_io_registers[];
+extern gdb_io_reg_def_type iocan128_io_registers[];
 
 #endif /* INCLUDE_IOREG_H */
