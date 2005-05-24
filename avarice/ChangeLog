@@ -1,3 +1,20 @@
+2005-05-13  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Encapsulate the mkI protocol in its own C++ class.
+	* src/Makefile.am: ditto.
+	* src/devdescr.cc: ditto.
+	* src/jtag.h: ditto.
+	* src/jtag1.h: ditto.
+	* src/jtagbp.cc: ditto.
+	* src/jtaggeneric.cc: ditto.
+	* src/jtagio.cc: ditto.
+	* src/jtagmisc.cc: ditto.
+	* src/jtagprog.cc: ditto.
+	* src/jtagrun.cc: ditto.
+	* src/jtagrw.cc: ditto.
+	* src/main.cc: ditto.
+	* src/remote.cc: ditto.
+
 2005-04-20    <dgay@barnowl.research.intel-research.net>
 
 	* configure.ac: Set version to 20050420.
