@@ -49,8 +49,6 @@ unsigned long jtag2::getProgramCounter(void)
     unsigned long result = b4_to_u32(response + 1);
     delete [] response;
 
-    result--; // returned value is PC + 1 as far as GDB is concerned
-
     // The JTAG box sees program memory as 16-bit wide locations. GDB
     // sees bytes. As such, double the PC value.
     result *= 2;
@@ -64,7 +62,7 @@ bool jtag2::setProgramCounter(unsigned long pc)
     int responseSize;
     uchar command[5] = { CMND_WRITE_PC };
 
-    u32_to_b4(command + 1, pc / 2 + 1);
+    u32_to_b4(command + 1, pc / 2);
 
     check(doJtagCommand(command, sizeof(command), response, responseSize),
 	  "cannot write program counter");
