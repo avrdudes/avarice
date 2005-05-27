@@ -69,7 +69,7 @@ class jtag1: public jtag
     virtual bool resetProgram(void);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
-    virtual bool jtagSingleStep(bool hll = false);
+    virtual bool jtagSingleStep(void);
     virtual bool jtagContinue(bool setCodeBreakpoints);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);

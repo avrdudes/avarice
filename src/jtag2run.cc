@@ -103,9 +103,9 @@ bool jtag2::resumeProgram(void)
     return true;
 }
 
-bool jtag2::jtagSingleStep(bool hll)
+bool jtag2::jtagSingleStep(void)
 {
-    uchar cmd[3] = { CMND_SINGLE_STEP, hll? 0x02: 0x01, 0x01 };
+    uchar cmd[3] = { CMND_SINGLE_STEP, 0x01, 0x01 };
     uchar *resp;
     int respSize, i = 2;
     bool rv;
