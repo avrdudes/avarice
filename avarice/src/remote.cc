@@ -138,6 +138,7 @@ int getDebugChar(void)
     {
 	statusOut("gdb exited.\n");
 	theJtagICE->resumeProgram();
+	delete theJtagICE;
 	exit(0);
     }
 
@@ -473,7 +474,7 @@ static bool stepThrough(int start, int end)
 	else
 	{
 	    if (!theJtagICE->jtagSingleStep())
-		gdbOut("Failed to single-step");
+		gdbOut("Failed to single-step\n");
 
 	    int gdbIn = checkForDebugChar();
 	    if (gdbIn >= 0)
@@ -1110,6 +1111,7 @@ void talkToGdb(void)
 		break;
 	    default:
 		debugOut("Unknown breakpoint type from GDB.\n");
+		delete theJtagICE;
 		exit(1);
 	    }
 

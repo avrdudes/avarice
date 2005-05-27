@@ -20,7 +20,8 @@
  *	along with this program; if not, write to the Free Software
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
- * This file contains functions for interfacing with the JTAG box.
+ * This file implements the target memory programming interface for
+ * the mkII protocol.
  *
  * $Id$
  */
@@ -39,7 +40,7 @@
 
 #include "avarice.h"
 #include "jtag.h"
-#include "jtag1.h"
+#include "jtag2.h"
 
 // The API changed for this in bfd.h. This is a work around.
 #ifndef bfd_get_section_size
@@ -60,41 +61,41 @@ static void initImage(BFDimage *image)
     }
 }
 
-
-void jtag1::enableProgramming(void)
+void jtag2::enableProgramming(void)
 {
     programmingEnabled = true;
-    check(doSimpleJtagCommand(0xa3, 1), 
-	      "JTAG ICE: Failed to enable programming");
+    doSimpleJtagCommand(CMND_ENTER_PROGMODE);
 }
 
 
-void jtag1::disableProgramming(void)
+void jtag2::disableProgramming(void)
 {
     programmingEnabled = false;
-    check(doSimpleJtagCommand(0xa4, 1), 
-	  "JTAG ICE: Failed to disable programming");
+    doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
 }
 
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag1::eraseProgramMemory(void)
+void jtag2::eraseProgramMemory(void)
 {
-    check(doSimpleJtagCommand(0xa5, 1), 
-	  "JTAG ICE: Failed to erase program memory");
+    doSimpleJtagCommand(CMND_CHIP_ERASE);
 }
 
-void jtag1::eraseProgramPage(unsigned long address)
+void jtag2::eraseProgramPage(unsigned long address)
 {
-    uchar *response = NULL;
-    uchar command[] = { 0xa1, 0, 0, 0, JTAG_EOM };
+    uchar *response;
+    int respSize;
+    uchar command[5] = { CMND_ERASEPAGE_SPM };
 
-    command[1] = address >> 8;
-    command[2] = address;
+    command[1] = (address & 0xff000000) >> 24;
+    command[2] = (address & 0xff0000) >> 16;
+    command[3] = (address & 0xff00) >> 8;
+    command[4] = address;
 
-    response = doJtagCommand(command, sizeof(command), 1);
-    check(response[0] == JTAG_R_OK, "Page erase failed\n");
+    check(doJtagCommand(command, sizeof(command),
+			response, respSize),
+	  "Page erase failed\n");
 
     delete [] response;
 }
@@ -116,19 +117,19 @@ static int check_file_format(bfd *file)
 
     else if (bfd_check_format_matches (file, bfd_object, &matching))
         err = 0;
-    
+
     else if (bfd_get_error () == bfd_error_file_ambiguously_recognized)
     {
         fprintf(stderr, "File format ambiguous: %s\n",
                 bfd_errmsg(bfd_get_error()));
     }
-    
+
     else if (bfd_get_error () != bfd_error_file_not_recognized)
     {
         fprintf(stderr, "File format not supported: %s\n",
                 bfd_errmsg(bfd_get_error()));
     }
-    
+
     else if (bfd_check_format_matches (file, bfd_core, &matching))
         err = 0;
 
@@ -147,13 +148,13 @@ static int check_file_format(bfd *file)
 //      Return real address (mask gcc-hacked MSB's away).
 //
 //   3. Not correct memory type: return 0x800000.
-//   
+//
 static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
 {
     BFDmemoryType sectmemtype;
     unsigned int addr = section->lma;
 
-    if ((section->flags & SEC_HAS_CONTENTS) && 
+    if ((section->flags & SEC_HAS_CONTENTS) &&
         ((section->flags & SEC_ALLOC) || (section->flags & SEC_LOAD)))
     {
         if (section->lma < DATA_SPACE_ADDR_OFFSET) // < 0x80...
@@ -162,8 +163,8 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
             sectmemtype = MEM_RAM;
         else if (section->lma < FUSE_SPACE_ADDR_OFFSET) // < 0x82...
             sectmemtype = MEM_EEPROM;
-        
-        if (memtype == sectmemtype) {
+
+	if (memtype == sectmemtype) {
             if (sectmemtype == MEM_FLASH) {
                 /* Don't mask the lma or you will not be able to handle more
                    than 64K of flash. */
@@ -181,7 +182,7 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
 
 
 // Add section of memtype BFDmemoryType to image.
-static void jtag_create_image(bfd *file, asection *section, 
+static void jtag_create_image(bfd *file, asection *section,
                               BFDimage *image,
                               BFDmemoryType memtype)
 {
@@ -198,7 +199,7 @@ static void jtag_create_image(bfd *file, asection *section,
     // Get information about section
     name = bfd_get_section_name(file, section);
     size = bfd_get_section_size(section);
-  
+
     if ((addr = get_section_addr(section, memtype)) != 0xffffff)
     {
         debugOut("Getting section contents, addr=0x%lx size=0x%lx\n",
@@ -218,7 +219,7 @@ static void jtag_create_image(bfd *file, asection *section,
         // Remember last address in image
         if (addr+size > image->last_address)
             image->last_address = addr+size;
-    
+
         // Remember first address in image
         if ((! image->first_address_ok) || (addr < image->first_address))
         {
@@ -234,7 +235,7 @@ static void jtag_create_image(bfd *file, asection *section,
 }
 
 
-void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
+void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
 {
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.
@@ -272,7 +273,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
                      bfd_errmsg(bfd_get_error()) );
             exit(-1);
         }
-        
+
         // Check if file format is supported. If not, go for binary mode.
         else if (check_file_format(file))
         {
@@ -283,7 +284,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
                     "binary.\n");
             target = default_target;
         }
-        
+
         else
             done = 1;
     }
@@ -294,14 +295,16 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
     // Set the flash page and eeprom page sizes (These are device dependent)
     page_size = get_page_size(MEM_FLASH);
 
-    debugOut("Flash page size: 0x%0x\nEEPROM page size: 0x%0x\n", 
+    debugOut("Flash page size: 0x%0x\nEEPROM page size: 0x%0x\n",
              page_size, get_page_size(MEM_EEPROM));
-    
+
+#if notneeded // already addressed by setting the device descriptor
     setJtagParameter(JTAG_P_FLASH_PAGESIZE_LOW, page_size & 0xff);
     setJtagParameter(JTAG_P_FLASH_PAGESIZE_HIGH, page_size >> 8);
 
     setJtagParameter(JTAG_P_EEPROM_PAGESIZE,
                      get_page_size(MEM_EEPROM));
+#endif
 
     // Create RAM image by reading all sections in file
     p = file->sections;
@@ -311,7 +314,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
         jtag_create_image(file, p, &eepromimg, MEM_EEPROM);
         p = p->next;
     }
-    
+
     enableProgramming();
 
     // Write the complete FLASH/EEPROM images to the device.
@@ -319,7 +322,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
         jtag_flash_image(&flashimg, MEM_FLASH, program, verify);
     if (eepromimg.has_data)
         jtag_flash_image(&eepromimg, MEM_EEPROM, program, verify);
-    
+
     disableProgramming();
 
     unixCheck(bfd_close(file), "Error closing %s", filename);

@@ -24,6 +24,7 @@
  */
 
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,7 @@
 #include "remote.h"
 #include "jtag.h"
 #include "jtag1.h"
+#include "jtag2.h"
 #include "gnu_getopt.h"
 
 bool ignoreInterrupts;
@@ -93,6 +95,35 @@ static void initSocketAddress(struct sockaddr_in *name,
     }
 }
 
+static unsigned long parseJtagBitrate(const char *val)
+{
+    char *endptr, c;
+    unsigned long v;
+
+    check(*val != '\0', "invalid number in JTAG bit rate");
+    v = strtoul(val, &endptr, 10);
+    if (*endptr == '\0')
+	return v;
+    while (isspace((unsigned char)(c = *endptr)))
+	endptr++;
+    switch (c)
+    {
+    case 'k':
+    case 'K':
+	v *= 1000UL;
+	return v;
+    case 'm':
+    case 'M':
+	v *= 1000000UL;
+	return v;
+    }
+    if (strcmp(endptr, "Hz") == 0)
+	return v;
+
+    check(false, "invalid number in JTAG bit rate");
+    return 0UL;
+}
+
 static void usage(const char *progname)
 {
     fprintf(stderr,
@@ -100,6 +131,10 @@ static void usage(const char *progname)
     fprintf(stderr, "Options:\n");
     fprintf(stderr,
 	    "  -h, --help                  Print this message.\n");
+    fprintf(stderr,
+	    "  -1, --mkI                   Connect to JTAG ICE mkI (default)\n");
+    fprintf(stderr,
+	    "  -2, --mkII                  Connect to JTAG ICE mkII\n");
     fprintf(stderr,
 	    "  -d, --debug                 Enable printing of debug"
 	    " information.\n");
@@ -158,6 +193,8 @@ static void usage(const char *progname)
 
 static struct option long_opts[] = {
     /* name,                 has_arg, flag,   val */
+    { "mkI",                 0,       0,     '1' },
+    { "mkII",                0,       0,     '2' },
     { "help",                0,       0,     'h' },
     { "debug",               0,       0,     'd' },
     { "version",             0,       0,     'V' },
@@ -188,7 +225,7 @@ int main(int argc, char **argv)
     char *inFileName = 0;
     char *jtagDeviceName = "/dev/avrjtag";
     char *device_name = 0;
-    uchar jtagBitrate = 0;
+    unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
     int  hostPortNumber;
     bool erase = false;
@@ -204,6 +241,7 @@ int main(int argc, char **argv)
     bool capture = false;
     bool verify = false;
     char *progname = argv[0];
+    int protocol = 1;		// default to mkI protocol
     int  option_index;
 
     statusOut("AVaRICE version %s, %s %s\n\n",
@@ -212,10 +250,10 @@ int main(int argc, char **argv)
     device_name = 0;
 
     opterr = 0;                 /* disable default error message */
-    
+
     while (1)
     {
-        int c = getopt_long (argc, argv, "VhdDCIf:j:B:pverW:lL:P:",
+        int c = getopt_long (argc, argv, "12VhdDCIf:j:B:pverW:lL:P:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -224,6 +262,12 @@ int main(int argc, char **argv)
             case 'h':
             case '?':
                 usage(progname);
+	    case '1':
+		protocol = 1;
+		break;
+	    case '2':
+		protocol = 2;
+		break;
             case 'd':
                 debugMode = true;
                 break;
@@ -243,19 +287,7 @@ int main(int argc, char **argv)
                 jtagDeviceName = optarg;
                 break;
             case 'B':
-                if (strncmp ("1MHz", optarg, 4) == 0)
-                    jtagBitrate = JTAG_BITRATE_1_MHz;
-                else if (strncmp ("500KHz", optarg, 6) == 0)
-                    jtagBitrate = JTAG_BITRATE_500_KHz;
-                else if (strncmp ("250KHz", optarg, 6) == 0)
-                    jtagBitrate = JTAG_BITRATE_250_KHz;
-                else if (strncmp ("125KHz", optarg, 6) == 0)
-                    jtagBitrate = JTAG_BITRATE_125_KHz;
-                else
-                {
-                    fprintf (stderr, "Invalid bitrate: %s\n", optarg);
-                    exit (1);
-                }
+		jtagBitrate = parseJtagBitrate(optarg);
                 break;
             case 'p':
                 program = true;
@@ -354,17 +386,30 @@ int main(int argc, char **argv)
                  "frequency is at least 4 MHz or you will likely encounter failures\n"
                  "controlling the target.\n\n");
 
-        jtagBitrate = JTAG_BITRATE_1_MHz;
+        jtagBitrate = 1000000;
     }
 
-    try
-      {
+    try {
 	// And say hello to the JTAG box
-	theJtagICE = new jtag1(jtagDeviceName);
+	switch (protocol) {
+	case 1:
+	    theJtagICE = new jtag1(jtagDeviceName);
+	    break;
+
+	case 2:
+	    theJtagICE = new jtag2(jtagDeviceName);
+	    break;
+
+	default:
+	    fprintf(stderr,
+		    "Unknonw JTAG ICE protocol: %d\n",
+		    protocol);
+	    exit(1);
+	}
 
 	// Init JTAG box.
 	theJtagICE->initJtagBox();
-      }
+    }
     catch(const char *msg)
       {
 	fprintf(stderr, "%s\n", msg);
@@ -375,7 +420,6 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Cannot initialize JTAG ICE\n");
 	return 1;
       }
-    
 
     if (erase)
     {

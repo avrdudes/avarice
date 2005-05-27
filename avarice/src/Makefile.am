@@ -2,6 +2,7 @@
 #	avarice - The "avarice" program.
 #	Copyright (C) 2001 Scott Finneran
 #      Copyright (C) 2002 Intel Corporation
+#	Copyright (C) 2005 Joerg Wunsch
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License Version 2
@@ -17,17 +18,28 @@
 #	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
 #
 #
+# $Id$
 AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = avarice
 
 avarice_SOURCES =	\
 	avarice.h	\
+	crc16.h		\
+	crc16.c		\
 	devdescr.cc	\
 	ioreg.cc	\
 	ioreg.h		\
 	jtag.h		\
 	jtag1.h		\
+	jtag2.h		\
+	jtag2bp.cc	\
+	jtag2io.cc	\
+	jtag2misc.cc	\
+	jtag2prog.cc	\
+	jtag2run.cc	\
+	jtag2rw.cc	\
+	jtag2_defs.h	\
 	jtagbp.cc	\
 	jtaggeneric.cc	\
 	jtagio.cc	\

@@ -1,3 +1,6 @@
+(This is the device descriptor format for the mkI protocol.  The mkII
+format is described as part of Appnote AVR067.)
+
 This email documents the structure of the device description array. I also
 posted this to the avarice users mailing list:
 

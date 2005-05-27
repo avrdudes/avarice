@@ -2,6 +2,7 @@
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
 Copyright (C) 2003, 2004 Theodore A. Roth
+Copyright (C) 2005 Joerg Wunsch
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -80,6 +81,12 @@ file (e.g. flash, eeprom, etc.).
 .BR \-h ,\  \-\-help
 Print this message.
 .TP
+.BR \-1 ,\  \-\-mkI
+Connect to JTAG ICE mkI (default).
+.TP
+.BR \-2 ,\  \-\-mkII
+Connect to JTAG ICE mkII.
+.TP
 .BR \-d ,\  \-\-debug
 Enable printing of debug information.
 .TP
@@ -106,9 +113,11 @@ passed and neither --program or --verify are given then --program is implied.
 Port attached to JTAG box (default: /dev/avrjtag).
 .TP
 .BR \-B ,\  \-\-jtag-bitrate \ <rate>
-Set the bitrate that the JTAG box communicates with the avr target device.
+Set the bitrate that the JTAG box communicates with the AVR target device.
 This must be less than 1/4 of the frequency of the target. Valid values are
-1MHz, 500KHz, 250KHz or 125KHz. (default: 1MHz)
+1 MHz, 500 kHz, 250 kHz or 125 kHz for the JTAG ICE mkI,
+anything between 22 kHz through approximately 6400 kHz for the
+JTAG ICE mkII. (default: 1 MHz)
 .TP
 .BR \-p ,\  \-\-program
 Program the target. Binary filename must be specified with --file option.
@@ -190,3 +199,7 @@ from Peter Jansen. They did the work of figuring out the jtagice communication
 protocol before Atmel released the spec (appnote AVR060).
 .PP
 David Gay made major improvements bringing avarice up to 2.0.
+.PP
+Joerg Wunsch reworked the code to abstract the JTAG ICE communication
+from the remainder, and then extended the code to support the JTAG ICE
+mkII protocol (see Atmel appnote AVR067).
