@@ -64,7 +64,7 @@ class jtag2: public jtag
     virtual bool resetProgram(void);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
-    virtual bool jtagSingleStep(void);
+    virtual bool jtagSingleStep(bool hll = false);
     virtual bool jtagContinue(bool setCodeBreakpoints);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
@@ -83,10 +83,10 @@ class jtag2: public jtag
 
     unsigned long b4_to_u32(unsigned char *b) {
       unsigned long l;
-      l = b[0];
-      l += b[1] << 8;
-      l += b[2] << 16;
-      l += b[3] << 24;
+      l = (unsigned)b[0];
+      l += (unsigned)b[1] << 8;
+      l += (unsigned)(unsigned)b[2] << 16;
+      l += (unsigned)b[3] << 24;
 
       return l;
     };
@@ -100,8 +100,8 @@ class jtag2: public jtag
 
     unsigned short b2_to_u16(unsigned char *b) {
       unsigned short l;
-      l = b[0];
-      l += b[1] << 8;
+      l = (unsigned)b[0];
+      l += (unsigned)b[1] << 8;
 
       return l;
     };

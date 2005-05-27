@@ -98,8 +98,9 @@ bool jtag1::resumeProgram(void)
     return doSimpleJtagCommand('G', 0);
 }
 
-bool jtag1::jtagSingleStep(void)
+bool jtag1::jtagSingleStep(bool hll)
 {
+    if (hll) return false;
     return doSimpleJtagCommand('1', 1);
 }
 

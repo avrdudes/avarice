@@ -61,8 +61,8 @@ void jtag2::deleteAllBreakpoints(void)
 
 bool jtag2::stopAt(unsigned int address)
 {
-    uchar zero = 0;
-    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
+    uchar one = 1;
+    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
 }
 
 bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length)

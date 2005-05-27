@@ -149,7 +149,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 	    state = sSEQNUM2;
 	    break;
 	case sSEQNUM2:
-	    r_seqno |= (c << 8);
+	    r_seqno |= ((unsigned)c << 8);
 	    state = sSIZE1;
 	    break;
 	case sSIZE1:
@@ -165,7 +165,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 	    state = sTOKEN;
 	  domsglen:
 	    msglen >>= 8;
-	    msglen |= (c << 24);
+	    msglen |= ((unsigned)c << 24);
 	    break;
 	case sTOKEN:
 	    if (c == TOKEN) {
@@ -173,7 +173,8 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 		if (msglen > MAX_MESSAGE) {
 		    printf("msglen %lu exceeds max message size %u, ignoring message\n",
 			   msglen, MAX_MESSAGE);
-		    ignorpkt = true;
+		    state = sSTART;
+		    headeridx = 0;
 		} else {
 		    buf = new unsigned char[msglen + 10];
 		    check(buf != NULL, "Out of memory");

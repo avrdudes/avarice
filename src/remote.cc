@@ -460,6 +460,7 @@ static bool stepThrough(int start, int end)
 {
     // Try and use a breakpoint at end and "break on change of flow"
     // This doesn't seem to provide much benefit...
+#if 0
     bool flowIntr = !theJtagICE->codeBreakpointBetween(start, end);
 
     for (;;) 
@@ -502,6 +503,10 @@ static bool stepThrough(int start, int end)
 		return true;
 	}
     }
+#else
+    theJtagICE->stopAt(end);
+    theJtagICE->jtagSingleStep(true);
+#endif
 }
 
 static bool singleStep()

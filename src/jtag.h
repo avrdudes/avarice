@@ -752,7 +752,7 @@ class jtag
 
   /** Issue a "single step" command to the JTAG box. 
       Return true iff successful **/
-  virtual bool jtagSingleStep(void) = 0;
+  virtual bool jtagSingleStep(bool hll = false) = 0;
 
   /** Send the program on it's merry way, and wait for a breakpoint or
       input from gdb.
