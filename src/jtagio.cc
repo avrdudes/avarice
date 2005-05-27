@@ -203,50 +203,29 @@ bool jtag1::doSimpleJtagCommand(unsigned char cmd, int responseSize)
 }
 
 
-/** Change bitrate of PC's serial port as specified by BIT_RATE_xxx in
-    'newBitRate' **/
-void jtag::changeLocalBitRate(uchar newBitRate)
-{
-    // Change the local port bitrate.
-    struct termios tio;
-
-    jtagCheck(tcgetattr(jtagBox, &tio)); 
-
-    speed_t newPortSpeed = B19200;
-    // Linux doesn't support 14400. Let's hope it doesn't end up there...
-    switch(newBitRate)
-    {
-    case BIT_RATE_9600:
-	newPortSpeed = B9600;
-	break;
-    case BIT_RATE_19200:
-	newPortSpeed = B19200;
-	break;
-    case BIT_RATE_38400:
-	newPortSpeed = B38400;
-	break;
-    case BIT_RATE_57600:
-	newPortSpeed = B57600;
-	break;
-    case BIT_RATE_115200:
-	newPortSpeed = B115200;
-	break;
-    default:
-	debugOut("unsupported bitrate\n");
-	exit(1);
-    }
-
-    cfsetospeed(&tio, newPortSpeed);
-    cfsetispeed(&tio, newPortSpeed);
-
-    jtagCheck(tcsetattr(jtagBox,TCSANOW,&tio));
-    jtagCheck(tcflush(jtagBox, TCIFLUSH));
-}
-
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
-void jtag1::changeBitRate(uchar newBitRate)
+void jtag1::changeBitRate(int newBitRate)
 {
-    setJtagParameter(JTAG_P_BITRATE, newBitRate);
+    uchar jtagrate;
+
+    switch (newBitRate) {
+    case 9600:
+	jtagrate = BIT_RATE_9600;
+	break;
+    case 19200:
+	jtagrate = BIT_RATE_19200;
+	break;
+    case 38400:
+	jtagrate = BIT_RATE_38400;
+	break;
+    case 57600:
+	jtagrate = BIT_RATE_57600;
+	break;
+    case 115200:
+	jtagrate = BIT_RATE_115200;
+	break;
+    }
+    setJtagParameter(JTAG_P_BITRATE, jtagrate);
     changeLocalBitRate(newBitRate);
 }
 
@@ -254,9 +233,9 @@ void jtag1::changeBitRate(uchar newBitRate)
 void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
 {
     uchar *response = NULL;
-    uchar *command = (uchar *)(&dev->dev_desc);
+    uchar *command = (uchar *)(&dev->dev_desc1);
 
-    response = doJtagCommand(command, sizeof dev->dev_desc, 1);
+    response = doJtagCommand(command, sizeof dev->dev_desc1, 1);
     check(response[0] == JTAG_R_OK,
 	      "JTAG ICE: Failed to set device description");
 
@@ -284,9 +263,9 @@ bool jtag1::checkForEmulator(void)
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
-bool jtag1::synchroniseAt(uchar bitrate)
+bool jtag1::synchroniseAt(int bitrate)
 {
-    debugOut("Attempting synchronisation at bitrate %02x\n", bitrate);
+    debugOut("Attempting synchronisation at bitrate %d\n", bitrate);
 
     changeLocalBitRate(bitrate);
 
@@ -309,9 +288,8 @@ bool jtag1::synchroniseAt(uchar bitrate)
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
 void jtag1::startJtagLink(void)
 {
-    static uchar bitrates[] =
-    { BIT_RATE_115200, BIT_RATE_19200, BIT_RATE_57600, BIT_RATE_38400,
-      BIT_RATE_9600 };
+    static int bitrates[] =
+    { 115200, 19200, 57600, 38400, 9600 };
 
     for (unsigned int i = 0; i < sizeof bitrates / sizeof *bitrates; i++)
 	if (synchroniseAt(bitrates[i]))
@@ -415,7 +393,7 @@ void jtag1::initJtagBox(void)
     statusOut("JTAG config starting.\n");
 
     startJtagLink();
-    changeBitRate(BIT_RATE_115200);
+    changeBitRate(115200);
 
     uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
     statusOut("Hardware Version: 0x%02x\n", hw_ver);
@@ -435,12 +413,21 @@ void jtag1::initJtagBox(void)
 }
 
 
-void jtag1::initJtagOnChipDebugging(uchar bitrate)
+void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
+    uchar br;
+    if (bitrate >= 1000000UL)
+	br = JTAG_BITRATE_1_MHz;
+    else if (bitrate >= 500000)
+	br = JTAG_BITRATE_500_KHz;
+    else if (bitrate >= 250000)
+	br = JTAG_BITRATE_250_KHz;
+    else
+	br = JTAG_BITRATE_125_KHz;
     // Set JTAG bitrate
-    setJtagParameter(JTAG_P_CLOCK, bitrate);
+    setJtagParameter(JTAG_P_CLOCK, br);
 
     // When attaching we can't change fuse bits, etc, as 
     // enabling+disabling programming resets the processor

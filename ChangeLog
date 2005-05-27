@@ -679,3 +679,43 @@
 	to use by setting environment variables.
 	* ChangeLog: New file.
 
+	* Bootstrap:
+	* configure.ac:
+	* doc/avarice.1:
+	* doc/dev_desc.txt:
+	* doc/mk2-protocol.txt:
+	* src/Makefile.am:
+	* src/devdescr.cc:
+	* src/jtag.h:
+	* src/jtag1.h:
+	* src/jtaggeneric.cc:
+	* src/jtagio.cc:
+	* src/jtagprog.cc:
+	* src/jtagrw.cc:
+	* src/main.cc:
+	* src/remote.cc:
+	* src/jtag2.h: (new file)
+	* src/jtag2_defs.h: (new file)
+	* src/jtag2bp.cc: (new file)
+	* src/jtag2io.cc: (new file)
+	* src/jtag2misc.cc: (new file)
+	* src/jtag2prog.cc: (new file)
+	* src/jtag2run.cc: (new file)
+	* src/jtag2rw.cc: (new file)
+	* src/crc16.c: (new file)
+	* src/crc16.h: (new file)
+	* Bootstrap: 
+	* configure.ac: 
+	* doc/avarice.1: 
+	* doc/dev_desc.txt: 
+	* doc/mk2-protocol.txt: 
+	* src/Makefile.am: 
+	* src/devdescr.cc: 
+	* src/jtag.h: 
+	* src/jtag1.h: 
+	* src/jtaggeneric.cc: 
+	* src/jtagio.cc: 
+	* src/jtagprog.cc: 
+	* src/jtagrw.cc: 
+	* src/main.cc: 
+	* src/remote.cc: 

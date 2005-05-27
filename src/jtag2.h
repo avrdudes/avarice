@@ -1,7 +1,5 @@
 /*
  *	avarice - The "avarice" program.
- *	Copyright (C) 2001 Scott Finneran
- *	Copyright (C) 2002, 2003, 2004 Intel Corporation
  *	Copyright (C) 2005 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
@@ -17,34 +15,31 @@
  *	along with this program; if not, write to the Free Software
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
- * This file extends the generic "jtag" class for the mkI protocol.
+ * This file extends the generic "jtag" class for the mkII protocol.
  *
  * $Id$
  */
 
-#ifndef JTAG1_H
-#define JTAG1_H
+#ifndef JTAG2_H
+#define JTAG2_H
 
 #include "jtag.h"
 
-enum SendResult { send_failed, send_ok, mcu_data };
-
-class jtag1: public jtag
+class jtag2: public jtag
 {
-    /** Decode 3-byte big-endian address **/
-    unsigned long decodeAddress(uchar *buf) {
-	return buf[0] << 16 | buf[1] << 8 | buf[2];
-    };
-
-    /** Encode 3-byte big-endian address **/
-    void encodeAddress(uchar *buffer, unsigned long x) {
-	buffer[0] = x >> 16;
-	buffer[1] = x >> 8;
-	buffer[2] = x;
-    };
+  private:
+    unsigned short command_sequence;
+    int devdescrlen;
+    bool signedIn;
+    bool breakpointHit;
 
   public:
-    jtag1(const char *dev): jtag(dev) {};
+    jtag2(const char *dev): jtag(dev) {
+	signedIn = breakpointHit = false;
+	command_sequence = 0;
+	devdescrlen = sizeof(jtag2_device_desc_type);
+    };
+    virtual ~jtag2(void);
 
     virtual void initJtagBox(void);
     virtual void initJtagOnChipDebugging(unsigned long bitrate);
@@ -82,36 +77,77 @@ class jtag1: public jtag
     virtual void startJtagLink(void);
     virtual void deviceAutoConfig(void);
 
-    uchar *getJtagResponse(int responseSize);
-    SendResult sendJtagCommand(uchar *command, int commandSize, int *tries);
-    bool checkForEmulator(void);
+    void sendFrame(uchar *command, int commandSize);
+    int recvFrame(unsigned char *&msg, unsigned short &seqno);
+    int recv(unsigned char *&msg);
 
-    /** Send a command to the jtag, with retries, and return the 'responseSize'
-	byte response. Aborts avarice in case of to many failed retries.
+    unsigned long b4_to_u32(unsigned char *b) {
+      unsigned long l;
+      l = (unsigned)b[0];
+      l += (unsigned)b[1] << 8;
+      l += (unsigned)(unsigned)b[2] << 16;
+      l += (unsigned)b[3] << 24;
 
-	Returns a dynamically allocated buffer containing the reponse (caller
-	must free)
+      return l;
+    };
+
+    void u32_to_b4(unsigned char *b, unsigned long l) {
+      b[0] = l & 0xff;
+      b[1] = (l >> 8) & 0xff;
+      b[2] = (l >> 16) & 0xff;
+      b[3] = (l >> 24) & 0xff;
+    };
+
+    unsigned short b2_to_u16(unsigned char *b) {
+      unsigned short l;
+      l = (unsigned)b[0];
+      l += (unsigned)b[1] << 8;
+
+      return l;
+    };
+
+    void u16_to_b2(unsigned char *b, unsigned short l) {
+      b[0] = l & 0xff;
+      b[1] = (l >> 8) & 0xff;
+    };
+
+
+    bool sendJtagCommand(uchar *command, int commandSize, int &tries,
+			 uchar *&msg, int &msgsize, bool verify = true);
+
+    /** Send a command to the jtag, with retries, and return the
+	'responseSize' byte &response, response size in
+	&responseSize. If retryOnTimeout is true, retry the command
+	if no (positive or negative) response arrived in time, abort
+	after too many retries.
+
+	If a negative response arrived, return false, otherwise true.
+
+	Caller must delete [] the response.
     **/
-    uchar *doJtagCommand(uchar *command, int  commandSize, int responseSize);
+    bool doJtagCommand(uchar *command, int  commandSize,
+		       uchar *&response, int &responseSize,
+		       bool retryOnTimeout = true);
 
     /** Simplified form of doJtagCommand:
 	Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a
-	'responseSize' byte reponse.
-
-	Return true if responseSize is 0 or if last response byte is
-	JTAG_R_OK
+	response that consists only of the status byte which must be
+	RSP_OK.
     **/
-    bool doSimpleJtagCommand(uchar cmd, int responseSize);
+    void doSimpleJtagCommand(uchar cmd);
 
     // Miscellaneous
     // -------------
 
     /** Set JTAG ICE parameter 'item' to 'newValue' **/
-    void setJtagParameter(uchar item, uchar newValue);
+    void setJtagParameter(uchar item, uchar *newValue, int valSize);
 
-    /** Return value of JTAG ICE parameter 'item' **/
-    uchar getJtagParameter(uchar item);
+    /** Return value of JTAG ICE parameter 'item'; caller must delete
+        [] resp
+    **/
+    void getJtagParameter(uchar item, uchar *&resp, int &respSize);
 
+    uchar memorySpace(unsigned long &addr);
 };
 
 #endif
