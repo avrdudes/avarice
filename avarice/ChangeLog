@@ -1,3 +1,32 @@
+2005-05-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Merge the JTAG ICE mkII branch back to HEAD.
+	* src/jtag2.h: (new file)
+	* src/jtag2_defs.h: (new file)
+	* src/jtag2bp.cc: (new file)
+	* src/jtag2io.cc: (new file)
+	* src/jtag2misc.cc: (new file)
+	* src/jtag2prog.cc: (new file)
+	* src/jtag2run.cc: (new file)
+	* src/jtag2rw.cc: (new file)
+	* src/crc16.c: (new file)
+	* src/crc16.h: (new file)
+	* Bootstrap: Export AUTO* variables.
+	* configure.ac: Bump version.
+	* doc/avarice.1: (Merge)
+	* doc/dev_desc.txt: (Merge)
+	* doc/mk2-protocol.txt: (Merge)
+	* src/Makefile.am: (Merge)
+	* src/devdescr.cc: (Merge)
+	* src/jtag.h: (Merge)
+	* src/jtag1.h: (Merge)
+	* src/jtaggeneric.cc: (Merge)
+	* src/jtagio.cc: (Merge)
+	* src/jtagprog.cc: (Merge)
+	* src/jtagrw.cc: (Merge)
+	* src/main.cc: (Merge)
+	* src/remote.cc: (Merge)
+
 2005-05-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: Add IO register entries for ATmega64/128 & CAN128
@@ -679,43 +708,3 @@
 	to use by setting environment variables.
 	* ChangeLog: New file.
 
-	* Bootstrap:
-	* configure.ac:
-	* doc/avarice.1:
-	* doc/dev_desc.txt:
-	* doc/mk2-protocol.txt:
-	* src/Makefile.am:
-	* src/devdescr.cc:
-	* src/jtag.h:
-	* src/jtag1.h:
-	* src/jtaggeneric.cc:
-	* src/jtagio.cc:
-	* src/jtagprog.cc:
-	* src/jtagrw.cc:
-	* src/main.cc:
-	* src/remote.cc:
-	* src/jtag2.h: (new file)
-	* src/jtag2_defs.h: (new file)
-	* src/jtag2bp.cc: (new file)
-	* src/jtag2io.cc: (new file)
-	* src/jtag2misc.cc: (new file)
-	* src/jtag2prog.cc: (new file)
-	* src/jtag2run.cc: (new file)
-	* src/jtag2rw.cc: (new file)
-	* src/crc16.c: (new file)
-	* src/crc16.h: (new file)
-	* Bootstrap: 
-	* configure.ac: 
-	* doc/avarice.1: 
-	* doc/dev_desc.txt: 
-	* doc/mk2-protocol.txt: 
-	* src/Makefile.am: 
-	* src/devdescr.cc: 
-	* src/jtag.h: 
-	* src/jtag1.h: 
-	* src/jtaggeneric.cc: 
-	* src/jtagio.cc: 
-	* src/jtagprog.cc: 
-	* src/jtagrw.cc: 
-	* src/main.cc: 
-	* src/remote.cc: 
