@@ -1,3 +1,8 @@
+2005-05-31  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h: remove friend restoreSerialPort() which doesn't
+	exist at all.
+
 2005-05-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Merge the JTAG ICE mkII branch back to HEAD.
