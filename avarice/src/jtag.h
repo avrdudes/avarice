@@ -610,8 +610,6 @@ class jtag
   struct termios oldtio;
   bool oldtioValid;
 
-  friend void ::restoreSerialPort();
-
   breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
   int numBreakpointsCode, numBreakpointsData;
 
