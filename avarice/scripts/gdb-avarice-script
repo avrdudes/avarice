@@ -1,6 +1,5 @@
 set remoteaddresssize 32
 set remote Z-packet enable
-set remote step-over-range-packet enable
 set remote hardware-breakpoint-limit 3
 set remote hardware-watchpoint-limit 2
 

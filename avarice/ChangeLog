@@ -1,3 +1,17 @@
+2005-06-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: add device flags.
+	* src/jtag.h: add device flags, move mkI breakpoints out to jtag1.h.
+	* src/jtag1.h: mkI breakpoint interface goes here.
+	* src/jtag2.h: new mkII breakpoint interface.
+	* src/jtag2bp.cc: ditto.
+	* src/jtag2run.cc: ditto.
+	* src/jtag2rw.cc: Attempt to get the "load" command working.
+	* src/jtagbp.cc: remove stale "e" packet code (step-over-range-packet).
+	* src/jtagrun.cc: ditto.
+	* src/remote.cc: ditto.
+	* scripts/gdb-avarice-script: ditto.
+
 2005-05-31  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: remove friend restoreSerialPort() which doesn't

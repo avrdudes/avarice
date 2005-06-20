@@ -29,6 +29,43 @@
 
 enum SendResult { send_failed, send_ok, mcu_data };
 
+/*
+   There are apparently a total of three hardware breakpoints 
+   (the docs claim four, but documents 2 breakpoints accessible via 
+   non-existent parameters). 
+
+   In summary, there is one code-only breakpoint, and 2 breakpoints which
+   can be:
+   - 2 code breakpoints
+   - 2 1-byte data breakpoints
+   - 1 code and 1-byte data breakpoint
+   - 1 ranged code breakpoint
+   - 1 ranged data breakpoint
+
+   Currently we're ignoring ranges, so we allow up to 3 breakpoints,
+   of which a maximum of 2 are data breakpoints. This is easily handled
+   by keeping each kind of breakpoint separate.
+
+   In the future, we could support "software" breakpoints too (though it
+   seems mildly painful)
+
+   See avrIceProtocol.txt for full details.
+*/
+
+enum {
+  // We distinguish the total possible breakpoints and those for each type
+  // (code or data) - see above
+  MAX_BREAKPOINTS_CODE = 4,
+  MAX_BREAKPOINTS_DATA = 2,
+  MAX_BREAKPOINTS = 4
+};
+
+struct breakpoint
+{
+    unsigned int address;
+    bpType type;
+};
+
 class jtag1: public jtag
 {
     /** Decode 3-byte big-endian address **/
@@ -43,6 +80,9 @@ class jtag1: public jtag
 	buffer[2] = x;
     };
 
+    breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
+    int numBreakpointsCode, numBreakpointsData;
+
   public:
     jtag1(const char *dev): jtag(dev) {};
 
@@ -52,11 +92,10 @@ class jtag1: public jtag
     virtual void deleteAllBreakpoints(void);
     virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual void updateBreakpoints(bool setCodeBreakpoints);
+    virtual void updateBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
     virtual bool stopAt(unsigned int address);
-    virtual void breakOnChangeFlow(void);
 
     virtual void enableProgramming(void);
     virtual void disableProgramming(void);
@@ -69,8 +108,8 @@ class jtag1: public jtag
     virtual bool resetProgram(void);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
-    virtual bool jtagSingleStep(void);
-    virtual bool jtagContinue(bool setCodeBreakpoints);
+    virtual bool jtagSingleStep(bool useHLL = false);
+    virtual bool jtagContinue(void);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);

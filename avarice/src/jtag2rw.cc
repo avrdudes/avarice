@@ -154,6 +154,22 @@ bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
     debugOut("jtagWrite ");
     uchar whichSpace = memorySpace(addr);
+
+    // Hack to detect the start of a GDB "load" command.  Iff this
+    // address is tied to flash ROM, and it is address 0, and the size
+    // is larger than 4 bytes, assume it's the first block of a "load"
+    // command.  If so, chip erase the device, and switch over to
+    // programming mode to speed up things (drastically).
+
+    if (whichSpace == MTYPE_SPM &&
+	addr == 0 &&
+	numBytes > 4)
+    {
+	debugOut("Detected GDB \"load\" command, erasing flash.\n");
+	//whichSpace = MTYPE_FLASH_PAGE; // this will turn on progmode
+	eraseProgramMemory();
+    }
+
     bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE;
     unsigned int pageSize = 0;
     bool wasProgmode = programmingEnabled;

@@ -441,7 +441,7 @@ bool handleInterrupt(void)
 	    if (!theJtagICE->addBreakpoint(retPC, CODE, 0))
 		return false;
 	}
-	result = theJtagICE->jtagContinue(true);
+	result = theJtagICE->jtagContinue();
 	if (needBP)
 	    theJtagICE->deleteBreakpoint(retPC, CODE, 0);
 
@@ -454,54 +454,6 @@ bool handleInterrupt(void)
 	    break;
     }
     return result;
-}
-
-static bool stepThrough(int start, int end)
-{
-    // Try and use a breakpoint at end and "break on change of flow"
-    // This doesn't seem to provide much benefit...
-    bool flowIntr = !theJtagICE->codeBreakpointBetween(start, end);
-
-    for (;;) 
-    {
-	if (flowIntr)
-	{
-	    theJtagICE->breakOnChangeFlow();
-	    theJtagICE->stopAt(end);
-	    if (!theJtagICE->jtagContinue(false))
-		return false;
-	}
-	else
-	{
-	    if (!theJtagICE->jtagSingleStep())
-		gdbOut("Failed to single-step\n");
-
-	    int gdbIn = checkForDebugChar();
-	    if (gdbIn >= 0)
-		if (gdbIn == 3)
-		    return false;
-		else
-		    debugOut("Unexpected GDB input `%02x'\n", gdbIn);
-	}
-
-	for (;;)
-	{
-	    int newPC = theJtagICE->getProgramCounter();
-	    if (theJtagICE->codeBreakpointAt(newPC))
-		return true;
-	    if (newPC >= start && newPC < end)
-		break;
-
-	    // assume interrupt when PC goes into interrupt table
-	    if (ignoreInterrupts && newPC < global_p_device_def->vectors_end)
-	    {
-		if (!handleInterrupt())
-		    return false;
-	    }
-	    else
-		return true;
-	}
-    }
 }
 
 static bool singleStep()
@@ -1026,17 +978,6 @@ void talkToGdb(void)
 	repStatus(singleStep());
 	break;
 
-    case 'e': //eAA..AA,BB..BB continue until pc leaves [A..B[ range
-      if (hexToInt(&ptr, &start) &&
-	  *ptr++ == ',' &&
-	  hexToInt(&ptr, &end))
-      {
-	  debugOut("single step from %x to %x\n", start, end);
-	  putpacket("OK");
-	  repStatus(start == end ? singleStep() : stepThrough(start, end));
-      }
-      break;
-
     case 'C':
     {
         /* Continue with signal command format:
@@ -1070,7 +1011,7 @@ void talkToGdb(void)
 	    if (!theJtagICE->setProgramCounter(addr))
 		gdbOut("Failed to set PC");
 	}
-	repStatus(theJtagICE->jtagContinue(true));
+	repStatus(theJtagICE->jtagContinue());
 	break;
 
     case 'D':

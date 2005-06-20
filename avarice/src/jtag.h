@@ -135,6 +135,12 @@ typedef struct {
 #define fill_b2(u) \
 { ((u) & 0xff), (((u) & 0xff00) >> 8) }
 
+enum dev_flags {
+	DEVFL_NONE         = 0x000000,
+	DEVFL_NO_SOFTBP    = 0x000001, // Device cannot use software BPs (no BREAK insn)
+	DEVFL_MKII_ONLY    = 0x000002, // Device is only supported in JTAG ICE mkII
+};
+
 typedef struct {
     const char* name;
     const unsigned int device_id;      // Part Number from JTAG Device 
@@ -144,6 +150,7 @@ typedef struct {
     unsigned char eeprom_page_size;    // EEPROM page size in bytes
     unsigned int eeprom_page_count;    // EEPROM page count
     unsigned int vectors_end;	       // End of interrupt vector table
+    enum dev_flags device_flags;       // See above.
 
     gdb_io_reg_def_type *io_reg_defs;
 
@@ -430,6 +437,7 @@ enum
     MTYPE_SRAM		= 0x20,	// target's SRAM or [ext.] IO registers
     MTYPE_EEPROM	= 0x22,	// EEPROM, what way?
     MTYPE_EVENT		= 0x60,	// ICE event memory
+    MTYPE_EVENT_COMPRESSED = 0x61, // ICE event memory, bit-mapped
     MTYPE_SPM		= 0xA0,	// flash through LPM/SPM
     MTYPE_FLASH_PAGE	= 0xB0,	// flash in programming mode
     MTYPE_EEPROM_PAGE	= 0xB1,	// EEPROM in programming mode
@@ -523,45 +531,14 @@ enum bpType
 {
     NONE,           // disabled.
     CODE,           // normal code space breakpoint.
+    SOFTCODE,       // code software BP (not yet used).
     WRITE_DATA,     // write data space breakpoint (ie "watch").
     READ_DATA,      // read data space breakpoint (ie "watch").
     ACCESS_DATA,    // read/write data space breakpoint (ie "watch").
-};
-
-/* There are apparently a total of three hardware breakpoints 
-   (the docs claim four, but documents 2 breakpoints accessible via 
-   non-existent parameters). 
-
-   In summary, there is one code-only breakpoint, and 2 breakpoints which
-   can be:
-   - 2 code breakpoints
-   - 2 1-byte data breakpoints
-   - 1 code and 1-byte data breakpoint
-   - 1 ranged code breakpoint
-   - 1 ranged data breakpoint
-
-   Currently we're ignoring ranges, so we allow up to 3 breakpoints,
-   of which a maximum of 2 are data breakpoints. This is easily handled
-   by keeping each kind of breakpoint separate.
-
-   In the future, we could support "software" breakpoints too (though it
-   seems mildly painful)
-
-   See avrIceProtocol.txt for full details.
-*/
-
-enum {
-  // We distinguish the total possible breakpoints and those for each type
-  // (code or data) - see above
-  MAX_BREAKPOINTS_CODE = 4,
-  MAX_BREAKPOINTS_DATA = 2,
-  MAX_BREAKPOINTS = 4
-};
-
-struct breakpoint
-{
-    unsigned int address;
-    bpType type;
+    DATA_MASK,      // mask for data space breakpoint.
+    // keep mask bits last
+    HAS_MASK = 0x80000000, // data space BP has an associated mask in
+                           // next slot
 };
 
 // Enumerations for target memory type.
@@ -609,9 +586,6 @@ class jtag
   // The initial serial port parameters. We restore them on exit.
   struct termios oldtio;
   bool oldtioValid;
-
-  breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
-  int numBreakpointsCode, numBreakpointsData;
 
   // The file descriptor used while talking to the JTAG ICE
   int jtagBox;
@@ -697,7 +671,7 @@ class jtag
   virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length) = 0;
 
   /** Send the breakpoint details down to the JTAG box. */
-  virtual void updateBreakpoints(bool setCodeBreakpoints) = 0;
+  virtual void updateBreakpoints(void) = 0;
 
   /** True if there is a breakpoint at address */
   virtual bool codeBreakpointAt(unsigned int address) = 0;
@@ -707,8 +681,6 @@ class jtag
   virtual bool codeBreakpointBetween(unsigned int start, unsigned int end) = 0;
 
   virtual bool stopAt(unsigned int address) = 0;
-
-  virtual void breakOnChangeFlow(void) = 0;
 
   // Writing to program memory
   // -------------------------
@@ -750,12 +722,12 @@ class jtag
 
   /** Issue a "single step" command to the JTAG box. 
       Return true iff successful **/
-  virtual bool jtagSingleStep(void) = 0;
+  virtual bool jtagSingleStep(bool useHLL = false) = 0;
 
   /** Send the program on it's merry way, and wait for a breakpoint or
       input from gdb.
       Return true for a breakpoint, false for gdb input. **/
-  virtual bool jtagContinue(bool setCodeBreakpoints) = 0;
+  virtual bool jtagContinue(void) = 0;
 
   // R/W memory
   // ----------

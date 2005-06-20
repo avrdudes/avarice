@@ -98,14 +98,14 @@ bool jtag1::resumeProgram(void)
     return doSimpleJtagCommand('G', 0);
 }
 
-bool jtag1::jtagSingleStep(void)
+bool jtag1::jtagSingleStep(bool useHLL)
 {
     return doSimpleJtagCommand('1', 1);
 }
 
-bool jtag1::jtagContinue(bool setCodeBreakpoints)
+bool jtag1::jtagContinue(void)
 {
-    updateBreakpoints(setCodeBreakpoints); // download new bp configuration
+    updateBreakpoints();        // download new bp configuration
 
     if (!doSimpleJtagCommand('G', 0))
     {
