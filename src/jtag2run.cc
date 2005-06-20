@@ -103,9 +103,11 @@ bool jtag2::resumeProgram(void)
     return true;
 }
 
-bool jtag2::jtagSingleStep(void)
+bool jtag2::jtagSingleStep(bool useHLL)
 {
-    uchar cmd[3] = { CMND_SINGLE_STEP, 0x01, 0x01 };
+    uchar cmd[3] = { CMND_SINGLE_STEP,
+		     useHLL? 0x02: 0x01,
+		     useHLL? 0x00: 0x01 };
     uchar *resp;
     int respSize, i = 2;
     bool rv;
@@ -127,11 +129,17 @@ bool jtag2::jtagSingleStep(void)
     return rv;
 }
 
-bool jtag2::jtagContinue(bool setCodeBreakpoints)
+bool jtag2::jtagContinue(void)
 {
-    updateBreakpoints(setCodeBreakpoints); // download new bp configuration
+    updateBreakpoints(); // download new bp configuration
 
-    doSimpleJtagCommand(CMND_GO);
+    if (haveHiddenBreakpoint)
+	// One of our breakpoints has been set as the high-level
+	// language boundary address of our current statement, so
+	// perform a high-level language single step.
+	(void)jtagSingleStep(true);
+    else
+	doSimpleJtagCommand(CMND_GO);
 
     for (;;)
     {

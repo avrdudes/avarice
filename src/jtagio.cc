@@ -341,6 +341,8 @@ void jtag1::deviceAutoConfig(void)
 
             pDevice++;
         }
+	check((pDevice->device_flags & DEVFL_MKII_ONLY) == 0,
+	      "Device is not supported by JTAG ICE mkI");
         check(pDevice->name,
               "No configuration available for device ID: %0x\n",
               device_id); 
@@ -356,7 +358,9 @@ void jtag1::deviceAutoConfig(void)
 
             pDevice++;
         }
-        check(pDevice->name,
+	check((pDevice->device_flags & DEVFL_MKII_ONLY) == 0,
+	      "Device is not supported by JTAG ICE mkI");
+	check(pDevice->name,
               "No configuration available for Device: %s\n",
               device_name);
     }

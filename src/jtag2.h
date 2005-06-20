@@ -25,6 +25,73 @@
 
 #include "jtag.h"
 
+/*
+ * JTAG ICE mkII breakpoints are quite tricky.
+ *
+ * There are four possible breakpoint slots in JTAG.  The first one is
+ * always reserved for single-stepping, and cannot be accessed
+ * directly.  The second slot (ID #1) can be freely used as a code
+ * breakpoint (only).  The third and fourth slot can either be used as
+ * a code breakpoint, as an independent (byte-wide) data breakpoint
+ * (i.e. a watchpoint in GDB terms), or together as a data breakpoint
+ * consisting of an address and a mask.  The latter does not match
+ * directly to GDB watchpoints (of a certain lenght > 1) but imposes
+ * the additional requirement that the base address be aligned
+ * properly wrt. the mask.
+ *
+ * The single-step breakpoint can indirectly be used by filling the
+ * respective high-level language information into the event memory,
+ * and issuing a high-level "step over" single-step.  As GDB does not
+ * install the breakpoints for "stepi"-style single-steps (which would
+ * require the very same JTAG breakpoint register), this ought to
+ * work.
+ *
+ * Finally, there are software breakpoints where the respective
+ * instruction will be replaced by a BREAK instruction in flash ROM by
+ * means of an SPM call.  Some devices do not allow for this (as they
+ * are said to be broken), and in general as this method contributes
+ * to flash wear, we rather do not uninstall and reinstall these
+ * breakpoints each time GDB asks for it, but instead "cache" them
+ * locally, and only delete and add them as they actually change.
+ *
+ * To add to the mess, GDB's remote protocol isn't very smart about
+ * telling us whether the next list of breakpoints + resume are
+ * actually meant to be a high-level language (HLL) single-step
+ * command.  Thus, always assume the last breakpoint that comes in to
+ * be a single-step breakpoint, and replace the "resume" operation by
+ * a "step" one in that case.  At least, GDB issues the breakpoint
+ * list in the order of breakpoint numbers, so any possible HLL
+ * single-step breakoint must be the last one in the list.
+ *
+ * Finally, GDB has explicit commands for setting hardware-assisted
+ * breakpoints, but the default "break" command uses a software
+ * breakpoint.  We try to replace as many software breakpoints as
+ * possible by hardware breakpoints though, for the sake of
+ * efficiency, yet would want to respect the user's choice for setting
+ * a hardware breakpoint ("hbreak" or "thbreak")...
+ *
+ * XXX This is not done yet.
+ *
+ * XXX software breakpoints are not handled yet at all.
+ */
+
+enum {
+  // We distinguish the total possible breakpoints and those for each type
+  // (code or data) - see above
+  MAX_BREAKPOINTS2_CODE = 4,
+  MAX_BREAKPOINTS2_DATA = 2,
+  MAX_BREAKPOINTS2 = 4,
+  // various slot #s
+  BREAKPOINT2_FIRST_DATA = 2,
+  BREAKPOINT2_DATA_MASK = 3
+};
+
+struct breakpoint2
+{
+    unsigned int address;
+    bpType type;
+};
+
 class jtag2: public jtag
 {
   private:
@@ -32,6 +99,10 @@ class jtag2: public jtag
     int devdescrlen;
     bool signedIn;
     bool breakpointHit;
+    bool haveHiddenBreakpoint;
+
+    breakpoint2 bpCode[MAX_BREAKPOINTS2_CODE], bpData[MAX_BREAKPOINTS2_DATA];
+    int numBreakpointsCode, numBreakpointsData;
 
   public:
     jtag2(const char *dev): jtag(dev) {
@@ -47,11 +118,10 @@ class jtag2: public jtag
     virtual void deleteAllBreakpoints(void);
     virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual void updateBreakpoints(bool setCodeBreakpoints);
+    virtual void updateBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
     virtual bool stopAt(unsigned int address);
-    virtual void breakOnChangeFlow(void);
 
     virtual void enableProgramming(void);
     virtual void disableProgramming(void);
@@ -64,8 +134,8 @@ class jtag2: public jtag
     virtual bool resetProgram(void);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
-    virtual bool jtagSingleStep(void);
-    virtual bool jtagContinue(bool setCodeBreakpoints);
+    virtual bool jtagSingleStep(bool useHLL = false);
+    virtual bool jtagContinue(void);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);

@@ -147,16 +147,13 @@ bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
 }
 
 
-void jtag1::updateBreakpoints(bool setCodeBreakpoints)
+void jtag1::updateBreakpoints(void)
 {
     unsigned char bpMode = 0x00;
     int bpC = 0, bpD = 0;
     breakpoint *bp;
 
     debugOut("updateBreakpoints\n");
-    
-    if (!setCodeBreakpoints)
-	bpC = numBreakpointsCode;
 
     // BP 0 (aka breakpoint Z0).
     // Send breakpoint array down to the target.
@@ -252,9 +249,4 @@ void jtag1::updateBreakpoints(bool setCodeBreakpoints)
 
 	setJtagParameter(JTAG_P_BP_MODE, bpMode);
     }
-}
-
-void jtag1::breakOnChangeFlow(void)
-{
-    setJtagParameter(JTAG_P_BP_FLOW, 1);
 }
