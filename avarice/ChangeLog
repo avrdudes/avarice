@@ -7,6 +7,7 @@
 	use an "if" statement instead.
 	* src/jtaggeneric.cc: add USB hooks (depending on configuration).
 	* src/jtag2usb.cc: New file: implement USB communication.
+	* doc/avarice.1: Document the USB connection method.
 
 2005-08-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
