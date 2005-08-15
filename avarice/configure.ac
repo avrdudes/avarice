@@ -64,6 +64,7 @@ fi
 AC_CHECK_LIB([intl], [dcgettext])
 AC_CHECK_LIB([iberty], [xmalloc])
 AC_CHECK_LIB([bfd], [bfd_init], , [ac_found_bfd=no])
+AC_CHECK_LIB([usb], [usb_get_string_simple])
 
 if test "x$ac_found_bfd" = "xno"; then
   AC_MSG_ERROR([You need to install libbfd.a from binutils.])
