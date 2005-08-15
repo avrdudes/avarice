@@ -99,6 +99,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
     uchar whichSpace = memorySpace(addr);
     bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE;
     unsigned int pageSize = 0;
+    unsigned int offset = 0;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)
        enableProgramming();
@@ -109,11 +110,15 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	// Even MTYPE_SPM appears to cause a RSP_FAILED
 	// otherwise.
     case MTYPE_SPM:
+        offset = addr & 1;
+        addr &= ~1;
 	numBytes = (numBytes + 1) & ~1;
 	break;
 
     case MTYPE_FLASH_PAGE:
+        offset = addr & 1;
 	numBytes = (numBytes + 1) & ~1;
+        addr &= ~1;
 	pageSize = global_p_device_def->flash_page_size;
 	break;
 
@@ -143,7 +148,10 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
     if (needProgmode && !wasProgmode)
        disableProgramming();
 
-    memmove(response, response + 1, responseSize - 1);
+    if (offset > 0)
+        memmove(response, response + 1 + offset, responseSize - 1 - offset);
+    else
+        memmove(response, response + 1, responseSize - 1);
     return response;
 }
 

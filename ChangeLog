@@ -1,3 +1,9 @@
+2005-08-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2rw.cc (jtag2::jtagRead()): when word-aligning flash
+	ROM requests, do also align the request base, and return the
+	correct byte(s).
+
 2005-06-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: add device flags.
