@@ -111,6 +111,13 @@ passed and neither --program or --verify are given then --program is implied.
 .TP
 .BR \-j ,\  \-\-jtag \ <devname>
 Port attached to JTAG box (default: /dev/avrjtag).
+.br
+If \fBavarice\fR has been configured with libusb support, the JTAG ICE
+mkII can be connected through USB.
+In that case, the string \fIusb\fR is used as the name of the device.
+If there are multiple JTAG ICE mkII devices connected to the system
+through USB, this string may be followed by the (trailing part of the)
+ICE's serial number, delimited from the \fIusb\fR by a colon.
 .TP
 .BR \-B ,\  \-\-jtag-bitrate \ <rate>
 Set the bitrate that the JTAG box communicates with the AVR target device.
@@ -162,6 +169,15 @@ Target device name (e.g. atmega16)
 :\fIPORT\fR is required to put avarice into gdb server mode.
 .SH EXAMPLE USAGE
 avarice --erase --program --file test.bin --jtag /dev/ttyS0 :4242
+.PP
+Program the file \fItest.bin\fR into the JTAG ICE (mkI) connected to
+/dev/ttyS0 after erasing the device, then listen in GDB mode on the
+local port 4242.
+.PP
+avarice --jtag usb:1234 --mkII :4242
+.PP
+Connect to the JTAG ICE mkII attached to USB which serial number ends
+in \fI1234\fR, and listen in GDB mode on local port 4242.
 .SH DEBUGGING WITH AVARICE
 The JTAG ICE debugging environment has a few restrictions and changes:
 .IP \(bu 4
