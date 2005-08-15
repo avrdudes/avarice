@@ -40,6 +40,7 @@ avarice_SOURCES =	\
 	jtag2run.cc	\
 	jtag2rw.cc	\
 	jtag2_defs.h	\
+	jtag2usb.cc	\
 	jtagbp.cc	\
 	jtaggeneric.cc	\
 	jtagio.cc	\

@@ -60,7 +60,7 @@ void jtag::jtagCheck(int status)
 
 void jtag::restoreSerialPort()
 {
-  if (jtagBox >= 0 && oldtioValid)
+  if (!is_usb && jtagBox >= 0 && oldtioValid)
       tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
@@ -74,43 +74,53 @@ jtag::jtag(const char *jtagDeviceName)
 {
     struct termios newtio;
 
-    // Open modem device for reading and writing and not as controlling
-    // tty because we don't want to get killed if linenoise sends
-    // CTRL-C.
-    jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    unixCheck(jtagBox, "Failed to open %s", jtagDeviceName);
+#ifdef HAVE_LIBUSB
+    if (strncmp(jtagDeviceName, "usb", 3) == 0)
+      {
+	is_usb = true;
+	openUSB(jtagDeviceName);
+      }
+    else
+#endif
+      {
+	// Open modem device for reading and writing and not as controlling
+	// tty because we don't want to get killed if linenoise sends
+	// CTRL-C.
+	jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	unixCheck(jtagBox, "Failed to open %s", jtagDeviceName);
 
-    // save current serial port settings and plan to restore them on exit
-    jtagCheck(tcgetattr(jtagBox, &oldtio));
-    oldtioValid = true;
+	// save current serial port settings and plan to restore them on exit
+	jtagCheck(tcgetattr(jtagBox, &oldtio));
+	oldtioValid = true;
 
-    memset(&newtio, 0, sizeof(newtio));
-    newtio.c_cflag = CS8 | CLOCAL | CREAD;
+	memset(&newtio, 0, sizeof(newtio));
+	newtio.c_cflag = CS8 | CLOCAL | CREAD;
 
-    // set baud rates in a platform-independent manner
-    jtagCheck(cfsetospeed(&newtio, B19200));
-    jtagCheck(cfsetispeed(&newtio, B19200));
+	// set baud rates in a platform-independent manner
+	jtagCheck(cfsetospeed(&newtio, B19200));
+	jtagCheck(cfsetispeed(&newtio, B19200));
 
-    // IGNPAR  : ignore bytes with parity errors
-    //           otherwise make device raw (no other input processing)
-    newtio.c_iflag = IGNPAR;
+	// IGNPAR  : ignore bytes with parity errors
+	//           otherwise make device raw (no other input processing)
+	newtio.c_iflag = IGNPAR;
 
-    // Raw output.
-    newtio.c_oflag = 0;
+	// Raw output.
+	newtio.c_oflag = 0;
 
-    // Raw input.
-    newtio.c_lflag = 0;
+	// Raw input.
+	newtio.c_lflag = 0;
 
-    // The following configuration should cause read to return if 2
-    // characters are immediately avaible or if the period between
-    // characters exceeds 5 * .1 seconds.
-    newtio.c_cc[VTIME]    = 5;     // inter-character timer unused
-    newtio.c_cc[VMIN]     = 255;   // blocking read until VMIN character
-                                   // arrives
+	// The following configuration should cause read to return if 2
+	// characters are immediately avaible or if the period between
+	// characters exceeds 5 * .1 seconds.
+	newtio.c_cc[VTIME]    = 5;     // inter-character timer unused
+	newtio.c_cc[VMIN]     = 255;   // blocking read until VMIN character
+	// arrives
 
-    // now clean the serial line and activate the settings for the port
-    jtagCheck(tcflush(jtagBox, TCIFLUSH));
-    jtagCheck(tcsetattr(jtagBox,TCSANOW,&newtio));
+	// now clean the serial line and activate the settings for the port
+	jtagCheck(tcflush(jtagBox, TCIFLUSH));
+	jtagCheck(tcsetattr(jtagBox,TCSANOW,&newtio));
+      }
 }
 
 // NB: the destructor is virtual; class jtag2 extends it
@@ -142,7 +152,7 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout)
            here. */
         if ((selected < 0) && (errno == EAGAIN || errno == EINTR))
             continue;
-	jtagCheck(selected);
+	//jtagCheck(selected);
 
 	if (selected == 0)
 	    return actual;
@@ -189,6 +199,9 @@ int jtag::safewrite(const void *b, int count)
     'newBitRate' **/
 void jtag::changeLocalBitRate(int newBitRate)
 {
+    if (is_usb)
+        return;
+
     // Change the local port bitrate.
     struct termios tio;
 

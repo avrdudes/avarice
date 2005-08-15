@@ -25,6 +25,7 @@
 #ifndef JTAG_H
 #define JTAG_H
 
+#include <sys/types.h>
 #include <termios.h>
 
 #include "ioreg.h"
@@ -590,6 +591,9 @@ class jtag
   // The file descriptor used while talking to the JTAG ICE
   int jtagBox;
 
+  // For the mkII device, is the box attached via USB?
+  bool is_usb;
+
   public:
   // Whether we are in "programming mode" (changes how program memory
   // is written, apparently)
@@ -599,6 +603,7 @@ class jtag
   char *device_name;
 
   protected:
+  pid_t openUSB(const char *jtagDeviceName);
   int safewrite(const void *b, int count);
   void changeLocalBitRate(int newBitRate);
   void restoreSerialPort(void);

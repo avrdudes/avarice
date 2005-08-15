@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <string.h>
 #include <errno.h>
 
@@ -43,19 +44,19 @@
 jtag2::~jtag2(void)
 {
     // Terminate connection to JTAG box.
-    if (!signedIn)
-	return;
+    if (signedIn)
+      {
+	  // Do not use doSimpleJtagCommand() here as it aborts
+	  // avarice on failure; in case CMND_RESTORE_TARGET fails,
+	  // we'd like to try the sign-off command anyway.
 
-    // Do not use doSimpleJtagCommand() here as it aborts avarice on
-    // failure; in case CMND_RESTORE_TARGET fails, we'd like to try
-    // the sign-off command anyway.
-
-    uchar *response, rstcmd = CMND_RESTORE_TARGET;
-    int responseSize;
-    (void)doJtagCommand(&rstcmd, 1, response, responseSize);
-    delete [] response;
-    doSimpleJtagCommand(CMND_SIGN_OFF);
-    signedIn = false;
+	  uchar *response, rstcmd = CMND_RESTORE_TARGET;
+	  int responseSize;
+	  (void)doJtagCommand(&rstcmd, 1, response, responseSize);
+	  delete [] response;
+	  doSimpleJtagCommand(CMND_SIGN_OFF);
+	  signedIn = false;
+      }
 }
 
 

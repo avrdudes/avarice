@@ -1,5 +1,15 @@
 2005-08-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: add check for libusb.
+	* src/Makefile.am: add jtag2usb.cc.
+	* src/jtag.h: add USB stuff to jtag class.
+	* src/jtag2io.cc (jtag2::~jtag2()): do not prematurely return,
+	use an "if" statement instead.
+	* src/jtaggeneric.cc: add USB hooks (depending on configuration).
+	* src/jtag2usb.cc: New file: implement USB communication.
+
+2005-08-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2rw.cc (jtag2::jtagRead()): when word-aligning flash
 	ROM requests, do also align the request base, and return the
 	correct byte(s).
