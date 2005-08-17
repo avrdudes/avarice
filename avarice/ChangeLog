@@ -1,3 +1,7 @@
+2005-08-17  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: add the ATmega329x/649x family.
+
 2005-08-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: add check for libusb.
