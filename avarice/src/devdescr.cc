@@ -809,7 +809,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x100),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
-	    0x40,			// ucPCMaskHigh
+	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
 	    fill_b2(0x3f),		// EECRAddress
 	},
@@ -858,7 +858,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x100),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
-	    0x40,			// ucPCMaskHigh
+	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
 	    fill_b2(0x3f),		// EECRAddress
 	},
@@ -907,7 +907,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x100),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
-	    0x40,			// ucPCMaskHigh
+	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
 	    fill_b2(0x3f),		// EECRAddress
 	},
@@ -940,7 +940,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(256),		// uiFlashPageSize
 	    8,				// ucEepromPageSize
 	    fill_b4(0x7E00),		// ulBootAddress
-	    fill_b2(0xFE),		// uiUpperExtIOLoc
+	    fill_b2(0xFF),		// uiUpperExtIOLoc
 	    fill_b4(0x10000),		// ulFlashSize
 	    { 0 },			// ucEepromInst
 	    { 0 },			// ucFlashInst
@@ -956,7 +956,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x100),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
-	    0x40,			// ucPCMaskHigh
+	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
 	    fill_b2(0x3f),		// EECRAddress
 	},
