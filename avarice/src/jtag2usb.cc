@@ -51,11 +51,13 @@
  * Should we query the endpoint number and max transfer size from USB?
  * After all, the JTAG ICE mkII docs document these values.
  */
-#define JTAGICE_BULK_EP 2
+#define JTAGICE_BULK_EP_WRITE 0x02
+#define JTAGICE_BULK_EP_READ  0x82
 #define JTAGICE_MAX_XFER 64
 
 static int signalled, exiting;
 static pid_t usb_kid;
+static int usb_interface;
 
 /*
  * Various signal handlers for the USB daemon child.
@@ -153,7 +155,7 @@ static void usb_daemon(usb_dev_handle *udev, int fd)
 
 	      if ((rv = read(fd, buf, JTAGICE_MAX_XFER)) > 0)
 		{
-		  if (usb_bulk_write(udev, JTAGICE_BULK_EP, buf,
+		  if (usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE, buf,
 				     rv, 5000) !=
 		      rv)
 		    {
@@ -174,7 +176,7 @@ static void usb_daemon(usb_dev_handle *udev, int fd)
 	    {
 	      char buf[JTAGICE_MAX_XFER];
 	      int rv;
-	      rv = usb_bulk_read(udev, JTAGICE_BULK_EP, buf,
+	      rv = usb_bulk_read(udev, JTAGICE_BULK_EP_READ, buf,
 				 JTAGICE_MAX_XFER, 100);
 	      if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
 		continue;
@@ -194,6 +196,7 @@ static void usb_daemon(usb_dev_handle *udev, int fd)
 	    }
 	}
     }
+  (void)usb_release_interface(udev, usb_interface);
   usb_close(udev);
   exit(0);
 }
@@ -239,7 +242,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
 
   udev = NULL;
   bool found = false;
-  for (bus = usb_busses; !found && bus; bus = bus->next)
+  for (bus = usb_get_busses(); !found && bus; bus = bus->next)
     {
       for (dev = bus->devices; !found && dev; dev = dev->next)
 	{
@@ -273,10 +276,33 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
 			}
 		    }
 
+		  if (dev->config == NULL)
+		    {
+		      debugOut("USB device has no configuration\n");
+		      goto trynext;
+		    }
+
+		  if (usb_set_configuration(udev, dev->config[0].bConfigurationValue))
+		    {
+		      debugOut("error setting configuration %d: %s\n",
+			       dev->config[0].bConfigurationValue,
+			       usb_strerror());
+		      goto trynext;
+		    }
+
+		  usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
+		  if (usb_claim_interface(udev, usb_interface))
+		    {
+		      debugOut("error claiming interface %d: %s\n",
+			       usb_interface, usb_strerror());
+		      goto trynext;
+		    }
+
 		  // we found what we want
 		  found = true;
 		  break;
 		}
+	      trynext:
 	      usb_close(udev);
 	    }
 	}

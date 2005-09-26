@@ -1,3 +1,8 @@
+2005-09-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	*  src/jtag2usb.cc: fix the libusb handling, so it will
+	eventually also work with libusb-win32.
+
 2005-08-18  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: set ucPCMaskHigh to 0 for ATmega329x/649x.
