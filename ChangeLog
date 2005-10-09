@@ -1,3 +1,7 @@
+2005-10-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: add ATmega640/1280/1281
+
 2005-09-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	*  src/jtag2usb.cc: fix the libusb handling, so it will
