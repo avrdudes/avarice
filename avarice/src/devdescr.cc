@@ -961,6 +961,171 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x3f),		// EECRAddress
 	},
     },
+    // DEV_ATMEGA_640
+    {
+        "atmega640",
+        0x9608,
+        256, 256,    // 64K flash
+        8,   512,    // 4K bytes EEPROM
+        0xe4,        // 57 interrupt vectors
+	DEVFL_MKII_ONLY,
+        atmega128_io_registers,	// XXX should be changed
+        {
+	  0			// no mkI support
+        },
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xFF,0xFF,0xFF,0xFF,0xFF,0x3D,0xB9,0xF8 }, // ucReadIO
+	    { 0 },			// ucReadIOShadow
+	    { 0xFF,0xFF,0x1F,0xE0,0xFF,0x1D,0xA9,0xF8 }, // ucWriteIO
+	    { 0 },			// ucWriteIOShadow
+	    { 0x73,0xFF,0x3F,0xFF,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x3F,0x37,0x37,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucReadExtIO
+	    { 0 },			// ucReadIOExtShadow
+	    { 0x73,0xFF,0x3F,0xF8,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x2F,0x36,0x36,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucWriteExtIO
+	    { 0 },			// ucWriteIOExtShadow
+	    0x31,			// ucIDRAddress
+	    0x57,			// ucSPMCRAddress
+	    0x3B,			// ucRAMPZAddress
+	    fill_b2(256),		// uiFlashPageSize
+	    8,				// ucEepromPageSize
+	    fill_b4(0x7E00),		// ulBootAddress
+	    fill_b2(0x0136),		// uiUpperExtIOLoc
+	    fill_b4(0x20000),		// ulFlashSize
+	    { 0 },			// ucEepromInst
+	    { 0 },			// ucFlashInst
+	    0x3e,			// ucSPHaddr
+	    0x3d,			// ucSPLaddr
+	    fill_b2(0x10000 / 256),	// uiFlashpages
+	    0,				// ucDWDRAddress
+	    0,				// ucDWBasePC
+	    1,				// ucAllowFullPageBitstream
+	    fill_b2(0),			// uiStartSmallestBootLoaderSection
+	    1,				// EnablePageProgramming
+	    0,				// ucCacheType
+	    fill_b2(0x100),		// uiSramStartAddr
+	    0,				// ucResetType
+	    0,				// ucPCMaskExtended
+	    0,				// ucPCMaskHigh
+	    0,				// ucEindAddress
+	    fill_b2(0x3F),		// EECRAddress
+	},
+    },
+    // DEV_ATMEGA_1280
+    {
+        "atmega1280",
+        0x9703,
+        256, 512,    // 128K flash
+        8,   512,    // 4K bytes EEPROM
+        0xe4,        // 57 interrupt vectors
+	DEVFL_MKII_ONLY,
+        atmega128_io_registers,	// XXX should be changed
+        {
+	  0			// no mkI support
+        },
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xFF,0xFF,0xFF,0xFF,0xFF,0x3D,0xB9,0xF8 }, // ucReadIO
+	    { 0 },			// ucReadIOShadow
+	    { 0xFF,0xFF,0x1F,0xE0,0xFF,0x1D,0xA9,0xF8 }, // ucWriteIO
+	    { 0 },			// ucWriteIOShadow
+	    { 0x73,0xFF,0x3F,0xFF,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x3F,0x37,0x37,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucReadExtIO
+	    { 0 },			// ucReadIOExtShadow
+	    { 0x73,0xFF,0x3F,0xF8,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x2F,0x36,0x36,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucWriteExtIO
+	    { 0 },			// ucWriteIOExtShadow
+	    0x31,			// ucIDRAddress
+	    0x57,			// ucSPMCRAddress
+	    0x3B,			// ucRAMPZAddress
+	    fill_b2(256),		// uiFlashPageSize
+	    8,				// ucEepromPageSize
+	    fill_b4(0xFE00),		// ulBootAddress
+	    fill_b2(0x0136),		// uiUpperExtIOLoc
+	    fill_b4(0x20000),		// ulFlashSize
+	    { 0 },			// ucEepromInst
+	    { 0 },			// ucFlashInst
+	    0x3e,			// ucSPHaddr
+	    0x3d,			// ucSPLaddr
+	    fill_b2(0x20000 / 256),	// uiFlashpages
+	    0,				// ucDWDRAddress
+	    0,				// ucDWBasePC
+	    1,				// ucAllowFullPageBitstream
+	    fill_b2(0),			// uiStartSmallestBootLoaderSection
+	    1,				// EnablePageProgramming
+	    0,				// ucCacheType
+	    fill_b2(0x100),		// uiSramStartAddr
+	    0,				// ucResetType
+	    0,				// ucPCMaskExtended
+	    0,				// ucPCMaskHigh
+	    0,				// ucEindAddress
+	    fill_b2(0x3F),		// EECRAddress
+	},
+    },
+    // DEV_ATMEGA_1281
+    {
+        "atmega1281",
+        0x9704,
+        256, 512,    // 128K flash
+        8,   512,    // 4K bytes EEPROM
+        0xe4,        // 57 interrupt vectors
+	DEVFL_MKII_ONLY,
+        atmega128_io_registers,	// XXX should be changed
+        {
+	  0			// no mkI support
+        },
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xFF,0xFF,0xFF,0xF9,0xFF,0x3D,0xB9,0xF8 }, // ucReadIO
+	    { 0 },			// ucReadIOShadow
+	    { 0xFF,0xFF,0x1F,0xE0,0xFF,0x1D,0xA9,0xF8 }, // ucWriteIO
+	    { 0 },			// ucWriteIOShadow
+	    { 0x73,0xFF,0x3F,0xFF,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x3F,0x37,0x37,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucReadExtIO
+	    { 0 },			// ucReadIOExtShadow
+	    { 0x73,0xFF,0x3F,0xF8,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x2F,0x36,0x36,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7, 0x3F, 0x36,0x00 }, // ucWriteExtIO
+	    { 0 },			// ucWriteIOExtShadow
+	    0x31,			// ucIDRAddress
+	    0x57,			// ucSPMCRAddress
+	    0x3B,			// ucRAMPZAddress
+	    fill_b2(256),		// uiFlashPageSize
+	    8,				// ucEepromPageSize
+	    fill_b4(0xFE00),		// ulBootAddress
+	    fill_b2(0x0136),		// uiUpperExtIOLoc
+	    fill_b4(0x20000),		// ulFlashSize
+	    { 0 },			// ucEepromInst
+	    { 0 },			// ucFlashInst
+	    0x3e,			// ucSPHaddr
+	    0x3d,			// ucSPLaddr
+	    fill_b2(0x20000 / 256),	// uiFlashpages
+	    0,				// ucDWDRAddress
+	    0,				// ucDWBasePC
+	    1,				// ucAllowFullPageBitstream
+	    fill_b2(0),			// uiStartSmallestBootLoaderSection
+	    1,				// EnablePageProgramming
+	    0,				// ucCacheType
+	    fill_b2(0x100),		// uiSramStartAddr
+	    0,				// ucResetType
+	    0,				// ucPCMaskExtended
+	    0,				// ucPCMaskHigh
+	    0,				// ucEindAddress
+	    fill_b2(0x3F),		// EECRAddress
+	},
+    },
     // Termination record.
     { 
         NULL,                   // name
