@@ -57,7 +57,6 @@
 
 static int signalled, exiting;
 static pid_t usb_kid;
-static int usb_interface;
 
 /*
  * Various signal handlers for the USB daemon child.
@@ -117,7 +116,7 @@ static void childhandler(int signo)
  * there is room in the AVaRICE pipe.  Polls the AVaRICE descriptor
  * for data, and sends them to the USB device.
  */
-static void usb_daemon(usb_dev_handle *udev, int fd)
+static void usb_daemon(usb_dev_handle *udev, int fd, int usb_interface)
 {
   int ioflags;
 
@@ -208,6 +207,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
   struct usb_device *dev;
   usb_dev_handle *udev;
   char *serno, *cp2;
+  int usb_interface;
   size_t x;
 
   /*
@@ -276,40 +276,39 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
 			}
 		    }
 
-		  if (dev->config == NULL)
-		    {
-		      debugOut("USB device has no configuration\n");
-		      goto trynext;
-		    }
-
-		  if (usb_set_configuration(udev, dev->config[0].bConfigurationValue))
-		    {
-		      debugOut("error setting configuration %d: %s\n",
-			       dev->config[0].bConfigurationValue,
-			       usb_strerror());
-		      goto trynext;
-		    }
-
-		  usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
-		  if (usb_claim_interface(udev, usb_interface))
-		    {
-		      debugOut("error claiming interface %d: %s\n",
-			       usb_interface, usb_strerror());
-		      goto trynext;
-		    }
-
 		  // we found what we want
 		  found = true;
 		  break;
 		}
-	      trynext:
 	      usb_close(udev);
 	    }
 	}
     }
-  unixCheck(found,
+  unixCheck(found? 0: -1,
 	    "did not find any%s USB device \"%s\"",
 	    serno? " (matching)": "", jtagDeviceName);
+
+  if (dev->config == NULL)
+  {
+      statusOut("USB device has no configuration\n");
+    fail:
+      usb_close(udev);
+      exit(EXIT_FAILURE);
+  }
+  if (usb_set_configuration(udev, dev->config[0].bConfigurationValue))
+  {
+      statusOut("error setting configuration %d: %s\n",
+                dev->config[0].bConfigurationValue,
+                usb_strerror());
+      goto fail;
+  }
+  usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
+  if (usb_claim_interface(udev, usb_interface))
+  {
+      statusOut("error claiming interface %d: %s\n",
+                usb_interface, usb_strerror());
+      goto fail;
+  }
 
   pid_t p;
   int pype[2];
@@ -320,7 +319,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
     {
     case 0:
       close(pype[0]);
-      usb_daemon(udev, pype[1]);
+      usb_daemon(udev, pype[1], usb_interface);
       break;
     case -1:
       unixCheck(0, "Cannot fork");
