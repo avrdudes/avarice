@@ -33,7 +33,7 @@ void vdebugOut(const char *fmt, va_list args)
 {
     if (debugMode)
     {
-	(void)vprintf(fmt, args);
+        (void)vfprintf(stderr, fmt, args);
     }
 }
 

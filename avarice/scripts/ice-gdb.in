@@ -10,7 +10,8 @@ $debugger = "avr-gdb";
 for ($i = 0; $i <= $#ARGV; $i++) {
     $arg = $ARGV[$i];
 
-    if (grep $_ eq $arg, @argcmds) {
+    if ($arg =~ /^-/ &&
+	(grep $_ eq $arg, @argcmds || grep /^-$arg$/, @argcmds)) {
 	$i++;
     }
     elsif ($arg eq "--debugger" && $i < $#ARGV) {
