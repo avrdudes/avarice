@@ -117,10 +117,17 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 	    rv = 0;
 	    if (ignorpkt) {
 		/* skip packet's contents */
-		for(l = 0; l < msglen; l++)
+		for(l = 0; l < msglen; l++) {
 		    rv += timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
+		    debugOut("ign: 0x%02x\n", c);
+		}
 	    } else {
 		rv += timeout_read(buf + 8, msglen, JTAG_RESPONSE_TIMEOUT);
+		debugOut("read: ");
+		for (l = 0; l < msglen; l++) {
+		    debugOut(" %02x", buf[l + 8]);
+		}
+		debugOut("\n");
 	    }
 	    if (rv == 0)
 		/* timeout */
@@ -251,15 +258,14 @@ int jtag2::recv(uchar *&msg)
 	    // XXX should we queue that event up somewhere?
 	    // How to process it?  Register event handlers
 	    // for interesting events?
-	    if (msg[8] == EVT_BREAK)
-	      breakpointHit = true;
+	    // For now, the only place that cares is jtagContinue
+	    // and it just calls recvFrame and handles events directly. 
 	} else {
 	    debugOut("\ngot wrong sequence number, %u != %u\n",
 		     r_seqno, command_sequence);
 	}
 	delete [] msg;
     }
-    return 0;
 }
 
 /** Send a command to the jtag, and check result.

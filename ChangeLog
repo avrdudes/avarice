@@ -1,3 +1,18 @@
+2005-11-17    <dgay@barnowl.research.intel-research.net>
+
+
+	* src/jtag2io.cc (sendJtagCommand): breakpoint handling was broken
+	(breakpoints detected in recv, but jtagContinue called recvFrame).
+	Fix by moving it all into jtagContinue. 
+	Also add extra debug output.
+	* src/jtag2.h (class jtag2): see jtag2io.cc.
+	* src/jtag2run.cc (jtagContinue): see jtag2io.cc.
+
+	* scripts/ice-gdb.in: gdb's -- options can also be used with a single
+	dash
+
+	* src/utils.cc (statusOut): send debug output to stderr
+
 2005-10-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: add ATmega640/1280/1281

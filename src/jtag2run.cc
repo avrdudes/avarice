@@ -179,18 +179,16 @@ bool jtag2::jtagContinue(void)
 	    int evtSize;
 	    unsigned short seqno;
 	    evtSize = recvFrame(evtbuf, seqno);
-	    // XXX if not event, should push frame back into queue...
-	    // We really need a queue of received frames.
-	    if (seqno != 0xffff)
-		debugOut("Expected event packet, got other response");
-	    delete [] evtbuf;
-	}
-
-	// Query asynchronous events
-	if (breakpointHit)
-	{
-	    breakpointHit = false;
-	    breakpoint = true;
+	    if (evtSize >= 0) {
+		// XXX if not event, should push frame back into queue...
+		// We really need a queue of received frames.
+		if (seqno != 0xffff)
+		    debugOut("Expected event packet, got other response");
+		else if (evtbuf[8] == EVT_BREAK)
+		    breakpoint = true;
+		// Ignore other events.
+		delete [] evtbuf;
+	    }
 	}
 
 	// We give priority to user interrupts

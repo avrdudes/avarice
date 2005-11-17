@@ -98,7 +98,6 @@ class jtag2: public jtag
     unsigned short command_sequence;
     int devdescrlen;
     bool signedIn;
-    bool breakpointHit;
     bool haveHiddenBreakpoint;
 
     breakpoint2 bpCode[MAX_BREAKPOINTS2_CODE], bpData[MAX_BREAKPOINTS2_DATA];
@@ -106,7 +105,7 @@ class jtag2: public jtag
 
   public:
     jtag2(const char *dev): jtag(dev) {
-	signedIn = breakpointHit = false;
+	signedIn = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
     };
