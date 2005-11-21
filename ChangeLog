@@ -1,4 +1,4 @@
-2005-11-17    <dgay@barnowl.research.intel-research.net>
+2005-11-17    <dgay@intel-research.net>
 
 
 	* src/jtag2io.cc (sendJtagCommand): breakpoint handling was broken
@@ -118,7 +118,7 @@
 	* src/main.cc: ditto.
 	* src/remote.cc: ditto.
 
-2005-04-20    <dgay@barnowl.research.intel-research.net>
+2005-04-20    <dgay@intel-research.net>
 
 	* configure.ac: Set version to 20050420.
 
@@ -137,7 +137,7 @@
 
 	* configure.ac (AC_INIT): Set version to 2.3.20041206 for cvs tracking.
 
-2004-12-06  David Gay  <dgay@barnowl.research.intel-research.net>
+2004-12-06  David Gay  <dgay@intel-research.net>
 
 	* src/main.cc (main): resume execution on exit when not in server mode
 
@@ -210,14 +210,14 @@
 	* src/ioreg.h (atmega32_io_registers): Declare.
 	* src/jtagio.cc (deviceDefinitions): Install mega32 io register defs.
 
-2004-03-12  David Gay  <dgay@barnowl.research.intel-research.net>
+2004-03-12  David Gay  <dgay@intel-research.net>
 
 	* configure.ac: Bump version.
 
 	* src/jtagio.cc (safewrite): write may write only part of the
 	data (problem tended to show up with USB serial ports). Fix.
 
-2004-03-08  David Gay  <dgay@barnowl.research.intel-research.net>
+2004-03-08  David Gay  <dgay@intel-research.net>
 
 	* scripts/start-avarice: add --erase option when programming
 
@@ -391,13 +391,13 @@
 	and exit program mode after reading.
 	(jtagWriteLockBits): Ditto.
 
-2003-08-25  David Gay  <dgay@barnowl.research.intel-research.net>
+2003-08-25  David Gay  <dgay@intel-research.net>
 
 	* configure.ac: bump version
 	* src/jtagprog.cc: work around cygwin gcc (3.2.3) bug with
 	large stack allocated locals by making them static
 
-2003-08-21  David Gay  <dgay@barnowl.research.intel-research.net>
+2003-08-21  David Gay  <dgay@intel-research.net>
 
 	* doc/ice-insight.1: new file, ice-insight man page
 	* doc/ice-gdb.1: new file, ice-gdb man page
@@ -416,7 +416,7 @@
 	* src/jtagprog.cc (get_section_addr): Fix to allow programming of upper
 	64k of flash.
 
-2003-08-18  David Gay  <dgay@barnowl.research.intel-research.net>
+2003-08-18  David Gay  <dgay@intel-research.net>
 
 	* src/main.cc (main): Add missing --file option for getopt
 	  [Thanks to Mike Hudson <pontifex@isys.ca>]
@@ -438,12 +438,12 @@
 
 	* src/gnu_getopt.h: Define HAVE_DECL_GETOPT to fix declaration clash.
 
-2003-08-06  David Gay  <dgay@barnowl.research.intel-research.net>
+2003-08-06  David Gay  <dgay@intel-research.net>
 
 	* src/main.cc (main): actually implement --version
 	* configure.ac: Bump version.
 
-2003-08-05  David Gay  <dgay@barnowl.research.intel-research.net>
+2003-08-05  David Gay  <dgay@intel-research.net>
 
 	* scripts/start-avarice: use new host:portname syntax
 
