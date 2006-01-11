@@ -22,12 +22,13 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.3.20050527)
+AC_INIT(avarice, 2.4)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])
 
-AM_INIT_AUTOMAKE
+dnl We don't want the gzip distribution tarball anymore.
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
 
 # Checks for programs.
 AC_PROG_CXX

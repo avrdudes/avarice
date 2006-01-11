@@ -1,3 +1,14 @@
+2006-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* Release version 2.4.
+
+2006-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: bump version to 2.4
+	* INSTALL-FROM-CVS: adapt instructions for the auto* tools; we
+	are not very picky about the exact versions as long as they are
+	reasonably recent.
+
 2005-11-17    <dgay@intel-research.net>
 
 
