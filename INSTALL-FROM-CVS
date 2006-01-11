@@ -1,29 +1,11 @@
 To build avarice from the CVS distribution, you need
 
-  automake 1.7.3
-  autoconf 2.57
+  automake >= 1.7
+  autoconf >= 2.57
 
-If you don't have these exact versions, you can get them at ftp://ftp.gnu.org/.
-You can try different versions, but automake and autoconf do not handle version
-skew very well. The best approach is to grab the required versions and install
-them in your home directory. For example this is what I do on my systems:
-
-  mkdir -p $HOME/local/src && cd $HOME/local/src
-  wget ftp://ftp.gnu.org/gnu/autoconf/autoconf-2.57.tar.bz2
-  wget ftp://ftp.gnu.org/gnu/automake/automake-1.7.3.tar.bz2
-  bunzip -c autoconf-2.57.tar.bz2 | tar -xf -
-  cd autoconf-2.57
-  ./configure --prefix=$HOME/local --program-suffix="-2.57"
-  make install
-  cd ..
-  bunzip automake-1.7.3.tar.bz2 | tar -xf -
-  cd automake-1.7.3
-  ./configure --prefix=$HOME/local --program-suffix="-1.7"
-  make install
-
-Now all you need to do is add $HOME/local/bin to the your PATH environment
-variable and make sure that the Bootstrap script uses the correct programs. I 
-use a wrapper around Bootstrap called bootstrap as such:
+If needed, a wrapper around Bootstrap can be used to force
+using a particular version of these tools (when multiple
+versions are installed), like:
 
   #!/bin/sh
   set -x
