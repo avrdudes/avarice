@@ -1,3 +1,7 @@
+2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: Add support for AT90USB1287
+
 2006-03-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: fix ucAllowFullPageBitstream for
