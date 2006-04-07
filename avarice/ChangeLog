@@ -1,5 +1,17 @@
 2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Contributed by Michael De Nil:
+	* src/jtag.h: Add support for JTAG daisy chainging;
+	sourceforge.net patch tracker:
+	https://sourceforge.net/tracker/index.php?func=detail&aid=1216263&group_id=39505&atid=425409
+	* src/jtag1.h: (Ditto.)
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2io.cc: (Ditto.)
+	* src/jtagio.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+
+2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/devdescr.cc: Add support for AT90USB1287
 
 2006-03-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>

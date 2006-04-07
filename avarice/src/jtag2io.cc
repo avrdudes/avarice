@@ -492,6 +492,9 @@ void jtag2::deviceAutoConfig(void)
     // Auto config
     debugOut("Automatic device detection: ");
 
+    /* Set daisy chain information */
+    configDaisyChain();
+
     /* Read in the JTAG device ID to determine device */
     getJtagParameter(PAR_JTAGID, resp, respSize);
     jtagCheck(respSize == 4);
@@ -645,4 +648,20 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
     uchar timers = 0;		// stopped
     setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
     resetProgram();
+}
+
+void jtag2::configDaisyChain(void)
+{
+    unsigned char buf[4];
+
+    if ((dchain.units_before > 0) ||
+	(dchain.units_after > 0) ||
+	(dchain.bits_before > 0) ||
+	(dchain.bits_after > 0) ){
+	buf[0] = dchain.units_before;
+	buf[1] = dchain.units_after;
+	buf[2] = dchain.bits_before;
+	buf[3] = dchain.bits_after;
+	setJtagParameter(PAR_DAISY_CHAIN_INFO, buf, 4);
+    }
 }

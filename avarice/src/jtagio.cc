@@ -313,7 +313,10 @@ void jtag1::deviceAutoConfig(void)
 
     // Auto config
     debugOut("Automatic device detection: ");
-   
+
+    /* Set daisy chain information */
+    configDaisyChain();
+
     /* Read in the JTAG device ID to determine device */
     device_id = getJtagParameter(JTAG_P_JTAGID_BYTE0);
     /* Reading the first byte resumes the program (weird, no?) */
@@ -481,3 +484,17 @@ void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
     setJtagParameter(JTAG_P_TIMERS_RUNNING, 0x00);
     resetProgram();
 }
+
+void jtag1::configDaisyChain(void)
+{
+    /* Set daisy chain information (if needed) */
+    if (dchain.units_before > 0)
+	setJtagParameter(JTAG_P_UNITS_BEFORE,dchain.units_before);
+    if (dchain.units_after > 0)
+	setJtagParameter(JTAG_P_UNITS_AFTER,dchain.units_after);
+    if (dchain.bits_before > 0)
+	setJtagParameter(JTAG_P_BIT_BEFORE,dchain.bits_before);
+    if (dchain.bits_after > 0)
+	setJtagParameter(JTAG_P_BIT_AFTER,dchain.bits_after);
+}
+

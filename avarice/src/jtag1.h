@@ -120,6 +120,7 @@ class jtag1: public jtag
     virtual bool synchroniseAt(int bitrate);
     virtual void startJtagLink(void);
     virtual void deviceAutoConfig(void);
+    virtual void configDaisyChain(void);
 
     uchar *getJtagResponse(int responseSize);
     SendResult sendJtagCommand(uchar *command, int commandSize, int *tries);
