@@ -1,5 +1,11 @@
 2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* doc/avarice.1: Update documentation (new devices, missing option
+	documentation, bump man page date), sort options alphabetically.
+	* src/main.cc: Sort options alphabetically.
+
+2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Contributed by Michael De Nil:
 	* src/jtag.h: Add support for JTAG daisy chainging;
 	sourceforge.net patch tracker:
