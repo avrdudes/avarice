@@ -136,56 +136,56 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -2, --mkII                  Connect to JTAG ICE mkII\n");
     fprintf(stderr,
-	    "  -d, --debug                 Enable printing of debug"
-	    " information.\n");
-    fprintf(stderr,
-	    "  -D, --detach                Detach once synced with JTAG ICE\n");
-    fprintf(stderr,
-	    "  -C, --capture               Capture running program.\n"
-	    "                                Note: debugging must have been enabled prior\n"
-            "                                to starting the program. (e.g., by running\n"
-            "                                avarice earlier)\n");
-    fprintf(stderr,
-	    "  -I, --ignore-intr           Automatically step over interrupts.\n"
-	    "                                Note: EXPERIMENTAL. Can not currently handle\n"
-            "                                devices fused for compatibility.\n");
-    fprintf(stderr,
-	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
-            "                                --verify options. If --file is passed and\n"
-            "                                neither --program or --verify are given then\n"
-            "                                --program is implied.\n");
-    fprintf(stderr,
-	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
-    fprintf(stderr,
             "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
             "                                with the avr target device. This must be less\n"
             "                                than 1/4 of the frequency of the target. Valid\n"
             "                                values are 1MHz, 500KHz, 250KHz or 125KHz.\n"
             "                                (default: 1MHz)\n");
     fprintf(stderr,
-	    "  -p, --program               Program the target.\n"
-	    "                                Binary filename must be specified with --file\n"
-	    "                                option.\n");
-    fprintf(stderr,
-            "  -v, --verify                Verify program in device against file specified\n"
-            "                                with --file option.\n");
-    fprintf(stderr,
-            "  -e, --erase                 Erase target.\n");
-    fprintf(stderr,
-            "  -r, --read-fuses            Read fuses bytes.\n");
-    fprintf(stderr,
-            "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
-    fprintf(stderr,
-            "  -l, --read-lockbits         Read lock bits.\n");
-    fprintf(stderr,
-            "  -L, --write-lockbits <ll>   Write lock bits.\n");
+	    "  -C, --capture               Capture running program.\n"
+	    "                                Note: debugging must have been enabled prior\n"
+            "                                to starting the program. (e.g., by running\n"
+            "                                avarice earlier)\n");
     fprintf(stderr,
 	    "  -c, --daisy-chain <ub,ua,bb,ba> Daisy chain settings:\n"
 	    "                                <units before, units after,\n"
 	    "                                bits before, bits after>\n");
     fprintf(stderr,
+	    "  -D, --detach                Detach once synced with JTAG ICE\n");
+    fprintf(stderr,
+	    "  -d, --debug                 Enable printing of debug information.\n");
+    fprintf(stderr,
+            "  -e, --erase                 Erase target.\n");
+    fprintf(stderr,
+	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
+            "                                --verify options. If --file is passed and\n"
+            "                                neither --program or --verify are given then\n"
+            "                                --program is implied.\n");
+    fprintf(stderr,
+	    "  -I, --ignore-intr           Automatically step over interrupts.\n"
+	    "                                Note: EXPERIMENTAL. Can not currently handle\n"
+            "                                devices fused for compatibility.\n");
+    fprintf(stderr,
+	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
+    fprintf(stderr,
+            "  -L, --write-lockbits <ll>   Write lock bits.\n");
+    fprintf(stderr,
+            "  -l, --read-lockbits         Read lock bits.\n");
+    fprintf(stderr,
             "  -P, --part <name>           Target device name (e.g."
             " atmega16)\n\n");
+    fprintf(stderr,
+	    "  -p, --program               Program the target.\n"
+	    "                                Binary filename must be specified with --file\n"
+	    "                                option.\n");
+    fprintf(stderr,
+            "  -r, --read-fuses            Read fuses bytes.\n");
+    fprintf("  -V, --version               Print version information.\n"
+    fprintf(stderr,
+            "  -v, --verify                Verify program in device against file specified\n"
+            "                                with --file option.\n");
+    fprintf(stderr,
+            "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
 	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
 	    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
@@ -199,24 +199,24 @@ static struct option long_opts[] = {
     /* name,                 has_arg, flag,   val */
     { "mkI",                 0,       0,     '1' },
     { "mkII",                0,       0,     '2' },
-    { "help",                0,       0,     'h' },
-    { "debug",               0,       0,     'd' },
-    { "version",             0,       0,     'V' },
-    { "program",             0,       0,     'p' },
-    { "verify",              0,       0,     'v' },
-    { "erase",               0,       0,     'e' },
-    { "read-fuses",          0,       0,     'r' },
-    { "write-fuses",         1,       0,     'W' },
-    { "read-lockbits",       0,       0,     'l' },
-    { "write-lockbits",      1,       0,     'L' },
-    { "part",                1,       0,     'P' },
-    { "jtag",                1,       0,     'j' },
     { "jtag-bitrate",        1,       0,     'B' },
-    { "ignore-intr",         0,       0,     'I' },
-    { "detach",              0,       0,     'D' },
     { "capture",             0,       0,     'C' },
-    { "file",                1,       0,     'f' },
     { "daisy-chain",         1,       0,     'c' },
+    { "detach",              0,       0,     'D' },
+    { "debug",               0,       0,     'd' },
+    { "erase",               0,       0,     'e' },
+    { "file",                1,       0,     'f' },
+    { "help",                0,       0,     'h' },
+    { "ignore-intr",         0,       0,     'I' },
+    { "jtag",                1,       0,     'j' },
+    { "write-lockbits",      1,       0,     'L' },
+    { "read-lockbits",       0,       0,     'l' },
+    { "part",                1,       0,     'P' },
+    { "program",             0,       0,     'p' },
+    { "read-fuses",          0,       0,     'r' },
+    { "version",             0,       0,     'V' },
+    { "verify",              0,       0,     'v' },
+    { "write-fuses",         1,       0,     'W' },
     { 0,                     0,       0,      0 }
 };
 
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12VhdDCIf:j:B:pverW:lL:P:c:",
+        int c = getopt_long (argc, argv, "12B:Cc:Ddef:hIj:L:lP:prVvW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -277,52 +277,11 @@ int main(int argc, char **argv)
 	    case '2':
 		protocol = 2;
 		break;
-            case 'd':
-                debugMode = true;
-                break;
-            case 'D':
-                detach = true;
-                break;
-            case 'C':
-                capture = true;
-                break;
-            case 'I':
-                ignoreInterrupts = true;
-                break;
-            case 'f':
-                inFileName = optarg;
-                break;
-            case 'j':
-                jtagDeviceName = optarg;
-                break;
             case 'B':
 		jtagBitrate = parseJtagBitrate(optarg);
                 break;
-            case 'p':
-                program = true;
-                break;
-            case 'v':
-                verify = true;
-                break;
-            case 'e':
-                erase = true;
-                break;
-            case 'r':
-                readFuses = true;
-                break;
-            case 'W':
-                fuses = optarg;
-                writeFuses = true;
-                break;
-            case 'l':
-                readLockBits = true;
-                break;
-            case 'L':
-                lockBits = optarg;
-                writeLockBits = true;
-                break;
-            case 'P':
-                device_name = optarg;
+            case 'C':
+                capture = true;
                 break;
             case 'c':
                 if (sscanf(optarg,"%u,%u,%u,%u",
@@ -337,9 +296,49 @@ int main(int argc, char **argv)
 		    exit(1);
 		}
                 break;
-
+            case 'D':
+                detach = true;
+                break;
+            case 'd':
+                debugMode = true;
+                break;
+            case 'e':
+                erase = true;
+                break;
+            case 'f':
+                inFileName = optarg;
+                break;
+            case 'I':
+                ignoreInterrupts = true;
+                break;
+            case 'j':
+                jtagDeviceName = optarg;
+                break;
+            case 'L':
+                lockBits = optarg;
+                writeLockBits = true;
+                break;
+            case 'l':
+                readLockBits = true;
+                break;
+            case 'P':
+                device_name = optarg;
+                break;
+            case 'p':
+                program = true;
+                break;
+            case 'r':
+                readFuses = true;
+                break;
             case 'V':
                 exit(0);
+            case 'v':
+                verify = true;
+                break;
+            case 'W':
+                fuses = optarg;
+                writeFuses = true;
+                break;
             default:
                 fprintf (stderr, "getop() did something screwey");
                 exit (1);
