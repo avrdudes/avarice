@@ -180,7 +180,8 @@ static void usage(const char *progname)
 	    "                                option.\n");
     fprintf(stderr,
             "  -r, --read-fuses            Read fuses bytes.\n");
-    fprintf("  -V, --version               Print version information.\n"
+    fprintf(stderr,
+	    "  -V, --version               Print version information.\n");
     fprintf(stderr,
             "  -v, --verify                Verify program in device against file specified\n"
             "                                with --file option.\n");
