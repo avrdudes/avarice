@@ -1,3 +1,9 @@
+2006-03-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: fix ucAllowFullPageBitstream for
+	ATmega640/1280/1281.
+	* configure.ac: bump version to post-2.4
+
 2006-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* Release version 2.4.
