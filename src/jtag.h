@@ -602,6 +602,14 @@ class jtag
   // Name of the device controlled by the JTAG ICE
   char *device_name;
 
+  // Daisy chain info
+  struct {
+    unsigned char units_before;
+    unsigned char units_after;
+    unsigned char bits_before;
+    unsigned char bits_after;
+  } dchain;
+
   protected:
   pid_t openUSB(const char *jtagDeviceName);
   int safewrite(const void *b, int count);

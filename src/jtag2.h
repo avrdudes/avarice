@@ -145,6 +145,7 @@ class jtag2: public jtag
     virtual bool synchroniseAt(int bitrate);
     virtual void startJtagLink(void);
     virtual void deviceAutoConfig(void);
+    virtual void configDaisyChain(void);
 
     void sendFrame(uchar *command, int commandSize);
     int recvFrame(unsigned char *&msg, unsigned short &seqno);

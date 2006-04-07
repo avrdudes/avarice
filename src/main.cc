@@ -180,6 +180,10 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -L, --write-lockbits <ll>   Write lock bits.\n");
     fprintf(stderr,
+	    "  -c, --daisy-chain <ub,ua,bb,ba> Daisy chain settings:\n"
+	    "                                <units before, units after,\n"
+	    "                                bits before, bits after>\n");
+    fprintf(stderr,
             "  -P, --part <name>           Target device name (e.g."
             " atmega16)\n\n");
     fprintf(stderr,
@@ -212,6 +216,7 @@ static struct option long_opts[] = {
     { "detach",              0,       0,     'D' },
     { "capture",             0,       0,     'C' },
     { "file",                1,       0,     'f' },
+    { "daisy-chain",         1,       0,     'c' },
     { 0,                     0,       0,      0 }
 };
 
@@ -243,6 +248,10 @@ int main(int argc, char **argv)
     char *progname = argv[0];
     int protocol = 1;		// default to mkI protocol
     int  option_index;
+    unsigned int units_before = 0;
+    unsigned int units_after = 0;
+    unsigned int bits_before = 0;
+    unsigned int bits_after = 0;
 
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
@@ -253,7 +262,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12VhdDCIf:j:B:pverW:lL:P:",
+        int c = getopt_long (argc, argv, "12VhdDCIf:j:B:pverW:lL:P:c:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -315,8 +324,22 @@ int main(int argc, char **argv)
             case 'P':
                 device_name = optarg;
                 break;
-	    case 'V':
-		exit(0);
+            case 'c':
+                if (sscanf(optarg,"%u,%u,%u,%u",
+                           &units_before, &units_after,
+                           &bits_before, &bits_after) != 4)
+                    usage(progname);
+		if (units_before > 255 || units_after > 255 ||
+		    bits_before > 7 || bits_after > 7) {
+		    fprintf(stderr,
+			    "%s: daisy-chain parameters out of range\n",
+			    progname);
+		    exit(1);
+		}
+                break;
+
+            case 'V':
+                exit(0);
             default:
                 fprintf (stderr, "getop() did something screwey");
                 exit (1);
@@ -406,6 +429,12 @@ int main(int argc, char **argv)
 		    protocol);
 	    exit(1);
 	}
+
+	// Set Daisy-chain variables
+	theJtagICE->dchain.units_before = (unsigned char) units_before;
+	theJtagICE->dchain.units_after = (unsigned char) units_after;
+	theJtagICE->dchain.bits_before = (unsigned char) bits_before;
+	theJtagICE->dchain.bits_after = (unsigned char) bits_after;
 
 	// Init JTAG box.
 	theJtagICE->initJtagBox();
