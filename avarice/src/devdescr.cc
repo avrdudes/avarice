@@ -1126,6 +1126,59 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x3F),		// EECRAddress
 	},
     },
+    // DEV_AT90USB128x
+    {
+        "at90usb1287",
+        0x9782,
+        256, 512,    // 128K flash
+        8,   512,    // 4K bytes EEPROM
+        38 * 4,        // 38 interrupt vectors
+	DEVFL_MKII_ONLY,
+        atmega128_io_registers,	// XXX should be changed
+        {
+	  0			// no mkI support
+        },
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xFF,0xFF,0xE3,0xF9,0xFF,0x3F,0xB9,0xF8 }, // ucReadIO
+	    { 0 },			// ucReadIOShadow
+	    { 0xB6,0x6D,0x03,0xE0,0xFF,0x1F,0xB8,0xF8 }, // ucWriteIO
+	    { 0 },			// ucWriteIOShadow
+	    { 0x73,0xCF,0x33,0xDF,0xF7,0x3F,0xF7,0xFF,
+	      0xFF,0x7F,0x5F,0x3F,0x00,0x37,0x80,0xE7,
+	      0x7F,0xFF,0xFD,0x03 }, // ucReadExtIO
+	    { 0 },			// ucReadIOExtShadow
+	    { 0x73,0xCF,0x33,0xD8,0xF7,0x3F,0xF7,0xFF,
+	      0xF3,0x7F,0x5F,0x2F,0x00,0x36,0x80,0xE5,
+	      0x0F,0x7F,0x31,0x03 }, // ucWriteExtIO
+	    { 0 },			// ucWriteIOExtShadow
+	    0x31,			// ucIDRAddress
+	    0x57,			// ucSPMCRAddress
+	    0x3B,			// ucRAMPZAddress
+	    fill_b2(256),		// uiFlashPageSize
+	    8,				// ucEepromPageSize
+	    fill_b4(0xFE00),		// ulBootAddress
+	    fill_b2(0x00FF),		// uiUpperExtIOLoc
+	    fill_b4(0x20000),		// ulFlashSize
+	    { 0 },			// ucEepromInst
+	    { 0 },			// ucFlashInst
+	    0x3e,			// ucSPHaddr
+	    0x3d,			// ucSPLaddr
+	    fill_b2(0x20000 / 256),	// uiFlashpages
+	    0,				// ucDWDRAddress
+	    0,				// ucDWBasePC
+	    0,				// ucAllowFullPageBitstream
+	    fill_b2(0),			// uiStartSmallestBootLoaderSection
+	    1,				// EnablePageProgramming
+	    0,				// ucCacheType
+	    fill_b2(0x100),		// uiSramStartAddr
+	    0,				// ucResetType
+	    0,				// ucPCMaskExtended
+	    0,				// ucPCMaskHigh
+	    0,				// ucEindAddress
+	    fill_b2(0x3F),		// EECRAddress
+	},
+    },
     // Termination record.
     { 
         NULL,                   // name
