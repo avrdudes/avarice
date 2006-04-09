@@ -606,7 +606,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x20000 / 256),	// uiFlashpages
 	    0,				// ucDWDRAddress
 	    0,				// ucDWBasePC
-	    1,				// ucAllowFullPageBitstream
+	    0,				// ucAllowFullPageBitstream
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType

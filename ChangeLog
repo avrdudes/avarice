@@ -1,3 +1,7 @@
+2006-04-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: fix ucAllowFullPageBitstream for AT90CAN128.
+
 2006-04-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* doc/avarice.1: Update documentation (new devices, missing option
