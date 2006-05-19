@@ -67,13 +67,15 @@ void jtag::restoreSerialPort()
 jtag::jtag(void)
 {
   jtagBox = 0;
+  device_name = 0;
   oldtioValid = false;
 }
 
-jtag::jtag(const char *jtagDeviceName)
+jtag::jtag(const char *jtagDeviceName, char *name)
 {
     struct termios newtio;
 
+    device_name = name;
 #ifdef HAVE_LIBUSB
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
       {

@@ -1,3 +1,11 @@
+2006-05-19  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h: Properly initialize the device_name member.
+	* src/jtag1.h: (Ditto.)
+	* src/jtag2.h: (Ditto.)
+	* src/jtaggeneric.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+
 2006-04-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: fix ucAllowFullPageBitstream for AT90CAN128.

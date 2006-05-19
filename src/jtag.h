@@ -634,7 +634,7 @@ class jtag
 
   public:
   jtag(void);
-  jtag(const char *dev);
+  jtag(const char *dev, char *name);
   virtual ~jtag(void);
 
   // Basic JTAG I/O
