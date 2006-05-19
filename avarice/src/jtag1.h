@@ -84,7 +84,7 @@ class jtag1: public jtag
     int numBreakpointsCode, numBreakpointsData;
 
   public:
-    jtag1(const char *dev): jtag(dev) {};
+    jtag1(const char *dev, char *name): jtag(dev, name) {};
 
     virtual void initJtagBox(void);
     virtual void initJtagOnChipDebugging(unsigned long bitrate);

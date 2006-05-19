@@ -416,11 +416,11 @@ int main(int argc, char **argv)
 	// And say hello to the JTAG box
 	switch (protocol) {
 	case 1:
-	    theJtagICE = new jtag1(jtagDeviceName);
+	    theJtagICE = new jtag1(jtagDeviceName, device_name);
 	    break;
 
 	case 2:
-	    theJtagICE = new jtag2(jtagDeviceName);
+	    theJtagICE = new jtag2(jtagDeviceName, device_name);
 	    break;
 
 	default:

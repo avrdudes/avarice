@@ -104,7 +104,7 @@ class jtag2: public jtag
     int numBreakpointsCode, numBreakpointsData;
 
   public:
-    jtag2(const char *dev): jtag(dev) {
+    jtag2(const char *dev, char *name): jtag(dev, name) {
 	signedIn = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
