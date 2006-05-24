@@ -1,3 +1,7 @@
+2006-05-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: Add ATmega2560/2561.
+
 2006-05-19  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: Properly initialize the device_name member.
