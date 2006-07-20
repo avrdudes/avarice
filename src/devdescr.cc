@@ -103,7 +103,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_162
@@ -176,7 +176,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_169
@@ -249,7 +249,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_323
@@ -322,7 +322,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_32
@@ -395,7 +395,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
 
@@ -469,7 +469,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_128
@@ -542,7 +542,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    // fill_b2(0),		// EECRAddress
+	    fill_b2(0x1c),		// EECRAddress
 	},
     },
     // DEV_ATCAN_128
@@ -615,7 +615,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA164
@@ -645,7 +645,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucRAMPZAddress
 	    fill_b2(128),		// uiFlashPageSize
 	    4,				// ucEepromPageSize
-	    fill_b4(0x7E00),	/* ? */	// ulBootAddress
+	    fill_b4(0x1F80),		// ulBootAddress
 	    fill_b2(0xC6),		// uiUpperExtIOLoc
 	    fill_b4(0x4000),		// ulFlashSize
 	    { 0 },			// ucEepromInst
@@ -664,7 +664,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA324
@@ -694,7 +694,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucRAMPZAddress
 	    fill_b2(256),		// uiFlashPageSize
 	    4,				// ucEepromPageSize
-	    fill_b4(0x7E00),	/* ? */	// ulBootAddress
+	    fill_b4(0x3F00),		// ulBootAddress
 	    fill_b2(0xC6),		// uiUpperExtIOLoc
 	    fill_b4(0x8000),		// ulFlashSize
 	    { 0 },			// ucEepromInst
@@ -713,7 +713,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA644
@@ -762,7 +762,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA329
@@ -811,7 +811,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA3290
@@ -860,7 +860,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA649
@@ -909,7 +909,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA6490
@@ -958,7 +958,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0x0,			// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3f),		// EECRAddress
+	    fill_b2(0x1f),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_640
@@ -1008,12 +1008,12 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType
-	    fill_b2(0x100),		// uiSramStartAddr
+	    fill_b2(0x200),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
-	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    0x3c,			// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_1280
@@ -1063,12 +1063,12 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType
-	    fill_b2(0x100),		// uiSramStartAddr
+	    fill_b2(0x200),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
-	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    0x3c,			// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_1281
@@ -1118,12 +1118,12 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType
-	    fill_b2(0x100),		// uiSramStartAddr
+	    fill_b2(0x200),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
-	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    0x3c,			// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_2560
@@ -1173,12 +1173,12 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType
-	    fill_b2(0x100),		// uiSramStartAddr
+	    fill_b2(0x200),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
-	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    0x3c,			// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // DEV_ATMEGA_2561
@@ -1228,12 +1228,12 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0),			// uiStartSmallestBootLoaderSection
 	    1,				// EnablePageProgramming
 	    0,				// ucCacheType
-	    fill_b2(0x100),		// uiSramStartAddr
+	    fill_b2(0x200),		// uiSramStartAddr
 	    0,				// ucResetType
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
-	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    0x3c,			// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // DEV_AT90USB128x
@@ -1286,7 +1286,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucPCMaskExtended
 	    0,				// ucPCMaskHigh
 	    0,				// ucEindAddress
-	    fill_b2(0x3F),		// EECRAddress
+	    fill_b2(0x1F),		// EECRAddress
 	},
     },
     // Termination record.
