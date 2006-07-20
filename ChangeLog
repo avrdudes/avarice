@@ -1,5 +1,9 @@
 2006-07-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version.
+
+2006-07-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/devdescr.cc: Fix various things in the device desriptors,
 	mostly affecting devices with the new EEPROM register layout:
 	. use correct (according to AVR Studio) EECRaddress
