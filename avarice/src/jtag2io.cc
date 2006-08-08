@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -464,7 +464,7 @@ void jtag2::startJtagLink(void)
 
     for (unsigned int i = 0; i < sizeof bitrates / sizeof *bitrates; i++)
 	if (synchroniseAt(bitrates[i])) {
-	    uchar val = EMULATOR_MODE_JTAG;
+	    uchar val = useDebugWire? EMULATOR_MODE_DEBUGWIRE: EMULATOR_MODE_JTAG;
 	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
 	    signedIn = true;
 
@@ -496,19 +496,31 @@ void jtag2::deviceAutoConfig(void)
     configDaisyChain();
 
     /* Read in the JTAG device ID to determine device */
-    getJtagParameter(PAR_JTAGID, resp, respSize);
-    jtagCheck(respSize == 4);
-    device_id = resp[1] | (resp[2] << 8) | (resp[3] << 16) | resp[4] << 24;
-    delete [] resp;
+    if (useDebugWire)
+    {
+	getJtagParameter(PAR_TARGET_SIGNATURE, resp, respSize);
+	jtagCheck(respSize == 2);
+	device_id = resp[1] | (resp[2] << 8);
+	delete [] resp;
 
-    debugOut("JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n",
-             device_id,
-             (device_id & 0xF0000000) >> 28,
-             (device_id & 0x0FFFF000) >> 12,
-             (device_id & 0x00000FFE) >> 1);
+	statusOut("Reported debugWire device ID: 0x%0X\n", device_id);
+    }
+    else
+    {
+	getJtagParameter(PAR_JTAGID, resp, respSize);
+	jtagCheck(respSize == 4);
+	device_id = resp[1] | (resp[2] << 8) | (resp[3] << 16) | resp[4] << 24;
+	delete [] resp;
 
-    device_id = (device_id & 0x0FFFF000) >> 12;
-    statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
+	debugOut("JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n",
+		 device_id,
+		 (device_id & 0xF0000000) >> 28,
+		 (device_id & 0x0FFFF000) >> 12,
+		 (device_id & 0x00000FFE) >> 1);
+
+	device_id = (device_id & 0x0FFFF000) >> 12;
+	statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
+    }
 
     if (device_name == 0)
     {
@@ -588,17 +600,20 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
-    uchar br;
-    if (bitrate >= 6400000)
-      br = 0;
-    else if (bitrate >= 2800000)
-      br = 1;
-    else if (bitrate >= 20900)
-      br = (unsigned char)(5.35e6 / (double)bitrate);
-    else
-      br = 255;
-    // Set JTAG bitrate
-    setJtagParameter(PAR_OCD_JTAG_CLK, &br, 1);
+    if (!useDebugWire)
+    {
+      uchar br;
+      if (bitrate >= 6400000)
+	br = 0;
+      else if (bitrate >= 2800000)
+	br = 1;
+      else if (bitrate >= 20900)
+	br = (unsigned char)(5.35e6 / (double)bitrate);
+      else
+	br = 255;
+      // Set JTAG bitrate
+      setJtagParameter(PAR_OCD_JTAG_CLK, &br, 1);
+    }
 
     // When attaching we can't change fuse bits, etc, as
     // enabling+disabling programming resets the processor

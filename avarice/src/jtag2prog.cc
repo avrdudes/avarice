@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *      File format support using BFD contributed and copyright 2003
  *      Nils Kr. Strom
@@ -63,15 +63,21 @@ static void initImage(BFDimage *image)
 
 void jtag2::enableProgramming(void)
 {
-    programmingEnabled = true;
-    doSimpleJtagCommand(CMND_ENTER_PROGMODE);
+    if (!useDebugWire)
+    {
+	programmingEnabled = true;
+	doSimpleJtagCommand(CMND_ENTER_PROGMODE);
+    }
 }
 
 
 void jtag2::disableProgramming(void)
 {
-    programmingEnabled = false;
-    doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
+    if (!useDebugWire)
+    {
+	programmingEnabled = false;
+	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
+    }
 }
 
 

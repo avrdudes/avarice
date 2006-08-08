@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -59,7 +59,7 @@ uchar jtag2::memorySpace(unsigned long &addr)
     switch (mask)
     {
     case EEPROM_SPACE_ADDR_OFFSET:
-	if (programmingEnabled)
+	if (!useDebugWire && programmingEnabled)
 	    return MTYPE_EEPROM_PAGE;
 	else
 	    return MTYPE_EEPROM;
@@ -76,7 +76,7 @@ uchar jtag2::memorySpace(unsigned long &addr)
     case DATA_SPACE_ADDR_OFFSET:
 	return MTYPE_SRAM;
     default:
-	if (programmingEnabled)
+	if (useDebugWire || programmingEnabled)
 	    return MTYPE_FLASH_PAGE;
 	else
 	    return MTYPE_SPM;
@@ -104,6 +104,9 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
     if (needProgmode && !programmingEnabled)
        enableProgramming();
 
+    unsigned char *cachePtr = NULL;
+    unsigned int *cacheBaseAddr = NULL;
+
     switch (whichSpace)
     {
 	// Pad to even byte count for flash memory.
@@ -116,42 +119,82 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	break;
 
     case MTYPE_FLASH_PAGE:
-        offset = addr & 1;
-	numBytes = (numBytes + 1) & ~1;
-        addr &= ~1;
 	pageSize = global_p_device_def->flash_page_size;
+	cachePtr = flashCache;
+	cacheBaseAddr = &flashCachePageAddr;
 	break;
 
     case MTYPE_EEPROM_PAGE:
 	pageSize = global_p_device_def->eeprom_page_size;
+	cachePtr = eepromCache;
+	cacheBaseAddr = &eepromCachePageAddr;
 	break;
     }
-    if (pageSize > 0) {
-	unsigned int mask = pageSize - 1;
-	addr &= ~mask;
-	check(numBytes == pageSize,
-	      "jtagRead(): numByte does not match page size");
-    }
+
     uchar command[10] = { CMND_READ_MEMORY };
     command[1] = whichSpace;
-    if (pageSize) {
+
+    if (pageSize > 0) {
 	u32_to_b4(command + 2, pageSize);
-	u32_to_b4(command + 6, addr);
+	response = new uchar[numBytes];
+
+	unsigned int mask = pageSize - 1;
+	unsigned int pageAddr = addr & ~mask;
+	unsigned int chunksize = numBytes;
+	unsigned int targetOffset = 0;
+
+	if (addr + numBytes >= pageAddr + pageSize)
+	    // Chunk would cross a page boundary, reduce it
+	    // appropriately.
+	    chunksize -= (addr + numBytes - (pageAddr + pageSize));
+	offset = addr - pageAddr;
+
+	while (numBytes > 0)
+	{
+	    uchar *resp;
+
+	    if (pageAddr == *cacheBaseAddr)
+	    {
+		// quickly fetch from page cache
+		memcpy(response + targetOffset,
+		       cachePtr + offset,
+		       chunksize);
+	    }
+	    else
+	    {
+		// read from device, cache result, and copy over our part
+		u32_to_b4(command + 6, pageAddr);
+		check(doJtagCommand(command, sizeof command, resp, responseSize),
+		      "Failed to read target memory space");
+		memcpy(cachePtr, resp + 1, pageSize);
+		*cacheBaseAddr = pageAddr;
+		memcpy(response + targetOffset,
+		       cachePtr + offset,
+		       chunksize);
+		delete [] resp;
+	    }
+
+	    numBytes -= chunksize;
+	    targetOffset += chunksize;
+
+	    chunksize = numBytes > pageSize? pageSize: numBytes;
+	    pageAddr += pageSize;
+	}
     } else {
 	u32_to_b4(command + 2, numBytes);
 	u32_to_b4(command + 6, addr);
-    }
 
-    check(doJtagCommand(command, sizeof command, response, responseSize),
-	  "Failed to read target memory space");
+	check(doJtagCommand(command, sizeof command, response, responseSize),
+	      "Failed to read target memory space");
+	if (offset > 0)
+	    memmove(response, response + 1 + offset, responseSize - 1 - offset);
+	else
+	    memmove(response, response + 1, responseSize - 1);
+    }
 
     if (needProgmode && !wasProgmode)
        disableProgramming();
 
-    if (offset > 0)
-        memmove(response, response + 1 + offset, responseSize - 1 - offset);
-    else
-        memmove(response, response + 1, responseSize - 1);
     return response;
 }
 

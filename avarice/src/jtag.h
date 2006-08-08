@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -225,6 +225,9 @@ enum
     FUSE_CKSEL2                       = 0x04,
     FUSE_CKSEL1                       = 0x02,
     FUSE_CKSEL0                       = 0x01,
+
+    MAX_FLASH_PAGE_SIZE               = 256,
+    MAX_EEPROM_PAGE_SIZE              = 16,
 
     // JTAG ICE mkI protocol constants
 

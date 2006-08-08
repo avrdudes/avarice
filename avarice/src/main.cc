@@ -1,8 +1,9 @@
+
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -186,6 +187,9 @@ static void usage(const char *progname)
             "  -v, --verify                Verify program in device against file specified\n"
             "                                with --file option.\n");
     fprintf(stderr,
+	    "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
+	    "                                using debugWire protocol rather than JTAG.\n");
+    fprintf(stderr,
             "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
 	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
@@ -217,6 +221,7 @@ static struct option long_opts[] = {
     { "read-fuses",          0,       0,     'r' },
     { "version",             0,       0,     'V' },
     { "verify",              0,       0,     'v' },
+    { "debugwire",           0,       0,     'w' },
     { "write-fuses",         1,       0,     'W' },
     { 0,                     0,       0,      0 }
 };
@@ -247,7 +252,9 @@ int main(int argc, char **argv)
     bool capture = false;
     bool verify = false;
     char *progname = argv[0];
-    int protocol = 1;		// default to mkI protocol
+    enum {
+	MKI, MKII, MKII_DW
+    } protocol = MKI;		// default to mkI protocol
     int  option_index;
     unsigned int units_before = 0;
     unsigned int units_after = 0;
@@ -263,7 +270,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:Ddef:hIj:L:lP:prVvW:",
+        int c = getopt_long (argc, argv, "12B:Cc:Ddef:hIj:L:lP:prVvwW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -273,10 +280,12 @@ int main(int argc, char **argv)
             case '?':
                 usage(progname);
 	    case '1':
-		protocol = 1;
+		protocol = MKI;
 		break;
 	    case '2':
-		protocol = 2;
+		// If we've already seen a -w option, don't revert to -2.
+		if (protocol != MKII_DW)
+		    protocol = MKII;
 		break;
             case 'B':
 		jtagBitrate = parseJtagBitrate(optarg);
@@ -336,6 +345,9 @@ int main(int argc, char **argv)
             case 'v':
                 verify = true;
                 break;
+            case 'w':
+	        protocol = MKII_DW;
+		break;
             case 'W':
                 fuses = optarg;
                 writeFuses = true;
@@ -415,19 +427,17 @@ int main(int argc, char **argv)
     try {
 	// And say hello to the JTAG box
 	switch (protocol) {
-	case 1:
+	case MKI:
 	    theJtagICE = new jtag1(jtagDeviceName, device_name);
 	    break;
 
-	case 2:
+	case MKII:
 	    theJtagICE = new jtag2(jtagDeviceName, device_name);
 	    break;
 
-	default:
-	    fprintf(stderr,
-		    "Unknonw JTAG ICE protocol: %d\n",
-		    protocol);
-	    exit(1);
+	case MKII_DW:
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, true);
+	    break;
 	}
 
 	// Set Daisy-chain variables

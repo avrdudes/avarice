@@ -1,3 +1,16 @@
+2006-08-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	First part of implementing debugWire support.
+	* src/main.cc: Implement the debugWire framework.
+	* src/jtag.h: (Ditto.)
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2io.cc: (Ditto.)
+	* src/jtag2prog.cc: (Ditto.)
+	* src/jtag2rw.cc: (Ditto.)
+	* src/devdescr.cc: Add an entry for the ATmega48.
+	* doc/avarice.1: Document the debugWire effort.
+	* configure.ac: Bump version.
+
 2006-07-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version.
