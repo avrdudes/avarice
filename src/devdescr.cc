@@ -1289,6 +1289,61 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1F),		// EECRAddress
 	},
     },
+    // DEV_ATMEGA48
+    {
+        "atmega48",
+        0x9205,
+        64, 64,    // 4K flash
+        4,  64,    // 256 bytes EEPROM
+        26 * 2,    // 26 interrupt vectors
+	DEVFL_MKII_ONLY,
+        NULL,      // not yet defined
+        {
+	  0			// no mkI support
+        },
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xF8,0x0F,0xE0,0xF8,0xFB,0x3D,0xB9,0xE0 }, // ucReadIO
+	    { 0 },			// ucReadIOShadow
+	    { 0xB0,0x0D,0x00,0xE0,0xFB,0x1D,0xB8,0xE0 }, // ucWriteIO
+	    { 0 },			// ucWriteIOShadow
+	    { 0x53,0xFB,0x01,0xDF,0xF3,0x0F,0x00,0x00,
+	      0x00,0x00,0x5F,0x3F,0x37,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00 }, // ucReadExtIO
+	    { 0 },			// ucReadIOExtShadow
+	    { 0x10,0xFB,0x01,0xD8,0xF3,0x0F,0x00,0x00,
+	      0x00,0x00,0x5F,0x2F,0x36,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00 }, // ucWriteExtIO
+	    { 0 },			// ucWriteIOExtShadow
+	    0,				// ucIDRAddress
+	    0,				// ucSPMCRAddress
+	    0,				// ucRAMPZAddress
+	    fill_b2(64),		// uiFlashPageSize
+	    4,				// ucEepromPageSize
+	    fill_b4(0),			// ulBootAddress
+	    fill_b2(0xC6),		// uiUpperExtIOLoc
+	    fill_b4(0x1000),		// ulFlashSize
+	    { 0xBD,0xF2,0xBD,0xE1,0xBB,0xCF,0xB4,0x00,
+	      0xBE,0x01,0xB6,0x01,0xBC,0x00,0xBB,0xBF,
+	      0x99,0xF9,0xBB,0xAF },	// ucEepromInst
+	    { 0xB6,0x01,0x11 },		// ucFlashInst
+	    0x3e,			// ucSPHaddr
+	    0x3d,			// ucSPLaddr
+	    fill_b2(0x1000 / 64),	// uiFlashpages
+	    0x31,			// ucDWDRAddress
+	    0x18,			// ucDWBasePC
+	    0,				// ucAllowFullPageBitstream
+	    fill_b2(0),			// uiStartSmallestBootLoaderSection
+	    1,				// EnablePageProgramming
+	    0,				// ucCacheType
+	    fill_b2(0x100),		// uiSramStartAddr
+	    0,				// ucResetType
+	    0,				// ucPCMaskExtended
+	    0,				// ucPCMaskHigh
+	    0,				// ucEindAddress
+	    fill_b2(0x1F),		// EECRAddress
+	},
+    },
     // Termination record.
     { 
         NULL,                   // name

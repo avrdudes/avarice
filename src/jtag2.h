@@ -1,6 +1,6 @@
 /*
  *	avarice - The "avarice" program.
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -99,15 +99,24 @@ class jtag2: public jtag
     int devdescrlen;
     bool signedIn;
     bool haveHiddenBreakpoint;
+    bool useDebugWire;
 
     breakpoint2 bpCode[MAX_BREAKPOINTS2_CODE], bpData[MAX_BREAKPOINTS2_DATA];
     int numBreakpointsCode, numBreakpointsData;
 
+    unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
+    unsigned int flashCachePageAddr;
+    unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
+    unsigned int eepromCachePageAddr;
+
   public:
-    jtag2(const char *dev, char *name): jtag(dev, name) {
+    jtag2(const char *dev, char *name, bool useDW = false): jtag(dev, name) {
 	signedIn = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
+	useDebugWire = useDW;
+	flashCachePageAddr = (unsigned long)-1;
+	eepromCachePageAddr = (unsigned short)-1;
     };
     virtual ~jtag2(void);
 

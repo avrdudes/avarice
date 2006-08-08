@@ -22,7 +22,7 @@ the original English.
 $Id$
 
 ..
-.TH avarice 1 "April 7, 2006"
+.TH avarice 1 "August 5, 2006"
 .LO 1
 .SH NAME
 avarice \- Provides an interface from avr-gdb to Atmel's JTAGICE box.
@@ -90,9 +90,13 @@ atmega1280 (\fB*\fP)
 atmega1281 (\fB*\fP)
 .br
 at90usb1287 (\fB*\fP)
+.br
+atmega48 (\fB*\fP) (\fB+\fP)
 .RE
 .PP
 \fB*\fP \- Only supported by the JTAG ICE mkII device.
+.br
+\fB+\fP \- debugWire, see below
 .SS Supported File Formats
 .B avarice
 uses libbfd for reading input files. As such, it can handle any file format
@@ -188,6 +192,11 @@ Print version information.
 .BR \-v ,\  \-\-verify
 Verify program in device against file specified with --file option.
 .TP
+.BR \-w ,\  \-\-debugwire
+Connect to JTAG ICE mkII, talking debugWire protocol to the target.
+This option implies the \fB-2\fP option.
+See the DEBUGWIRE section below.
+.TP
 .BR \-W ,\  \-\-write-fuses \ <eehhll>
 Write fuses bytes. \fBee\fR is the extended fuse byte, \fBhh\fR is the high
 fuse byte and \fBll\fR is the low fuse byte. The fuse byte data must be given
@@ -236,6 +245,32 @@ data buses). To distinguish data address 0 from code address 0,
 .B avr-gdb
 adds 0x800000 to all data addresses. Bear this in mind when examining
 printed pointers, or when passing absolute addresses to gdb commands.
+.SH DEBUGWIRE
+The \fIdebugWire\fP protocol is a proprietary protocol introduced
+by Atmel to allow debugging small AVR controllers that don't offer
+enough pins (and enough chip resources) to implement full JTAG.
+The communication takes place over the \fI/RESET\fP pin which needs
+to be turned into a debugWire connection pin by programming the
+\fIDWEN\fP fuse (debugWire enable), using a normal programmer
+connection (in-system programming, high-voltage programming).
+Note that by enabling this fuse, the standard reset functionality
+of that pin will be lost, so any in-system programming will cease
+to work as it requires a functional \fI/RESET\fP pin.
+Thus it should be made \fBabsolutely sure there is a way back\fP,
+like a device (as the STK500, for example) that can handle
+high-voltage programming of the AVR.
+Currently, \fBavarice\fP offers no option to turn off the DWEN fuse.
+Even if it implements such an option in a future version, chances
+are good the JTAG ICE fails to disable that fuse anyway.
+.br
+Note that the debugWire environment is further limited, compared to
+JTAG.
+It does not offer hardware breakpoints, so all breakpoints have to
+be implemented as software breakpoints by rewriting flash pages
+using \fIBREAK\fP instructions.
+(Software breakpoints are currently not implemented by \fBavarice\fP.)
+Some memory spaces (fuse and lock bits) are not accessible through
+the debugWire protocol.
 .SH SEE ALSO
 .BR gdb (1),
 .BR avr\-gdb (1),
