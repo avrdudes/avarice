@@ -260,8 +260,10 @@ Thus it should be made \fBabsolutely sure there is a way back\fP,
 like a device (as the STK500, for example) that can handle
 high-voltage programming of the AVR.
 Currently, \fBavarice\fP offers no option to turn off the DWEN fuse.
-Even if it implements such an option in a future version, chances
-are good the JTAG ICE fails to disable that fuse anyway.
+However, \fBavrdude\fP offers the option to turn it off either
+through high-voltage programming, or by using the JTAG ICE mkII to
+first turn the target into an ISP-compatible mode, and then using
+normal ISP commands to change the fuse settings.
 .br
 Note that the debugWire environment is further limited, compared to
 JTAG.

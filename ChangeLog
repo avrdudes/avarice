@@ -1,3 +1,8 @@
+2006-09-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* doc/avarice.1: Mention that avrdude can turn off the
+	DWEN fuse.
+
 2006-08-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	First part of implementing debugWire support.
