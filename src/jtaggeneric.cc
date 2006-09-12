@@ -68,7 +68,7 @@ jtag::jtag(void)
 {
   jtagBox = 0;
   device_name = 0;
-  oldtioValid = false;
+  oldtioValid = is_usb = false;
 }
 
 jtag::jtag(const char *jtagDeviceName, char *name)
@@ -76,6 +76,7 @@ jtag::jtag(const char *jtagDeviceName, char *name)
     struct termios newtio;
 
     device_name = name;
+    is_usb = false;
 #ifdef HAVE_LIBUSB
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
       {
