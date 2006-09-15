@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005,2006 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -102,6 +102,13 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
 	    debugOut("FAILED\n");
 	    return false;
 	}
+
+	if (useDebugWire)
+	{
+	    debugOut("Data breakpoints not supported in debugWire\n");
+	    return false;
+	}
+
 	// Range breakpoints allocate two slots (i.e. all available
 	// data BP slots).
 	if (length > 1 &&
@@ -205,12 +212,102 @@ bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
     return false;
 }
 
+// This has to be completely rewritten to generally allow for soft
+// BPs.  By now, just throw in a special implementation for debugWire.
+// That way, there's at least *some* BP handling for dW, even though
+// we still artificially limit it to four BPs.
+void jtag2::updateBreakpintsDW(void)
+{
+    debugOut("updateBreakpointsDW\n");
+
+    // First, catch any breakpoints that do no longer persist, and
+    // delete them from the ICE.  Those that are still the same
+    // are marked in the scoreboard so we don't re-insert them.
+
+    bool scoreboard[MAX_BREAKPOINTS2] = { false, false, false, false };
+    breakpoint2 newcache[MAX_BREAKPOINTS2];
+    int newcacheidx, i, slot;
+
+    for (slot = newcacheidx = 0; slot < numBreakpointsCode; slot++)
+    {
+	for (i = 0; i < MAX_BREAKPOINTS2; i++)
+	{
+	    if (softBPcache[i].type == CODE &&
+		softBPcache[i].address == bpCode[slot].address)
+	    {
+		// This one is still active.
+		scoreboard[slot] = true;
+		newcache[newcacheidx++] = bpCode[slot];
+
+		// Delete it from the old cache.
+		softBPcache[i].type = NONE;
+
+		break;
+	    }
+	}
+    }
+
+    // At this point, the old cache consists solely of those BPs that
+    // are to be deleted.
+    for (i = 0; i < MAX_BREAKPOINTS2; i++)
+    {
+	if (softBPcache[i].type != CODE)
+	    continue;
+
+	uchar cmd[6] = { CMND_CLR_BREAK };
+	cmd[1] = 0;
+	u32_to_b4(cmd + 2, softBPcache[i].address);
+
+	uchar *response;
+	int responseSize;
+	if(!doJtagCommand(cmd, 6, response, responseSize))
+	    check(false, "Failed to clear breakpoint");
+
+	delete [] response;
+    }
+
+    // Now go ahead, and insert all new BPs.
+    for (slot = 0; slot < numBreakpointsCode; slot++)
+    {
+	if (scoreboard[slot])
+	    // It's still there in the ICE.
+	    continue;
+
+	uchar cmd[8] = { CMND_SET_BREAK };
+	cmd[1] = 0x01;
+	cmd[2] = 0;
+	u32_to_b4(cmd + 3, bpCode[slot].address);
+	cmd[7] = 0x03;
+
+	uchar *response;
+	int responseSize;
+	check(doJtagCommand(cmd, 8, response, responseSize),
+	      "Failed to set breakpoint");
+	delete [] response;
+
+	newcache[newcacheidx++] = bpCode[slot];
+    }
+
+    // Finally, update the cache.
+    while (newcacheidx < MAX_BREAKPOINTS2)
+	newcache[newcacheidx++].type = NONE;
+
+    for (i = 0; i < MAX_BREAKPOINTS2; i++)
+	softBPcache[i] = newcache[i];
+}
+
 
 void jtag2::updateBreakpoints(void)
 {
     int slot;
     int bpD = numBreakpointsData;
     int bpC = numBreakpointsCode;
+
+    if (useDebugWire)
+    {
+	updateBreakpintsDW();
+	return;
+    }
 
     debugOut("updateBreakpoints\n");
     haveHiddenBreakpoint = false;
