@@ -1,5 +1,11 @@
 2006-09-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Implement basic soft BP support for debugWire:
+	* src/jtag2.h: add a soft BP cache, and updateBreakpintsDW().
+	* src/jtag2bp.cc: Implement updateBreakpintsDW().
+
+2006-09-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* tools/devdescr.xsl: (New file.) Generate devdescr.cc
 	entry out of the XML file.
 	* src/devdescr.cc: Add entries for all debugWire AVRs,
