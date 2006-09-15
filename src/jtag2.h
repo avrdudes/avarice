@@ -109,14 +109,18 @@ class jtag2: public jtag
     unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
     unsigned int eepromCachePageAddr;
 
+    breakpoint2 softBPcache[MAX_BREAKPOINTS2];
+
   public:
     jtag2(const char *dev, char *name, bool useDW = false): jtag(dev, name) {
-	signedIn = false;
+	signedIn = haveHiddenBreakpoint = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
 	useDebugWire = useDW;
 	flashCachePageAddr = (unsigned long)-1;
 	eepromCachePageAddr = (unsigned short)-1;
+	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
+	  softBPcache[i].type = NONE;
     };
     virtual ~jtag2(void);
 
@@ -227,6 +231,10 @@ class jtag2: public jtag
     void getJtagParameter(uchar item, uchar *&resp, int &respSize);
 
     uchar memorySpace(unsigned long &addr);
+
+    /** debugWire version of the breakpoint updater.
+     **/
+    void updateBreakpintsDW(void);
 };
 
 #endif

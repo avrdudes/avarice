@@ -1,3 +1,10 @@
+2006-09-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* tools/devdescr.xsl: (New file.) Generate devdescr.cc
+	entry out of the XML file.
+	* src/devdescr.cc: Add entries for all debugWire AVRs,
+	generated with devdescr.xsl.
+
 2006-09-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtaggeneric.cc: Initialize is_usb properly when
