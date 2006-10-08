@@ -22,7 +22,8 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = scripts src doc
 
 EXTRA_DIST =		\
-	COPYING
+	COPYING		\
+	NEWS
 
 dist-hook: avarice.spec
 	cp avarice.spec $(distdir)/avarice.spec
