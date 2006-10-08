@@ -600,6 +600,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
+    // debugWire cannot read or manipulate fuse or lock bits
     if (!useDebugWire)
     {
       uchar br;
@@ -613,51 +614,53 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 	br = 255;
       // Set JTAG bitrate
       setJtagParameter(PAR_OCD_JTAG_CLK, &br, 1);
-    }
 
-    // When attaching we can't change fuse bits, etc, as
-    // enabling+disabling programming resets the processor
-    enableProgramming();
 
-    // Ensure that all lock bits are "unlocked" ie all 1's
-    uchar *lockBits = 0;
-    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+      // When attaching we can't change fuse bits, etc, as
+      // enabling+disabling programming resets the processor
+      enableProgramming();
 
-    if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
-    {
-        lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
-        jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
-    }
+      // Ensure that all lock bits are "unlocked" ie all 1's
+      uchar *lockBits = 0;
+      lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
 
-    statusOut("\nDisabling lock bits:\n");
-    statusOut("  LockBits -> 0x%02x\n", *lockBits);
+      if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
+      {
+	  lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
+	  jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
+      }
 
-    if (lockBits)
-    {
-        delete [] lockBits;
-        lockBits = 0;
-    }
+      statusOut("\nDisabling lock bits:\n");
+      statusOut("  LockBits -> 0x%02x\n", *lockBits);
 
-    // Ensure on-chip debug enable fuse is enabled ie '0'
-    uchar *fuseBits = 0;
-    statusOut("\nEnabling on-chip debugging:\n");
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+      if (lockBits)
+      {
+	  delete [] lockBits;
+	  lockBits = 0;
+      }
 
-    if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
-    {
-        fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
+      // Ensure on-chip debug enable fuse is enabled ie '0'
+      uchar *fuseBits = 0;
+      statusOut("\nEnabling on-chip debugging:\n");
+      fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+
+      if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
+      {
+	  fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
+      }
+
+      jtagDisplayFuses(fuseBits);
+
+      if (fuseBits)
+      {
+	  delete [] fuseBits;
+	  fuseBits = 0;
+      }
+
+      disableProgramming();
     }
 
-    jtagDisplayFuses(fuseBits);
-
-    if (fuseBits)
-    {
-        delete [] fuseBits;
-        fuseBits = 0;
-    }
-
-    disableProgramming();
 
     resetProgram();
     uchar timers = 0;		// stopped
