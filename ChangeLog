@@ -7,6 +7,7 @@
 	* src/jtag2io.cc: Don't mess with the fuse or lock bits in
 	debugWire mode.
 	* src/main.cc: Add --erase to the example usage.
+	* NEWS: (New file.)
 
 2006-09-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
