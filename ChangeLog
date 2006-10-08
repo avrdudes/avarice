@@ -1,6 +1,7 @@
 2006-10-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: bump version to post-2.5
+	* NEWS: add boilerplate for next r
 
 2006-10-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
