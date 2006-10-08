@@ -1,0 +1,26 @@
+Summary of changes in AVaRICE 2.5
+=================================
+
+New CPU support added:
+----------------------
+
+. AT90USB1287
+. ATmega2560/2561
+. debugWIRE AVRs (ATmega48/88/168, ATtiny13, ATtiny2313, AT90PWM2/3,
+  ATtiny24/44, ATtiny25/45, ATtiny261/461/861)
+
+New features added:
+-------------------
+
+. JTAG daisy chainging
+. basic debugWIRE support (still limited to four breakpoints; known
+  to occasionally cause trouble over USB, works better over RS-232)
+
+Summary of important bug fixes:
+-------------------------------
+
+. fix ucAllowFullPageBitstream for ATmega640/1280/1281, AT90CAN128
+. fix device descriptors, in particular EEPROM access on recent AVRs
+
+=====================================================================
+[Versions up to AVaRICE 2.4 did not have a NEWS file entry.]
