@@ -8,6 +8,7 @@
 	debugWire mode.
 	* src/main.cc: Add --erase to the example usage.
 	* NEWS: (New file.)
+	* Makefile.am (EXTRA_DIST): Add NEWS.
 
 2006-09-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
