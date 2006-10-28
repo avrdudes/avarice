@@ -40,9 +40,6 @@
 
 unsigned long jtag2::getProgramCounter(void)
 {
-    if (cached_pc != (unsigned long)-1)
-	return cached_pc;
-
     uchar *response;
     int responseSize;
     uchar command[] = { CMND_READ_PC };
@@ -81,7 +78,6 @@ bool jtag2::resetProgram(void)
     uchar *resp;
     int respSize;
 
-    cached_pc = (unsigned long)-1;
     bool rv = doJtagCommand(cmd, 2, resp, respSize);
     delete [] resp;
 
@@ -94,7 +90,6 @@ bool jtag2::interruptProgram(void)
     uchar *resp;
     int respSize;
 
-    cached_pc = (unsigned long)-1;
     bool rv = doJtagCommand(cmd, 2, resp, respSize);
     delete [] resp;
 
@@ -117,7 +112,6 @@ bool jtag2::jtagSingleStep(bool useHLL)
     int respSize, i = 2;
     bool rv;
 
-    cached_pc = (unsigned long)-1;
     do
     {
 	rv = doJtagCommand(cmd, 3, resp, respSize);
@@ -138,8 +132,6 @@ bool jtag2::jtagSingleStep(bool useHLL)
 bool jtag2::jtagContinue(void)
 {
     updateBreakpoints(); // download new bp configuration
-
-    cached_pc = (unsigned long)-1;
 
     if (haveHiddenBreakpoint)
 	// One of our breakpoints has been set as the high-level
@@ -192,10 +184,8 @@ bool jtag2::jtagContinue(void)
 		// We really need a queue of received frames.
 		if (seqno != 0xffff)
 		    debugOut("Expected event packet, got other response");
-		else if (evtbuf[8] == EVT_BREAK) {
-		    cached_pc = b4_to_u32(evtbuf + 9);
+		else if (evtbuf[8] == EVT_BREAK)
 		    breakpoint = true;
-		}
 		// Ignore other events.
 		delete [] evtbuf;
 	    }
