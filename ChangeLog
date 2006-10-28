@@ -1,3 +1,15 @@
+2006-10-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h: Make a first stab of an implementation for the AVR
+	Dragon.  This is mostly the same as the JTAG ICE mkII, except it
+	can only talk USB and has a different USB product ID.
+	Documentation not yet done.
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2io.cc: (Ditto.)
+	* src/jtag2usb.cc: (Ditto.)
+	* src/jtaggeneric.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+
 2006-10-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: bump version to post-2.5

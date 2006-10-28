@@ -112,7 +112,8 @@ class jtag2: public jtag
     breakpoint2 softBPcache[MAX_BREAKPOINTS2];
 
   public:
-    jtag2(const char *dev, char *name, bool useDW = false): jtag(dev, name) {
+    jtag2(const char *dev, char *name, bool useDW = false, bool is_dragon = false):
+      jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
 	signedIn = haveHiddenBreakpoint = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
