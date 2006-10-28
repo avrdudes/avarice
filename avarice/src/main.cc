@@ -163,6 +163,11 @@ static void usage(const char *progname)
             "                                neither --program or --verify are given then\n"
             "                                --program is implied.\n");
     fprintf(stderr,
+	    "  -g, --dragon                Connect to an AVR Dragon rather than a JTAG ICE.\n"
+	    "                                This implies --mkII, but might be required in\n"
+	    "                                addition to --debugwire when debugWire is to\n"
+	    "                                be used.\n");
+    fprintf(stderr,
 	    "  -I, --ignore-intr           Automatically step over interrupts.\n"
 	    "                                Note: EXPERIMENTAL. Can not currently handle\n"
             "                                devices fused for compatibility.\n");
@@ -211,6 +216,7 @@ static struct option long_opts[] = {
     { "debug",               0,       0,     'd' },
     { "erase",               0,       0,     'e' },
     { "file",                1,       0,     'f' },
+    { "dragon",              0,       0,     'g' },
     { "help",                0,       0,     'h' },
     { "ignore-intr",         0,       0,     'I' },
     { "jtag",                1,       0,     'j' },
@@ -234,7 +240,7 @@ int main(int argc, char **argv)
     struct sockaddr_in clientname;
     struct sockaddr_in name;
     char *inFileName = 0;
-    char *jtagDeviceName = "/dev/avrjtag";
+    char *jtagDeviceName = NULL;
     char *device_name = 0;
     unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
@@ -251,6 +257,7 @@ int main(int argc, char **argv)
     bool detach = false;
     bool capture = false;
     bool verify = false;
+    bool is_dragon = false;
     char *progname = argv[0];
     enum {
 	MKI, MKII, MKII_DW
@@ -270,7 +277,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:Ddef:hIj:L:lP:prVvwW:",
+        int c = getopt_long (argc, argv, "12B:Cc:Ddef:ghIj:L:lP:prVvwW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -318,6 +325,12 @@ int main(int argc, char **argv)
             case 'f':
                 inFileName = optarg;
                 break;
+	    case 'g':
+		// If we've already seen a -w option, don't revert to -2.
+		if (protocol != MKII_DW)
+		    protocol = MKII;
+	        is_dragon = true;
+		break;
             case 'I':
                 ignoreInterrupts = true;
                 break;
@@ -424,6 +437,17 @@ int main(int argc, char **argv)
         jtagBitrate = 1000000;
     }
 
+    // Use a default device name to connect to if not specified on the
+    // command-line.  As the AVR Dragon can only be talked to through
+    // USB, default it to USB, but use a generic name else.
+    if (jtagDeviceName == NULL)
+    {
+      if (is_dragon)
+	jtagDeviceName = "usb";
+      else
+	jtagDeviceName = "/dev/avrjtag";
+    }
+
     try {
 	// And say hello to the JTAG box
 	switch (protocol) {
@@ -432,11 +456,11 @@ int main(int argc, char **argv)
 	    break;
 
 	case MKII:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name);
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, false, is_dragon);
 	    break;
 
 	case MKII_DW:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, true);
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, true, is_dragon);
 	    break;
 	}
 

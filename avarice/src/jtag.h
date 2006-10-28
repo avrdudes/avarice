@@ -555,6 +555,12 @@ typedef enum {
 extern const char *BFDmemoryTypeString[];
 extern const int BFDmemorySpaceOffset[];
 
+enum emulator {
+  EMULATOR_JTAGICE,
+  EMULATOR_DRAGON,
+};
+
+
 // Allocate 1 meg for image buffer. This is where the file data is
 // stored before writing occurs.
 #define MAX_IMAGE_SIZE 1000000
@@ -597,6 +603,9 @@ class jtag
   // For the mkII device, is the box attached via USB?
   bool is_usb;
 
+  // The type of our emulator: JTAG ICE, or AVR Dragon.
+  emulator emu_type;
+
   public:
   // Whether we are in "programming mode" (changes how program memory
   // is written, apparently)
@@ -637,7 +646,7 @@ class jtag
 
   public:
   jtag(void);
-  jtag(const char *dev, char *name);
+  jtag(const char *dev, char *name, emulator type = EMULATOR_JTAGICE);
   virtual ~jtag(void);
 
   // Basic JTAG I/O

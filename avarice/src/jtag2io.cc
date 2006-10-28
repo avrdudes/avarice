@@ -360,6 +360,12 @@ void jtag2::doSimpleJtagCommand(uchar command)
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
 void jtag2::changeBitRate(int newBitRate)
 {
+    // Don't try to change the speed of an USB connection.
+    // For the AVR Dragon, that would even result in the parameter
+    // change below being rejected.
+    if (is_usb)
+        return;
+
     uchar jtagrate;
 
     switch (newBitRate) {
@@ -435,20 +441,25 @@ bool jtag2::synchroniseAt(int bitrate)
 	    debugOut("  hardware version:              %u\n",
 		     (unsigned)signonmsg[9]);
 
-	    unsigned short fwver = ((unsigned)signonmsg[8] << 8) | (unsigned)signonmsg[7];
+	    // The AVR Dragon always uses the full device descriptor.
+	    if (emu_type == EMULATOR_JTAGICE)
+	    {
+		unsigned short fwver = ((unsigned)signonmsg[8] << 8) | (unsigned)signonmsg[7];
 
-	    // Check the S_MCU firmware version to know which format
-	    // of the device descriptor to send.
+		// Check the S_MCU firmware version to know which format
+		// of the device descriptor to send.
 #define FWVER(maj, min) ((maj << 8) | (min))
-	    if (fwver < FWVER(3, 16)) {
-		devdescrlen -= 2;
-		fprintf(stderr,
-			"Warning: S_MCU firmware version might be "
-			"too old to work correctly\n ");
-	    } else if (fwver < FWVER(4, 0)) {
-		devdescrlen -= 2;
-	    }
+		if (fwver < FWVER(3, 16)) {
+		    devdescrlen -= 2;
+		    fprintf(stderr,
+			    "Warning: S_MCU firmware version might be "
+			    "too old to work correctly\n ");
+		} else if (fwver < FWVER(4, 0)) {
+		    devdescrlen -= 2;
+		}
 #undef FWVER
+	    }
+
 	    delete [] signonmsg;
 	    return true;
 	}

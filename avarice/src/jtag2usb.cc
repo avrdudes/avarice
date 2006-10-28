@@ -47,6 +47,7 @@
 
 #define USB_VENDOR_ATMEL 1003
 #define USB_DEVICE_JTAGICEMKII 0x2103
+#define USB_DEVICE_AVRDRAGON   0x2107
 /*
  * Should we query the endpoint number and max transfer size from USB?
  * After all, the JTAG ICE mkII docs document these values.
@@ -208,7 +209,19 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
   usb_dev_handle *udev;
   char *serno, *cp2;
   int usb_interface;
+  u_int16_t pid;
   size_t x;
+
+  switch (emu_type)
+    {
+    case EMULATOR_JTAGICE:
+      pid = USB_DEVICE_JTAGICEMKII;
+      break;
+
+    case EMULATOR_DRAGON:
+      pid = USB_DEVICE_AVRDRAGON;
+      break;
+    }
 
   /*
    * The syntax for usb devices is defined as:
@@ -250,7 +263,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
 	  if (udev)
 	    {
 	      if (dev->descriptor.idVendor == USB_VENDOR_ATMEL &&
-		  dev->descriptor.idProduct == USB_DEVICE_JTAGICEMKII)
+		  dev->descriptor.idProduct == pid)
 		{
 		  /* yeah, we found something */
 		  int rv = usb_get_string_simple(udev,
