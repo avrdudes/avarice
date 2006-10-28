@@ -69,15 +69,15 @@ atmega128
 .br
 at90can128
 .br
-atmega164 (\fB*\fP)
+atmega164 (\fBo\fP)
 .br
-atmega324 (\fB*\fP)
+atmega324 (\fBo\fP)
 .br
 atmega644 (\fB*\fP)
 .br
-atmega329 (\fB*\fP)
+atmega329 (\fBo\fP)
 .br
-atmega3290 (\fB*\fP)
+atmega3290 (\fBo\fP)
 .br
 atmega649 (\fB*\fP)
 .br
@@ -89,12 +89,44 @@ atmega1280 (\fB*\fP)
 .br
 atmega1281 (\fB*\fP)
 .br
+atmega2560 (\fB*\fP)
+.br
+atmega2561 (\fB*\fP)
+.br
 at90usb1287 (\fB*\fP)
 .br
-atmega48 (\fB*\fP) (\fB+\fP)
+atmega48 (\fBo\fP) (\fB+\fP)
+.br
+atmega88 (\fBo\fP) (\fB+\fP)
+.br
+atmega168 (\fBo\fP) (\fB+\fP)
+.br
+attiny13 (\fBo\fP) (\fB+\fP)
+.br
+attiny2313 (\fBo\fP) (\fB+\fP)
+.br
+at90pwm2 (\fBo\fP) (\fB+\fP)
+.br
+at90pwm3 (\fBo\fP) (\fB+\fP)
+.br
+attiny24 (\fBo\fP) (\fB+\fP)
+.br
+attiny44 (\fBo\fP) (\fB+\fP)
+.br
+attiny25 (\fBo\fP) (\fB+\fP)
+.br
+attiny45 (\fBo\fP) (\fB+\fP)
+.br
+attiny261 (\fBo\fP) (\fB+\fP)
+.br
+attiny461 (\fBo\fP) (\fB+\fP)
+.br
+attiny861 (\fBo\fP) (\fB+\fP)
 .RE
 .PP
 \fB*\fP \- Only supported by the JTAG ICE mkII device.
+.br
+\fBo\fP \- Only supported by the JTAG ICE mkII and AVR Dragon device.
 .br
 \fB+\fP \- debugWire, see below
 .SS Supported File Formats
@@ -148,6 +180,10 @@ Erase target.
 Specify a file for use with the --program and --verify options. If --file is
 passed and neither --program or --verify are given then --program is implied.
 .TP
+.BR \-g ,\  \-\-dragon
+Connect to an AVR Dragon.
+This option implies the \fB-2\fP option.
+.TP
 .BR \-I ,\  \-\-ignore-intr
 Automatically step over interrupts.
 .br
@@ -163,6 +199,9 @@ In that case, the string \fIusb\fR is used as the name of the device.
 If there are multiple JTAG ICE mkII devices connected to the system
 through USB, this string may be followed by the (trailing part of the)
 ICE's serial number, delimited from the \fIusb\fR by a colon.
+.br
+The AVR Dragon can only be connected through USB, so this option
+defaults to "usb" in that case.
 .TP
 .BR \-L ,\  \-\-write-lockbits \ <ll>
 Write lock bits. The lock byte data must be given in two digit hexidecimal
@@ -193,7 +232,7 @@ Print version information.
 Verify program in device against file specified with --file option.
 .TP
 .BR \-w ,\  \-\-debugwire
-Connect to JTAG ICE mkII, talking debugWire protocol to the target.
+Connect to JTAG ICE mkII (or AVR Dragon), talking debugWire protocol to the target.
 This option implies the \fB-2\fP option.
 See the DEBUGWIRE section below.
 .TP

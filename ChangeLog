@@ -1,5 +1,10 @@
 2006-10-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* doc/avarice.1: Document the AVR Dragon support.  Also add
+	all the debugWire-supported AVRs.
+
+2006-10-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h: Make a first stab of an implementation for the AVR
 	Dragon.  This is mostly the same as the JTAG ICE mkII, except it
 	can only talk USB and has a different USB product ID.

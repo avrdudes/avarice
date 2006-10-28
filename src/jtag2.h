@@ -96,6 +96,7 @@ class jtag2: public jtag
 {
   private:
     unsigned short command_sequence;
+    unsigned long cached_pc;
     int devdescrlen;
     bool signedIn;
     bool haveHiddenBreakpoint;
@@ -120,6 +121,7 @@ class jtag2: public jtag
 	useDebugWire = useDW;
 	flashCachePageAddr = (unsigned long)-1;
 	eepromCachePageAddr = (unsigned short)-1;
+	cached_pc = (unsigned long)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
 	  softBPcache[i].type = NONE;
     };

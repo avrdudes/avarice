@@ -255,6 +255,9 @@ int jtag2::recv(uchar *&msg)
 	if (r_seqno == 0xffff) {
 	    debugOut("\ngot asynchronous event: 0x%02x\n",
 		     msg[8]);
+	    if (msg[8] == EVT_BREAK) {
+		cached_pc = b4_to_u32(msg + 9);
+	    }
 	    // XXX should we queue that event up somewhere?
 	    // How to process it?  Register event handlers
 	    // for interesting events?
