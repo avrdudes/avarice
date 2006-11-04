@@ -1,3 +1,10 @@
+2006-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Rearrange the procedure to open an USB device
+	so that the usb_dev_handle is not going to be inherited across a
+	fork().  Doing so did cause problems on the OSX implementation of
+	libusb.
+
 2006-10-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* doc/avarice.1: Document the AVR Dragon support.  Also add

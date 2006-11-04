@@ -60,6 +60,138 @@ static int signalled, exiting;
 static pid_t usb_kid;
 
 /*
+ * Walk down all USB devices, and see whether we can find our emulator
+ * device.
+ */
+static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
+			       int &usb_interface)
+{
+  char string[256];
+  struct usb_bus *bus;
+  struct usb_device *dev;
+  usb_dev_handle *udev;
+  char *serno, *cp2;
+  u_int16_t pid;
+  size_t x;
+
+  switch (emu_type)
+    {
+    case EMULATOR_JTAGICE:
+      pid = USB_DEVICE_JTAGICEMKII;
+      break;
+
+    case EMULATOR_DRAGON:
+      pid = USB_DEVICE_AVRDRAGON;
+      break;
+    }
+
+  /*
+   * The syntax for usb devices is defined as:
+   *
+   * -P usb[:serialnumber]
+   *
+   * See if we've got a serial number passed here.  The serial number
+   * might contain colons which we remove below, and we compare it
+   * right-to-left, so only the least significant nibbles need to be
+   * specified.
+   */
+  if ((serno = strchr(jtagDeviceName, ':')) != NULL)
+    {
+      /* first, drop all colons there if any */
+      cp2 = ++serno;
+
+      while ((cp2 = strchr(cp2, ':')) != NULL)
+	{
+	  x = strlen(cp2) - 1;
+	  memmove(cp2, cp2 + 1, x);
+	  cp2[x] = '\0';
+	}
+
+      unixCheck(strlen(serno) <= 12, "invalid serial number \"%s\"", serno);
+    }
+
+  usb_init();
+
+  usb_find_busses();
+  usb_find_devices();
+
+  udev = NULL;
+  bool found = false;
+  for (bus = usb_get_busses(); !found && bus; bus = bus->next)
+    {
+      for (dev = bus->devices; !found && dev; dev = dev->next)
+	{
+	  udev = usb_open(dev);
+	  if (udev)
+	    {
+	      if (dev->descriptor.idVendor == USB_VENDOR_ATMEL &&
+		  dev->descriptor.idProduct == pid)
+		{
+		  /* yeah, we found something */
+		  int rv = usb_get_string_simple(udev,
+						 dev->descriptor.iSerialNumber,
+						 string, sizeof(string));
+		  unixCheck(rv >= 0, "cannot read serial number \"%s\"",
+			    usb_strerror());
+
+		  debugOut("Found JTAG ICE, serno: %s\n", string);
+		  if (serno != NULL)
+		    {
+		      /*
+		       * See if the serial number requested by the
+		       * user matches what we found, matching
+		       * right-to-left.
+		       */
+		      x = strlen(string) - strlen(serno);
+		      if (strcasecmp(string + x, serno) != 0)
+			{
+			  debugOut("serial number doesn't match\n");
+			  usb_close(udev);
+			  continue;
+			}
+		    }
+
+		  // we found what we want
+		  found = true;
+		  break;
+		}
+	      usb_close(udev);
+	    }
+	}
+    }
+  if (!found)
+  {
+    printf("did not find any%s USB device \"%s\"\n",
+	   serno? " (matching)": "", jtagDeviceName);
+    return NULL;
+  }
+
+  if (dev->config == NULL)
+  {
+      statusOut("USB device has no configuration\n");
+    fail:
+      usb_close(udev);
+      return NULL;
+  }
+  if (usb_set_configuration(udev, dev->config[0].bConfigurationValue))
+  {
+      statusOut("error setting configuration %d: %s\n",
+                dev->config[0].bConfigurationValue,
+                usb_strerror());
+      goto fail;
+  }
+  usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
+  if (usb_claim_interface(udev, usb_interface))
+  {
+      statusOut("error claiming interface %d: %s\n",
+                usb_interface, usb_strerror());
+      goto fail;
+  }
+
+  return udev;
+}
+
+/*
  * Various signal handlers for the USB daemon child.
  */
 static void sigtermhandler(int signo)
@@ -196,147 +328,46 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int usb_interface)
 	    }
 	}
     }
-  (void)usb_release_interface(udev, usb_interface);
-  usb_close(udev);
-  exit(0);
 }
 
 pid_t jtag::openUSB(const char *jtagDeviceName)
 {
-  char string[256];
-  struct usb_bus *bus;
-  struct usb_device *dev;
-  usb_dev_handle *udev;
-  char *serno, *cp2;
   int usb_interface;
-  u_int16_t pid;
-  size_t x;
 
-  switch (emu_type)
-    {
-    case EMULATOR_JTAGICE:
-      pid = USB_DEVICE_JTAGICEMKII;
-      break;
+  usb_dev_handle *udev = opendev(jtagDeviceName, emu_type, usb_interface);
+  check(udev != NULL, "USB device not found");
 
-    case EMULATOR_DRAGON:
-      pid = USB_DEVICE_AVRDRAGON;
-      break;
-    }
-
-  /*
-   * The syntax for usb devices is defined as:
-   *
-   * -P usb[:serialnumber]
-   *
-   * See if we've got a serial number passed here.  The serial number
-   * might contain colons which we remove below, and we compare it
-   * right-to-left, so only the least significant nibbles need to be
-   * specified.
-   */
-  if ((serno = strchr(jtagDeviceName, ':')) != NULL)
-    {
-      /* first, drop all colons there if any */
-      cp2 = ++serno;
-
-      while ((cp2 = strchr(cp2, ':')) != NULL)
-	{
-	  x = strlen(cp2) - 1;
-	  memmove(cp2, cp2 + 1, x);
-	  cp2[x] = '\0';
-	}
-
-      unixCheck(strlen(serno) <= 12, "invalid serial number \"%s\"", serno);
-    }
-
-  usb_init();
-
-  usb_find_busses();
-  usb_find_devices();
-
-  udev = NULL;
-  bool found = false;
-  for (bus = usb_get_busses(); !found && bus; bus = bus->next)
-    {
-      for (dev = bus->devices; !found && dev; dev = dev->next)
-	{
-	  udev = usb_open(dev);
-	  if (udev)
-	    {
-	      if (dev->descriptor.idVendor == USB_VENDOR_ATMEL &&
-		  dev->descriptor.idProduct == pid)
-		{
-		  /* yeah, we found something */
-		  int rv = usb_get_string_simple(udev,
-						 dev->descriptor.iSerialNumber,
-						 string, sizeof(string));
-		  unixCheck(rv >= 0, "cannot read serial number \"%s\"",
-			    usb_strerror());
-
-		  debugOut("Found JTAG ICE, serno: %s\n", string);
-		  if (serno != NULL)
-		    {
-		      /*
-		       * See if the serial number requested by the
-		       * user matches what we found, matching
-		       * right-to-left.
-		       */
-		      x = strlen(string) - strlen(serno);
-		      if (strcasecmp(string + x, serno) != 0)
-			{
-			  debugOut("serial number doesn't match\n");
-			  usb_close(udev);
-			  continue;
-			}
-		    }
-
-		  // we found what we want
-		  found = true;
-		  break;
-		}
-	      usb_close(udev);
-	    }
-	}
-    }
-  unixCheck(found? 0: -1,
-	    "did not find any%s USB device \"%s\"",
-	    serno? " (matching)": "", jtagDeviceName);
-
-  if (dev->config == NULL)
-  {
-      statusOut("USB device has no configuration\n");
-    fail:
-      usb_close(udev);
-      exit(EXIT_FAILURE);
-  }
-  if (usb_set_configuration(udev, dev->config[0].bConfigurationValue))
-  {
-      statusOut("error setting configuration %d: %s\n",
-                dev->config[0].bConfigurationValue,
-                usb_strerror());
-      goto fail;
-  }
-  usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
-  if (usb_claim_interface(udev, usb_interface))
-  {
-      statusOut("error claiming interface %d: %s\n",
-                usb_interface, usb_strerror());
-      goto fail;
-  }
+  // OK, we found something.  Release and close the USB device again
+  // by now, so the child process will be able to re-open it.
+  (void)usb_release_interface(udev, usb_interface);
+  usb_close(udev);
 
   pid_t p;
   int pype[2];
   unixCheck(socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) == 0,
 	    "cannot create pipe");
 
+  signal(SIGCHLD, childhandler);
   switch ((p = fork()))
     {
     case 0:
+      signal(SIGCHLD, SIG_DFL);
       close(pype[0]);
+
+      udev = opendev(jtagDeviceName, emu_type, usb_interface);
+      check(udev != NULL, "USB device not found 2nd time");
+
       usb_daemon(udev, pype[1], usb_interface);
+
+      (void)usb_release_interface(udev, usb_interface);
+      usb_close(udev);
+      exit(0);
       break;
+
     case -1:
-      unixCheck(0, "Cannot fork");
+      unixCheck(-1, "Cannot fork");
       break;
+
     default:
       close(pype[1]);
       jtagBox = pype[0];
@@ -346,7 +377,6 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
   signal(SIGTERM, inthandler);
   signal(SIGINT, inthandler);
   signal(SIGQUIT, inthandler);
-  signal(SIGCHLD, childhandler);
 }
 
 #endif /* HAVE_LIBUSB */
