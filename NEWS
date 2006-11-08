@@ -6,7 +6,7 @@ Summary of changes since AVaRICE 2.5
 New CPU support added:
 ----------------------
 
-. 
+. ATmega164P/324P (removed non-existing ATmega164/324)
 
 New features added:
 -------------------

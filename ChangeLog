@@ -1,3 +1,9 @@
+2006-11-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: Replace the ATmega164 and ATmega324 device
+	descriptors by ATmega164P and ATmega324P ones, as the former
+	devices have never been released.
+
 2006-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2usb.cc: Rearrange the procedure to open an USB device
