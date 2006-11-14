@@ -1,3 +1,8 @@
+2006-11-14  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Try to set the O_ASYNC flag only if the
+	host operating system does actually support it.
+
 2006-11-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: Replace the ATmega164 and ATmega324 device
