@@ -256,12 +256,14 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int usb_interface)
   signal(SIGALRM, alarmhandler);
   signal(SIGTERM, sigtermhandler);
   signal(SIGINT, sigtermhandler);
+#if defined(O_ASYNC)
   if (fcntl(fd, F_GETFL, &ioflags) != -1)
     {
       ioflags |= O_ASYNC;
       if (fcntl(fd, F_SETFL, &ioflags) != -1)
 	signal(SIGIO, dummyhandler);
     }
+#endif /* defined(O_ASYNC) */
 
   for (; !signalled;)
     {
