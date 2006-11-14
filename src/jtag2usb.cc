@@ -251,12 +251,13 @@ static void childhandler(int signo)
  */
 static void usb_daemon(usb_dev_handle *udev, int fd, int usb_interface)
 {
-  int ioflags;
-
   signal(SIGALRM, alarmhandler);
   signal(SIGTERM, sigtermhandler);
   signal(SIGINT, sigtermhandler);
+
 #if defined(O_ASYNC)
+  int ioflags;
+
   if (fcntl(fd, F_GETFL, &ioflags) != -1)
     {
       ioflags |= O_ASYNC;
