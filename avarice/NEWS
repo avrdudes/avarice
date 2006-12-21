@@ -1,6 +1,6 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.5
+Summary of changes in AVaRICE 2.6
 =================================
 
 New CPU support added:
@@ -11,12 +11,14 @@ New CPU support added:
 New features added:
 -------------------
 
-. 
+. Support of the AVR Dragon (both, JTAG and debugWire)
 
 Summary of important bug fixes:
 -------------------------------
 
-. 
+. Don't fork the USB daemon with the libusb handle open;
+  instead, re-open the connection in the child.  Fixes issues
+  with MacOS X and Cygwin.
 
 =====================================================================
 Summary of changes in AVaRICE 2.5
