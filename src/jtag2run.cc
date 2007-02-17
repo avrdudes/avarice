@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005, 2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -150,6 +150,13 @@ bool jtag2::jtagContinue(void)
 	// Now that we are "going", wait for either a response from the JTAG
 	// box or a nudge from GDB.
 	debugOut("Waiting for input.\n");
+
+	if (ctrlPipe != -1)
+	  {
+	    /* signal the USB daemon to start polling. */
+	    char cmd[1] = { 'p' };
+	    (void)write(ctrlPipe, cmd, 1);
+	  }
 
 	// Check for input from JTAG ICE (breakpoint, sleep, info, power)
 	// or gdb (user break)

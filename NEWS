@@ -16,7 +16,8 @@ New features added:
 Summary of important bug fixes:
 -------------------------------
 
-. 
+. Complete overhaul of the USB communication, making it much more
+  robust, and less resource-consuming.
 
 =====================================================================
 Summary of changes in AVaRICE 2.6
