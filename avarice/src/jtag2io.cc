@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005,2006 Joerg Wunsch
+ *	Copyright (C) 2005, 2006, 2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -110,6 +110,13 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
     unsigned short checksum = 0;
 
     msg = NULL;
+
+    if (ctrlPipe != -1)
+      {
+	/* signal the USB daemon we are ready to get data */
+	char cmd[1] = { 'r' };
+	(void)write(ctrlPipe, cmd, 1);
+      }
 
     while (state != sDONE) {
 	if (state == sDATA) {
@@ -334,6 +341,14 @@ bool jtag2::doJtagCommand(uchar *command, int  commandSize,
 	    // Got a negative response in time; there is no point
 	    // in retrying the command.
 	    return false;
+
+	if (tryCount > 3 && ctrlPipe != -1)
+	  {
+	    /* signal the USB daemon to reset the EPs */
+	    debugOut("Resetting EPs...\n");
+	    char cmd[1] = { 'c' };
+	    (void)write(ctrlPipe, cmd, 1);
+	  }
     }
 }
 
@@ -345,7 +360,7 @@ void jtag2::doSimpleJtagCommand(uchar command)
     // Send command until we get an OK response
     for (;;)
     {
-	if (sendJtagCommand(&command, 1, tryCount, replydummy, dummy)) {
+	if (sendJtagCommand(&command, 1, tryCount, replydummy, dummy, false)) {
 	    check(replydummy != NULL, JTAG_CAUSE);
 	    check(dummy == 1 && replydummy[0] == RSP_OK,
 		  "Unexpected response in doSimpleJtagCommand");

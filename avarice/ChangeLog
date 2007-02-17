@@ -1,3 +1,27 @@
+2007-02-17  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Complete overhaul of the USB communication:
+	- Use a second pipe (ctrlPipe) between main AVaRICE and the
+	  daemon to signal control information.
+	- Move the entire libusb handling from the parent into the
+	  child process, so it only happens a single time.  Have the
+	  parent wait until the child could make a decision, either
+	  failure to find the requested USB device, or success of being
+	  able to talk to it.
+	- Do no longer poll USB when not needed, instead either read a
+	  reply when the master process told the daemon it is expecting
+	  one, or start polling while the target is running.
+	- Add an option for the parent to have the USB daemon clear the
+	  endpoints after seeing successive timeouts while data was
+	  expected.
+	- Examine the header of received data, and if the block length
+	  indicates more data will be folllowing the first read, go
+	  ahead and fetch them immediately.
+	* src/jtag.h: Add ctrlPipe.
+	* src/jtag2io.cc: Use ctrlPipe if present.
+	* src/jtag2run.cc: (Ditto.)
+	* src/jtaggeneric.cc: Initialize ctrlPipe in constructor.
+
 2006-12-22  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: bump version to post-2.6

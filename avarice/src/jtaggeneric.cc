@@ -69,6 +69,7 @@ jtag::jtag(void)
   jtagBox = 0;
   device_name = 0;
   oldtioValid = is_usb = false;
+  ctrlPipe = -1;
 }
 
 jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
