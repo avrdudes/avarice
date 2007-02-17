@@ -1,5 +1,9 @@
 2007-02-17  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump date.
+
+2007-02-17  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2usb.cc: Complete overhaul of the USB communication:
 	- Use a second pipe (ctrlPipe) between main AVaRICE and the
 	  daemon to signal control information.
