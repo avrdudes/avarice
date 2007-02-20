@@ -1,3 +1,9 @@
+2007-02-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	(On behalf of Colin O'Flynn)
+	* src/jtag2bp.cc: Implement software breakpoints.
+	* src/jtag2.h: (Ditto.)
+
 2007-02-17  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump date.

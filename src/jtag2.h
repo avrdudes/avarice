@@ -1,6 +1,7 @@
 /*
  *	avarice - The "avarice" program.
  *	Copyright (C) 2005,2006 Joerg Wunsch
+ *	Copyright (C) 2007, Colin O'Flynn
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -71,8 +72,6 @@
  * a hardware breakpoint ("hbreak" or "thbreak")...
  *
  * XXX This is not done yet.
- *
- * XXX software breakpoints are not handled yet at all.
  */
 
 enum {
@@ -83,13 +82,41 @@ enum {
   MAX_BREAKPOINTS2 = 4,
   // various slot #s
   BREAKPOINT2_FIRST_DATA = 2,
-  BREAKPOINT2_DATA_MASK = 3
+  BREAKPOINT2_DATA_MASK = 3,
+
+  MAX_TOTAL_BREAKPOINTS2 = 255
 };
 
 struct breakpoint2
 {
+    // High-level information on breakpoint
     unsigned int address;
+    unsigned int mask_pointer;
     bpType type;
+    bool enabled;
+
+    // Used to flag end of list
+    bool last;
+
+    // Low-level information on breakpoint
+    bool icestatus; // Status of breakpoint in ICE itself: 'true'
+                    // when is enabled in ACTUAL device
+    bool toremove;  // Delete this guy in ICE
+    bool toadd;     // Add this guy in ICE
+    uchar bpnum;    // ICE's breakpoint number (0x00 for software)
+};
+
+const struct breakpoint2 default_bp =
+{
+    0,				/* address */
+    0,				/* mask_pointer */
+    NONE,			/* type */
+    false,			/* enabled */
+    true,			/* last */
+    false,			/* icestatus */
+    false,			/* toremove */
+    false,			/* toadd */
+    0,				/* bpnum*/
 };
 
 class jtag2: public jtag
@@ -101,8 +128,8 @@ class jtag2: public jtag
     bool haveHiddenBreakpoint;
     bool useDebugWire;
 
-    breakpoint2 bpCode[MAX_BREAKPOINTS2_CODE], bpData[MAX_BREAKPOINTS2_DATA];
-    int numBreakpointsCode, numBreakpointsData;
+    // Total breakpoints including software
+    breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
 
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
     unsigned int flashCachePageAddr;
@@ -122,6 +149,9 @@ class jtag2: public jtag
 	eepromCachePageAddr = (unsigned short)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
 	  softBPcache[i].type = NONE;
+
+	for (int j = 0; j < MAX_TOTAL_BREAKPOINTS2; j++)
+	  bp[j] = default_bp;
     };
     virtual ~jtag2(void);
 
@@ -132,6 +162,7 @@ class jtag2: public jtag
     virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual void updateBreakpoints(void);
+    virtual bool layoutBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
     virtual bool stopAt(unsigned int address);
