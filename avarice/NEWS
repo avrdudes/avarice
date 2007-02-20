@@ -11,7 +11,7 @@ New CPU support added:
 New features added:
 -------------------
 
-. 
+. Software breakpoints are now also supported when using JTAG.
 
 Summary of important bug fixes:
 -------------------------------

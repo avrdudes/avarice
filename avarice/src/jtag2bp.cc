@@ -3,6 +3,7 @@
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
  *	Copyright (C) 2005,2006 Joerg Wunsch
+ *	Copyright (C) 2007, Colin O'Flynn
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -17,7 +18,8 @@
  *	along with this program; if not, write to the Free Software
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
- * This file contains the breakpoint handling for the mkII protocol.
+ * This file contains the breakpoint handling for the mkII
+ * protocol. It has been re-written by Colin O'Flynn.
  *
  * $Id$
  */
@@ -38,26 +40,53 @@
 
 bool jtag2::codeBreakpointAt(unsigned int address)
 {
-  address /= 2;
-  for (int i = 0; i < numBreakpointsCode; i++)
-    if (bpCode[i].address == address)
-      return true;
-  return false;
+    bool returnvalue;
+    int i;
+
+    i = 0;
+    while (!bp[i].last)
+      {
+	  if ((bp[i].address == address) && (bp[i].type == CODE) && bp[i].enabled)
+	      return true;
+
+	  i++;
+      }
+
+    return false;
 }
 
 bool jtag2::codeBreakpointBetween(unsigned int start, unsigned int end)
 {
-  start /= 2; end /= 2;
-  for (int i = 0; i < numBreakpointsCode; i++)
-    if (bpCode[i].address >= start && bpCode[i].address < end)
-      return true;
-  return false;
+    int i;
+    bool returnvalue;
+
+    i = 0;
+    while (!bp[i].last)
+      {
+	  if ((bp[i].address >= start && bp[i].address < end) &&
+	      (bp[i].type == CODE) && bp[i].enabled)
+	      return true;
+
+	  i++;
+      }
+
+    return false;
 }
 
 void jtag2::deleteAllBreakpoints(void)
 {
-    numBreakpointsData = numBreakpointsCode = 0;
+    int i = 0;
+
+    while (!bp[i].last)
+      {
+	  if (bp[i].enabled && bp[i].icestatus)
+	      bp[i].toremove = true;
+
+	  bp[i].enabled = false;
+	  i++;
+      }
 }
+
 
 bool jtag2::stopAt(unsigned int address)
 {
@@ -65,384 +94,541 @@ bool jtag2::stopAt(unsigned int address)
     jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
 }
 
+#ifdef notyet
+bool jtag2::BreakpointRoom(bpType type, unsigned int length)
+{
+    int numdata = 0;
+    int numcode = 0;
+    int bp_i = 0;
+
+    //code
+    if (type == CODE)
+      {
+	  numcode++;
+      }
+
+    //data
+    else if ((bp[bp_i].type == READ_DATA) ||
+	     (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
+	     (bp[bp_i].type == WRITE_DATA) ||
+	     (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
+	     (bp[bp_i].type == ACCESS_DATA) ||
+	     (bp[bp_i].type == (ACCESS_DATA | HAS_MASK)))
+      {
+	  // range BPs use two slots
+	  if (length > 1)
+	    {
+		numdata += 2;
+	    }
+	  else
+	    {
+		numdata++;
+	    }
+      }
+
+    // First let's check debugWire which doesn't let you have data breakpoints
+    if (useDebugWire)
+      {
+	  if (numdata > 0)
+            {
+		debugOut("DebugWire doesn't support data breakpoints.\n");
+		return false;
+            }
+      }
+
+    // Count current breakpoints
+    while (!bp[bp_i].last)
+      {
+        // how many breakpoints are we predicting to be enabled?
+        if (bp[bp_i].toadd || bp[bp_i].enabled)
+            {
+             if ((bp[bp_i].type == READ_DATA) ||
+		 (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
+		 (bp[bp_i].type == WRITE_DATA) ||
+		 (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
+		 (bp[bp_i].type == ACCESS_DATA) ||
+		 (bp[bp_i].type == (ACCESS_DATA | HAS_MASK)) ||
+		 (bp[bp_i].type == DATA_MASK))
+	       {
+		   numdata++;
+	       }
+	     else if (bp[bp_i].type == CODE)
+	       {
+		   numcode++;
+	       }
+            }
+        bp_i++;
+      }
+
+    // Some devices don't support software breakpoints.  Also there
+    // might be an upper limit on software breakpoints, do we care?
+    if ((global_p_device_def->device_flags & DEVFL_NO_SOFTBP) != 0)
+      {
+	  // There are only 3 hardware BPs available, the fourth one
+	  // is reserved by the ICE for single-stepping.
+	  if ((numcode > (MAX_BREAKPOINTS2_CODE - 1)) ||
+	      ((numcode + numdata) > (MAX_BREAKPOINTS2 - 1)))
+	    {
+                return false;
+	    }
+      }
+
+    if (numdata > MAX_BREAKPOINTS2_DATA)
+      {
+	  return false;
+      }
+
+    // Your room is ready
+    return true;
+}
+#endif // notyet
+
 bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 {
-    breakpoint2 *bp;
+    int bp_i;
 
     debugOut("BP ADD type: %d  addr: 0x%x ", type, address);
 
-    // Respect overall breakpoint limit
-    if (numBreakpointsCode + numBreakpointsData == MAX_BREAKPOINTS2)
-	// XXX fit software BPs here
-	return false;
 
-    // There's a spare breakpoint, is there one of the appropriate type
-    // available?
-    if (type == CODE)
-    {
-	if (numBreakpointsCode == MAX_BREAKPOINTS2_CODE)
-	{
-	    debugOut("FAILED\n");
-	    return false;
-	}
-
-	// The JTAG box sees program memory as 16-bit wide locations. GDB
-	// sees bytes. As such, halve the breakpoint address.
-	address /= 2;
-
-	bp = &bpCode[numBreakpointsCode++];
-    }
-    else // data breakpoint
-    {
-	// mask out the GCC offset
-	(void)memorySpace((unsigned long &)address);
-
-	if (numBreakpointsData == MAX_BREAKPOINTS2_DATA)
-	{
-	    debugOut("FAILED\n");
-	    return false;
-	}
-
-	if (useDebugWire)
-	{
-	    debugOut("Data breakpoints not supported in debugWire\n");
-	    return false;
-	}
-
-	// Range breakpoints allocate two slots (i.e. all available
-	// data BP slots).
-	if (length > 1 &&
-	    (numBreakpointsData + 2 > MAX_BREAKPOINTS2_DATA ||
-	     numBreakpointsCode + numBreakpointsData + 2 > MAX_BREAKPOINTS2))
-	{
-	    debugOut("FAILED (range BP needs 2 slots)\n");
-	    return false;
-	}
-	// Range breakpoint needs to be aligned, and the length must
-	// be representable as a bitmask.
-	if (length > 1)
-	{
-	    int bitno = ffs((int)length);
-	    unsigned int mask = 1 << (bitno - 1);
-	    if (mask != length)
+    // Perhaps we have already set this breakpoint, and it is just
+    // marked as disabled In that case we don't need to make a new
+    // one, just flag this one as enabled again
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  if ((bp[bp_i].address == address) && (bp[bp_i].type == type))
 	    {
-		debugOut("FAILED: length not power of 2 in range BP\n");
+		bp[bp_i].enabled = true;
+		debugOut("ENABLED\n");
+		break;
+            }
+	  bp_i++;
+      }
+
+    // Was what we just did not successful, if so...
+    if (bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type == type))
+      {
+
+	  // Uhh... we are out of space. Try to find a disabled one and just
+	  // write over it.
+	  if ((bp_i + 1) == MAX_TOTAL_BREAKPOINTS2)
+            {
+		bp_i = 0;
+		// We can't remove enabled breakpoints, or ones that
+		// have JUST been disabled. The just disabled ones
+		// because they have to sync to the ICE
+		while (bp[bp_i].enabled || bp[bp_i].toremove)
+		  {
+		      bp_i++;
+		  }
+            }
+
+	  // Sorry.. out of room :(
+	  if ((bp_i + 1) == MAX_TOTAL_BREAKPOINTS2)
+            {
+		debugOut("FAILED\n");
 		return false;
-	    }
-	    mask--;
-	    if ((address & mask) != 0)
-	    {
-		debugOut("FAILED: address in range BP is not base-aligned\n");
-		return false;
-	    }
-	    mask = ~mask;
+            }
 
-	    bp = &bpData[numBreakpointsData++];
-	    bp->address = address;
-	    bp->type = (bpType)(type | HAS_MASK);
-	    bp = &bpData[numBreakpointsData++];
-	    bp->address = mask;
-	    bp->type = DATA_MASK;
+        if (bp[bp_i].last)
+	  {
+	      //See if we need to set the new endpoint
+	      bp[bp_i + 1].last = true;
+	      bp[bp_i + 1].enabled = false;
+	      bp[bp_i + 1].address = 0;
+	      bp[bp_i + 1].type = NONE;
+	  }
 
-	    debugOut("range BP ADDED: 0x%x/0x%x\n", address, mask);
-	    return true;
-	}
+        // bp_i now has the new breakpoint we are going to use.
+        bp[bp_i].last = false;
+        bp[bp_i].enabled = true;
+        bp[bp_i].address = address;
+        bp[bp_i].type = type;
 
-	bp = &bpData[numBreakpointsData++];
-    }
+        // Is it a range breakpoint?
+        // Range breakpoint needs to be aligned, and the length must
+        // be representable as a bitmask.
+        if ((length > 1) && (type != CODE))
+	  {
+	      int bitno = ffs((int)length);
+	      unsigned int mask = 1 << (bitno - 1);
+	      if (mask != length)
+                {
+		    debugOut("FAILED: length not power of 2 in range BP\n");
+		    bp[bp_i].last = true;
+		    bp[bp_i].enabled = false;
+		    return false;
+                }
+	      mask--;
+	      if ((address & mask) != 0)
+                {
+		    debugOut("FAILED: address in range BP is not base-aligned\n");
+		    bp[bp_i].last = true;
+		    bp[bp_i].enabled = false;
+		    return false;
+                }
+	      mask = ~mask;
 
-    bp->address = address;
-    bp->type = type;
+	      bp[bp_i].type = (bpType)(type | HAS_MASK);
 
-    debugOut(" ADDED\n");
+	      // add the breakpoint as a data mask.. only thing is we
+	      // need to find it afterwards
+	      if (!addBreakpoint(mask, DATA_MASK, 1))
+                {
+		    debugOut("FAILED\n");
+		    bp[bp_i].last = true;
+		    bp[bp_i].enabled = false;
+		    return false;
+                }
+
+	      unsigned int j;
+	      for(j = 0; !bp[j].last; j++)
+                {
+		    if ((bp[j].type == DATA_MASK) && (bp[bp_i].address = mask))
+			break;
+                }
+
+	      bp[bp_i].mask_pointer = j;
+
+	      debugOut("range BP ADDED: 0x%x/0x%x\n", address, mask);
+	  }
+
+      }
+
+    // Is this breakpoint new?
+    if (!bp[bp_i].icestatus)
+      {
+	  // Yup - flag it as something to download
+	  bp[bp_i].toadd = true;
+	  bp[bp_i].toremove = false;
+      }
+    else
+      {
+	  bp[bp_i].toadd = false;
+	  bp[bp_i].toremove = false;
+      }
+
+    if (!layoutBreakpoints())
+      {
+	  debugOut("Not enough room in ICE for breakpoint. FAILED.\n");
+	  bp[bp_i].enabled = false;
+	  bp[bp_i].toadd = false;
+
+	  if ((bp[bp_i].type & HAS_MASK) == HAS_MASK)
+            {
+		bp[bp[bp_i].mask_pointer].enabled = false;
+		bp[bp[bp_i].mask_pointer].toadd = false;
+            }
+      }
+
+    return true;
+}
+
+bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
+{
+    int bp_i;
+
+    debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
+
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  if ((bp[bp_i].address == address) && (bp[bp_i].type == type))
+            {
+		bp[bp_i].enabled = false;
+		debugOut("DISABLED\n");
+		break;
+            }
+	  bp_i++;
+      }
+
+    // If it somehow failed, got to tell..
+    if (!bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type != type))
+      {
+	  debugOut("FAILED\n");
+	  return false;
+      }
+
+    // Is this breakpoint actually enabled?
+    if (bp[bp_i].icestatus)
+      {
+	  // Yup - flag it as something to delete
+	  bp[bp_i].toadd = false;
+	  bp[bp_i].toremove = true;
+      }
+    else
+      {
+	  bp[bp_i].toadd = false;
+	  bp[bp_i].toremove = false;
+      }
+
     return true;
 }
 
 
-bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
+/*
+ * This routine is where all the logic of what breakpoints go into the
+ * ICE and what don't happens. When called it assumes all the "toadd"
+ * breakpoints don't have valid "bpnum" attached to them. It then
+ * attempts to fit all the needed breakpoints into the hardware
+ * breakpoints first. If that won't fly it then adds software
+ * breakpoints as needed... or just fails.
+ *
+ *
+ * TODO: Some logic to decide which breakpoints change a lot and
+ * should go in hardware, vs. which breakpoints are more fixed and
+ * should just be done in code would be handy
+ */
+bool jtag2::layoutBreakpoints(void)
 {
-    breakpoint2 *bp;
-    int *numBp;
+    // remaining_bps is an array showing which breakpoints are still
+    // available, starting at 0x00 Note 0x00 is software breakpoint
+    // and will always be available in theory so just ignore the first
+    // array element, it's meaningless...  FIXME: Slot 4 is set to
+    // 'false', doesn't seem to work?
+    bool remaining_bps[MAX_BREAKPOINTS2 + 2] = {false, true, true, true, false, false};
+    int bp_i;
+    uchar bpnum;
+    bool softwarebps = true;
+    bool hadroom = true;
 
-    debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
+    if (global_p_device_def->device_flags == DEVFL_NO_SOFTBP)
+      {
+	  softwarebps = false;
+      }
 
-    if (type == CODE)
-    {
-	bp = bpCode;
-	numBp = &numBreakpointsCode;
-	// The JTAG box sees program memory as 16-bit wide locations. GDB
-	// sees bytes. As such, halve the breakpoint address.
-	address /= 2;
-    }
-    else // data
-    {
-	// mask out the GCC offset
-	(void)memorySpace((unsigned long &)address);
+    // Turn off everything but software breakpoints for DebugWire
+    if (useDebugWire)
+      {
+	  int k;
+	  while (k < (MAX_BREAKPOINTS2 + 1))
+            {
+		remaining_bps[k] = false;
+            }
+      }
 
-	bp = bpData;
-	numBp = &numBreakpointsData;
-    }
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  // check we have an enabled "stable" breakpoint that's not
+	  // about to change
+	  if (bp[bp_i].enabled && !bp[bp_i].toremove && bp[bp_i].icestatus)
+            {
+		remaining_bps[bp[bp_i].bpnum] = false;
+            }
 
-    // Find and squash the removed breakpoint
-    for (int i = 0; i < *numBp; i++)
-    {
-	if (bp[i].type == (type | HAS_MASK) && bp[i].address == address)
-	{
-	    debugOut("range BP %d REMOVED\n", i);
-	    (*numBp) -= 2;
-            /*
-             * There is never something to move here.
-             */
-            /*
-            if ((*numBp - i) >= 1)
-                memmove(&bp[i], &bp[i + 2], (*numBp - i) * sizeof(breakpoint2));
-            */
-	    return true;
-	}
-	if (bp[i].type == type && bp[i].address == address)
-	{
-	    (*numBp)--;
-	    debugOut("REMOVED %d, remaining: %d\n", i, *numBp);
-            if ((*numBp - i) >= 1)
-                memmove(&bp[i], &bp[i + 1], (*numBp - i) * sizeof(breakpoint2));
-	    return true;
-	}
-    }
-    debugOut("FAILED\n");
-    return false;
-}
+	  bp_i++;
+      }
 
-// This has to be completely rewritten to generally allow for soft
-// BPs.  By now, just throw in a special implementation for debugWire.
-// That way, there's at least *some* BP handling for dW, even though
-// we still artificially limit it to four BPs.
-void jtag2::updateBreakpintsDW(void)
-{
-    debugOut("updateBreakpointsDW\n");
+    // Do data watchpoints first
+    bp_i = 0;
 
-    // First, catch any breakpoints that do no longer persist, and
-    // delete them from the ICE.  Those that are still the same
-    // are marked in the scoreboard so we don't re-insert them.
+    while (!bp[bp_i].last)
+      {
+        // Find the next data breakpoint that needs somewhere to live
+	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
+	      ((bp[bp_i].type == READ_DATA) ||
+	       (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
+	       (bp[bp_i].type == WRITE_DATA) ||
+	       (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
+	       (bp[bp_i].type == ACCESS_DATA) ||
+	       (bp[bp_i].type == (ACCESS_DATA | HAS_MASK))))
+            {
+		if ((bp[bp_i].type & HAS_MASK) == HAS_MASK)
+		  {
+		      // Check if we have both slots available
+		      if (!remaining_bps[BREAKPOINT2_DATA_MASK] ||
+			  !remaining_bps[BREAKPOINT2_FIRST_DATA])
+			{
+			    debugOut("Not enough room to store range breakpoint\n");
+			    bp[bp[bp_i].mask_pointer].enabled = false;
+			    bp[bp[bp_i].mask_pointer].toadd = false;
+			    bp[bp_i].enabled = false;
+			    bp[bp_i].toadd = false;
+			    bp_i++;
+			    hadroom = false;
+			    continue; // Skip this breakpoint
+			}
+		      else
+			{
+			    remaining_bps[BREAKPOINT2_DATA_MASK] = false;
+			    bp[bp[bp_i].mask_pointer].bpnum = BREAKPOINT2_DATA_MASK;
+			}
+		  }
 
-    bool scoreboard[MAX_BREAKPOINTS2] = { false, false, false, false };
-    breakpoint2 newcache[MAX_BREAKPOINTS2];
-    int newcacheidx, i, slot;
+		// Find next available slot
+		bpnum = BREAKPOINT2_FIRST_DATA;
+		while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2))
+		  {
+		      bpnum++;
+		  }
 
-    for (slot = newcacheidx = 0; slot < numBreakpointsCode; slot++)
-    {
-	for (i = 0; i < MAX_BREAKPOINTS2; i++)
-	{
-	    if (softBPcache[i].type == CODE &&
-		softBPcache[i].address == bpCode[slot].address)
-	    {
-		// This one is still active.
-		scoreboard[slot] = true;
-		newcache[newcacheidx++] = bpCode[slot];
+		if (bpnum > MAX_BREAKPOINTS2)
+		  {
+		      debugOut("No more room for data breakpoints.\n");
+		      hadroom = false;
+		      break;
+		  }
 
-		// Delete it from the old cache.
-		softBPcache[i].type = NONE;
-
-		break;
+		bp[bp_i].bpnum = bpnum;
+		remaining_bps[bpnum] = false;
 	    }
-	}
-    }
 
-    // At this point, the old cache consists solely of those BPs that
-    // are to be deleted.
-    for (i = 0; i < MAX_BREAKPOINTS2; i++)
-    {
-	if (softBPcache[i].type != CODE)
-	    continue;
+	  bp_i++;
+      }
 
-	uchar cmd[6] = { CMND_CLR_BREAK };
-	cmd[1] = 0;
-	u32_to_b4(cmd + 2, softBPcache[i].address);
+    // Do CODE breakpoints now
 
-	uchar *response;
-	int responseSize;
-	if(!doJtagCommand(cmd, 6, response, responseSize))
-	    check(false, "Failed to clear breakpoint");
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  //Find the next spot to live in.
+	  bpnum = 0x00;
+	  while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2))
+            {
+		debugOut("Slot %d full\n", bpnum);
+		bpnum++;
+            }
 
-	delete [] response;
-    }
+	  if (bpnum > MAX_BREAKPOINTS2)
+            {
+		if (softwarebps)
+		  {
+		      bpnum = 0x00;
+		  }
+		else
+		  {
+		      bpnum = 0xFF; // flag for NO MORE BREAKPOINTS
+		  }
+            }
 
-    // Now go ahead, and insert all new BPs.
-    for (slot = 0; slot < numBreakpointsCode; slot++)
-    {
-	if (scoreboard[slot])
-	    // It's still there in the ICE.
-	    continue;
+	  // Find the next breakpoint that needs somewhere to live
+	  if (bp[bp_i].enabled && bp[bp_i].toadd && (bp[bp_i].type == CODE))
+            {
+		if (bpnum == 0xFF)
+		  {
+		      debugOut("No more room for code breakpoints.\n");
+		      hadroom = false;
+		      break;
+		  }
+		bp[bp_i].bpnum = bpnum;
+		remaining_bps[bpnum] = false;
+            }
 
-	uchar cmd[8] = { CMND_SET_BREAK };
-	cmd[1] = 0x01;
-	cmd[2] = 0;
-	u32_to_b4(cmd + 3, bpCode[slot].address);
-	cmd[7] = 0x03;
+	  bp_i++;
+      }
 
-	uchar *response;
-	int responseSize;
-	check(doJtagCommand(cmd, 8, response, responseSize),
-	      "Failed to set breakpoint");
-	delete [] response;
-
-	newcache[newcacheidx++] = bpCode[slot];
-    }
-
-    // Finally, update the cache.
-    while (newcacheidx < MAX_BREAKPOINTS2)
-	newcache[newcacheidx++].type = NONE;
-
-    for (i = 0; i < MAX_BREAKPOINTS2; i++)
-	softBPcache[i] = newcache[i];
+    return hadroom;
 }
-
 
 void jtag2::updateBreakpoints(void)
 {
-    int slot;
-    int bpD = numBreakpointsData;
-    int bpC = numBreakpointsCode;
+    int bp_i;
 
-    if (useDebugWire)
-    {
-	updateBreakpintsDW();
-	return;
-    }
+    layoutBreakpoints();
 
-    debugOut("updateBreakpoints\n");
-    haveHiddenBreakpoint = false;
+    // Delete all the breakpoints that were flagged first
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  uchar cmd[6] = { CMND_CLR_BREAK };
 
-    for (slot = MAX_BREAKPOINTS2 - 1; slot >= 0; slot--)
-    {
-        if (bpD > 0)
-        {
-            // There are data breakpoints left, handle them.
-            --bpD;
-            breakpoint2 *bp = bpData + bpD;
-            unsigned char bpMode, bp_Type;
-            bool has_mask = (bpData[bpD].type & HAS_MASK) != 0;
-
-            switch (bpData[bpD].type)
+	  if (bp[bp_i].toremove)
             {
-            case READ_DATA:
-            case READ_DATA | HAS_MASK:
-                bpMode = 0x00;
-                bp_Type = 0x02;
-                break;
-            case WRITE_DATA:
-            case WRITE_DATA | HAS_MASK:
-                bpMode = 0x01;
-                bp_Type = 0x02;
-                break;
-            case ACCESS_DATA:
-            case ACCESS_DATA | HAS_MASK:
-                bpMode = 0x02;
-                bp_Type = 0x02;
-                break;
-            case DATA_MASK:
-                check(slot == BREAKPOINT2_DATA_MASK,
-                      "Invalid BP slot for data mask");
-                bpMode = 0x00;
-                bp_Type = 0x03;
-                break;
-            case NONE:
-            default:
-                check(false, "Invalid bp mode (for data bp)");
-                bpMode = 0;		// supress warning
-                bp_Type = 0;
-                break;
+		debugOut("Breakpoint deleted in ICE. slot: %d  type: %d  addr: 0x%x\n",
+			 bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
+
+		cmd[1] = bp[bp_i].bpnum;
+
+		// Software breakpoints need the address!
+		if (bp[bp_i].bpnum == 0x00)
+		    u32_to_b4(cmd + 2, (bp[bp_i].address / 2));
+		else
+		    u32_to_b4(cmd + 2, 0);
+
+		uchar *response;
+		int responseSize;
+		if(!doJtagCommand(cmd, 6, response, responseSize))
+		    check(false, "Failed to clear breakpoint");
+
+		delete [] response;
+
+		// rip breakpoint
+		bp[bp_i].icestatus = false;
+		bp[bp_i].toremove = false;
             }
 
-            uchar cmd[8] = { CMND_SET_BREAK };
-            cmd[1] = bp_Type;
-            cmd[2] = slot;
-            u32_to_b4(cmd + 3, bpData[bpD].address);
-            cmd[7] = bpMode;
+	  bp_i++;
+      }
 
-            uchar *response;
-            int responseSize;
-            check(doJtagCommand(cmd, 8, response, responseSize),
-                  "Failed to set breakpoint");
-            delete [] response;
+    // Add all the new breakpoints
+    bp_i = 0;
+    while (!bp[bp_i].last)
+      {
+	  uchar cmd[8] = { CMND_SET_BREAK };
 
-            continue;
-        }
-
-        if (bpC > 0)
-        {
-            // Handle code breakpoints
-            --bpC;
-            breakpoint2 *bp = bpCode + bpC;
-            unsigned char bpMode, bp_Type;
-
-            switch (bp->type)
+	  if (bp[bp_i].toadd && bp[bp_i].enabled)
             {
-            case CODE:
-                bpMode = 0x03;
-                bp_Type = 0x01;
-                break;
-            case NONE:
-            default:
-                check(false, "Invalid bp mode (for code bp)");
-                bpMode = 0;		// supress warning
-                bp_Type = 0;
-                break;
+		debugOut("Breakpoint added in ICE. slot: %d  type: %d  addr: 0x%x\n",
+			 bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
+
+		cmd[1] = bp[bp_i].type;
+		cmd[2] = bp[bp_i].bpnum;
+
+		if (bp[bp_i].type == CODE)
+		  {
+		      // The JTAG box sees program memory as 16-bit
+		      // wide locations. GDB sees bytes. As such,
+		      // halve the breakpoint address.
+		      u32_to_b4(cmd + 3, (bp[bp_i].address / 2));
+		  }
+		else
+		  {
+		      u32_to_b4(cmd + 3, bp[bp_i].address);
+		  }
+
+		switch (bp[bp_i].type)
+		  {
+		  case READ_DATA:
+		  case READ_DATA | HAS_MASK:
+		      cmd[7] = 0x00;
+		      cmd[1] = 0x02;
+		      break;
+		  case WRITE_DATA:
+		  case WRITE_DATA | HAS_MASK:
+		      cmd[7] = 0x01;
+		      cmd[1] = 0x02;
+		      break;
+		  case ACCESS_DATA:
+		  case ACCESS_DATA | HAS_MASK:
+		      cmd[7] = 0x02;
+		      cmd[1] = 0x02;
+		      break;
+		  case DATA_MASK:
+		      cmd[7] = 0x00;
+		      cmd[1] = 0x03;
+		      break;
+		  case CODE:
+		      cmd[1] = bp[bp_i].type;
+		      cmd[7] = 0x03;
+		      break;
+		  default:
+		      check(false, "Invalid bp mode (for data bp)");
+		      break;
+		  }
+
+		uchar *response;
+		int responseSize;
+		check(doJtagCommand(cmd, 8, response, responseSize),
+		      "Failed to set breakpoint");
+		delete [] response;
+
+		// It's a beautiful baby breakpoint
+		bp[bp_i].icestatus = true;
+		bp[bp_i].toadd = false;
             }
 
-            if (slot == 0)
-            {
-                haveHiddenBreakpoint = true;
-
-                doSimpleJtagCommand(CMND_CLEAR_EVENTS);
-
-                unsigned int off = bp->address / 8;
-                uchar *command = new uchar [10 + off + 1];
-                command[0] = CMND_WRITE_MEMORY;
-                command[1] = MTYPE_EVENT_COMPRESSED;
-                u32_to_b4(command + 2, off + 1);
-                u32_to_b4(command + 6, 0);
-                memset(command + 10, 0, off);
-                command[10 + off] = 1 << (bp->address % 8);
-
-                uchar *response;
-                int responseSize;
-
-                check(doJtagCommand(command, 10 + off + 1,
-                                    response, responseSize),
-                      "Failed to write target memory space");
-                delete [] command;
-                delete [] response;
-            }
-            else
-            {
-                uchar cmd[8] = { CMND_SET_BREAK };
-                cmd[1] = bp_Type;
-                cmd[2] = slot;
-                u32_to_b4(cmd + 3, bp->address);
-                cmd[7] = bpMode;
-
-                uchar *response;
-                int responseSize;
-                check(doJtagCommand(cmd, 8, response, responseSize),
-                      "Failed to set breakpoint");
-                delete [] response;
-            }
-            continue;
-        }
-
-        // If there is anything left, clear out the BP.
-        if (slot > 0)
-        {
-            uchar cmd[6] = { CMND_CLR_BREAK };
-            cmd[1] = slot;
-            u32_to_b4(cmd + 2, /* address? */ 0);
-
-            uchar *response;
-            int responseSize;
-            if(!doJtagCommand(cmd, 6, response, responseSize))
-                check(false, "Failed to clear breakpoint");
-
-            delete [] response;
-        }
-    }
+	  bp_i++;
+      }
 }
+
