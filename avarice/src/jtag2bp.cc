@@ -206,7 +206,7 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
       }
 
     // Was what we just did not successful, if so...
-    if (bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type == type))
+    if (!bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type == type))
       {
 
 	  // Uhh... we are out of space. Try to find a disabled one and just
