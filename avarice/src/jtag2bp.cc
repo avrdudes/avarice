@@ -343,7 +343,7 @@ bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
       }
 
     // If it somehow failed, got to tell..
-    if (!bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type != type))
+    if (bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type != type))
       {
 	  debugOut("FAILED\n");
 	  return false;
