@@ -1,3 +1,8 @@
+2007-02-22  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Bump date, now that we've got a first previous of
+	Colin's soft BP implementation.
+
 2007-02-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	(On behalf of Colin O'Flynn)
