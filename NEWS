@@ -6,7 +6,7 @@ Summary of changes since AVaRICE 2.6
 New CPU support added:
 ----------------------
 
-. 
+. AT90PWM2B/AT90PWM3B (same as AT90PWM2/3 but different signature)
 
 New features added:
 -------------------
