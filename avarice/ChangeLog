@@ -1,3 +1,10 @@
+2007-02-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc: Add entries for AT90PWM2/3B.
+	* tools/devdescr.xsl: Declare the "count" parameter in the format-hex
+	template.  Recent versions of xsltproc appear to be more picky about
+	that.
+
 2007-02-22  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump date, now that we've got a first previous of
