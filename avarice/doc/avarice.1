@@ -22,7 +22,7 @@ the original English.
 $Id$
 
 ..
-.TH avarice 1 "August 5, 2006"
+.TH avarice 1 "March 21, 2007"
 .LO 1
 .SH NAME
 avarice \- Provides an interface from avr-gdb to Atmel's JTAGICE box.
@@ -191,7 +191,8 @@ Note: EXPERIMENTAL. Can not currently handle
 devices fused for compatibility.
 .TP
 .BR \-j ,\  \-\-jtag \ <devname>
-Port attached to JTAG box (default: /dev/avrjtag).
+Port attached to JTAG box (default: /dev/avrjtag). If the JTAG_DEV environmental
+variable is set, avarice will use that as the default instead.
 .br
 If \fBavarice\fR has been configured with libusb support, the JTAG ICE
 mkII can be connected through USB.

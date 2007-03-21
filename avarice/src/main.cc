@@ -271,6 +271,13 @@ int main(int argc, char **argv)
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
 
+    /* If the JTAG_DEV environment variable is set, allow that to override the
+       default jtagDevicename value, but the -j option trumps the others. */
+
+    jtagDeviceName = getenv ("JTAG_DEV");
+    if (jtagDeviceName == NULL)
+        jtagDeviceName = "/dev/avrjtag";
+
     device_name = 0;
 
     opterr = 0;                 /* disable default error message */
