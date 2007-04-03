@@ -1,3 +1,8 @@
+2007-04-03  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Dave N6NZ
+	* src/devdescr.cc: add entries for ATmega325/3250/645/6450.
+
 2007-03-21 Colin O'Flynn <coflynn@newae.com>
 
 	* src/main.cc: Added patch #1121113 which adds a JTAG_DEV env variable
