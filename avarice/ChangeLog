@@ -1,6 +1,7 @@
 2007-03-21 Colin O'Flynn <coflynn@newae.com>
-    * src/main.cc: Added patch #1121113 which adds a JTAG_DEV env variable
-    * doc/avarice.1: Added JTAG_DEV to docs
+
+	* src/main.cc: Added patch #1121113 which adds a JTAG_DEV env variable
+	* doc/avarice.1: Added JTAG_DEV to docs
 
 2007-02-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
