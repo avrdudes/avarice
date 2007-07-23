@@ -1,3 +1,9 @@
+2007-07-23  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* INSTALL-FROM-CVS: Bump required version numbers for automake to
+	1.9, and autoconf to 2.59 as this is the only thing we are testing
+	these days.
+
 2007-04-03  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Dave N6NZ

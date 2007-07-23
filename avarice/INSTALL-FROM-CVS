@@ -1,7 +1,7 @@
 To build avarice from the CVS distribution, you need
 
-  automake >= 1.7
-  autoconf >= 2.57
+  automake >= 1.9
+  autoconf >= 2.59
 
 If needed, a wrapper around Bootstrap can be used to force
 using a particular version of these tools (when multiple
@@ -9,8 +9,8 @@ versions are installed), like:
 
   #!/bin/sh
   set -x
-  : ${AC_VER="2.57"}
-  : ${AM_VER="1.7"}
+  : ${AC_VER="2.59"}
+  : ${AM_VER="1.9"}
   AUTOHEADER="autoheader-${AC_VER}"
   AUTOCONF="autoconf-${AC_VER}"
   ACLOCAL="aclocal-${AM_VER}"
