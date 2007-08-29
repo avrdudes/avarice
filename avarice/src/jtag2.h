@@ -1,6 +1,6 @@
 /*
  *	avarice - The "avarice" program.
- *	Copyright (C) 2005,2006 Joerg Wunsch
+ *	Copyright (C) 2005,2006,2007 Joerg Wunsch
  *	Copyright (C) 2007, Colin O'Flynn
  *
  *	This program is free software; you can redistribute it and/or modify
@@ -138,6 +138,8 @@ class jtag2: public jtag
 
     breakpoint2 softBPcache[MAX_BREAKPOINTS2];
 
+    bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
+
   public:
     jtag2(const char *dev, char *name, bool useDW = false, bool is_dragon = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
@@ -166,6 +168,7 @@ class jtag2: public jtag
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
     virtual bool stopAt(unsigned int address);
+    virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);
     virtual void disableProgramming(void);

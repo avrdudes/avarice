@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005, 2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -96,6 +96,7 @@ class jtag1: public jtag
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
     virtual bool stopAt(unsigned int address);
+    virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);
     virtual void disableProgramming(void);

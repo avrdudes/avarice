@@ -1,5 +1,16 @@
 2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: Implement user-configurable ICE event handling for
+	the JTAG ICE mkII.
+	* src/jtag1.h: (Ditto.)
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2run.cc: (Ditto.)
+	* src/jtagrun.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+	* doc/avarice.1: Document the new option.
+
+2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtaggeneric.cc: properly initialize private class members
 	of jtag objects in all constructors, not just the default one
 	(which we actually don't use).
