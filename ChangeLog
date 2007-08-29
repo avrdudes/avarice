@@ -1,5 +1,9 @@
 2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version date.
+
+2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h: Implement user-configurable ICE event handling for
 	the JTAG ICE mkII.
 	* src/jtag1.h: (Ditto.)
