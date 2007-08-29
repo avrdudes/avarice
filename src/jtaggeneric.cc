@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005, 2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -76,8 +76,10 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
 {
     struct termios newtio;
 
+    jtagBox = 0;
+    oldtioValid = is_usb = false;
+    ctrlPipe = -1;
     device_name = name;
-    is_usb = false;
     emu_type = type;
 #ifdef HAVE_LIBUSB
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
