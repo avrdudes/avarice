@@ -2,7 +2,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *      Copyright (C) 2002 Intel Corporation
- *	Copyright (C) 2005 Joerg Wunsch
+ *	Copyright (C) 2005, 2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -101,6 +101,11 @@ bool jtag1::resumeProgram(void)
 bool jtag1::jtagSingleStep(bool useHLL)
 {
     return doSimpleJtagCommand('1', 1);
+}
+
+void jtag1::parseEvents(const char *)
+{
+    // current no event name parsing in mkI
 }
 
 bool jtag1::jtagContinue(void)

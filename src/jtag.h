@@ -435,6 +435,8 @@ enum
     EVT_TARGET_POWER_ON			= 0xE4,
     EVT_TARGET_SLEEP			= 0xE8,
     EVT_TARGET_WAKEUP			= 0xE9,
+    // trailer
+    EVT_MAX                             = 0xFF,
 
     // memory types for CMND_{READ,WRITE}_MEMORY
     MTYPE_IO_SHADOW	= 0x30,	// cached IO registers?
@@ -709,6 +711,9 @@ class jtag
   virtual bool codeBreakpointBetween(unsigned int start, unsigned int end) = 0;
 
   virtual bool stopAt(unsigned int address) = 0;
+
+  /** Parse a list of event names to *not* cause a break. */
+  virtual void parseEvents(const char *) = 0;
 
   // Writing to program memory
   // -------------------------

@@ -3,7 +3,7 @@
  *	avarice - The "avarice" program.
  *	Copyright (C) 2001 Scott Finneran
  *	Copyright (C) 2002, 2003, 2004 Intel Corporation
- *	Copyright (C) 2005,2006 Joerg Wunsch
+ *	Copyright (C) 2005,2006,2007 Joerg Wunsch
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License Version 2
@@ -158,6 +158,10 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -e, --erase                 Erase target.\n");
     fprintf(stderr,
+            "  -E, --event <eventlist>     List of events that do not interrupt.\n"
+            "                                JTAG ICE mkII and AVR Dragon only.\n"
+            "                                Default is \"none,run,target_power_on,target_wakeup\"\n");
+    fprintf(stderr,
 	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
             "                                --verify options. If --file is passed and\n"
             "                                neither --program or --verify are given then\n"
@@ -215,6 +219,7 @@ static struct option long_opts[] = {
     { "detach",              0,       0,     'D' },
     { "debug",               0,       0,     'd' },
     { "erase",               0,       0,     'e' },
+    { "event",               1,       0,     'E' },
     { "file",                1,       0,     'f' },
     { "dragon",              0,       0,     'g' },
     { "help",                0,       0,     'h' },
@@ -242,6 +247,7 @@ int main(int argc, char **argv)
     char *inFileName = 0;
     char *jtagDeviceName = NULL;
     char *device_name = 0;
+    char *eventlist = "none,run,target_power_on,target_wakeup";
     unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
     int  hostPortNumber;
@@ -284,7 +290,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:Ddef:ghIj:L:lP:prVvwW:",
+        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:L:lP:prVvwW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -328,6 +334,9 @@ int main(int argc, char **argv)
                 break;
             case 'e':
                 erase = true;
+                break;
+            case 'E':
+                eventlist = optarg;
                 break;
             case 'f':
                 inFileName = optarg;
@@ -476,6 +485,9 @@ int main(int argc, char **argv)
 	theJtagICE->dchain.units_after = (unsigned char) units_after;
 	theJtagICE->dchain.bits_before = (unsigned char) bits_before;
 	theJtagICE->dchain.bits_after = (unsigned char) bits_after;
+
+        // Tell which events to ignore.
+        theJtagICE->parseEvents(eventlist);
 
 	// Init JTAG box.
 	theJtagICE->initJtagBox();

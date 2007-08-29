@@ -2,7 +2,7 @@
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
 Copyright (C) 2003, 2004 Theodore A. Roth
-Copyright (C) 2005, 2006 Joerg Wunsch
+Copyright (C) 2005, 2006, 2007 Joerg Wunsch
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -175,6 +175,11 @@ Enable printing of debug information.
 .TP
 .BR \-e ,\  \-\-erase
 Erase target.
+.TP
+.BR \-E ,\  \-\-event\ <eventlist>
+List of events that do not interrupt.
+JTAG ICE mkII and AVR Dragon only.
+Default is "none,run,target_power_on,wakeup"
 .TP
 .BR \-f ,\  \-\-file \ <filename>
 Specify a file for use with the --program and --verify options. If --file is
