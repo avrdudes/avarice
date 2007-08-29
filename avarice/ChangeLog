@@ -1,3 +1,9 @@
+2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtaggeneric.cc: properly initialize private class members
+	of jtag objects in all constructors, not just the default one
+	(which we actually don't use).
+
 2007-07-23  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* INSTALL-FROM-CVS: Bump required version numbers for automake to
