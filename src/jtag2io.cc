@@ -141,10 +141,12 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 		break;
 	} else {
 	    rv = timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
-	    debugOut("recv: 0x%02x\n", c);
-	    if (rv == 0)
+	    if (rv == 0) {
 		/* timeout */
+		debugOut("recv: timeout\n");
 		break;
+	    }
+	    debugOut("recv: 0x%02x\n", c);
 	}
 	checksum ^= c;
 

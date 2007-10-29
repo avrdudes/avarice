@@ -75,14 +75,21 @@ bool jtag2::setProgramCounter(unsigned long pc)
 
 bool jtag2::resetProgram(void)
 {
-    uchar cmd[2] = { CMND_RESET, 0x01 };
-    uchar *resp;
-    int respSize;
+    if (useDebugWire) {
+	/* The JTAG ICE mkII and Dragon do not respond correctly to
+	 * the CMND_RESET command while in debugWire mode. */
+	return interruptProgram()
+	    && setProgramCounter(0);
+    } else {
+	uchar cmd[2] = { CMND_RESET, 0x01 };
+	uchar *resp;
+	int respSize;
 
-    bool rv = doJtagCommand(cmd, 2, resp, respSize);
-    delete [] resp;
+	bool rv = doJtagCommand(cmd, 2, resp, respSize);
+	delete [] resp;
 
-    return rv;
+	return rv;
+    }
 }
 
 bool jtag2::interruptProgram(void)
