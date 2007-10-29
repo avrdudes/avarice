@@ -1,6 +1,6 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.6
+Summary of changes in AVaRICE 2.7
 =================================
 
 New CPU support added:
@@ -19,6 +19,9 @@ Summary of important bug fixes:
 
 . Complete overhaul of the USB communication, making it much more
   robust, and less resource-consuming.
+
+. DebugWire bug fix submittted by Shaun Jackman.
+
 
 =====================================================================
 Summary of changes in AVaRICE 2.6
