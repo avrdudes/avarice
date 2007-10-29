@@ -401,7 +401,7 @@ bool jtag2::layoutBreakpoints(void)
     if (useDebugWire)
       {
 	  int k;
-	  while (k < (MAX_BREAKPOINTS2 + 1))
+	  for (k = 1; k < MAX_BREAKPOINTS2 + 1; k++)
             {
 		remaining_bps[k] = false;
             }

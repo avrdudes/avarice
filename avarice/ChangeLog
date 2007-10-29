@@ -1,3 +1,13 @@
+2007-07-08  Shaun Jackman  <sjackman@gmail.com>
+
+	* src/jtag2bp.cc (layoutBreakpoints) <useDebugWire>: Bug fix.
+	GDB continue command would hang when using debugWire.
+	* src/jtag2io.cc (recvFrame): Correctly report a timeout.
+	* src/jtag2run.cc (resetProgram): The JTAG ICE mkII and Dragon
+	do not respond correctly to the CMND_RESET command while in
+	debugWire mode. Send CMND_FORCED_STOP and CMND_WRITE_PC(0)
+	instead.
+
 2007-08-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version date.
