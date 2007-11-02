@@ -111,6 +111,82 @@ bool jtag2::resumeProgram(void)
     return true;
 }
 
+bool jtag2::eventLoop(void)
+{
+    int maxfd;
+    fd_set readfds;
+    bool breakpoint = false, gdbInterrupt = false;
+
+    // Now that we are "going", wait for either a response from the JTAG
+    // box or a nudge from GDB.
+    debugOut("Waiting for input.\n");
+
+    if (ctrlPipe != -1)
+      {
+	  /* signal the USB daemon to start polling. */
+	  char cmd[1] = { 'p' };
+	  (void)write(ctrlPipe, cmd, 1);
+      }
+
+    // Check for input from JTAG ICE (breakpoint, sleep, info, power)
+    // or gdb (user break)
+    FD_ZERO (&readfds);
+    FD_SET (gdbFileDescriptor, &readfds);
+    FD_SET (jtagBox, &readfds);
+    maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+
+    int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
+    unixCheck(numfds, "GDB/JTAG ICE communications failure");
+
+    if (FD_ISSET(gdbFileDescriptor, &readfds))
+      {
+	  int c = getDebugChar();
+	  if (c == 3) // interrupt
+	    {
+		debugOut("interrupted by GDB\n");
+		gdbInterrupt = true;
+	    }
+	  else
+	      debugOut("Unexpected GDB input `%02x'\n", c);
+      }
+
+    if (FD_ISSET(jtagBox, &readfds))
+      {
+	  uchar *evtbuf;
+	  int evtSize;
+	  unsigned short seqno;
+	  evtSize = recvFrame(evtbuf, seqno);
+	  if (evtSize >= 0) {
+	      // XXX if not event, should push frame back into queue...
+	      // We really need a queue of received frames.
+	      if (seqno != 0xffff)
+		  debugOut("Expected event packet, got other response");
+	      else if (!nonbreaking_events[evtbuf[8] - EVT_BREAK])
+                {
+                    if (evtbuf[8] == EVT_IDR_DIRTY)
+		      {
+			  // The program is still running at IDR dirty, so
+			  // pretend a user break;
+			  gdbInterrupt = true;
+			  printf("\nIDR dirty: 0x%02x\n", evtbuf[9]);
+		      }
+                    else
+		      {
+			  breakpoint = true;
+		      }
+                }
+	      delete [] evtbuf;
+	  }
+      }
+
+    // We give priority to user interrupts
+    if (gdbInterrupt)
+	return false;
+    if (breakpoint)
+	return true;
+}
+
+
 bool jtag2::jtagSingleStep(bool useHLL)
 {
     uchar cmd[3] = { CMND_SINGLE_STEP,
@@ -134,7 +210,12 @@ bool jtag2::jtagSingleStep(bool useHLL)
     }
     while (--i >= 0);
 
-    return rv;
+    if (!rv)
+        return false;
+
+    (void)eventLoop();
+
+    return true;
 }
 
 void jtag2::parseEvents(const char *evtlist)
@@ -224,79 +305,6 @@ bool jtag2::jtagContinue(void)
     else
 	doSimpleJtagCommand(CMND_GO);
 
-    for (;;)
-    {
-	int maxfd;
-	fd_set readfds;
-	bool breakpoint = false, gdbInterrupt = false;
-
-	// Now that we are "going", wait for either a response from the JTAG
-	// box or a nudge from GDB.
-	debugOut("Waiting for input.\n");
-
-	if (ctrlPipe != -1)
-	  {
-	    /* signal the USB daemon to start polling. */
-	    char cmd[1] = { 'p' };
-	    (void)write(ctrlPipe, cmd, 1);
-	  }
-
-	// Check for input from JTAG ICE (breakpoint, sleep, info, power)
-	// or gdb (user break)
-	FD_ZERO (&readfds);
-	FD_SET (gdbFileDescriptor, &readfds);
-	FD_SET (jtagBox, &readfds);
-	maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
-
-	int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
-	unixCheck(numfds, "GDB/JTAG ICE communications failure");
-
-	if (FD_ISSET(gdbFileDescriptor, &readfds))
-	{
-	    int c = getDebugChar();
-	    if (c == 3) // interrupt
-	    {
-		debugOut("interrupted by GDB\n");
-		gdbInterrupt = true;
-	    }
-	    else
-		debugOut("Unexpected GDB input `%02x'\n", c);
-	}
-
-	if (FD_ISSET(jtagBox, &readfds))
-	{
-	    uchar *evtbuf;
-	    int evtSize;
-	    unsigned short seqno;
-	    evtSize = recvFrame(evtbuf, seqno);
-	    if (evtSize >= 0) {
-		// XXX if not event, should push frame back into queue...
-		// We really need a queue of received frames.
-		if (seqno != 0xffff)
-		    debugOut("Expected event packet, got other response");
-		else if (!nonbreaking_events[evtbuf[8] - EVT_BREAK])
-                {
-                    if (evtbuf[8] == EVT_IDR_DIRTY)
-                    {
-                        // The program is still running at IDR dirty, so
-                        // pretend a user break;
-                        gdbInterrupt = true;
-                        printf("\nIDR dirty: 0x%02x\n", evtbuf[9]);
-                    }
-                    else
-                    {
-                        breakpoint = true;
-                    }
-                }
-		delete [] evtbuf;
-	    }
-	}
-
-	// We give priority to user interrupts
-	if (gdbInterrupt)
-	    return false;
-	if (breakpoint)
-	    return true;
-    }
+    return eventLoop();
 }
 

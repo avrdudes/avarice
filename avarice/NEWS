@@ -3,6 +3,12 @@
 Summary of changes since AVaRICE 2.7
 ====================================
 
+Summary of important bug fixes:
+-------------------------------
+
+. Fix a bug with single-stepping on the JTAG ICE mkII or AVR Dragon.
+  The bug could eventually result in a "Cannot read program counter"
+  message.
 
 =====================================================================
 Summary of changes in AVaRICE 2.7

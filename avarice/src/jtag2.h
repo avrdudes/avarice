@@ -270,6 +270,12 @@ class jtag2: public jtag
     /** debugWire version of the breakpoint updater.
      **/
     void updateBreakpintsDW(void);
+
+    /** Wait until either the ICE or GDB issued an event.  As this is
+	the heart of jtagContinue for the mkII, it returns true when a
+	breakpoint was reached, and false for GDB input.
+     **/
+    bool eventLoop(void);
 };
 
 #endif
