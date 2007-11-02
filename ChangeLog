@@ -1,5 +1,20 @@
 2007-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Fix a bug with single-stepping on the JTAG ICE mkII or AVR Dragon.
+	Single-stepping essentially behaves identical to CMND_GO, i. e. it
+	returns immediately but the caller gets an EVT_BREAK posted once
+	the single-step is completed.  In particular for software
+	breakpoints (like on debugWire), this could take a bit more time
+	than the internal processing delay.  When AVaRICE continued, and
+	tried to query the program counter, the ICE wasn't ready yet
+	again, and everything fell into parts.
+	* src/jtag2.h: add new eventLoop() method.
+	* src/jtag2run.cc: move the heart of jtag2::jtagContinue() out
+	into eventLoop(), and use this method similarly for the
+	jtag2::jtagSingleStep() method to await the EVT_BREAK.
+
+2007-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* configure.ac: bump version to post-2.7
 
 2007-10-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
