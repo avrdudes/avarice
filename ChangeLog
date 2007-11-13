@@ -1,3 +1,8 @@
+2007-11-13  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2bp.c (jtag2::addBreakpoint): fix a comparison that
+	turned out to be an assignment.
+
 2007-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Fix a bug with single-stepping on the JTAG ICE mkII or AVR Dragon.

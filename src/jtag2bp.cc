@@ -284,7 +284,7 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
 	      unsigned int j;
 	      for(j = 0; !bp[j].last; j++)
                 {
-		    if ((bp[j].type == DATA_MASK) && (bp[bp_i].address = mask))
+		    if ((bp[j].type == DATA_MASK) && (bp[bp_i].address == mask))
 			break;
                 }
 
