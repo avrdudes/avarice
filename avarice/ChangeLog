@@ -1,5 +1,11 @@
 2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ 1869060 ] jtag daisy chain bits limitations
+	* src/main.cc: Apply the correct limitations for JTAG
+	daisy-chaining.
+
+2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/main.cc: Issue a warning when trying to chip erase in
 	debugWire mode.
 	* doc/avarice.1: Document that chip erase is not supported in

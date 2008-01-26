@@ -318,10 +318,11 @@ int main(int argc, char **argv)
                            &units_before, &units_after,
                            &bits_before, &bits_after) != 4)
                     usage(progname);
-		if (units_before > 255 || units_after > 255 ||
-		    bits_before > 7 || bits_after > 7) {
+		if (units_before > bits_before || units_after > bits_after ||
+		    bits_before > 32 || bits_after > 32) {
 		    fprintf(stderr,
-			    "%s: daisy-chain parameters out of range\n",
+			    "%s: daisy-chain parameters out of range"
+			    " (max. 32 bits before/after)\n",
 			    progname);
 		    exit(1);
 		}
