@@ -277,13 +277,6 @@ int main(int argc, char **argv)
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
 
-    /* If the JTAG_DEV environment variable is set, allow that to override the
-       default jtagDevicename value, but the -j option trumps the others. */
-
-    jtagDeviceName = getenv ("JTAG_DEV");
-    if (jtagDeviceName == NULL)
-        jtagDeviceName = "/dev/avrjtag";
-
     device_name = 0;
 
     opterr = 0;                 /* disable default error message */
@@ -455,11 +448,16 @@ int main(int argc, char **argv)
     }
 
     // Use a default device name to connect to if not specified on the
-    // command-line.  As the AVR Dragon can only be talked to through
-    // USB, default it to USB, but use a generic name else.
+    // command-line.  If the JTAG_DEV environment variable is set, use
+    // the name given there.  As the AVR Dragon can only be talked to
+    // through USB, default it to USB, but use a generic name else.
     if (jtagDeviceName == NULL)
     {
-      if (is_dragon)
+      char *cp = getenv ("JTAG_DEV");
+
+      if (cp != NULL)
+	jtagDeviceName = cp;
+      else if (is_dragon)
 	jtagDeviceName = "usb";
       else
 	jtagDeviceName = "/dev/avrjtag";

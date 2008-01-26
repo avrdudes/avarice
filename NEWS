@@ -17,6 +17,7 @@ Summary of important bug fixes:
 
 . [ 1833342 ] useless warning message about jtag bitrate using dragon
 
+. [ 1831392 ] --jtag option does not default to usb using dragon
 
 =====================================================================
 Summary of changes in AVaRICE 2.7

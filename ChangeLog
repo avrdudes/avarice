@@ -1,5 +1,12 @@
 2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ 1831392 ] --jtag option does not default to usb using dragon
+	* src/main.cc: Fix logic for defaulting jtagDeviceName so the
+	environment variable JTAG_DEV will be honoured, yet the AVR Dragon
+	will still default to USB rather than /dev/avrjtag.
+
+2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ 1833342 ] useless warning message about jtag bitrate using dragon
 	* src/main.cc: Restrict the warning about defaulting the JTAG bit
 	rate to JTAG protocols only.
