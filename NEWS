@@ -10,6 +10,12 @@ Summary of important bug fixes:
   The bug could eventually result in a "Cannot read program counter"
   message.
 
+. Fix a sign-extension bug in the length calculation of received JTAG
+  ICE mkII packets that could result in a C++ allocation error.
+
+. [ 1869060 ] jtag daisy chain bits limitations
+
+
 =====================================================================
 Summary of changes in AVaRICE 2.7
 =================================
