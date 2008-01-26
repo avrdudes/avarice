@@ -15,6 +15,8 @@ Summary of important bug fixes:
 
 . [ 1869060 ] jtag daisy chain bits limitations
 
+. [ 1833342 ] useless warning message about jtag bitrate using dragon
+
 
 =====================================================================
 Summary of changes in AVaRICE 2.7
