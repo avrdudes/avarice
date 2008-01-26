@@ -505,11 +505,18 @@ int main(int argc, char **argv)
 
     if (erase)
     {
-        theJtagICE->enableProgramming();
-	statusOut("Erasing program memory.\n");
-	theJtagICE->eraseProgramMemory();
-	statusOut("Erase complete.\n");
-        theJtagICE->disableProgramming();
+	if (protocol == MKII_DW)
+	{
+	    statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
+	}
+	else
+	{
+	    theJtagICE->enableProgramming();
+	    statusOut("Erasing program memory.\n");
+	    theJtagICE->eraseProgramMemory();
+	    statusOut("Erase complete.\n");
+	    theJtagICE->disableProgramming();
+	}
     }
 
     if (readFuses)
