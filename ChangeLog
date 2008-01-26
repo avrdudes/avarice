@@ -1,5 +1,12 @@
 2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/main.cc: Issue a warning when trying to chip erase in
+	debugWire mode.
+	* doc/avarice.1: Document that chip erase is not supported in
+	debugWire mode.
+
+2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2::recvFrame): make msglen and its related
 	variables unsigned int so they cannot suddenly become negative.
 
