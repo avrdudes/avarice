@@ -1,5 +1,11 @@
 2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ 1833342 ] useless warning message about jtag bitrate using dragon
+	* src/main.cc: Restrict the warning about defaulting the JTAG bit
+	rate to JTAG protocols only.
+
+2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ 1869060 ] jtag daisy chain bits limitations
 	* src/main.cc: Apply the correct limitations for JTAG
 	daisy-chaining.

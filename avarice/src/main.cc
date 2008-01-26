@@ -444,7 +444,7 @@ int main(int argc, char **argv)
         usage (progname);
     }
 
-    if (jtagBitrate == 0)
+    if (jtagBitrate == 0 && (protocol == MKI || protocol == MKII))
     {
         fprintf (stdout,
                  "Defaulting JTAG bitrate to 1 MHz. Make sure that the target\n"
