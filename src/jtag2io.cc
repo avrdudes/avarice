@@ -101,8 +101,8 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 	sSTART, sSEQNUM1, sSEQNUM2, sSIZE1, sSIZE2, sSIZE3, sSIZE4,
 	sTOKEN, sDATA, sCSUM1, sCSUM2, sDONE
     }  state = sSTART;
-    int msglen = 0, l = 0;
-    int headeridx = 0;
+    unsigned int msglen = 0, l = 0;
+    unsigned int headeridx = 0;
     bool ignorpkt = false;
     int rv;
     unsigned char c, *buf = NULL, header[8];
@@ -233,7 +233,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
     seqno = r_seqno;
     msg = buf;
 
-    return msglen;
+    return (int)msglen;
 }
 
 /*

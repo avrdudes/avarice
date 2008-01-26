@@ -1,3 +1,8 @@
+2008-01-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2io.cc (jtag2::recvFrame): make msglen and its related
+	variables unsigned int so they cannot suddenly become negative.
+
 2007-11-13  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2bp.c (jtag2::addBreakpoint): fix a comparison that
