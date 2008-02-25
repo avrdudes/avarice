@@ -3,6 +3,12 @@
 Summary of changes since AVaRICE 2.7
 ====================================
 
+New CPU support added:
+----------------------
+
+. ATtiny84 and ATtiny85 (debugWIRE devices)
+
+
 Summary of important bug fixes:
 -------------------------------
 
