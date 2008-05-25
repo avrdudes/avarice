@@ -1,3 +1,12 @@
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	[ 1833340 ] cannot read program counter/Watchdog has expired
+	* src/jtag2run.cc (jtag2::eventLoop): Carefully handle all the
+	different events that could be posted by the ICE, as opposed to
+	just assuming every event would work like a BREAK where
+	AVaRICE is then allowed to go ahead, and fetch the program
+	counter value.
+
 2008-02-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc: Add entries for ATtiny84 and ATtiny85.
