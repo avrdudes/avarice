@@ -1,5 +1,12 @@
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ 1880464 ] AVR-Dragon needs libusb-dev
+	* src/jtaggeneric.cc (jtag::jtag): throw an error message
+	and bail out when called with "-j usb" but not configured
+	for libusb support.
+
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* configure.ac: Bump version.
 
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
