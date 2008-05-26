@@ -1,5 +1,14 @@
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ patch 1587395 ] decrease default bitrate
+	Submitted by  Stas Sergeev
+	* src/main.cc (usage, main): Default JTAG bitrate to
+	250 kHz rather than 1 MHz, change usage message for
+	that.
+	* doc/avarice.1: Document the changed default JTAG bitrate.
+
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ 1865183 ] bfd.h not used for checking of libbfd
 	* configure.ac: Don't just check for bfd.h but complain
 	at configure time if it has not been found.

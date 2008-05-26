@@ -140,8 +140,9 @@ static void usage(const char *progname)
             "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
             "                                with the avr target device. This must be less\n"
             "                                than 1/4 of the frequency of the target. Valid\n"
-            "                                values are 1MHz, 500KHz, 250KHz or 125KHz.\n"
-            "                                (default: 1MHz)\n");
+            "                                values are 1000/500/250/125 kHz (mkI),\n"
+	    "                                or 22 through 6400 kHz (mkII).\n"
+            "                                (default: 250 kHz)\n");
     fprintf(stderr,
 	    "  -C, --capture               Capture running program.\n"
 	    "                                Note: debugging must have been enabled prior\n"
@@ -440,11 +441,9 @@ int main(int argc, char **argv)
     if (jtagBitrate == 0 && (protocol == MKI || protocol == MKII))
     {
         fprintf (stdout,
-                 "Defaulting JTAG bitrate to 1 MHz. Make sure that the target\n"
-                 "frequency is at least 4 MHz or you will likely encounter failures\n"
-                 "controlling the target.\n\n");
+                 "Defaulting JTAG bitrate to 250 kHz.\n\n");
 
-        jtagBitrate = 1000000;
+        jtagBitrate = 250000;
     }
 
     // Use a default device name to connect to if not specified on the
