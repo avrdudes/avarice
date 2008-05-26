@@ -73,7 +73,12 @@ fi
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h bfd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h])
+
+AC_CHECK_HEADERS([bfd.h], , [ac_found_bfd_h=no])
+if test "x$ac_found_bfd_h" = "xno"; then
+  AC_MSG_ERROR([Your libbfd.a needs an accompanying bfd.h file.])
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

@@ -1,5 +1,11 @@
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ 1865183 ] bfd.h not used for checking of libbfd
+	* configure.ac: Don't just check for bfd.h but complain
+	at configure time if it has not been found.
+
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ 1880464 ] AVR-Dragon needs libusb-dev
 	* src/jtaggeneric.cc (jtag::jtag): throw an error message
 	and bail out when called with "-j usb" but not configured
