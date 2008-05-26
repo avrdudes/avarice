@@ -1,5 +1,13 @@
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ patch 1909351 ] ATmega32c1, ATmega32m1
+	[ patch 1909933 ] sync to xml from avrstudio 4.14 beta
+	Submitted by David B. Curtis
+	* src/devdescr.cc: Add support for all currently known (by
+	AVR Studio's partdescription files) AVR devices.
+
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ patch 1750202 ] set parameter command failed
 	(Original patch *not* used though.)
 	* src/jtag2run.cc (jtag2::resetProgram, jtag2::eventLoop):
