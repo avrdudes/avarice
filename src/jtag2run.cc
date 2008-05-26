@@ -88,6 +88,9 @@ bool jtag2::resetProgram(void)
 	bool rv = doJtagCommand(cmd, 2, resp, respSize);
 	delete [] resp;
 
+	/* Await the BREAK event that is posted by the ICE. */
+	(void)eventLoop();
+
 	return rv;
     }
 }
@@ -134,14 +137,18 @@ bool jtag2::eventLoop(void)
 	  // Check for input from JTAG ICE (breakpoint, sleep, info, power)
 	  // or gdb (user break)
 	  FD_ZERO (&readfds);
-	  FD_SET (gdbFileDescriptor, &readfds);
+	  if (gdbFileDescriptor != -1)
+	    FD_SET (gdbFileDescriptor, &readfds);
 	  FD_SET (jtagBox, &readfds);
-	  maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+	  if (gdbFileDescriptor != -1)
+	    maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+	  else
+	    maxfd = jtagBox;
 
 	  int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
 	  unixCheck(numfds, "GDB/JTAG ICE communications failure");
 
-	  if (FD_ISSET(gdbFileDescriptor, &readfds))
+	  if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds))
 	    {
 		int c = getDebugChar();
 		if (c == 3) // interrupt

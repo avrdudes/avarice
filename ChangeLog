@@ -1,5 +1,16 @@
 2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	[ patch 1750202 ] set parameter command failed
+	(Original patch *not* used though.)
+	* src/jtag2run.cc (jtag2::resetProgram, jtag2::eventLoop):
+	After issuing a JTAG reset, wait for the ICE to post the
+	respective BREAK event.  Since resetProgram() can be
+	called fairly early before the GDB communication has been
+	set up, make eventLoop() aware of gdbFileDescriptor
+	possibly being still at -1, so it ought to be ignored.
+
+2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	[ patch 1587395 ] decrease default bitrate
 	Submitted by  Stas Sergeev
 	* src/main.cc (usage, main): Default JTAG bitrate to
