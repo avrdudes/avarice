@@ -1,4 +1,12 @@
-2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	[ 1948200 ] Add option to print list of known devices
+	Submitted by  Rick Mann
+	* src/main.cc: Add the option -k/--known-devices.
+	Sort deviceDefinitions alphabetically before.
+	* doc/avarice.1: Document the -k option.
+
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ patch 1909351 ] ATmega32c1, ATmega32m1
 	[ patch 1909933 ] sync to xml from avrstudio 4.14 beta
@@ -6,7 +14,7 @@
 	* src/devdescr.cc: Add support for all currently known (by
 	AVR Studio's partdescription files) AVR devices.
 
-2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ patch 1750202 ] set parameter command failed
 	(Original patch *not* used though.)
@@ -17,7 +25,7 @@
 	set up, make eventLoop() aware of gdbFileDescriptor
 	possibly being still at -1, so it ought to be ignored.
 
-2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ patch 1587395 ] decrease default bitrate
 	Submitted by  Stas Sergeev
@@ -26,13 +34,13 @@
 	that.
 	* doc/avarice.1: Document the changed default JTAG bitrate.
 
-2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ 1865183 ] bfd.h not used for checking of libbfd
 	* configure.ac: Don't just check for bfd.h but complain
 	at configure time if it has not been found.
 
-2008-05-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ 1880464 ] AVR-Dragon needs libusb-dev
 	* src/jtaggeneric.cc (jtag::jtag): throw an error message

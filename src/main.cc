@@ -179,6 +179,8 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
     fprintf(stderr,
+	    "  -k, --known-devices         Print a list of known devices.\n");
+    fprintf(stderr,
             "  -L, --write-lockbits <ll>   Write lock bits.\n");
     fprintf(stderr,
             "  -l, --read-lockbits         Read lock bits.\n");
@@ -207,6 +209,56 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "e.g. %s --erase --program --file test.bin --jtag /dev/ttyS0 :4242\n\n",
 	    progname);
+    exit(0);
+}
+
+static int comparenames(const void *a, const void *b)
+{
+    const jtag_device_def_type *ja = (const jtag_device_def_type *)a;
+    const jtag_device_def_type *jb = (const jtag_device_def_type *)b;
+
+    return strcmp(ja->name, jb->name);
+}
+
+static void knownParts()
+{
+    fprintf(stderr, "List of known AVR devices:\n\n");
+
+    jtag_device_def_type* dev = deviceDefinitions;
+    // Count the device descriptor records.
+    size_t n = 0;
+    while (dev->name != NULL)
+      n++, dev++;
+    // For historical reasons, device definitions are not
+    // sorted.  Sort them here.
+    qsort(deviceDefinitions, n, sizeof(jtag_device_def_type),
+	  comparenames);
+    fprintf(stderr,
+	    "%-15s  %10s  %8s  %8s\n", "Device Name", "Device ID",
+	    "Flash", "EEPROM");
+    fprintf(stderr,
+	    "%-15s  %10s  %8s  %8s\n", "---------------", "---------",
+	    "-------", "-------");
+    dev = deviceDefinitions;
+    while (n-- != 0)
+    {
+        unsigned eesize = dev->eeprom_page_size * dev->eeprom_page_count;
+
+	if (eesize != 0 && eesize < 1024)
+	  fprintf(stderr, "%-15s      0x%04X  %4d KiB  %4.1f KiB\n",
+		  dev->name,
+		  dev->device_id,
+		  dev->flash_page_size * dev->flash_page_count / 1024,
+		  eesize / 1024.0);
+	else
+	  fprintf(stderr, "%-15s      0x%04X  %4d KiB  %4d KiB\n",
+		  dev->name,
+		  dev->device_id,
+		  dev->flash_page_size * dev->flash_page_count / 1024,
+		  eesize / 1024);
+	dev++;
+    }
+
     exit(1);
 }
 
@@ -229,6 +281,7 @@ static struct option long_opts[] = {
     { "write-lockbits",      1,       0,     'L' },
     { "read-lockbits",       0,       0,     'l' },
     { "part",                1,       0,     'P' },
+    { "known-devices",       0,       0,     'k' },
     { "program",             0,       0,     'p' },
     { "read-fuses",          0,       0,     'r' },
     { "version",             0,       0,     'V' },
@@ -284,7 +337,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:L:lP:prVvwW:",
+        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:L:lP:kprVvwW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -293,6 +346,8 @@ int main(int argc, char **argv)
             case 'h':
             case '?':
                 usage(progname);
+            case 'k':
+                knownParts();
 	    case '1':
 		protocol = MKI;
 		break;
