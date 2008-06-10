@@ -161,7 +161,7 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -E, --event <eventlist>     List of events that do not interrupt.\n"
             "                                JTAG ICE mkII and AVR Dragon only.\n"
-            "                                Default is \"none,run,target_power_on,target_wakeup\"\n");
+            "                                Default is \"none,run,target_power_on,target_sleep,target_wakeup\"\n");
     fprintf(stderr,
 	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
             "                                --verify options. If --file is passed and\n"
@@ -301,7 +301,7 @@ int main(int argc, char **argv)
     char *inFileName = 0;
     char *jtagDeviceName = NULL;
     char *device_name = 0;
-    char *eventlist = "none,run,target_power_on,target_wakeup";
+    char *eventlist = "none,run,target_power_on,target_sleep,target_wakeup";
     unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
     int  hostPortNumber;
