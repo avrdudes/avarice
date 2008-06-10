@@ -1,3 +1,10 @@
+2008-06-10  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* doc/avarice.1: Document all the newly supported devices.
+	* src/devdescr.cc: Remove duplicate entry for AT90USB1287;
+	fix EECRAddress for all recent entries (must be fill_b2()).
+	* tools/devdescr.xsl: Add fill_b2() to EECRAddress.
+
 2008-05-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	[ 1948200 ] Add option to print list of known devices
