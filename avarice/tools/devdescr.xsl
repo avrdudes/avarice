@@ -339,11 +339,11 @@
       </xsl:call-template>
       <xsl:text>,&#009;// ucEindAddress&#010;</xsl:text>
 
-      <xsl:text>&#009;    </xsl:text>
+      <xsl:text>&#009;    fill_b2(</xsl:text>
       <xsl:call-template name="dollar-to-0x">
         <xsl:with-param name="arg" select="$EECR" />
       </xsl:call-template>
-      <xsl:text>,&#009;// EECRAddress&#010;</xsl:text>
+      <xsl:text>),&#009;// EECRAddress&#010;</xsl:text>
 
       <!-- trailer -->
       <xsl:text>&#009;},&#010;</xsl:text>
