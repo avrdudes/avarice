@@ -53,75 +53,151 @@ when a client connects to \fBavarice\fR when it is running in gdb server mode.
 .B avarice
 currently has support for the following devices:
 .RS 4
-atmega16
-.br
-atmega162
-.br
-atmega169
-.br
-atmega323
-.br
-atmega32
-.br
-atmega64
-.br
-atmega128
-.br
 at90can128
 .br
-atmega164p (\fBo\fP)
+at90can32 (\fBo\fP)
 .br
-atmega324p (\fBo\fP)
+at90can64 (\fBo\fP)
 .br
-atmega644 (\fB*\fP)
+at90pwm2 (\fBo\fP) (\fB+\fP)
 .br
-atmega329 (\fBo\fP)
+at90pwm216 (\fBo\fP) (\fB+\fP)
 .br
-atmega3290 (\fBo\fP)
+at90pwm2b (\fBo\fP) (\fB+\fP)
 .br
-atmega649 (\fB*\fP)
+at90pwm3 (\fBo\fP) (\fB+\fP)
 .br
-atmega6490 (\fB*\fP)
+at90pwm316 (\fBo\fP) (\fB+\fP)
 .br
-atmega640 (\fB*\fP)
+at90pwm3b (\fBo\fP) (\fB+\fP)
+.br
+at90usb1287 (\fB*\fP)
+.br
+at90usb162 (\fBo\fP) (\fB+\fP)
+.br
+at90usb646 (\fB*\fP)
+.br
+at90usb647 (\fB*\fP)
+.br
+atmega128
 .br
 atmega1280 (\fB*\fP)
 .br
 atmega1281 (\fB*\fP)
 .br
+atmega1284p (\fB*\fP)
+.br
+atmega16
+.br
+atmega162
+.br
+atmega164p (\fBo\fP)
+.br
+atmega165 (\fBo\fP)
+.br
+atmega165p (\fBo\fP)
+.br
+atmega168 (\fBo\fP) (\fB+\fP)
+.br
+atmega168p (\fBo\fP) (\fB+\fP)
+.br
+atmega169
+.br
+atmega16hva (\fBo\fP)
+.br
 atmega2560 (\fB*\fP)
 .br
 atmega2561 (\fB*\fP)
 .br
-at90usb1287 (\fB*\fP)
+atmega32
+.br
+atmega323
+.br
+atmega324p (\fBo\fP)
+.br
+atmega325 (\fBo\fP)
+.br
+atmega3250 (\fBo\fP)
+.br
+atmega3250p (\fBo\fP)
+.br
+atmega325p (\fBo\fP)
+.br
+atmega328p (\fBo\fP) (\fB+\fP)
+.br
+atmega329 (\fBo\fP)
+.br
+atmega3290 (\fBo\fP)
+.br
+atmega3290p (\fBo\fP)
+.br
+atmega329p (\fBo\fP)
+.br
+atmega32c1 (\fBo\fP) (\fB+\fP)
+.br
+atmega32hvb (\fBo\fP) (\fB+\fP)
+.br
+atmega32m1 (\fBo\fP) (\fB+\fP)
+.br
+atmega32u4 (\fBo\fP)
+.br
+atmega406 (\fB*\fP)
 .br
 atmega48 (\fBo\fP) (\fB+\fP)
 .br
+atmega48p (\fBo\fP) (\fB+\fP)
+.br
+atmega64
+.br
+atmega640 (\fB*\fP)
+.br
+atmega644 (\fB*\fP)
+.br
+atmega644p (\fB*\fP)
+.br
+atmega645 (\fB*\fP)
+.br
+atmega6450 (\fB*\fP)
+.br
+atmega649 (\fB*\fP)
+.br
+atmega6490 (\fB*\fP)
+.br
 atmega88 (\fBo\fP) (\fB+\fP)
 .br
-atmega168 (\fBo\fP) (\fB+\fP)
+atmega88p (\fBo\fP) (\fB+\fP)
 .br
 attiny13 (\fBo\fP) (\fB+\fP)
 .br
+attiny167 (\fBo\fP) (\fB+\fP)
+.br
 attiny2313 (\fBo\fP) (\fB+\fP)
-.br
-at90pwm2 (\fBo\fP) (\fB+\fP)
-.br
-at90pwm3 (\fBo\fP) (\fB+\fP)
 .br
 attiny24 (\fBo\fP) (\fB+\fP)
 .br
-attiny44 (\fBo\fP) (\fB+\fP)
-.br
 attiny25 (\fBo\fP) (\fB+\fP)
-.br
-attiny45 (\fBo\fP) (\fB+\fP)
 .br
 attiny261 (\fBo\fP) (\fB+\fP)
 .br
+attiny43u (\fBo\fP) (\fB+\fP)
+.br
+attiny44 (\fBo\fP) (\fB+\fP)
+.br
+attiny45 (\fBo\fP) (\fB+\fP)
+.br
 attiny461 (\fBo\fP) (\fB+\fP)
 .br
+attiny48 (\fBo\fP) (\fB+\fP)
+.br
+attiny84 (\fBo\fP) (\fB+\fP)
+.br
+attiny85 (\fBo\fP) (\fB+\fP)
+.br
 attiny861 (\fBo\fP) (\fB+\fP)
+.br
+attiny88 (\fBo\fP) (\fB+\fP)
+.br
+atxmega128a1 (\fB*\fP)
 .RE
 .PP
 \fB*\fP \- Only supported by the JTAG ICE mkII device.
