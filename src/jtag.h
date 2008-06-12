@@ -611,6 +611,9 @@ class jtag
   // The type of our emulator: JTAG ICE, or AVR Dragon.
   emulator emu_type;
 
+  // Whether nSRST is to be applied when connecting (override JTD bit).
+  bool apply_nSRST;
+
   public:
   // Whether we are in "programming mode" (changes how program memory
   // is written, apparently)
@@ -742,7 +745,7 @@ class jtag
   virtual bool setProgramCounter(unsigned long pc) = 0;
 
   /** Reset AVR. Return true iff successful **/
-  virtual bool resetProgram(void) = 0;
+  virtual bool resetProgram(bool possible_nSRST) = 0;
 
   /** Interrupt AVR. Return true iff successful **/
   virtual bool interruptProgram(void) = 0;

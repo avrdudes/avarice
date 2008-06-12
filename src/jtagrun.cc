@@ -81,9 +81,18 @@ bool jtag1::setProgramCounter(unsigned long pc)
     return result;
 }
 
-bool jtag1::resetProgram(void)
+bool jtag1::resetProgram(bool possible_nSRST)
 {
-    return doSimpleJtagCommand('x', 1);
+  bool result;
+
+  if (possible_nSRST && apply_nSRST) {
+    setJtagParameter(JTAG_P_EXTERNAL_RESET, 0x01);
+  }
+  result = doSimpleJtagCommand('x', 1);
+  if (possible_nSRST && apply_nSRST) {
+    setJtagParameter(JTAG_P_EXTERNAL_RESET, 0x00);
+  }
+  return result;
 }
 
 bool jtag1::interruptProgram(void)

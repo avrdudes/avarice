@@ -283,6 +283,7 @@ static struct option long_opts[] = {
     { "read-lockbits",       0,       0,     'l' },
     { "part",                1,       0,     'P' },
     { "program",             0,       0,     'p' },
+    { "reset-srst",          0,       0,     'R' },
     { "read-fuses",          0,       0,     'r' },
     { "version",             0,       0,     'V' },
     { "verify",              0,       0,     'v' },
@@ -318,6 +319,7 @@ int main(int argc, char **argv)
     bool capture = false;
     bool verify = false;
     bool is_dragon = false;
+    bool apply_nsrst = false;
     char *progname = argv[0];
     enum {
 	MKI, MKII, MKII_DW
@@ -337,7 +339,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:L:lP:kprVvwW:",
+        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -416,6 +418,9 @@ int main(int argc, char **argv)
             case 'p':
                 program = true;
                 break;
+	    case 'R':
+	        apply_nsrst = true;
+		break;
             case 'r':
                 readFuses = true;
                 break;
@@ -521,15 +526,17 @@ int main(int argc, char **argv)
 	// And say hello to the JTAG box
 	switch (protocol) {
 	case MKI:
-	    theJtagICE = new jtag1(jtagDeviceName, device_name);
+	    theJtagICE = new jtag1(jtagDeviceName, device_name, apply_nsrst);
 	    break;
 
 	case MKII:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, false, is_dragon);
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, false,
+				   is_dragon, apply_nsrst);
 	    break;
 
 	case MKII_DW:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, true, is_dragon);
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, true,
+				   is_dragon, apply_nsrst);
 	    break;
 	}
 
@@ -613,7 +620,7 @@ int main(int argc, char **argv)
         }
 
         theJtagICE->downloadToTarget(inFileName, program, verify);
-        theJtagICE->resetProgram();
+        theJtagICE->resetProgram(false);
     }
     else
     {

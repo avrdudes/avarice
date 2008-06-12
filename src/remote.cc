@@ -640,7 +640,7 @@ void talkToGdb(void)
 	break;
 
     case 'R':
-	if (!theJtagICE->resetProgram())
+	if (!theJtagICE->resetProgram(false))
 	    gdbOut("reset failed\n");
         dontSendReply = true;
 	break;
@@ -995,7 +995,7 @@ void talkToGdb(void)
         {
             if (sig == SIGHUP)
             {
-                if (theJtagICE->resetProgram())
+                if (theJtagICE->resetProgram(false))
                 {
                     reportStatusExtended(SIGTRAP);
                 }
