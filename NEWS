@@ -7,6 +7,24 @@ New CPU support added:
 ----------------------
 
 . ATtiny84 and ATtiny85 (debugWIRE devices)
+. ATmega32C1, ATmega32M1
+. AT90PWM316, AT90USB162, AT90USB646, AT90USB647, ATmega1284P,
+  ATmega165, ATmega165P, ATmega168P, ATmega16HVA, ATmega3250P,
+  ATmega325P, ATmega328P, ATmega3290P, ATmega329P, ATmega32HVB,
+  ATmega32U4, ATmega406, ATmega48P, ATmega644P, ATmega88P, ATtiny167,
+  ATtiny43U, ATtiny48, ATtiny88, ATXmega128A1
+
+New features added:
+-------------------
+
+. External reset through nSRST (option -R/--reset-srst)
+
+. Handle ICE events (intelligently) beyond just BREAK events
+
+. Option -k/--known-devices to print all known devices
+
+. Default bitrate decreased to 250 kHz to comply with most AVRs
+  shipping with a CPU frequency of 1 MHz
 
 
 Summary of important bug fixes:
@@ -24,6 +42,15 @@ Summary of important bug fixes:
 . [ 1833342 ] useless warning message about jtag bitrate using dragon
 
 . [ 1831392 ] --jtag option does not default to usb using dragon
+
+. [ patch 1750202 ] set parameter command failed
+
+. [ 1865183 ] bfd.h not used for checking of libbfd
+
+. [ 1880464 ] AVR-Dragon needs libusb-dev
+
+. [ 1833340 ] cannot read program counter/Watchdog has expired
+
 
 =====================================================================
 Summary of changes in AVaRICE 2.7
