@@ -1,5 +1,9 @@
 2008-06-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version date.
+
+2008-06-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Implement external reset through nSRST signal.
 	Based on the idea from patch #1398862 but implemented
 	in a completely different way.
