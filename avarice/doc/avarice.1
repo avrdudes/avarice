@@ -308,6 +308,10 @@ The old behaviour of automatically erasing the target before
 programming is no longer done. You must explicitly give the --erase option
 for the target to be erased.
 .TP
+.BR \-R ,\  \-\-reset-srst
+Apply nSRST signal (external reset) when connecting.
+This can override applications that set the JTD bit.
+.TP
 .BR \-r ,\  \-\-read-fuses
 Read fuses bytes.
 .TP

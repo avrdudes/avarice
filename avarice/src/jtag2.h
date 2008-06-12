@@ -141,12 +141,14 @@ class jtag2: public jtag
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    jtag2(const char *dev, char *name, bool useDW = false, bool is_dragon = false):
+    jtag2(const char *dev, char *name, bool useDW = false,
+	  bool is_dragon = false, bool nsrst = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
 	signedIn = haveHiddenBreakpoint = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
 	useDebugWire = useDW;
+	apply_nSRST = nsrst;
 	flashCachePageAddr = (unsigned long)-1;
 	eepromCachePageAddr = (unsigned short)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
@@ -178,7 +180,7 @@ class jtag2: public jtag
 
     virtual unsigned long getProgramCounter(void);
     virtual bool setProgramCounter(unsigned long pc);
-    virtual bool resetProgram(void);
+    virtual bool resetProgram(bool ignored = false);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
     virtual bool jtagSingleStep(bool useHLL = false);

@@ -1,3 +1,22 @@
+2008-06-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Implement external reset through nSRST signal.
+	Based on the idea from patch #1398862 but implemented
+	in a completely different way.
+	* src/jtag.h: Add apply_nSRST to struct jtag, and parameter
+	possible_nSRST to resetProgram().
+	* src/jtag1.h: Add nrst to constructor.
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2io.cc: Try applying nSRST before enabling JTAG
+	emulation.
+	* src/jtag2run.cc: possible_nSRST is ignored in mkII
+	resetProgram().
+	* src/jtagio.cc: Add possible_nSRST parameters.
+	* src/remote.cc: (Ditto.)
+	* src/jtagrun.cc: Implement possible_nSRST for mkI.
+	* src/main.cc: Add option -R/--reset-srst.
+	* doc/avarice.1: Document option -R/--reset-srst.
+
 2008-06-10  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/main.cc: Add "target_sleep" to the list of events to be

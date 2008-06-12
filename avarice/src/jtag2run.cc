@@ -73,7 +73,7 @@ bool jtag2::setProgramCounter(unsigned long pc)
     return true;
 }
 
-bool jtag2::resetProgram(void)
+bool jtag2::resetProgram(bool possible_nSRST_ignored)
 {
     if (useDebugWire) {
 	/* The JTAG ICE mkII and Dragon do not respond correctly to

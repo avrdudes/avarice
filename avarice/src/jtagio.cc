@@ -480,9 +480,9 @@ void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
 
     disableProgramming();
 
-    resetProgram();
+    resetProgram(false);
     setJtagParameter(JTAG_P_TIMERS_RUNNING, 0x00);
-    resetProgram();
+    resetProgram(true);
 }
 
 void jtag1::configDaisyChain(void)

@@ -84,7 +84,10 @@ class jtag1: public jtag
     int numBreakpointsCode, numBreakpointsData;
 
   public:
-    jtag1(const char *dev, char *name): jtag(dev, name) {};
+    jtag1(const char *dev, char *name, bool nsrst = false):
+      jtag(dev, name) {
+	apply_nSRST = nsrst;
+    };
 
     virtual void initJtagBox(void);
     virtual void initJtagOnChipDebugging(unsigned long bitrate);
@@ -106,7 +109,7 @@ class jtag1: public jtag
 
     virtual unsigned long getProgramCounter(void);
     virtual bool setProgramCounter(unsigned long pc);
-    virtual bool resetProgram(void);
+    virtual bool resetProgram(bool possible_nSRST);
     virtual bool interruptProgram(void);
     virtual bool resumeProgram(void);
     virtual bool jtagSingleStep(bool useHLL = false);

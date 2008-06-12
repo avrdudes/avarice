@@ -492,7 +492,14 @@ void jtag2::startJtagLink(void)
 
     for (unsigned int i = 0; i < sizeof bitrates / sizeof *bitrates; i++)
 	if (synchroniseAt(bitrates[i])) {
-	    uchar val = useDebugWire? EMULATOR_MODE_DEBUGWIRE: EMULATOR_MODE_JTAG;
+	    uchar val;
+
+	    if (apply_nSRST) {
+		val = 0x01;
+		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
+	    }
+
+	    val = useDebugWire? EMULATOR_MODE_DEBUGWIRE: EMULATOR_MODE_JTAG;
 	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
 	    signedIn = true;
 
