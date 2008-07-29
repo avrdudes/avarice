@@ -1,3 +1,9 @@
+2008-07-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtagprog.cc: Fix "deprecated conversion from string
+	constant to char *" warnings.
+	* src/main.cc: (Ditto.)
+
 2008-06-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version date.
