@@ -1,3 +1,7 @@
+2008-08-26  Nils Kristian Strom  <nilsst@invalid.ed.ntnu.no>
+
+	* src/main.cc (usage): Add -R/--reset-srst to usage.
+
 2008-07-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtagprog.cc: Fix "deprecated conversion from string
