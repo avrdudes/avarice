@@ -194,6 +194,8 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -r, --read-fuses            Read fuses bytes.\n");
     fprintf(stderr,
+            "  -R, --reset-srst            External reset through nSRST signal.\n");
+    fprintf(stderr,
 	    "  -V, --version               Print version information.\n");
     fprintf(stderr,
             "  -v, --verify                Verify program in device against file specified\n"
