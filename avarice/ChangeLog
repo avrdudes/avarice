@@ -1,5 +1,9 @@
 2008-09-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version to post-2.8.
+
+2008-09-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* configure.ac: Bump version to 2.8.
 
 2008-08-26  Nils Kristian Strom  <nilsst@invalid.ed.ntnu.no>
