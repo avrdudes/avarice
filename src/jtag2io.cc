@@ -499,7 +499,8 @@ void jtag2::startJtagLink(void)
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
 
-	    val = useDebugWire? EMULATOR_MODE_DEBUGWIRE: EMULATOR_MODE_JTAG;
+	    val = useDebugWire? EMULATOR_MODE_DEBUGWIRE:
+                (is_xmega? EMULATOR_MODE_JTAG_XMEGA: EMULATOR_MODE_JTAG);
 	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
 	    signedIn = true;
 
@@ -617,6 +618,26 @@ void jtag2::initJtagBox(void)
 {
     statusOut("JTAG config starting.\n");
 
+    if (device_name != 0)
+    {
+        jtag_device_def_type *pDevice = deviceDefinitions;
+
+        while (pDevice->name)
+        {
+            if (strcasecmp(pDevice->name, device_name) == 0)
+                break;
+
+            pDevice++;
+        }
+
+        if (pDevice->name != 0)
+        {
+            // If a device name has been specified on the command-line,
+            // this overrides the is_xmega setting.
+            is_xmega = pDevice->is_xmega;
+        }
+    }
+
     startJtagLink();
     changeBitRate(115200);
 
@@ -699,7 +720,8 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 
     resetProgram();
     uchar timers = 0;		// stopped
-    setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
+    if (!is_xmega)
+        setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
     resetProgram();
 }
 

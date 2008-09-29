@@ -42,6 +42,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x54,        // 21 interrupt vectors
 	DEVFL_NONE,
         atmega16_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF },
@@ -115,6 +116,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x70,        // 28 interrupt vectors
 	DEVFL_NONE,
         atmega162_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xF7, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
@@ -188,6 +190,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x5c,        // 23 interrupt vectors
 	DEVFL_NONE,
         atmega169_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xBB, 0xE0 }, 
@@ -261,6 +264,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x50,        // 20 interrupt vectors
 	DEVFL_NONE,
         NULL,        // io reg defs not defined yet
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF }, 
@@ -334,6 +338,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x54,        // 21 interrupt vectors
 	DEVFL_NONE,
         atmega32_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xFF, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
@@ -408,6 +413,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x8c,        // 35 interrupt vectors
 	DEVFL_NONE,
         atmega128_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
@@ -481,6 +487,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x8c,        // 35 interrupt vectors
 	DEVFL_NO_SOFTBP,
         atmega128_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
@@ -554,6 +561,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0x94,        // 37 interrupt vectors
 	DEVFL_NONE,
         iocan128_io_registers,
+        false,
         {
             JTAG_C_SET_DEVICE_DESCRIPTOR,
             { 0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x7C, 0xBB, 0xE8 }, 
@@ -627,6 +635,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -684,6 +693,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -741,6 +751,7 @@ jtag_device_def_type deviceDefinitions[] = {
         28 * 4,      // 28 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,			// not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -791,6 +802,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -850,6 +862,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -909,6 +922,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -968,6 +982,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1026,6 +1041,7 @@ jtag_device_def_type deviceDefinitions[] = {
         23 * 4,      // 23 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,			// not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -1075,6 +1091,7 @@ jtag_device_def_type deviceDefinitions[] = {
         25 * 4,      // 25 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,			// not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -1124,6 +1141,7 @@ jtag_device_def_type deviceDefinitions[] = {
         23 * 4,      // 23 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,			// not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -1173,6 +1191,7 @@ jtag_device_def_type deviceDefinitions[] = {
         25 * 4,      // 25 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,			// not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -1222,6 +1241,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0xe4,        // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
         atmega128_io_registers,	// XXX should be changed
+        false,
         {
 	  0			// no mkI support
         },
@@ -1277,6 +1297,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0xe4,        // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
         atmega128_io_registers,	// XXX should be changed
+        false,
         {
 	  0			// no mkI support
         },
@@ -1332,6 +1353,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0xe4,        // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
         atmega128_io_registers,	// XXX should be changed
+        false,
         {
 	  0			// no mkI support
         },
@@ -1387,6 +1409,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0xe4,        // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
         atmega128_io_registers,	// XXX should be changed
+        false,
         {
 	  0			// no mkI support
         },
@@ -1442,6 +1465,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0xe4,        // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
         atmega128_io_registers,	// XXX should be changed
+        false,
         {
 	  0			// no mkI support
         },
@@ -1497,6 +1521,7 @@ jtag_device_def_type deviceDefinitions[] = {
         26 * 2,    // 26 interrupt vectors
 	DEVFL_MKII_ONLY,
         NULL,      // not yet defined
+        false,
         {
 	  0			// no mkI support
         },
@@ -1552,6 +1577,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1611,6 +1637,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1670,6 +1697,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	10 * 2,	// 10 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1729,6 +1757,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1788,6 +1817,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1847,6 +1877,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1906,6 +1937,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -1965,6 +1997,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2024,6 +2057,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2083,6 +2117,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2142,6 +2177,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2201,6 +2237,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2260,6 +2297,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2319,6 +2357,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2378,6 +2417,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2437,6 +2477,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2496,6 +2537,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2555,6 +2597,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2614,6 +2657,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2673,6 +2717,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	37 * 4,	// 37 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2730,6 +2775,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	37 * 4,	// 37 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2787,6 +2833,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 4,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2846,6 +2893,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32 * 4,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2905,6 +2953,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -2962,6 +3011,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3021,6 +3071,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3078,6 +3129,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3135,6 +3187,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	35 * 4,	// 35 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3192,6 +3245,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3249,6 +3303,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3306,6 +3361,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3365,6 +3421,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	21 * 4,	// 21 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3424,6 +3481,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3481,6 +3539,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3538,6 +3597,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3597,6 +3657,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3654,6 +3715,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	23 * 4,	// 23 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3711,6 +3773,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	29 * 4,	// 29 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3770,6 +3833,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	43 * 4,	// 43 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3827,6 +3891,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	23 * 4,	// 23 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3884,6 +3949,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -3943,6 +4009,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -4000,6 +4067,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -4059,6 +4127,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	20 * 4,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -4116,6 +4185,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	16 * 2,	// 16 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -4175,6 +4245,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	20 * 2,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
 	{
 	    0	// no mkI support
 	},
@@ -4234,6 +4305,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	20 * 2,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        true,
 	{
 	    0	// no mkI support
 	},
@@ -4284,15 +4356,76 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1F),	// EECRAddress
 	},
     },
-    // DEV_ATXMEGA128A1
+    // DEV_ATXMEGA128A1 revision D
     {
-	"atxmega128a1",
+	"atxmega128a1revd",
 	0x9741,
 	512, 272,	// 139264 bytes flash
 	32, 64,	// 2048 bytes EEPROM
 	0 * 4,	// 0 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
+        false,
+	{
+	    0	// no mkI support
+	},
+	{
+	    CMND_SET_DEVICE_DESCRIPTOR,
+	    { 0xFF,0xFF,0xFF,0xF9,0xFF,0x3D,0xB9,0xF8 }, // ucReadIO
+	    { 0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00 }, // ucReadIOShadow
+	    { 0xFF,0xFF,0x1F,0xE0,0xFF,0x1D,0xA9,0xF8 }, // ucWriteIO
+	    { 0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00 }, // ucWriteIOShadow
+	    { 0x73,0xFF,0x3F,0xFF,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x3F,0x37,0x37,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7,0x3F,0x36,0x00 }, // ucReadExtIO
+	    { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00 }, // ucReadIOExtShadow
+	    { 0x73,0xFF,0x3F,0xF8,0xF7,0x3F,0xF7,0x3F,
+	      0xF7,0x3F,0x5F,0x2F,0x36,0x36,0x36,0x00,
+	      0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+	      0xF7,0x3F,0x36,0x00 }, // ucWriteExtIO
+	    { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	      0x00,0x00,0x00,0x00 }, // ucWriteIOExtShadow
+	    0x31,	// ucIDRAddress
+	    0x57,	// ucSPMCRAddress
+	    0,	// ucRAMPZAddress
+	    fill_b2(512),	// uiFlashPageSize
+	    32,	// ucEepromPageSize
+	    fill_b4(0x20000),	// ulBootAddress
+	    fill_b2(0x136),	// uiUpperExtIOLoc
+	    fill_b4(139264),	// ulFlashSize
+	    { 0x00 },	// ucEepromInst
+	    { 0x00 },	// ucFlashInst
+	    0x3E,	// ucSPHaddr
+	    0x3D,	// ucSPLaddr
+	    fill_b2(139264 / 512),	// uiFlashpages
+	    0x00,	// ucDWDRAddress
+	    0x00,	// ucDWBasePC
+	    0x00,	// ucAllowFullPageBitstream
+	    fill_b2(0x00),	// uiStartSmallestBootLoaderSection
+	    1,	// EnablePageProgramming
+	    0x02,	// ucCacheType
+	    fill_b2(8192),	// uiSramStartAddr
+	    0,	// ucResetType
+	    0,	// ucPCMaskExtended
+	    0,	// ucPCMaskHigh
+	    0,	// ucEindAddress
+	    fill_b2(0),	// EECRAddress
+	},
+    },
+    // DEV_ATXMEGA128A1 revision G (and newer)
+    {
+	"atxmega128a1",
+	0x974c,
+	512, 272,	// 139264 bytes flash
+	32, 64,	// 2048 bytes EEPROM
+	0 * 4,	// 0 interrupt vectors
+	DEVFL_MKII_ONLY,
+	NULL,	// registers not yet defined
+        true,
 	{
 	    0	// no mkI support
 	},
@@ -4352,6 +4485,7 @@ jtag_device_def_type deviceDefinitions[] = {
         0,                      // interrupt vectors
 	DEVFL_NONE,		// device flags
         NULL,                   // io reg defs
+        false,
         { 0 },                  // mkI device descriptor information
 	{ 0 }                   // mkII device descriptor
     }
