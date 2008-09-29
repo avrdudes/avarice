@@ -1,3 +1,18 @@
+2008-09-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h: More ATxmega support.  As the Xmega requires a
+	different initialization, this must be made known to AVaRICE
+	beforehand.  The option -x (--xmega) can be used to tell AVaRICE
+	that the target is an Xmega.  Alternatively, specifying an
+	ATxmega device explicitly through -P will also work.
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2io.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+	* src/devdescr.cc: (Ditto.) Additionally, provide a separate
+	entry for the ATxmega128A1 rev D as this device uses a different
+	JTAG ID.
+	* doc/avarice.1: Document the -x/--xmega option.
+
 2008-09-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version to post-2.8.

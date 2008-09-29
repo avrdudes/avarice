@@ -22,7 +22,7 @@ the original English.
 $Id$
 
 ..
-.TH avarice 1 "March 21, 2007"
+.TH avarice 1 "September 29, 2008"
 .LO 1
 .SH NAME
 avarice \- Provides an interface from avr-gdb to Atmel's JTAGICE box.
@@ -331,6 +331,13 @@ Write fuses bytes. \fBee\fR is the extended fuse byte, \fBhh\fR is the high
 fuse byte and \fBll\fR is the low fuse byte. The fuse byte data must be given
 in two digit hexidecimal format with zero padding if needed. All three bytes
 must currently be given.
+.TP
+.BR \-x ,\  \-\-xmega
+The target device is an ATxmega part.
+Since the ATxmega uses a different JTAG communication than other AVRs,
+the normal device autodetection based on the JTAG ID does not work.
+If the device has been explicitly selected through the \-P option,
+it is not necessary to also specify the \-x option.
 .br
 .B NOTE:
 Current, if the target device doesn't have an extended fuse byte

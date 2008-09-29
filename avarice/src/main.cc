@@ -206,6 +206,8 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
+            "  -x, --xmega                 AVR part is an ATxmega device.\n");
+    fprintf(stderr,
 	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
 	    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
     fprintf(stderr,
@@ -291,6 +293,7 @@ static struct option long_opts[] = {
     { "verify",              0,       0,     'v' },
     { "debugwire",           0,       0,     'w' },
     { "write-fuses",         1,       0,     'W' },
+    { "xmega",               0,       0,     'x' },
     { 0,                     0,       0,      0 }
 };
 
@@ -322,6 +325,7 @@ int main(int argc, char **argv)
     bool verify = false;
     bool is_dragon = false;
     bool apply_nsrst = false;
+    bool is_xmega = false;
     char *progname = argv[0];
     enum {
 	MKI, MKII, MKII_DW
@@ -341,7 +345,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:",
+        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:x",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -438,6 +442,9 @@ int main(int argc, char **argv)
                 fuses = optarg;
                 writeFuses = true;
                 break;
+            case 'x':
+                is_xmega = true;
+                break;
             default:
                 fprintf (stderr, "getop() did something screwey");
                 exit (1);
@@ -533,7 +540,7 @@ int main(int argc, char **argv)
 
 	case MKII:
 	    theJtagICE = new jtag2(jtagDeviceName, device_name, false,
-				   is_dragon, apply_nsrst);
+				   is_dragon, apply_nsrst, is_xmega);
 	    break;
 
 	case MKII_DW:

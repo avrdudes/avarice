@@ -155,6 +155,8 @@ typedef struct {
 
     gdb_io_reg_def_type *io_reg_defs;
 
+    bool is_xmega;                     // Device is an ATxmega part
+
     jtag1_device_desc_type dev_desc1;  // Device descriptor to download to
                                        // mkI device
     jtag2_device_desc_type dev_desc2;  // Device descriptor to download to
@@ -462,6 +464,7 @@ enum
     EMULATOR_MODE_JTAG		= 0x01,
     EMULATOR_MODE_UNKNOWN	= 0x02,
     EMULATOR_MODE_SPI		= 0x03,
+    EMULATOR_MODE_JTAG_XMEGA    = 0x05,
 
     PAR_IREG			= 0x04,
 

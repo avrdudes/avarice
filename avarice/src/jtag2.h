@@ -127,6 +127,7 @@ class jtag2: public jtag
     bool signedIn;
     bool haveHiddenBreakpoint;
     bool useDebugWire;
+    bool is_xmega;
 
     // Total breakpoints including software
     breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
@@ -142,13 +143,15 @@ class jtag2: public jtag
 
   public:
     jtag2(const char *dev, char *name, bool useDW = false,
-	  bool is_dragon = false, bool nsrst = false):
+	  bool is_dragon = false, bool nsrst = false,
+          bool xmega = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
 	signedIn = haveHiddenBreakpoint = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
 	useDebugWire = useDW;
 	apply_nSRST = nsrst;
+        is_xmega = xmega;
 	flashCachePageAddr = (unsigned long)-1;
 	eepromCachePageAddr = (unsigned short)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
