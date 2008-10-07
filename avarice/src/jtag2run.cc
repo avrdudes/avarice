@@ -284,7 +284,12 @@ bool jtag2::jtagSingleStep(bool useHLL)
     if (!rv)
         return false;
 
-    (void)eventLoop();
+    if (!eventLoop())
+    {
+        // Break from GDB while waiting for the single-step
+        // to return an EVT_BREAK
+        interruptProgram();
+    }
 
     return true;
 }

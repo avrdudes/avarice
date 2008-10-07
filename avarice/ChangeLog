@@ -1,3 +1,9 @@
+2008-10-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2run.cc (jtag2::jtagSingleStep): When being interrupted by
+	GDB while waiting for the EVT_BREAK from a CMND_SINGLE_STEP, we must
+	issue a CMND_STOP_PROGRAM before proceeding.
+
 2008-09-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: More ATxmega support.  As the Xmega requires a
