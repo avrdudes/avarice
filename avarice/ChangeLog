@@ -1,3 +1,7 @@
+2009_02-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc (atmega128rfa1): new device.
+
 2008-10-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2run.cc (jtag2::jtagSingleStep): When being interrupted by
