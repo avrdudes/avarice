@@ -1,18 +1,12 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.8
-====================================
+Summary of changes in AVaRICE 2.9
+=================================
 
 New CPU support added:
 ----------------------
 
 . ATmega128RFA1
-
-New features added:
--------------------
-
-Summary of important bug fixes:
--------------------------------
 
 =====================================================================
 Summary of changes in AVaRICE 2.8
