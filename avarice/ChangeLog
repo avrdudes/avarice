@@ -1,4 +1,8 @@
-2009_02-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2009-03-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Bump version for release 2.9.
+
+2009-02-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/devdescr.cc (atmega128rfa1): new device.
 
