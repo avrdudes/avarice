@@ -116,7 +116,7 @@ AC_LINK_IFELSE(
     return 42;
   }], [AC_MSG_RESULT([no])],
   [AC_MSG_RESULT([yes])
-   AC_CHECK_LIB([z], [inflate])])
+   AC_CHECK_LIB([z], [inflate], [LIBS="$LIBS -lz"])])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
