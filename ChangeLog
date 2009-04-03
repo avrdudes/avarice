@@ -1,5 +1,9 @@
 2009-04-03  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version for release 2.10.
+
+2009-04-03  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* configure.ac: Check whether libbfd requires libz (true for
 	libbfd 2.19 and above); while here, replace the obosolete
 	AC_TRY_COMPILE by AC_COMPILE_IFELSE.
