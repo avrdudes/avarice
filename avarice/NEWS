@@ -1,12 +1,14 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.9
-====================================
+Summary of changes in AVaRICE 2.10
+==================================
 
-New CPU support added:
-----------------------
+Important bug fixes:
+--------------------
 
-. 
+. Add a check for the requirement to link against libz in order
+  to successfully work with libbfd.  That appears to be necessary
+  for GNU binutils >= 2.19.
 
 =====================================================================
 
