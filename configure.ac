@@ -93,10 +93,11 @@ dnl
 AC_DEFUN([TYPE_SOCKLEN_T],
 [AC_CACHE_CHECK([for socklen_t], ac_cv_type_socklen_t,
 [
-  AC_TRY_COMPILE(
+  AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM(
   [#include <sys/types.h>
    #include <sys/socket.h>],
-  [socklen_t len = 42; return 0;],
+  [socklen_t len = 42; return 0;])],
   ac_cv_type_socklen_t=yes,
   ac_cv_type_socklen_t=no)
 ])
@@ -105,6 +106,17 @@ AC_DEFUN([TYPE_SOCKLEN_T],
   fi
 ])
 TYPE_SOCKLEN_T
+
+AC_MSG_CHECKING([whether libbfd requires libz])
+AC_LINK_IFELSE(
+  [#include <bfd.h>
+  int main(void) {
+    bfd_init();
+    bfd_openr("foo", 0);
+    return 42;
+  }], [AC_MSG_RESULT([no])],
+  [AC_MSG_RESULT([yes])
+   AC_CHECK_LIB([z], [inflate])])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
