@@ -173,6 +173,20 @@
       <!-- static stuff -->
       <xsl:text>&#009;DEVFL_MKII_ONLY,&#010;</xsl:text>
       <xsl:text>&#009;NULL,&#009;// registers not yet defined&#010;</xsl:text>
+
+      <!-- Xmega? -->
+      <xsl:text>&#009;</xsl:text>
+      <xsl:choose>
+        <xsl:when test="substring(//AVRPART/ICE_SETTINGS/JTAGICEmkII/Interface,1,5) = 'Xmega'">
+          <xsl:text>true</xsl:text>
+        </xsl:when>
+        <xsl:otherwise> <!-- i.e., JTAG -->
+          <xsl:text>false</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>,&#010;</xsl:text>
+
+      <!-- more static stuff -->
       <xsl:text>&#009;{&#010;&#009;    0&#009;// no mkI support&#010;</xsl:text>
       <xsl:text>&#009;},&#010;&#009;{&#010;&#009;</xsl:text>
       <xsl:text>    CMND_SET_DEVICE_DESCRIPTOR,&#010;</xsl:text>
