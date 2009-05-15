@@ -1,5 +1,10 @@
 2009-05-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/devdescr.cc (ATmega128RFA1): update the number of
+	interrupt vectors, and extended IO bitmaps.
+
+2009-05-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* tools/devdescr.xsl: update for rev 1.29 of src/jtag.h:
 	generate the is_xmega flag correctly
 
