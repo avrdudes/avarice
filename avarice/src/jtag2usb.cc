@@ -70,7 +70,7 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
   struct usb_bus *bus;
   struct usb_device *dev;
   usb_dev_handle *udev;
-  char *serno, *cp2;
+  char *devnamecopy, *serno, *cp2;
   u_int16_t pid;
   size_t x;
 
@@ -85,6 +85,9 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
       break;
     }
 
+  devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
+  memcpy(devnamecopy, jtagDeviceName, x);
+
   /*
    * The syntax for usb devices is defined as:
    *
@@ -95,7 +98,7 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
    * right-to-left, so only the least significant nibbles need to be
    * specified.
    */
-  if ((serno = strchr(jtagDeviceName, ':')) != NULL)
+  if ((serno = strchr(devnamecopy, ':')) != NULL)
     {
       /* first, drop all colons there if any */
       cp2 = ++serno;
@@ -159,6 +162,8 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
 	    }
 	}
     }
+
+  delete devnamecopy;
   if (!found)
   {
     printf("did not find any%s USB device \"%s\"\n",
