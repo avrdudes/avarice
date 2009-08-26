@@ -1,3 +1,8 @@
+2009-08-26  Shaun Jackman  <sjackman@gmail.com>
+
+	* configure.ac: add bfd_object() to the check whether libbfd
+	requires libz.
+
 2009-06-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	bug 2812023: build failed with gcc 4.4.0
