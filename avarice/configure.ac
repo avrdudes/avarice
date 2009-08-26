@@ -112,6 +112,7 @@ AC_LINK_IFELSE(
   [#include <bfd.h>
   int main(void) {
     bfd_init();
+    bfd_object();
     bfd_openr("foo", 0);
     return 42;
   }], [AC_MSG_RESULT([no])],
