@@ -3475,7 +3475,7 @@ jtag_device_def_type deviceDefinitions[] = {
     // DEV_ATMEGA3250P
     {
 	"atmega3250p",
-	0x956E,
+	0x950E,
 	128, 256,	// 32768 bytes flash
 	4, 256,	// 1024 bytes EEPROM
 	25 * 4,	// 25 interrupt vectors
@@ -3533,7 +3533,7 @@ jtag_device_def_type deviceDefinitions[] = {
     // DEV_ATMEGA325P
     {
 	"atmega325p",
-	0x955D,
+	0x950D,
 	128, 256,	// 32768 bytes flash
 	4, 256,	// 1024 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
