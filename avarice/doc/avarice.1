@@ -298,7 +298,10 @@ Read the lock bits from the target. The individual bits are also displayed
 with names.
 .TP
 .BR \-P ,\  \-\-part \ <name>
-Target device name (e.g. atmega16)
+Target device name (e.g. atmega16).
+Normally, \fBavarice\fR autodetects the device via JTAG or debugWIRE.
+If this option is provided, it overrides the result from the
+autodetection.
 .TP
 .BR \-p ,\  \-\-program
 Program the target. Binary filename must be specified with --file option.
