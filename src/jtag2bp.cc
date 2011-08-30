@@ -40,7 +40,6 @@
 
 bool jtag2::codeBreakpointAt(unsigned int address)
 {
-    bool returnvalue;
     int i;
 
     i = 0;
@@ -58,7 +57,6 @@ bool jtag2::codeBreakpointAt(unsigned int address)
 bool jtag2::codeBreakpointBetween(unsigned int start, unsigned int end)
 {
     int i;
-    bool returnvalue;
 
     i = 0;
     while (!bp[i].last)
@@ -91,7 +89,7 @@ void jtag2::deleteAllBreakpoints(void)
 bool jtag2::stopAt(unsigned int address)
 {
     uchar one = 1;
-    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
+    return jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
 }
 
 #ifdef notyet
@@ -324,6 +322,9 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
     return true;
 }
 
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
+
 bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
 {
     int bp_i;
@@ -365,6 +366,7 @@ bool jtag2::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
     return true;
 }
 
+PRAGMA_DIAG_POP
 
 /*
  * This routine is where all the logic of what breakpoints go into the
@@ -521,6 +523,14 @@ bool jtag2::layoutBreakpoints(void)
     return hadroom;
 }
 
+/*
+ * As the case labels below can be values ORed from enum values with
+ * HAS_MASK, this causes GCC (4.4+) to emit warnings that the case
+ * value is not in enumerated type.  Drop them just here.
+ */
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wswitch")
+
 void jtag2::updateBreakpoints(void)
 {
     int bp_i;
@@ -632,3 +642,4 @@ void jtag2::updateBreakpoints(void)
       }
 }
 
+PRAGMA_DIAG_POP

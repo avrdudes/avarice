@@ -300,7 +300,6 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
     static uchar buf[MAX_IMAGE_SIZE];
     unsigned int i;
     uchar *response = NULL;
-    bool emptyPage = true;
     unsigned int addr;
 
     if (! image->has_data)

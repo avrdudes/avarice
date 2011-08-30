@@ -107,10 +107,15 @@ bool jtag1::resumeProgram(void)
     return doSimpleJtagCommand('G', 0);
 }
 
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
+
 bool jtag1::jtagSingleStep(bool useHLL)
 {
     return doSimpleJtagCommand('1', 1);
 }
+
+PRAGMA_DIAG_POP
 
 void jtag1::parseEvents(const char *)
 {

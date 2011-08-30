@@ -128,6 +128,21 @@ AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memmove memset select socket strcasecmp strerror strtol])
 
+# --enable-warnings / --disable-warnings
+AC_ARG_ENABLE(
+	[warnings],
+	AC_HELP_STRING(
+		[--disable-warnings],
+		[Disable -Wall -Wextra options]),
+	[case "${enableval}" in
+	      yes) ENABLE_WARNINGS="-Wall -Wextra" ;;
+	      no)  ENABLE_WARNINGS="" ;;
+	      *) AC_MSG_ERROR(bad value ${enableval} for disable-warnings option) ;;
+	      esac],
+	[ENABLE_WARNINGS="-Wall -Wextra"])
+
+AC_SUBST([AM_CPPFLAGS], [$ENABLE_WARNINGS])
+
 AC_CONFIG_FILES([
 	scripts/Makefile
 	scripts/ice-gdb

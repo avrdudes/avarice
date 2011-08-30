@@ -48,7 +48,7 @@
 
 bool ignoreInterrupts;
 
-static int makeSocket(struct sockaddr_in *name, unsigned short int port)
+static int makeSocket(struct sockaddr_in *name)
 {
     int sock;
     int tmp;
@@ -310,16 +310,16 @@ int main(int argc, char **argv)
     const char *eventlist = "none,run,target_power_on,target_sleep,target_wakeup";
     unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
-    int  hostPortNumber;
+    int  hostPortNumber = 0;
     bool erase = false;
     bool program = false;
     bool readFuses = false;
     bool writeFuses = false;
-    char *fuses;
+    char *fuses = NULL;
     bool readLockBits = false;
     bool writeLockBits = false;
     bool gdbServerMode = false;
-    char *lockBits;
+    char *lockBits = NULL;
     bool detach = false;
     bool capture = false;
     bool verify = false;
@@ -648,7 +648,7 @@ int main(int argc, char **argv)
     else
     {
         initSocketAddress(&name, hostName, hostPortNumber);
-        sock = makeSocket(&name, hostPortNumber);
+        sock = makeSocket(&name);
         statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
         gdbCheck(listen(sock, 1));
 

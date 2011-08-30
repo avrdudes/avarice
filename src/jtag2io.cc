@@ -115,7 +115,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
       {
 	/* signal the USB daemon we are ready to get data */
 	char cmd[1] = { 'r' };
-	(void)write(ctrlPipe, cmd, 1);
+	(void)(write(ctrlPipe, cmd, 1) != 0);
       }
 
     while (state != sDONE) {
@@ -188,7 +188,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 	    if (c == TOKEN) {
 		state = sDATA;
 		if (msglen > MAX_MESSAGE) {
-		    printf("msglen %lu exceeds max message size %u, ignoring message\n",
+		    printf("msglen %u exceeds max message size %u, ignoring message\n",
 			   msglen, MAX_MESSAGE);
 		    state = sSTART;
 		    headeridx = 0;
@@ -349,7 +349,7 @@ bool jtag2::doJtagCommand(uchar *command, int  commandSize,
 	    /* signal the USB daemon to reset the EPs */
 	    debugOut("Resetting EPs...\n");
 	    char cmd[1] = { 'c' };
-	    (void)write(ctrlPipe, cmd, 1);
+	    (void)(write(ctrlPipe, cmd, 1) != 0);
 	  }
     }
 }
@@ -522,7 +522,6 @@ void jtag2::deviceAutoConfig(void)
     unsigned int device_id;
     uchar *resp;
     int respSize;
-    int i;
     jtag_device_def_type *pDevice = deviceDefinitions;
 
     // Auto config

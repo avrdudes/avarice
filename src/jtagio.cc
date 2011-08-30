@@ -224,6 +224,8 @@ void jtag1::changeBitRate(int newBitRate)
     case 115200:
 	jtagrate = BIT_RATE_115200;
 	break;
+    default:
+        return;
     }
     setJtagParameter(JTAG_P_BITRATE, jtagrate);
     changeLocalBitRate(newBitRate);
@@ -308,7 +310,6 @@ void jtag1::startJtagLink(void)
 void jtag1::deviceAutoConfig(void)
 {
     unsigned int device_id;
-    int i;
     jtag_device_def_type *pDevice = deviceDefinitions;
 
     // Auto config

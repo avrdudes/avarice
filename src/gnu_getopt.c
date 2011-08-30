@@ -107,6 +107,8 @@
 
 #include "gnu_getopt.h"
 
+#include "pragma.h"
+
 /* For communication from `getopt' to the caller.
    When `getopt' finds an option that takes an argument,
    the argument value is returned here.
@@ -389,6 +391,9 @@ exchange (argv)
 
 /* Initialize the internal data when the first call is made.  */
 
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
+
 #if defined __STDC__ && __STDC__
 static const char *_getopt_initialize (int, char *const *, const char *);
 #endif
@@ -457,6 +462,7 @@ _getopt_initialize (argc, argv, optstring)
 
   return optstring;
 }
+PRAGMA_DIAG_POP
 
 /* Scan elements of ARGV (whose length is ARGC) for option characters
    given in OPTSTRING.

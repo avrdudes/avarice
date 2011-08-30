@@ -33,6 +33,10 @@ jtag_device_def_type *global_p_device_def;
 
 /* Device descriptor magic from Atmel's documents. Let's hope it's more
    accurate than the rest of that text... */
+
+// This is a sparse table:
+PRAGMA_DIAG_IGNORED("-Wmissing-field-initializers")
+
 jtag_device_def_type deviceDefinitions[] = {
     {
         "atmega16",
@@ -681,7 +685,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
     // DEV_ATMEGA324P
@@ -739,7 +743,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
     // DEV_ATMEGA644
@@ -848,7 +852,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0x40,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
 
@@ -908,7 +912,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0x40,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
 
@@ -968,7 +972,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0x00,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
 
@@ -1028,7 +1032,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskExtended
 	    0x00,	// ucPCMaskHigh
 	    0,	// ucEindAddress
-	    0x1F,	// EECRAddress
+	    fill_b2(0x1F),	// EECRAddress
 	},
     },
 

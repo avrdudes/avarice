@@ -112,7 +112,6 @@ void jtag2::eraseProgramPage(unsigned long address)
 static int check_file_format(bfd *file)
 {
     char **matching;
-    int done = 0;
     int err = 1;
 
     // Check if archive, not plain file.
@@ -158,7 +157,6 @@ static int check_file_format(bfd *file)
 static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
 {
     BFDmemoryType sectmemtype;
-    unsigned int addr = section->lma;
 
     if ((section->flags & SEC_HAS_CONTENTS) &&
         ((section->flags & SEC_ALLOC) || (section->flags & SEC_LOAD)))
@@ -169,7 +167,11 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
             sectmemtype = MEM_RAM;
         else if (section->lma < FUSE_SPACE_ADDR_OFFSET) // < 0x82...
             sectmemtype = MEM_EEPROM;
-
+        else {
+            fprintf(stderr, "Unknown LMA 0x%x, section %s, assuming flash\n",
+                    (unsigned int)section->lma, section->name);
+            sectmemtype = MEM_FLASH;
+        }
 	if (memtype == sectmemtype) {
             if (sectmemtype == MEM_FLASH) {
                 /* Don't mask the lma or you will not be able to handle more

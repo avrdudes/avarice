@@ -73,6 +73,9 @@ bool jtag2::setProgramCounter(unsigned long pc)
     return true;
 }
 
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
+
 bool jtag2::resetProgram(bool possible_nSRST_ignored)
 {
     if (useDebugWire) {
@@ -94,6 +97,8 @@ bool jtag2::resetProgram(bool possible_nSRST_ignored)
 	return rv;
     }
 }
+
+PRAGMA_DIAG_POP
 
 bool jtag2::interruptProgram(void)
 {
@@ -127,7 +132,7 @@ bool jtag2::eventLoop(void)
       {
 	  /* signal the USB daemon to start polling. */
 	  char cmd[1] = { 'p' };
-	  (void)write(ctrlPipe, cmd, 1);
+	  (void)(write(ctrlPipe, cmd, 1) != 0);
       }
 
     for (;;)
@@ -347,7 +352,7 @@ void jtag2::parseEvents(const char *evtlist)
         uchar evtval = 0;
 
         // Now, cp1 points to the name to parse, of length l
-        for (int i = 0; i < sizeof evttable / sizeof evttable[0]; i++)
+        for (unsigned int i = 0; i < sizeof evttable / sizeof evttable[0]; i++)
         {
             if (strncmp(evttable[i].name, cp1, l) == 0)
             {

@@ -252,41 +252,6 @@ static uchar *hex2mem(char *buf, uchar *mem, int count)
     return (mem);
 }
 
-/** Convert the binary stream in BUF to memory.
-    Gdb will escape $, #, and the escape char (0x7d).
-    'count' is the total number of bytes to write into
-    memory.
-**/
-static uchar *bin2mem(char *buf, uchar *mem, int count)
-{
-    int i;
-
-    for(i = 0; i < count; i++)
-    {
-	// Check for any escaped characters. Be paranoid and
-	// only unescape chars that should be escaped.
-	if(*buf == 0x7d)
-	{
-	    switch (*(buf + 1))
-	    {
-	    case 0x3:	// #
-	    case 0x4:	// $
-	    case 0x5d:	// escape char
-		buf++;
-		*buf |= 0x20;
-		break;
-	    default:
-		// nothing
-		break;
-	    }
-	}
-
-	*mem++ = *buf++;
-    }
-
-    return mem;
-}
-
 static void putpacket(char *buffer);
 
 void vgdbOut(const char *fmt, va_list args)
@@ -341,7 +306,7 @@ void gdbOut(const char *fmt, ...)
 static void reportStatusExtended(int sigval)
 {
     uchar *jtagBuffer;
-    unsigned long pc = theJtagICE->getProgramCounter();
+    unsigned int pc = theJtagICE->getProgramCounter();
 
     // Read in SPL SPH SREG
     jtagBuffer = theJtagICE->jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
@@ -461,7 +426,7 @@ static bool singleStep()
     if (!theJtagICE->jtagSingleStep())
 	gdbOut("Failed to single-step");
 
-    int newPC = theJtagICE->getProgramCounter();
+    unsigned int newPC = theJtagICE->getProgramCounter();
     if (theJtagICE->codeBreakpointAt(newPC))
 	return true;
     // assume interrupt when PC goes into interrupt table
@@ -611,7 +576,7 @@ static void repStatus(bool breaktime)
 
 void talkToGdb(void)
 {
-    int addr, start, end;
+    int addr;
     int length;
     int i;
     unsigned int newPC;
@@ -842,7 +807,7 @@ void talkToGdb(void)
                     int offset;
                     i = 0; 
                     j = 0;
-                    unsigned int count;
+                    int count;
                     unsigned int addr;
 
                     // Find the first register

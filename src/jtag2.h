@@ -152,7 +152,7 @@ class jtag2: public jtag
 	useDebugWire = useDW;
 	apply_nSRST = nsrst;
         is_xmega = xmega;
-	flashCachePageAddr = (unsigned long)-1;
+	flashCachePageAddr = (unsigned int)-1;
 	eepromCachePageAddr = (unsigned short)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
 	  softBPcache[i].type = NONE;

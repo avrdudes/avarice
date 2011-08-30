@@ -49,6 +49,7 @@ avarice_SOURCES =	\
 	jtagrun.cc	\
 	jtagrw.cc	\
 	main.cc		\
+	pragma.h	\
 	remote.cc	\
 	remote.h	\
 	utils.cc        \
