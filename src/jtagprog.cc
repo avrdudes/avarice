@@ -160,11 +160,9 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
             sectmemtype = MEM_RAM;
         else if (section->lma < FUSE_SPACE_ADDR_OFFSET) // < 0x82...
             sectmemtype = MEM_EEPROM;
-        else {
-            fprintf(stderr, "Unknown LMA 0x%x, section %s, assuming flash\n",
-                    (unsigned int)section->lma, section->name);
-            sectmemtype = MEM_FLASH;
-        }
+        else			// e.g. .fuses
+	    return 0xffffff;
+
         if (memtype == sectmemtype) {
             if (sectmemtype == MEM_FLASH) {
                 /* Don't mask the lma or you will not be able to handle more
