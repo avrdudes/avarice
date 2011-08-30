@@ -1,5 +1,9 @@
 2011-08-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version for release 2.11.
+
+2011-08-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Patch #2842235: Fix segfault when programming with .fuses section
 	* src/jtagprog.cc (get_section_addr): Return 0xffffffff for unknown
 	section memory types, so sections like .fuses will be silently
