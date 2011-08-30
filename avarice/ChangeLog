@@ -1,5 +1,32 @@
 2011-08-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by Andrew Zabolotny:
+	Patch #2995091: Fix gcc 4.4.1 warnings
+	Actually, I went a lot further, and made it completely -Wall -Wextra
+	clean for GCC 4.x.  (GCC 3.x users might want to use --disable-warnings
+	in configure.)
+	* configure.ac: Add --enable-warnings option.
+	* src/pragma.h: New file, #pragma abstraction
+	* src/jtag.h: Include "pragma.h" so it's universally usable
+	* src/Makefile.am (avarice_SOURCES): Add pragma.h.
+	* src/devdescr.cc: Silence compiler warnings.
+	* src/gnu_getopt.c: (Ditto.)
+	* src/jtag2.h: (Ditto.)
+	* src/jtag2bp.cc: (Ditto.)
+	* src/jtag2io.cc: (Ditto.)
+	* src/jtag2prog.cc: (Ditto.)
+	* src/jtag2run.cc: (Ditto.)
+	* src/jtag2usb.cc: (Ditto.)
+	* src/jtagbp.cc: (Ditto.)
+	* src/jtaggeneric.cc: (Ditto.)
+	* src/jtagio.cc: (Ditto.)
+	* src/jtagprog.cc: (Ditto.)
+	* src/jtagrw.cc: (Ditto.)
+	* src/main.cc: (Ditto.)
+	* src/remote.cc: (Ditto.)
+
+2011-08-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Patch #2842239: Fix for deprecated string warning
 	* src/jtag2prog.cc (jtag2::downloadToTarget): Turn "target" and
 	"default_target" const to eliminate a compiler warning.

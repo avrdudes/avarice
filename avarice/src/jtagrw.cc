@@ -68,7 +68,7 @@ static uchar memorySpace(unsigned long *addr)
     }
 }
 
-static void swapBytes(uchar *buffer, int count)
+static void swapBytes(uchar *buffer, unsigned int count)
 {
     assert(!(count & 1));
     for (unsigned int i = 0; i < count; i += 2)

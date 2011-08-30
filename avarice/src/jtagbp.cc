@@ -62,8 +62,11 @@ void jtag1::deleteAllBreakpoints(void)
 bool jtag1::stopAt(unsigned int address)
 {
     uchar zero = 0;
-    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
+    return jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
 }
+
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
 
 bool jtag1::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 {
@@ -145,7 +148,7 @@ bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
     debugOut("FAILED\n");
     return false;
 }
-
+PRAGMA_DIAG_POP
 
 void jtag1::updateBreakpoints(void)
 {

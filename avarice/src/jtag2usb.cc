@@ -83,6 +83,10 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
     case EMULATOR_DRAGON:
       pid = USB_DEVICE_AVRDRAGON;
       break;
+
+    default:
+      // should not happen
+      return NULL;
     }
 
   devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
@@ -168,9 +172,12 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
   {
     printf("did not find any%s USB device \"%s\"\n",
 	   serno? " (matching)": "", jtagDeviceName);
+    if (serno)
+      free (serno);
     return NULL;
   }
-
+  if (serno)
+    free (serno);
   if (dev->config == NULL)
   {
       statusOut("USB device has no configuration\n");
@@ -195,6 +202,9 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
 
   return udev;
 }
+
+PRAGMA_DIAG_PUSH
+PRAGMA_DIAG_IGNORED("-Wunused-parameter")
 
 /*
  * Various signal handlers for the USB daemon child.
@@ -221,6 +231,20 @@ static void dummyhandler(int signo)
   /* nothing to do, just abort the current read()/select() */
 }
 
+static void childhandler(int signo)
+{
+  int status;
+
+  (void)wait(&status);
+
+#define PRINTERR(msg) (void)(write(fileno(stderr), msg, strlen(msg)) != 0)
+  if (ready)
+    PRINTERR("USB daemon died\n");
+  _exit(1);
+}
+
+PRAGMA_DIAG_POP
+
 /*
  * atexit() handler
  */
@@ -242,25 +266,12 @@ static void inthandler(int signo)
   kill(getpid(), signo);
 }
 
-static void childhandler(int signo)
-{
-  int status;
-  char b[500];
-
-  (void)wait(&status);
-
-#define PRINTERR(msg) write(fileno(stderr), msg, strlen(msg))
-  if (ready)
-    PRINTERR("USB daemon died\n");
-  _exit(1);
-}
-
 /*
  * The USB daemon itself.  Polls the USB device for data as long as
  * there is room in the AVaRICE pipe.  Polls the AVaRICE descriptor
  * for data, and sends them to the USB device.
  */
-static void usb_daemon(usb_dev_handle *udev, int fd, int cfd, int usb_interface)
+static void usb_daemon(usb_dev_handle *udev, int fd, int cfd)
 {
   signal(SIGALRM, alarmhandler);
   signal(SIGTERM, sigtermhandler);
@@ -332,7 +343,6 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd, int usb_interface)
 	    }
 	  if (FD_ISSET(cfd, &r))
 	    {
-	      char buf[JTAGICE_MAX_XFER];
 	      char cmd[1];
 
 	      if (FD_ISSET(cfd, &r))
@@ -453,7 +463,7 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd, int usb_interface)
 
 pid_t jtag::openUSB(const char *jtagDeviceName)
 {
-  int usb_interface;
+  int usb_interface = 0;
   pid_t p;
   int pype[2], cpipe[2];
   usb_dev_handle *udev;
@@ -477,7 +487,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
       check(udev != NULL, "USB device not found");
       kill(getppid(), SIGUSR1); // tell the parent we are ready to go
 
-      usb_daemon(udev, pype[0], cpipe[0], usb_interface);
+      usb_daemon(udev, pype[0], cpipe[0]);
 
       (void)usb_release_interface(udev, usb_interface);
       usb_close(udev);
@@ -503,6 +513,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
   while (!ready)
     /* wait for child to become ready */ ;
   signal(SIGUSR1, SIG_DFL);
+  return p;
 }
 
 #endif /* HAVE_LIBUSB */

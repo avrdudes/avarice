@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <termios.h>
 
+#include "pragma.h"
 #include "ioreg.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
@@ -581,8 +582,8 @@ typedef struct {
 // into this struct, then pass the entire struct to the target writer.
 typedef struct {
     AVRMemoryByte image[MAX_IMAGE_SIZE];
-    int last_address;
-    int first_address;
+    unsigned int last_address;
+    unsigned int first_address;
     bool first_address_ok;
     bool has_data;
     const char *name;
