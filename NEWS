@@ -15,6 +15,14 @@ Important bug fixes:
   to successfully work with libbfd.  That appears to be necessary
   for GNU binutils >= 2.19.
 
+. Fixed an annoying error that prevented it from compiling on recent
+  versions of GCC.
+
+. Fixed *all* warnings, making the code -Wall -Wextra safe, so they
+  can be enabled by default now.  GCC 3.x users might want to run
+  configure with --disable-warnings though, as some of the warnings
+  are suppressed by GCC 4.x pragmas.
+
 =====================================================================
 
 Summary of changes in AVaRICE 2.9
