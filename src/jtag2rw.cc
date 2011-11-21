@@ -164,7 +164,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	    {
 		// read from device, cache result, and copy over our part
 		u32_to_b4(command + 6, pageAddr);
-		check(doJtagCommand(command, sizeof command, resp, responseSize),
+		check(doJtagCommand(command, sizeof command, resp, responseSize, true),
 		      "Failed to read target memory space");
 		memcpy(cachePtr, resp + 1, pageSize);
 		*cacheBaseAddr = pageAddr;
@@ -184,7 +184,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	u32_to_b4(command + 2, numBytes);
 	u32_to_b4(command + 6, addr);
 
-	check(doJtagCommand(command, sizeof command, response, responseSize),
+	check(doJtagCommand(command, sizeof command, response, responseSize, true),
 	      "Failed to read target memory space");
 	if (offset > 0)
 	    memmove(response, response + 1 + offset, responseSize - 1 - offset);
