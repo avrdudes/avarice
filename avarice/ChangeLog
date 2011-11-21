@@ -1,5 +1,17 @@
 2011-11-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: Add REGISTER_SPACE_ADDR_OFFSET and the corresponding
+	MTYPE_XMEGA_REG; add statusAreaAddress and cpuRegisterAreaAddress
+	methods to cope with Xmega vs. megaAVR differences.
+	* src/jtag1.h: Implement statusAreaAddress and
+	cpuRegisterAreaAddress methods, respectively.
+	* src/jtag2.h: (Ditto.)
+	* src/remote.cc: Replace magic constants by calls to the
+	statusAreaAddress and cpuRegisterAreaAddress methods,
+	respectively.
+
+2011-11-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2::doJtagCommand): Be more liberal in
 	retrying failed commands (memory and PC read).
 	* src/jtag2rw.cc (jtag2::jtagRead): (Ditto.)

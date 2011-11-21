@@ -183,6 +183,8 @@ enum
 
     SIG_SPACE_ADDR_OFFSET             = 0x840000,
 
+    REGISTER_SPACE_ADDR_OFFSET        = 0x850000, // Xmega only
+
     BREAKPOINT_SPACE_ADDR_OFFSET      = 0x900000,
 
     ADDR_SPACE_MASK = (DATA_SPACE_ADDR_OFFSET   |
@@ -190,6 +192,7 @@ enum
                        FUSE_SPACE_ADDR_OFFSET   |
                        LOCK_SPACE_ADDR_OFFSET   |
                        SIG_SPACE_ADDR_OFFSET    |
+                       REGISTER_SPACE_ADDR_OFFSET |
                        BREAKPOINT_SPACE_ADDR_OFFSET),
 
     // JTAG communication timeouts, in microseconds
@@ -455,6 +458,7 @@ enum
     MTYPE_SIGN_JTAG	= 0xB4,	// signature in programming mode
     MTYPE_OSCCAL_BYTE	= 0xB5,	// osccal cells in programming mode
     MTYPE_CAN		= 0xB6,	// CAN mailbox
+    MTYPE_XMEGA_REG	= 0xB8,	// Xmega CPU registers
 
     // (some) ICE parameters, for CMND_{GET,SET}_PARAMETER
     PAR_HW_VERSION		= 0x01,
@@ -835,6 +839,23 @@ class jtag
     Shows raw value and individual bits.
   **/
   void jtagDisplayLockBits(uchar *lockBits);
+
+  /** Return read address for CPU status area.
+
+    Returns the address to read the CPU status area (SPL, SPH, SREG)
+    from.  0x5D + DATA_SPACE_ADDR_OFFSET for megaAVR, 0x3D +
+    DATA_SPACE_ADDR_OFFSET for Xmega devices.
+  **/
+  virtual const unsigned int statusAreaAddress(void) = 0;
+
+  /** Return read address for CPU registers.
+
+    Returns the address to read the CPU registers (r0 through r31).
+    DATA_SPACE_ADDR_OFFSET for megaAVR, REGISTER_SPACE_ADDR_OFFSET
+    for Xmega devices.
+
+  **/
+  virtual const unsigned int cpuRegisterAreaAddress(void) = 0;
 
 };
 

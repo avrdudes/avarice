@@ -309,7 +309,7 @@ static void reportStatusExtended(int sigval)
     unsigned int pc = theJtagICE->getProgramCounter();
 
     // Read in SPL SPH SREG
-    jtagBuffer = theJtagICE->jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+    jtagBuffer = theJtagICE->jtagRead(theJtagICE->statusAreaAddress(), 0x03);
 
     if (jtagBuffer)
     {
@@ -711,8 +711,8 @@ void talkToGdb(void)
 	// SP is at 0x5D & 0x5E
 	// SREG is at 0x5F
 	debugOut("\nGDB: (Registers)Read %d bytes from 0x%X\n",
-		  0x20, 0x00 + DATA_SPACE_ADDR_OFFSET);
-	jtagBuffer = theJtagICE->jtagRead(0x00 + DATA_SPACE_ADDR_OFFSET, 0x20);
+		  0x20, theJtagICE->cpuRegisterAreaAddress());
+	jtagBuffer = theJtagICE->jtagRead(theJtagICE->cpuRegisterAreaAddress(), 0x20);
 
 	if (jtagBuffer)
 	{
@@ -729,7 +729,7 @@ void talkToGdb(void)
         }
 
         // Read in SPL SPH SREG
-        jtagBuffer = theJtagICE->jtagRead(0x5D + DATA_SPACE_ADDR_OFFSET, 0x03);
+        jtagBuffer = theJtagICE->jtagRead(theJtagICE->statusAreaAddress(), 0x03);
      
         if (jtagBuffer)
         {
@@ -900,20 +900,23 @@ void talkToGdb(void)
             if (regno >= 0 && regno < NUMREGS)
             {
 		hex2mem(ptr, reg, 1);
-                if (theJtagICE->jtagWrite(regno+DATA_SPACE_ADDR_OFFSET, 1, reg))
+                if (theJtagICE->jtagWrite(theJtagICE->cpuRegisterAreaAddress() + regno,
+					  1, reg))
 		    ok();
-                break;
-            }
-            else if (regno == SREG)
-            {
+		break;
+	    }
+	    else if (regno == SREG)
+	    {
 		hex2mem(ptr, reg, 1);
-                if (theJtagICE->jtagWrite(0x5f+DATA_SPACE_ADDR_OFFSET, 1, reg))
+		if (theJtagICE->jtagWrite(theJtagICE->statusAreaAddress() + 2,
+					  1, reg))
 		    ok();
-            }
+	    }
 	    else if (regno == SP)
 	    {
 		hex2mem(ptr, reg, 2);
-		if (theJtagICE->jtagWrite(0x5d+DATA_SPACE_ADDR_OFFSET, 2, reg))
+		if (theJtagICE->jtagWrite(theJtagICE->statusAreaAddress(),
+					  2, reg))
 		    ok();
 	    }
 	    else if (regno == PC)
