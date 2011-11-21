@@ -339,9 +339,7 @@ bool jtag2::doJtagCommand(uchar *command, int  commandSize,
 	if (sendJtagCommand(command, commandSize, tryCount, response, responseSize, false))
 	    return true;
 
-	if (responseSize > 0 || !retryOnTimeout)
-	    // Got a negative response in time; there is no point
-	    // in retrying the command.
+	if (!retryOnTimeout)
 	    return false;
 
 	if (tryCount > 3 && ctrlPipe != -1)

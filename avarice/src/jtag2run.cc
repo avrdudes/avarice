@@ -45,7 +45,7 @@ unsigned long jtag2::getProgramCounter(void)
     int responseSize;
     uchar command[] = { CMND_READ_PC };
 
-    check(doJtagCommand(command, sizeof(command), response, responseSize),
+    check(doJtagCommand(command, sizeof(command), response, responseSize, true),
 	  "cannot read program counter");
     unsigned long result = b4_to_u32(response + 1);
     delete [] response;

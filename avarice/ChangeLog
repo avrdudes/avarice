@@ -1,4 +1,11 @@
-2011-08-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+2011-11-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2io.cc (jtag2::doJtagCommand): Be more liberal in
+	retrying failed commands (memory and PC read).
+	* src/jtag2rw.cc (jtag2::jtagRead): (Ditto.)
+	* src/jtag2run.cc (jtag2::getProgramCounter): (Ditto.)
+
+2011-11-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Moved from CVS to SVN on sourceforge.net.
 
