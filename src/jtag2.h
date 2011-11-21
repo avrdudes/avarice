@@ -191,6 +191,12 @@ class jtag2: public jtag
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
+    virtual const unsigned int statusAreaAddress(void) {
+        return (is_xmega? 0x3D: 0x5D) + DATA_SPACE_ADDR_OFFSET;
+    };
+    virtual const unsigned int cpuRegisterAreaAddress(void) {
+        return is_xmega? REGISTER_SPACE_ADDR_OFFSET: DATA_SPACE_ADDR_OFFSET;
+    }
 
   private:
     virtual void changeBitRate(int newBitRate);

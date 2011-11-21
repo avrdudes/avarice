@@ -117,6 +117,14 @@ class jtag1: public jtag
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
+    virtual const unsigned int statusAreaAddress(void) {
+        /* no Xmega handling in JTAG ICE mkI */
+        return 0x5D + DATA_SPACE_ADDR_OFFSET;
+    };
+    virtual const unsigned int cpuRegisterAreaAddress(void) {
+        /* no Xmega handling in JTAG ICE mkI */
+        return DATA_SPACE_ADDR_OFFSET;
+    }
 
   private:
     virtual void changeBitRate(int newBitRate);

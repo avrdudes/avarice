@@ -73,6 +73,8 @@ uchar jtag2::memorySpace(unsigned long &addr)
       // ... return MTYPE_CAN;
     case BREAKPOINT_SPACE_ADDR_OFFSET:
 	return MTYPE_EVENT;
+    case REGISTER_SPACE_ADDR_OFFSET:
+	return MTYPE_XMEGA_REG;
     case DATA_SPACE_ADDR_OFFSET:
 	return MTYPE_SRAM;
     default:
