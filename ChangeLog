@@ -1,3 +1,16 @@
+2011-11-23  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Attempt to implement some basic Xmega support for firmware
+	revisions 7.x and above, i.e. AVR Studio 5 firmware.  Many thanks
+	to Detlev Kraft for providing me with the details from his
+	reengineering effort!
+	* src/jtag.h: Add two new undocumented commands for Xmegas.
+	* src/jtag2.h: Add the has_full_xmega_support feature flag.
+	* src/jtag2io.cc: Determine whether the firmware is recent enough
+	for has_full_xmega_support (>= 7.x).
+	* src/jtag2bp.cc: Use CMND_SET_BREAK_XMEGA for the first two
+	Xmega breakpoints, and software BPs for the rest.
+
 2011-11-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: Add REGISTER_SPACE_ADDR_OFFSET and the corresponding

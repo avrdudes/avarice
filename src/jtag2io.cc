@@ -475,6 +475,15 @@ bool jtag2::synchroniseAt(int bitrate)
 #undef FWVER
 	    }
 
+	    has_full_xmega_support = (unsigned)signonmsg[8] >= 7;
+	    if (is_xmega && !has_full_xmega_support)
+	    {
+		fprintf(stderr,
+			"Warning, S_MCU firmware version (%u.%02u) too old to work "
+			"correctly for Xmega devices, >= 7.x required\n",
+			(unsigned)signonmsg[8], (unsigned)signonmsg[7]);
+	    }
+
 	    delete [] signonmsg;
 	    return true;
 	}

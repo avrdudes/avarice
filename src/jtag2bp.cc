@@ -399,14 +399,21 @@ bool jtag2::layoutBreakpoints(void)
 	  softwarebps = false;
       }
 
-    // Turn off everything but software breakpoints for DebugWire
-    if (useDebugWire)
+    // Turn off everything but software breakpoints for DebugWire,
+    // or for old firmware ICEs with Xmega devices
+    if (useDebugWire ||
+        (is_xmega && !has_full_xmega_support))
       {
 	  int k;
 	  for (k = 1; k < MAX_BREAKPOINTS2 + 1; k++)
             {
 		remaining_bps[k] = false;
             }
+      }
+    else if (is_xmega)
+      {
+	  // Xmega has only two hardware slots?
+	  remaining_bps[3] = false;
       }
 
     bp_i = 0;
@@ -548,20 +555,28 @@ void jtag2::updateBreakpoints(void)
 		debugOut("Breakpoint deleted in ICE. slot: %d  type: %d  addr: 0x%x\n",
 			 bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
 
-		cmd[1] = bp[bp_i].bpnum;
-
-		// Software breakpoints need the address!
-		if (bp[bp_i].bpnum == 0x00)
-		    u32_to_b4(cmd + 2, (bp[bp_i].address / 2));
+		if (is_xmega && has_full_xmega_support &&
+		    bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
+		{
+		    // no action needed on this one, has been auto-removed
+		}
 		else
-		    u32_to_b4(cmd + 2, 0);
+		{
+		    cmd[1] = bp[bp_i].bpnum;
 
-		uchar *response;
-		int responseSize;
-		if(!doJtagCommand(cmd, 6, response, responseSize))
-		    check(false, "Failed to clear breakpoint");
+		    // Software breakpoints need the address!
+		    if (bp[bp_i].bpnum == 0x00)
+			u32_to_b4(cmd + 2, (bp[bp_i].address / 2));
+		    else
+			u32_to_b4(cmd + 2, 0);
 
-		delete [] response;
+		    uchar *response;
+		    int responseSize;
+		    if(!doJtagCommand(cmd, 6, response, responseSize))
+			check(false, "Failed to clear breakpoint");
+
+		    delete [] response;
+		}
 
 		// rip breakpoint
 		bp[bp_i].icestatus = false;
@@ -573,6 +588,8 @@ void jtag2::updateBreakpoints(void)
 
     // Add all the new breakpoints
     bp_i = 0;
+    uchar cmdx[14] = { CMND_SET_BREAK_XMEGA };
+    int xmega_cmdx_idx = 0;
     while (!bp[bp_i].last)
       {
 	  uchar cmd[8] = { CMND_SET_BREAK };
@@ -582,63 +599,87 @@ void jtag2::updateBreakpoints(void)
 		debugOut("Breakpoint added in ICE. slot: %d  type: %d  addr: 0x%x\n",
 			 bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
 
-		cmd[1] = bp[bp_i].type;
-		cmd[2] = bp[bp_i].bpnum;
-
-		if (bp[bp_i].type == CODE)
-		  {
-		      // The JTAG box sees program memory as 16-bit
-		      // wide locations. GDB sees bytes. As such,
-		      // halve the breakpoint address.
-		      u32_to_b4(cmd + 3, (bp[bp_i].address / 2));
-		  }
+		if (is_xmega && has_full_xmega_support &&
+		    bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
+		{
+		    check(xmega_cmdx_idx < 2, "Too many hard BPs for Xmega");
+		    // Xmega code breakpoint via cmdx
+		    u32_to_b4(cmdx + 1 + 4 * xmega_cmdx_idx, (bp[bp_i].address / 2));
+		    xmega_cmdx_idx++;
+		    // these breakpoints are auto-removed by the ICE
+		    bp[bp_i].toremove = true;
+		    bp[bp_i].icestatus = false;
+		}
 		else
-		  {
-		      u32_to_b4(cmd + 3, bp[bp_i].address);
-		  }
+		{
+		    cmd[1] = bp[bp_i].type;
+		    cmd[2] = bp[bp_i].bpnum;
 
-		switch (bp[bp_i].type)
-		  {
-		  case READ_DATA:
-		  case READ_DATA | HAS_MASK:
-		      cmd[7] = 0x00;
-		      cmd[1] = 0x02;
-		      break;
-		  case WRITE_DATA:
-		  case WRITE_DATA | HAS_MASK:
-		      cmd[7] = 0x01;
-		      cmd[1] = 0x02;
-		      break;
-		  case ACCESS_DATA:
-		  case ACCESS_DATA | HAS_MASK:
-		      cmd[7] = 0x02;
-		      cmd[1] = 0x02;
-		      break;
-		  case DATA_MASK:
-		      cmd[7] = 0x00;
-		      cmd[1] = 0x03;
-		      break;
-		  case CODE:
-		      cmd[1] = bp[bp_i].type;
-		      cmd[7] = 0x03;
-		      break;
-		  default:
-		      check(false, "Invalid bp mode (for data bp)");
-		      break;
-		  }
+		    if (bp[bp_i].type == CODE)
+		    {
+			// The JTAG box sees program memory as 16-bit
+			// wide locations. GDB sees bytes. As such,
+			// halve the breakpoint address.
+			u32_to_b4(cmd + 3, (bp[bp_i].address / 2));
+		    }
+		    else
+		    {
+			u32_to_b4(cmd + 3, bp[bp_i].address);
+		    }
 
-		uchar *response;
-		int responseSize;
-		check(doJtagCommand(cmd, 8, response, responseSize),
-		      "Failed to set breakpoint");
-		delete [] response;
+		    switch (bp[bp_i].type)
+		    {
+			case READ_DATA:
+			case READ_DATA | HAS_MASK:
+			    cmd[7] = 0x00;
+			    cmd[1] = 0x02;
+			    break;
+			case WRITE_DATA:
+			case WRITE_DATA | HAS_MASK:
+			    cmd[7] = 0x01;
+			    cmd[1] = 0x02;
+			    break;
+			case ACCESS_DATA:
+			case ACCESS_DATA | HAS_MASK:
+			    cmd[7] = 0x02;
+			    cmd[1] = 0x02;
+			    break;
+			case DATA_MASK:
+			    cmd[7] = 0x00;
+			    cmd[1] = 0x03;
+			    break;
+			case CODE:
+			    cmd[1] = bp[bp_i].type;
+			    cmd[7] = 0x03;
+			    break;
+			default:
+			    check(false, "Invalid bp mode (for data bp)");
+			    break;
+		    }
+
+		    uchar *response;
+		    int responseSize;
+		    check(doJtagCommand(cmd, 8, response, responseSize),
+			  "Failed to set breakpoint");
+		    delete [] response;
+
+		    bp[bp_i].icestatus = true;
+		}
 
 		// It's a beautiful baby breakpoint
-		bp[bp_i].icestatus = true;
 		bp[bp_i].toadd = false;
-            }
+	    }
 
 	  bp_i++;
+      }
+      if (xmega_cmdx_idx != 0)
+      {
+	  uchar *response;
+	  int responseSize;
+	  cmdx[12] = xmega_cmdx_idx;
+	  check(doJtagCommand(cmdx, 14, response, responseSize),
+		"Failed to set Xmega breakpoints");
+	  delete [] response;
       }
 }
 
