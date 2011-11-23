@@ -128,6 +128,8 @@ class jtag2: public jtag
     bool haveHiddenBreakpoint;
     bool useDebugWire;
     bool is_xmega;
+    bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
+                                       // allows for full Xmega support (>= 7.x)
 
     // Total breakpoints including software
     breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
