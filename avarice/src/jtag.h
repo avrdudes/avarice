@@ -131,6 +131,28 @@ typedef struct {
     unsigned char EECRAddress[2]; // EECR IO address
 } jtag2_device_desc_type;
 
+// New Xmega device descriptor, for firmware version 7 and above
+typedef struct {
+    unsigned char cmd;			// CMND_SET_XMEGA_PARAMS
+    unsigned char whatever[2];		// cannot guess; must be 0x0002
+    unsigned char datalen;		// length of the following data, = 47
+    unsigned char nvm_app_offset[4];	// NVM offset for application flash
+    unsigned char nvm_boot_offset[4];	// NVM offset for boot flash
+    unsigned char nvm_eeprom_offset[4]; // NVM offset for EEPROM
+    unsigned char nvm_fuse_offset[4];	// NVM offset for fuses
+    unsigned char nvm_lock_offset[4];	// NVM offset for lock bits
+    unsigned char nvm_user_sig_offset[4]; // NVM offset for user signature row
+    unsigned char nvm_prod_sig_offset[4]; // NVM offset for production sign. row
+    unsigned char nvm_data_offset[4];	// NVM offset for data memory (SRAM + IO)
+    unsigned char app_size[4];		// size of application flash
+    unsigned char boot_size[2];		// size of boot flash
+    unsigned char flash_page_size[2];	// flash page size
+    unsigned char eeprom_size[2];	// size of EEPROM
+    unsigned char eeprom_page_size[2];	// EEPROM page size
+    unsigned char nvm_base_addr[2];	// IO space base address of NVM controller
+    unsigned char mcu_base_addr[2];	// IO space base address of MCU control
+} xmega_device_desc_type;
+
 #define fill_b4(u) \
 { ((u) & 0xffUL), (((u) & 0xff00UL) >> 8), \
   (((u) & 0xff0000UL) >> 16), (((u) & 0xff000000UL) >> 24) }
@@ -162,6 +184,9 @@ typedef struct {
                                        // mkI device
     jtag2_device_desc_type dev_desc2;  // Device descriptor to download to
                                        // mkII device
+    xmega_device_desc_type dev_desc3;  // Device descriptor to download for
+                                       // Xmega devices in new (7+) firmware
+                                       // JTAGICE mkII and AVR Dragon
 } jtag_device_def_type;
 
 extern jtag_device_def_type *global_p_device_def, deviceDefinitions[];

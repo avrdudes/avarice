@@ -408,8 +408,13 @@ void jtag2::changeBitRate(int newBitRate)
 void jtag2::setDeviceDescriptor(jtag_device_def_type *dev)
 {
     uchar *response;
-    uchar *command = (uchar *)(&dev->dev_desc2);
+    uchar *command;
     int respSize;
+
+    if (is_xmega && has_full_xmega_support)
+	command = (uchar *)&dev->dev_desc3;
+    else
+	command = (uchar *)&dev->dev_desc2;
 
     check(doJtagCommand(command, devdescrlen, response, respSize),
 	  "JTAG ICE: Failed to set device description");
@@ -476,12 +481,19 @@ bool jtag2::synchroniseAt(int bitrate)
 	    }
 
 	    has_full_xmega_support = (unsigned)signonmsg[8] >= 7;
-	    if (is_xmega && !has_full_xmega_support)
+	    if (is_xmega)
 	    {
-		fprintf(stderr,
-			"Warning, S_MCU firmware version (%u.%02u) too old to work "
-			"correctly for Xmega devices, >= 7.x required\n",
-			(unsigned)signonmsg[8], (unsigned)signonmsg[7]);
+		if (has_full_xmega_support)
+		{
+		    devdescrlen = sizeof(xmega_device_desc_type);
+		}
+		else
+		{
+		    fprintf(stderr,
+			    "Warning, S_MCU firmware version (%u.%02u) too old to work "
+			    "correctly for Xmega devices, >= 7.x required\n",
+			    (unsigned)signonmsg[8], (unsigned)signonmsg[7]);
+		}
 	    }
 
 	    delete [] signonmsg;

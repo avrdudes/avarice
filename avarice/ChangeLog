@@ -1,3 +1,15 @@
+2011-11-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Based on Detlev Kraft's guesses (many thanks to him again!),
+	implement the new Xmega device descriptor setting for V7+
+	firmware.
+	* src/jtag.h: define xmega_device_desc_type
+	* src/devdescr.cc: implement xmega_device_desc_type for
+	ATxmega128A1(+revD)
+	* src/jtag2io.cc: providing the firmware supports it, use
+	xmega_device_desc_type rather than jtag2_device_desc_type when
+	talking to an Xmega device
+
 2011-11-23  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Attempt to implement some basic Xmega support for firmware
