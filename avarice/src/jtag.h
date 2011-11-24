@@ -486,6 +486,7 @@ enum
     MTYPE_OSCCAL_BYTE	= 0xB5,	// osccal cells in programming mode
     MTYPE_CAN		= 0xB6,	// CAN mailbox
     MTYPE_XMEGA_REG	= 0xB8,	// Xmega CPU registers
+    MTYPE_XMEGA_APP_FLASH = 0xC0, // Xmega application flash
 
     // (some) ICE parameters, for CMND_{GET,SET}_PARAMETER
     PAR_HW_VERSION		= 0x01,

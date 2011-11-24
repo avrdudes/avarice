@@ -80,6 +80,8 @@ uchar jtag2::memorySpace(unsigned long &addr)
     default:
 	if (useDebugWire || programmingEnabled)
 	    return MTYPE_FLASH_PAGE;
+	else if (is_xmega && has_full_xmega_support)
+	    return MTYPE_XMEGA_APP_FLASH;
 	else
 	    return MTYPE_SPM;
     }
@@ -99,7 +101,8 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 
     debugOut("jtagRead ");
     uchar whichSpace = memorySpace(addr);
-    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE;
+    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE &&
+        whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
     unsigned int offset = 0;
     bool wasProgmode = programmingEnabled;
@@ -223,7 +226,8 @@ bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	eraseProgramMemory();
     }
 
-    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE;
+    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE &&
+        whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)

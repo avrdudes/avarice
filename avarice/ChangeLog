@@ -1,5 +1,12 @@
 2011-11-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: Add definition for MTYPE_XMEGA_APP_FLASH (thanks
+	to Detlev's findings, again)
+	* src/jtag2rw.cc: Implement MTYPE_XMEGA_APP_FLASH access, and
+	fix MTYPE_XMEGA_REG access (must not enable programming mode).
+
+2011-11-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Based on Detlev Kraft's guesses (many thanks to him again!),
 	implement the new Xmega device descriptor setting for V7+
 	firmware.
