@@ -110,6 +110,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_162
     {
@@ -184,6 +185,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_169
     {
@@ -258,6 +260,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_323
     {
@@ -332,6 +335,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_32
     {
@@ -406,6 +410,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
     // DEV_ATMEGA_64
@@ -481,6 +486,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_128
     {
@@ -555,6 +561,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1c),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATCAN_128
     {
@@ -629,6 +636,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA164P
     {
@@ -687,6 +695,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA324P
     {
@@ -745,6 +754,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA644
     {
@@ -795,6 +805,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
     // DEV_ATMEGA325
@@ -854,6 +865,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
 
@@ -914,6 +926,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
 
@@ -974,6 +987,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
 
@@ -1034,6 +1048,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
 
     // DEV_ATMEGA329
@@ -1085,6 +1100,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA3290
     {
@@ -1135,6 +1151,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA649
     {
@@ -1185,6 +1202,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA6490
     {
@@ -1235,6 +1253,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1f),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_640
     {
@@ -1291,6 +1310,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3c,			// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_1280
     {
@@ -1347,6 +1367,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3c,			// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_1281
     {
@@ -1403,6 +1424,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3c,			// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_2560
     {
@@ -1459,6 +1481,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3c,			// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA_2561
     {
@@ -1515,6 +1538,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3c,			// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA48
     {
@@ -1571,6 +1595,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,				// ucEindAddress
 	    fill_b2(0x1F),		// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA88
     {
@@ -1631,6 +1656,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA168
     {
@@ -1691,6 +1717,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY13
     {
@@ -1751,6 +1778,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY2313
     {
@@ -1811,6 +1839,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM2
     {
@@ -1871,6 +1900,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM3
     {
@@ -1931,6 +1961,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM2B
     {
@@ -1991,6 +2022,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM3B
     {
@@ -2051,6 +2083,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY24
     {
@@ -2111,6 +2144,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY44
     {
@@ -2171,6 +2205,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY84
     {
@@ -2231,6 +2266,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY25
     {
@@ -2291,6 +2327,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY45
     {
@@ -2351,6 +2388,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY85
     {
@@ -2411,6 +2449,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY261
     {
@@ -2471,6 +2510,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY461
     {
@@ -2531,6 +2571,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY861
     {
@@ -2591,6 +2632,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA32C1
     {
@@ -2651,6 +2693,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA32M1
     {
@@ -2711,6 +2754,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90CAN32
     {
@@ -2769,6 +2813,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90CAN64
     {
@@ -2827,6 +2872,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM216
     {
@@ -2887,6 +2933,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90PWM316
     {
@@ -2947,6 +2994,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90USB1287
     {
@@ -3005,6 +3053,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90USB162
     {
@@ -3065,6 +3114,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90USB646
     {
@@ -3123,6 +3173,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_AT90USB647
     {
@@ -3181,6 +3232,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA1284P
     {
@@ -3239,6 +3291,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA165
     {
@@ -3297,6 +3350,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA165P
     {
@@ -3355,6 +3409,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA168P
     {
@@ -3415,6 +3470,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA16HVA
     {
@@ -3475,6 +3531,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA3250P
     {
@@ -3533,6 +3590,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA325P
     {
@@ -3591,6 +3649,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA328P
     {
@@ -3651,6 +3710,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA3290P
     {
@@ -3709,6 +3769,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA329P
     {
@@ -3767,6 +3828,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA32HVB
     {
@@ -3827,6 +3889,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA32U4
     {
@@ -3885,6 +3948,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA406
     {
@@ -3943,6 +4007,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA48P
     {
@@ -4003,6 +4068,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA644P
     {
@@ -4061,6 +4127,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATMEGA88P
     {
@@ -4121,6 +4188,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY167
     {
@@ -4179,6 +4247,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY43U
     {
@@ -4239,6 +4308,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1C),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY48
     {
@@ -4299,6 +4369,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATTINY88
     {
@@ -4359,6 +4430,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // DEV_ATXMEGA128A1 revision D
     {
@@ -4419,6 +4491,26 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucEindAddress
 	    fill_b2(0),	// EECRAddress
 	},
+	{
+	    CMND_SET_XMEGA_PARAMS, // cmd
+	    fill_b2(2),		// whatever
+	    47,			// length of following data
+	    fill_b4(0x800000),	// NVM offset for application flash
+	    fill_b4(0x820000),	// NVM offset for boot flash
+	    fill_b4(0x8c0000),	// NVM offset for EEPROM
+	    fill_b4(0x8f0020),	// NVM offset for fuses
+	    fill_b4(0x8f0027),	// NVM offset for lock bits
+	    fill_b4(0x8e0400),	// NVM offset for user signature row
+	    fill_b4(0x8e0200),	// NVM offset for production sig. row
+	    fill_b4(0x1000000), // NVM offset for data memory
+	    fill_b4(131072),	// size of application flash
+	    fill_b2(8192),	// size of boot flash
+	    fill_b2(512),	// flash page size
+	    fill_b2(2048),	// size of EEPROM
+	    fill_b2(32),	// EEPROM page size
+	    fill_b2(0x1c0),	// IO space base address of NVM controller
+	    fill_b2(0x90),	// IO space address of MCU control
+	},
     },
     // DEV_ATXMEGA128A1 revision G (and newer)
     {
@@ -4478,6 +4570,26 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0,	// ucPCMaskHigh
 	    0,	// ucEindAddress
 	    fill_b2(0),	// EECRAddress
+	},
+	{
+	    CMND_SET_XMEGA_PARAMS, // cmd
+	    fill_b2(2),		// whatever
+	    47,			// length of following data
+	    fill_b4(0x800000),	// NVM offset for application flash
+	    fill_b4(0x820000),	// NVM offset for boot flash
+	    fill_b4(0x8c0000),	// NVM offset for EEPROM
+	    fill_b4(0x8f0020),	// NVM offset for fuses
+	    fill_b4(0x8f0027),	// NVM offset for lock bits
+	    fill_b4(0x8e0400),	// NVM offset for user signature row
+	    fill_b4(0x8e0200),	// NVM offset for production sig. row
+	    fill_b4(0x1000000), // NVM offset for data memory
+	    fill_b4(131072),	// size of application flash
+	    fill_b2(8192),	// size of boot flash
+	    fill_b2(512),	// flash page size
+	    fill_b2(2048),	// size of EEPROM
+	    fill_b2(32),	// EEPROM page size
+	    fill_b2(0x1c0),	// IO space base address of NVM controller
+	    fill_b2(0x90),	// IO space address of MCU control
 	},
     },
     // DEV_ATMEGA128RFA1
@@ -4545,6 +4657,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    0x3C,	// ucEindAddress
 	    fill_b2(0x1F),	// EECRAddress
 	},
+	{ 0 },			// Xmega device descr.
     },
     // Termination record.
     { 
@@ -4557,7 +4670,8 @@ jtag_device_def_type deviceDefinitions[] = {
         NULL,                   // io reg defs
         false,
         { 0 },                  // mkI device descriptor information
-	{ 0 }                   // mkII device descriptor
+	{ 0 },                  // mkII device descriptor
+	{ 0 },			// Xmega device descr.
     }
 };
 
