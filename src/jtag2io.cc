@@ -342,7 +342,11 @@ bool jtag2::doJtagCommand(uchar *command, int  commandSize,
 	if (!retryOnTimeout)
 	    return false;
 
-	if (tryCount > 3 && ctrlPipe != -1)
+	if (responseSize > 0 && response[0] > RSP_FAILED)
+	    // no point in retrying failures other than FAILED
+	    return false;
+
+	if (tryCount > 3 && responseSize == 0 && ctrlPipe != -1)
 	  {
 	    /* signal the USB daemon to reset the EPs */
 	    debugOut("Resetting EPs...\n");
