@@ -1,5 +1,16 @@
 2011-11-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2.h: Implement a "cached PC" to avoid re-requesting
+	the PC value from the ICE over and over again.
+	* src/jtag2run.cc: Cache the PC value obtained from the ICE.
+	For actions that are expecting a BREAK event, catch the
+	expected event immediately, and use the PC value obtained
+	from that event.  Fork out jtag2::expectEvent() into a method
+	of its own to centralize the code for it (this logic used to
+	live inside jtag2::eventLoop() before).
+
+2011-11-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2::doJtagCommand): Slightly improve the
 	change from rev 240: don't attempt to retry definitively
 	rejected commands; do not attempt to perform USB endpoint

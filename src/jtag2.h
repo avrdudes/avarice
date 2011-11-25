@@ -130,6 +130,8 @@ class jtag2: public jtag
     bool is_xmega;
     bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
                                        // allows for full Xmega support (>= 7.x)
+    unsigned long cached_pc;
+    bool cached_pc_is_valid;
 
     // Total breakpoints including software
     breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
@@ -161,6 +163,7 @@ class jtag2: public jtag
 
 	for (int j = 0; j < MAX_TOTAL_BREAKPOINTS2; j++)
 	  bp[j] = default_bp;
+        cached_pc_is_valid = false;
     };
     virtual ~jtag2(void);
 
@@ -289,6 +292,10 @@ class jtag2: public jtag
 	breakpoint was reached, and false for GDB input.
      **/
     bool eventLoop(void);
+
+    /** Expect an ICE event in the input stream.
+     **/
+    void expectEvent(bool &breakpoint, bool &gdbInterrupt);
 };
 
 #endif
