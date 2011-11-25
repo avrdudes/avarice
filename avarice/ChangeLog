@@ -1,3 +1,11 @@
+2011-11-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2io.cc (jtag2::doJtagCommand): Slightly improve the
+	change from rev 240: don't attempt to retry definitively
+	rejected commands; do not attempt to perform USB endpoint
+	resets when the communication went fine but the result was
+	not the expected one.
+
 2011-11-24  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: Add definition for MTYPE_XMEGA_APP_FLASH (thanks
