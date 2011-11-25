@@ -41,6 +41,9 @@
 
 unsigned long jtag2::getProgramCounter(void)
 {
+    if (cached_pc_is_valid)
+        return cached_pc;
+
     uchar *response;
     int responseSize;
     uchar command[] = { CMND_READ_PC };
@@ -54,7 +57,8 @@ unsigned long jtag2::getProgramCounter(void)
     // sees bytes. As such, double the PC value.
     result *= 2;
 
-    return result;
+    cached_pc_is_valid = true;
+    return cached_pc = result;
 }
 
 bool jtag2::setProgramCounter(unsigned long pc)
@@ -69,6 +73,8 @@ bool jtag2::setProgramCounter(unsigned long pc)
 	  "cannot write program counter");
 
     delete [] response;
+
+    cached_pc_is_valid = false;
 
     return true;
 }
@@ -92,7 +98,8 @@ bool jtag2::resetProgram(bool possible_nSRST_ignored)
 	delete [] resp;
 
 	/* Await the BREAK event that is posted by the ICE. */
-	(void)eventLoop();
+	bool bp, gdb;
+	expectEvent(bp, gdb);
 
 	return rv;
     }
@@ -109,6 +116,9 @@ bool jtag2::interruptProgram(void)
     bool rv = doJtagCommand(cmd, 2, resp, respSize);
     delete [] resp;
 
+    bool bp, gdb;
+    expectEvent(bp, gdb);
+
     return rv;
 }
 
@@ -116,7 +126,102 @@ bool jtag2::resumeProgram(void)
 {
     doSimpleJtagCommand(CMND_GO);
 
+    cached_pc_is_valid = false;
+
     return true;
+}
+
+void jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt)
+{
+    uchar *evtbuf;
+    int evtSize;
+    unsigned short seqno;
+
+    evtSize = recvFrame(evtbuf, seqno);
+    if (evtSize >= 0) {
+	// XXX if not event, should push frame back into queue...
+	// We really need a queue of received frames.
+	if (seqno != 0xffff)
+	    debugOut("Expected event packet, got other response");
+	else if (!nonbreaking_events[evtbuf[8] - EVT_BREAK])
+	{
+	    switch (evtbuf[8])
+	    {
+		// Program stopped at some kind of breakpoint.
+		case EVT_BREAK:
+		    cached_pc = 2 * b4_to_u32(evtbuf + 9);
+		    cached_pc_is_valid = true;
+		    /* FALLTHROUGH */
+		case EVT_EXT_RESET:
+		case EVT_PDSB_BREAK:
+		case EVT_PDSMB_BREAK:
+		case EVT_PROGRAM_BREAK:
+		    breakpoint = true;
+		    break;
+
+		case EVT_IDR_DIRTY:
+		    // The program is still running at IDR dirty, so
+		    // pretend a user break;
+		    gdbInterrupt = true;
+		    printf("\nIDR dirty: 0x%02x\n", evtbuf[9]);
+		    break;
+
+		    // Fatal debugWire errors, cannot continue
+		case EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT:
+		case EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF:
+		case EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT:
+		case EVT_ERROR_PHY_OPT_RECEIVED_BREAK:
+		case EVT_ERROR_PHY_RECEIVED_BREAK:
+		case EVT_ERROR_PHY_RECEIVE_TIMEOUT:
+		case EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT:
+		case EVT_ERROR_PHY_SYNC_OUT_OF_RANGE:
+		case EVT_ERROR_PHY_SYNC_TIMEOUT:
+		case EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD:
+		case EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT:
+		    gdbInterrupt = true;
+		    printf("\nFatal debugWIRE communication event: 0x%02x\n",
+			   evtbuf[8]);
+		    break;
+
+		    // Other fatal errors, user could mask them off
+		case EVT_ICE_POWER_ERROR_STATE:
+		    gdbInterrupt = true;
+		    printf("\nJTAG ICE mkII power failure\n");
+		    break;
+
+		case EVT_TARGET_POWER_OFF:
+		    gdbInterrupt = true;
+		    printf("\nTarget power turned off\n");
+		    break;
+
+		case EVT_TARGET_POWER_ON:
+		    gdbInterrupt = true;
+		    printf("\nTarget power returned\n");
+		    break;
+
+		case EVT_TARGET_SLEEP:
+		    gdbInterrupt = true;
+		    printf("\nTarget went to sleep\n");
+		    break;
+
+		case EVT_TARGET_WAKEUP:
+		    gdbInterrupt = true;
+		    printf("\nTarget went out of sleep\n");
+		    break;
+
+		    // Events where we want to continue
+		case EVT_NONE:
+		case EVT_RUN:
+		    break;
+
+		default:
+		    gdbInterrupt = true;
+		    printf("\nUnhandled JTAG ICE mkII event: 0x%0x2\n",
+			   evtbuf[8]);
+	    }
+	}
+	delete [] evtbuf;
+    }
 }
 
 bool jtag2::eventLoop(void)
@@ -167,91 +272,7 @@ bool jtag2::eventLoop(void)
 
 	  if (FD_ISSET(jtagBox, &readfds))
 	    {
-		uchar *evtbuf;
-		int evtSize;
-		unsigned short seqno;
-		evtSize = recvFrame(evtbuf, seqno);
-		if (evtSize >= 0) {
-		    // XXX if not event, should push frame back into queue...
-		    // We really need a queue of received frames.
-		    if (seqno != 0xffff)
-			debugOut("Expected event packet, got other response");
-		    else if (!nonbreaking_events[evtbuf[8] - EVT_BREAK])
-		      {
-			  switch (evtbuf[8])
-			    {
-				// Program stopped at some kind of breakpoint.
-			    case EVT_BREAK:
-			    case EVT_EXT_RESET:
-			    case EVT_PDSB_BREAK:
-			    case EVT_PDSMB_BREAK:
-			    case EVT_PROGRAM_BREAK:
-				breakpoint = true;
-				break;
-
-			    case EVT_IDR_DIRTY:
-				// The program is still running at IDR dirty, so
-				// pretend a user break;
-				gdbInterrupt = true;
-				printf("\nIDR dirty: 0x%02x\n", evtbuf[9]);
-				break;
-
-				// Fatal debugWire errors, cannot continue
-			    case EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT:
-			    case EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF:
-			    case EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT:
-			    case EVT_ERROR_PHY_OPT_RECEIVED_BREAK:
-			    case EVT_ERROR_PHY_RECEIVED_BREAK:
-			    case EVT_ERROR_PHY_RECEIVE_TIMEOUT:
-			    case EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT:
-			    case EVT_ERROR_PHY_SYNC_OUT_OF_RANGE:
-			    case EVT_ERROR_PHY_SYNC_TIMEOUT:
-			    case EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD:
-			    case EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT:
-				gdbInterrupt = true;
-				printf("\nFatal debugWIRE communication event: 0x%02x\n",
-				       evtbuf[8]);
-				break;
-
-				// Other fatal errors, user could mask them off
-			    case EVT_ICE_POWER_ERROR_STATE:
-				gdbInterrupt = true;
-				printf("\nJTAG ICE mkII power failure\n");
-				break;
-
-			    case EVT_TARGET_POWER_OFF:
-				gdbInterrupt = true;
-				printf("\nTarget power turned off\n");
-				break;
-
-			    case EVT_TARGET_POWER_ON:
-				gdbInterrupt = true;
-				printf("\nTarget power returned\n");
-				break;
-
-			    case EVT_TARGET_SLEEP:
-				gdbInterrupt = true;
-				printf("\nTarget went to sleep\n");
-				break;
-
-			    case EVT_TARGET_WAKEUP:
-				gdbInterrupt = true;
-				printf("\nTarget went out of sleep\n");
-				break;
-
-				// Events where we want to continue
-			    case EVT_NONE:
-			    case EVT_RUN:
-				break;
-
-			    default:
-				gdbInterrupt = true;
-				printf("\nUnhandled JTAG ICE mkII event: 0x%0x2\n",
-				       evtbuf[8]);
-			    }
-		      }
-		    delete [] evtbuf;
-		}
+		expectEvent(breakpoint, gdbInterrupt);
 	    }
 
 	  // We give priority to user interrupts
@@ -266,11 +287,13 @@ bool jtag2::eventLoop(void)
 bool jtag2::jtagSingleStep(bool useHLL)
 {
     uchar cmd[3] = { CMND_SINGLE_STEP,
-		     useHLL? 0x02: 0x01,
+		     0x01,
 		     useHLL? 0x00: 0x01 };
     uchar *resp;
     int respSize, i = 2;
     bool rv;
+
+    cached_pc_is_valid = false;
 
     do
     {
@@ -289,12 +312,8 @@ bool jtag2::jtagSingleStep(bool useHLL)
     if (!rv)
         return false;
 
-    if (!eventLoop())
-    {
-        // Break from GDB while waiting for the single-step
-        // to return an EVT_BREAK
-        interruptProgram();
-    }
+    bool bp, gdb;
+    expectEvent(bp, gdb);
 
     return true;
 }
