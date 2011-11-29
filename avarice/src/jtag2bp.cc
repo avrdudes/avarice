@@ -588,8 +588,6 @@ void jtag2::updateBreakpoints(void)
 
     // Add all the new breakpoints
     bp_i = 0;
-    uchar cmdx[14] = { CMND_SET_BREAK_XMEGA };
-    int xmega_cmdx_idx = 0;
     while (!bp[bp_i].last)
       {
 	  uchar cmd[8] = { CMND_SET_BREAK };
@@ -602,10 +600,9 @@ void jtag2::updateBreakpoints(void)
 		if (is_xmega && has_full_xmega_support &&
 		    bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
 		{
-		    check(xmega_cmdx_idx < 2, "Too many hard BPs for Xmega");
-		    // Xmega code breakpoint via cmdx
-		    u32_to_b4(cmdx + 1 + 4 * xmega_cmdx_idx, (bp[bp_i].address / 2));
-		    xmega_cmdx_idx++;
+		    check(xmega_n_bps < 2, "Too many hard BPs for Xmega");
+		    // Xmega code breakpoint
+		    xmega_bps[xmega_n_bps++] = bp[bp_i].address;
 		    // these breakpoints are auto-removed by the ICE
 		    bp[bp_i].toremove = true;
 		    bp[bp_i].icestatus = false;
@@ -649,8 +646,16 @@ void jtag2::updateBreakpoints(void)
 			    cmd[1] = 0x03;
 			    break;
 			case CODE:
-			    cmd[1] = bp[bp_i].type;
-			    cmd[7] = 0x03;
+			    if (is_xmega && has_full_xmega_support)
+			    {
+				cmd[1] = 0;
+				cmd[7] = 0;
+			    }
+			    else
+			    {
+				cmd[1] = bp[bp_i].type;
+				cmd[7] = 0x03;
+			    }
 			    break;
 			default:
 			    check(false, "Invalid bp mode (for data bp)");
@@ -672,15 +677,26 @@ void jtag2::updateBreakpoints(void)
 
 	  bp_i++;
       }
-      if (xmega_cmdx_idx != 0)
-      {
-	  uchar *response;
-	  int responseSize;
-	  cmdx[12] = xmega_cmdx_idx;
-	  check(doJtagCommand(cmdx, 14, response, responseSize),
-		"Failed to set Xmega breakpoints");
-	  delete [] response;
-      }
+}
+
+void jtag2::xmegaSendBPs(void)
+{
+    if (!(is_xmega && has_full_xmega_support))
+	return;
+
+    uchar *response;
+    int responseSize;
+    uchar cmdx[14] = { CMND_SET_BREAK_XMEGA };
+    if (xmega_n_bps > 0)
+	u32_to_b4(cmdx + 1, (xmega_bps[0] / 2));
+    if (xmega_n_bps > 1)
+	u32_to_b4(cmdx + 5, (xmega_bps[1] / 2));
+    cmdx[12] = xmega_n_bps;
+    check(doJtagCommand(cmdx, 14, response, responseSize),
+	  "Failed to set Xmega breakpoints");
+    delete [] response;
+
+    xmega_n_bps = 0; // must be set again upon next run
 }
 
 PRAGMA_DIAG_POP
