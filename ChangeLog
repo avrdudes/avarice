@@ -1,3 +1,9 @@
+2011-11-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Contributed by Detlev Kraft:
+	* doc/avr-studio-5-detlev-kraft.pdf: New file, added with
+	Detlev's kind permission.  (Sorry, German language only.)
+
 2011-11-25  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2.h: Implement a "cached PC" to avoid re-requesting
