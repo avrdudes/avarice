@@ -136,6 +136,10 @@ class jtag2: public jtag
     // Total breakpoints including software
     breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
 
+    // Xmega hard breakpoing break handling
+    unsigned int xmega_n_bps;
+    unsigned long xmega_bps[2];
+
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
     unsigned int flashCachePageAddr;
     unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
@@ -156,6 +160,7 @@ class jtag2: public jtag
 	useDebugWire = useDW;
 	apply_nSRST = nsrst;
         is_xmega = xmega;
+	xmega_n_bps = 0;
 	flashCachePageAddr = (unsigned int)-1;
 	eepromCachePageAddr = (unsigned short)-1;
 	for (int i = 0; i < MAX_BREAKPOINTS2; i++)
@@ -296,6 +301,10 @@ class jtag2: public jtag
     /** Expect an ICE event in the input stream.
      **/
     void expectEvent(bool &breakpoint, bool &gdbInterrupt);
+
+    /** Update Xmega breakpoints on target
+     **/
+    void xmegaSendBPs(void);
 };
 
 #endif

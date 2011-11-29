@@ -1,5 +1,14 @@
 2011-11-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2.h: Introduce jtag2:xmegaSendBPs().
+	* src/jtag2bp.cc: Move out the CMND_SET_BREAK_XMEGA into
+	jtag2:xmegaSendBPs(), as this needs to be issued in front
+	of any single-step or run command.
+	* src/jtag2run.cc: Call jtag2:xmegaSendBPs() where
+	necessary.
+
+2011-11-29  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Contributed by Detlev Kraft:
 	* doc/avr-studio-5-detlev-kraft.pdf: New file, added with
 	Detlev's kind permission.  (Sorry, German language only.)

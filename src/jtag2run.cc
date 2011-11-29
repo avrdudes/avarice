@@ -124,6 +124,8 @@ bool jtag2::interruptProgram(void)
 
 bool jtag2::resumeProgram(void)
 {
+    xmegaSendBPs();
+
     doSimpleJtagCommand(CMND_GO);
 
     cached_pc_is_valid = false;
@@ -293,6 +295,8 @@ bool jtag2::jtagSingleStep(bool useHLL)
     int respSize, i = 2;
     bool rv;
 
+    xmegaSendBPs();
+
     cached_pc_is_valid = false;
 
     do
@@ -398,12 +402,18 @@ bool jtag2::jtagContinue(void)
     updateBreakpoints(); // download new bp configuration
 
     if (haveHiddenBreakpoint)
+    {
 	// One of our breakpoints has been set as the high-level
 	// language boundary address of our current statement, so
 	// perform a high-level language single step.
 	(void)jtagSingleStep(true);
+    }
     else
+    {
+	xmegaSendBPs();
+
 	doSimpleJtagCommand(CMND_GO);
+    }
 
     return eventLoop();
 }
