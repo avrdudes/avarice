@@ -1,5 +1,12 @@
 2011-11-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtagio.cc (jtag1::initJtagOnChipDebugging): Drop the
+	attempt to clear the lock bits; it's useless anyway, as the
+	lockbits can only be cleared by a chip erase.
+	* src/jtag2io.cc (jtag2::initJtagOnChipDebugging): (Dito.)
+
+2011-11-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/devdescr.cc (atxmega256a3): New entry.
 
 2011-11-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
