@@ -441,25 +441,6 @@ void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
     // enabling+disabling programming resets the processor
     enableProgramming();
 
-    // Ensure that all lock bits are "unlocked" ie all 1's
-    uchar *lockBits = 0;
-    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
-
-    if (*lockBits != LOCK_BITS_ALL_UNLOCKED)
-    {
-        lockBits[0] = LOCK_BITS_ALL_UNLOCKED;
-        jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
-    }
-
-    statusOut("\nDisabling lock bits:\n");
-    statusOut("  LockBits -> 0x%02x\n", *lockBits);
-
-    if (lockBits)
-    {
-        delete [] lockBits;
-        lockBits = 0;
-    }
-
     // Ensure on-chip debug enable fuse is enabled ie '0'
     uchar *fuseBits = 0;
     statusOut("\nEnabling on-chip debugging:\n");
