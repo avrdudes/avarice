@@ -4507,7 +4507,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(8192),	// size of boot flash
 	    fill_b2(512),	// flash page size
 	    fill_b2(2048),	// size of EEPROM
-	    fill_b2(32),	// EEPROM page size
+	    32,			// EEPROM page size
 	    fill_b2(0x1c0),	// IO space base address of NVM controller
 	    fill_b2(0x90),	// IO space address of MCU control
 	},
@@ -4587,7 +4587,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(8192),	// size of boot flash
 	    fill_b2(512),	// flash page size
 	    fill_b2(2048),	// size of EEPROM
-	    fill_b2(32),	// EEPROM page size
+	    32,			// EEPROM page size
 	    fill_b2(0x1c0),	// IO space base address of NVM controller
 	    fill_b2(0x90),	// IO space address of MCU control
 	},

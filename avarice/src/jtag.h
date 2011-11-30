@@ -148,7 +148,7 @@ typedef struct {
     unsigned char boot_size[2];		// size of boot flash
     unsigned char flash_page_size[2];	// flash page size
     unsigned char eeprom_size[2];	// size of EEPROM
-    unsigned char eeprom_page_size[2];	// EEPROM page size
+    unsigned char eeprom_page_size;	// EEPROM page size
     unsigned char nvm_base_addr[2];	// IO space base address of NVM controller
     unsigned char mcu_base_addr[2];	// IO space base address of MCU control
 } xmega_device_desc_type;
