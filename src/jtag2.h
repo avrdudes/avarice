@@ -195,7 +195,7 @@ class jtag2: public jtag
     virtual bool setProgramCounter(unsigned long pc);
     virtual bool resetProgram(bool ignored = false);
     virtual bool interruptProgram(void);
-    virtual bool resumeProgram(void);
+    virtual bool resumeProgram(bool restoreTarget);
     virtual bool jtagSingleStep(bool useHLL = false);
     virtual bool jtagContinue(void);
 

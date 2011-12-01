@@ -102,13 +102,14 @@ bool jtag1::interruptProgram(void)
     return doSimpleJtagCommand('F', 4);
 }
 
-bool jtag1::resumeProgram(void)
-{
-    return doSimpleJtagCommand('G', 0);
-}
-
 PRAGMA_DIAG_PUSH
 PRAGMA_DIAG_IGNORED("-Wunused-parameter")
+
+bool jtag1::resumeProgram(bool restoreTarget)
+{
+    // restoreTarget not implemented in JTAG ICE mkI
+    return doSimpleJtagCommand('G', 0);
+}
 
 bool jtag1::jtagSingleStep(bool useHLL)
 {

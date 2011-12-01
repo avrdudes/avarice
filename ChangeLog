@@ -1,5 +1,16 @@
 2011-12-01  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: In jtag::resumeProgram(), add a new optional
+	parameter "restoreTarget" to allow for a more graceful
+	shutdown.
+	* src/jtag1.h: (Dito.)
+	* src/jtag2.h: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtagrun.cc: (Dito.)
+	* src/remote.cc: Gracefully shut down when GDB disconnects.
+
+2011-12-01  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/devdescr.cc (attiny4313): New entry.
 
 2011-11-30  Joerg Wunsch <j.gnu@uriah.heep.sax.de>

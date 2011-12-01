@@ -137,7 +137,7 @@ int getDebugChar(void)
     if (result == 0) // gdb exited
     {
 	statusOut("gdb exited.\n");
-	theJtagICE->resumeProgram();
+	theJtagICE->resumeProgram(true);
 	delete theJtagICE;
 	exit(0);
     }
