@@ -3,6 +3,16 @@
 Summary of changes since AVaRICE 2.11
 ==================================
 
+. Many Xmega fixes for firmware versions 7 and above (as shipping by
+  AVR Studio 5); code breakpoints and accessing the various Xmega
+  memories appear to almost work now.  Many thanks to Detlev Kraft for
+  his in-depth analysis of the AVR Studio 5 communiction with the ICE.
+
+. Cache the PC returned by BREAK events, to speedup the communication.
+
+. New devices: ATxmega256A3, ATtiny4313
+
+. Moved source code repository from CVS to SVN.
 
 =====================================================================
 
