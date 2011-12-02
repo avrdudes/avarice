@@ -412,7 +412,7 @@ bool jtag2::layoutBreakpoints(void)
     else if (is_xmega)
       {
 	  // Xmega has only two hardware slots?
-	  remaining_bps[3] = false;
+	  remaining_bps[BREAKPOINT2_XMEGA_UNAVAIL] = false;
       }
 
     bp_i = 0;
@@ -608,6 +608,8 @@ void jtag2::updateBreakpoints(void)
 			u32_to_b4(cmd + 3, bp[bp_i].address & ~ADDR_SPACE_MASK);
 		    }
 
+		    // cmd[7] is the BP mode (memory read/write/read or write/code)
+		    // cmd[1] is the BP type (program memory, data, data mask)
 		    switch (bp[bp_i].type)
 		    {
 			case READ_DATA:
@@ -627,16 +629,8 @@ void jtag2::updateBreakpoints(void)
 			    cmd[1] = 0x03;
 			    break;
 			case CODE:
-			    if (is_xmega && has_full_xmega_support)
-			    {
-				cmd[1] = 0;
-				cmd[7] = 0;
-			    }
-			    else
-			    {
-				cmd[1] = 0x01;
-				cmd[7] = 0x03;
-			    }
+			    cmd[7] = 0x03;
+			    cmd[1] = 0x01;
 			    break;
 			default:
 			    check(false, "Invalid bp mode (for data bp)");

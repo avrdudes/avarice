@@ -1,5 +1,13 @@
 2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2.h (BREAKPOINT2_XMEGA_UNAVAIL): new constant
+	* src/jtag2bp.cc: Use BREAKPOINT2_XMEGA_UNAVAIL, rather than using
+	a magic number; fill in BP info for CMND_SET_BREAK even though AVR
+	Studio doesn't appear to use it (but it's consistent with the
+	non-Xmega code that way)
+
+2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h (enum bpType): Drop the HAS_MASK flag value, also
 	remove the unused SOFTCODE value.
 	* src/jtag2bp.cc: Remove all occurences of HAS_MASK; data
