@@ -870,7 +870,7 @@ class jtag
     from.  0x5D + DATA_SPACE_ADDR_OFFSET for megaAVR, 0x3D +
     DATA_SPACE_ADDR_OFFSET for Xmega devices.
   **/
-  virtual const unsigned int statusAreaAddress(void) = 0;
+  virtual unsigned int statusAreaAddress(void) const = 0;
 
   /** Return read address for CPU registers.
 
@@ -879,7 +879,7 @@ class jtag
     for Xmega devices.
 
   **/
-  virtual const unsigned int cpuRegisterAreaAddress(void) = 0;
+  virtual unsigned int cpuRegisterAreaAddress(void) const = 0;
 
 };
 

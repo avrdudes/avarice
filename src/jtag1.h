@@ -117,11 +117,11 @@ class jtag1: public jtag
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
-    virtual const unsigned int statusAreaAddress(void) {
+    virtual unsigned int statusAreaAddress(void) const {
         /* no Xmega handling in JTAG ICE mkI */
         return 0x5D + DATA_SPACE_ADDR_OFFSET;
     };
-    virtual const unsigned int cpuRegisterAreaAddress(void) {
+    virtual unsigned int cpuRegisterAreaAddress(void) const {
         /* no Xmega handling in JTAG ICE mkI */
         return DATA_SPACE_ADDR_OFFSET;
     }

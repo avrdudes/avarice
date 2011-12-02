@@ -1,5 +1,12 @@
 2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h (statusAreaAddress, cpuRegisterAreaAddress): put
+	the "const" qualifier into the correct place
+	* src/jtag1.h: (Dito.)
+	* src/jtag2.h: (Dito.)
+
+2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2.h (BREAKPOINT2_XMEGA_UNAVAIL): new constant
 	* src/jtag2bp.cc: Use BREAKPOINT2_XMEGA_UNAVAIL, rather than using
 	a magic number; fill in BP info for CMND_SET_BREAK even though AVR
