@@ -573,14 +573,10 @@ enum bpType
 {
     NONE,           // disabled.
     CODE,           // normal code space breakpoint.
-    SOFTCODE,       // code software BP (not yet used).
     WRITE_DATA,     // write data space breakpoint (ie "watch").
     READ_DATA,      // read data space breakpoint (ie "watch").
     ACCESS_DATA,    // read/write data space breakpoint (ie "watch").
     DATA_MASK,      // mask for data space breakpoint.
-    // keep mask bits last
-    HAS_MASK = 0x80000000, // data space BP has an associated mask in
-                           // next slot
 };
 
 // Enumerations for target memory type.

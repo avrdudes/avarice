@@ -1,3 +1,21 @@
+2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h (enum bpType): Drop the HAS_MASK flag value, also
+	remove the unused SOFTCODE value.
+	* src/jtag2bp.cc: Remove all occurences of HAS_MASK; data
+	breakpoints (aka. watchpoints) do always have a mask associated
+	once they have been instantiated, so there's no need to extra flag
+	this.  The flagging completely violated the purpose of an enum
+	type (abusing it as an `int'), causing missed BP type matches in
+	some situations (e.g. when deleting a watchpoint).  Also mask off
+	the internal flag bits (0x800000) from a data breakpoint before
+	sending it to the ICE, rather than trying to send the internal
+	address to the ICE.  Sending the full internal address to the ICE
+	has been a mistake straight from the beginning even though it
+	apparently used to work, but recent firmware versions appear to
+	fully store the 24-bit address, causing the data breakpoint to
+	never match.
+
 2011-12-01  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: In jtag::resumeProgram(), add a new optional
