@@ -107,11 +107,8 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length)
 
     //data
     else if ((bp[bp_i].type == READ_DATA) ||
-	     (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
 	     (bp[bp_i].type == WRITE_DATA) ||
-	     (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
-	     (bp[bp_i].type == ACCESS_DATA) ||
-	     (bp[bp_i].type == (ACCESS_DATA | HAS_MASK)))
+	     (bp[bp_i].type == ACCESS_DATA))
       {
 	  // range BPs use two slots
 	  if (length > 1)
@@ -141,11 +138,8 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length)
         if (bp[bp_i].toadd || bp[bp_i].enabled)
             {
              if ((bp[bp_i].type == READ_DATA) ||
-		 (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
 		 (bp[bp_i].type == WRITE_DATA) ||
-		 (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
 		 (bp[bp_i].type == ACCESS_DATA) ||
-		 (bp[bp_i].type == (ACCESS_DATA | HAS_MASK)) ||
 		 (bp[bp_i].type == DATA_MASK))
 	       {
 		   numdata++;
@@ -246,7 +240,9 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
         // Is it a range breakpoint?
         // Range breakpoint needs to be aligned, and the length must
         // be representable as a bitmask.
-        if ((length > 1) && (type != CODE))
+        if ((length > 1) && ((type == READ_DATA) ||
+                             (type == WRITE_DATA) ||
+                             (type == ACCESS_DATA)))
 	  {
 	      int bitno = ffs((int)length);
 	      unsigned int mask = 1 << (bitno - 1);
@@ -266,8 +262,6 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
 		    return false;
                 }
 	      mask = ~mask;
-
-	      bp[bp_i].type = (bpType)(type | HAS_MASK);
 
 	      // add the breakpoint as a data mask.. only thing is we
 	      // need to find it afterwards
@@ -312,11 +306,16 @@ bool jtag2::addBreakpoint(unsigned int address, bpType type, unsigned int length
 	  bp[bp_i].enabled = false;
 	  bp[bp_i].toadd = false;
 
-	  if ((bp[bp_i].type & HAS_MASK) == HAS_MASK)
+	  if ((bp[bp_i].type == READ_DATA) ||
+              (bp[bp_i].type == WRITE_DATA) ||
+              (bp[bp_i].type == ACCESS_DATA))
+              // these BP types have an associated mask
             {
 		bp[bp[bp_i].mask_pointer].enabled = false;
 		bp[bp[bp_i].mask_pointer].toadd = false;
             }
+
+          return false;
       }
 
     return true;
@@ -437,33 +436,27 @@ bool jtag2::layoutBreakpoints(void)
         // Find the next data breakpoint that needs somewhere to live
 	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
 	      ((bp[bp_i].type == READ_DATA) ||
-	       (bp[bp_i].type == (READ_DATA | HAS_MASK)) ||
 	       (bp[bp_i].type == WRITE_DATA) ||
-	       (bp[bp_i].type == (WRITE_DATA | HAS_MASK)) ||
-	       (bp[bp_i].type == ACCESS_DATA) ||
-	       (bp[bp_i].type == (ACCESS_DATA | HAS_MASK))))
-            {
-		if ((bp[bp_i].type & HAS_MASK) == HAS_MASK)
-		  {
-		      // Check if we have both slots available
-		      if (!remaining_bps[BREAKPOINT2_DATA_MASK] ||
-			  !remaining_bps[BREAKPOINT2_FIRST_DATA])
-			{
-			    debugOut("Not enough room to store range breakpoint\n");
-			    bp[bp[bp_i].mask_pointer].enabled = false;
-			    bp[bp[bp_i].mask_pointer].toadd = false;
-			    bp[bp_i].enabled = false;
-			    bp[bp_i].toadd = false;
-			    bp_i++;
-			    hadroom = false;
-			    continue; // Skip this breakpoint
-			}
-		      else
-			{
-			    remaining_bps[BREAKPOINT2_DATA_MASK] = false;
-			    bp[bp[bp_i].mask_pointer].bpnum = BREAKPOINT2_DATA_MASK;
-			}
-		  }
+	       (bp[bp_i].type == ACCESS_DATA)))
+	    {
+		// Check if we have both slots available
+		if (!remaining_bps[BREAKPOINT2_DATA_MASK] ||
+		    !remaining_bps[BREAKPOINT2_FIRST_DATA])
+		{
+		    debugOut("Not enough room to store range breakpoint\n");
+		    bp[bp[bp_i].mask_pointer].enabled = false;
+		    bp[bp[bp_i].mask_pointer].toadd = false;
+		    bp[bp_i].enabled = false;
+		    bp[bp_i].toadd = false;
+		    bp_i++;
+		    hadroom = false;
+		    continue; // Skip this breakpoint
+		}
+		else
+		{
+		    remaining_bps[BREAKPOINT2_DATA_MASK] = false;
+		    bp[bp[bp_i].mask_pointer].bpnum = BREAKPOINT2_DATA_MASK;
+		}
 
 		// Find next available slot
 		bpnum = BREAKPOINT2_FIRST_DATA;
@@ -529,14 +522,6 @@ bool jtag2::layoutBreakpoints(void)
 
     return hadroom;
 }
-
-/*
- * As the case labels below can be values ORed from enum values with
- * HAS_MASK, this causes GCC (4.4+) to emit warnings that the case
- * value is not in enumerated type.  Drop them just here.
- */
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wswitch")
 
 void jtag2::updateBreakpoints(void)
 {
@@ -609,7 +594,6 @@ void jtag2::updateBreakpoints(void)
 		}
 		else
 		{
-		    cmd[1] = bp[bp_i].type;
 		    cmd[2] = bp[bp_i].bpnum;
 
 		    if (bp[bp_i].type == CODE)
@@ -621,23 +605,20 @@ void jtag2::updateBreakpoints(void)
 		    }
 		    else
 		    {
-			u32_to_b4(cmd + 3, bp[bp_i].address);
+			u32_to_b4(cmd + 3, bp[bp_i].address & ~ADDR_SPACE_MASK);
 		    }
 
 		    switch (bp[bp_i].type)
 		    {
 			case READ_DATA:
-			case READ_DATA | HAS_MASK:
 			    cmd[7] = 0x00;
 			    cmd[1] = 0x02;
 			    break;
 			case WRITE_DATA:
-			case WRITE_DATA | HAS_MASK:
 			    cmd[7] = 0x01;
 			    cmd[1] = 0x02;
 			    break;
 			case ACCESS_DATA:
-			case ACCESS_DATA | HAS_MASK:
 			    cmd[7] = 0x02;
 			    cmd[1] = 0x02;
 			    break;
@@ -653,7 +634,7 @@ void jtag2::updateBreakpoints(void)
 			    }
 			    else
 			    {
-				cmd[1] = bp[bp_i].type;
+				cmd[1] = 0x01;
 				cmd[7] = 0x03;
 			    }
 			    break;
@@ -698,5 +679,3 @@ void jtag2::xmegaSendBPs(void)
 
     xmega_n_bps = 0; // must be set again upon next run
 }
-
-PRAGMA_DIAG_POP
