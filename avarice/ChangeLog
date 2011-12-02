@@ -1,5 +1,10 @@
 2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2usb.cc (dummyhandler): Put into #if defined(O_ASYNC),
+	because it is only used in that case.
+
+2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h (statusAreaAddress, cpuRegisterAreaAddress): put
 	the "const" qualifier into the correct place
 	* src/jtag1.h: (Dito.)

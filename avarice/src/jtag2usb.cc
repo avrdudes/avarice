@@ -226,10 +226,12 @@ static void usr1handler(int signo)
   ready++;
 }
 
+#if defined(O_ASYNC)
 static void dummyhandler(int signo)
 {
   /* nothing to do, just abort the current read()/select() */
 }
+#endif
 
 static void childhandler(int signo)
 {
