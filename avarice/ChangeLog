@@ -1,5 +1,9 @@
 2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version to 2.12.rc1.
+
+2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2usb.cc (dummyhandler): Put into #if defined(O_ASYNC),
 	because it is only used in that case.
 
