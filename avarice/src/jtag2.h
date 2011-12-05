@@ -88,6 +88,10 @@ enum {
   MAX_TOTAL_BREAKPOINTS2 = 255
 };
 
+enum debugproto {
+    PROTO_JTAG, PROTO_DW, PROTO_PDI,
+};
+
 struct breakpoint2
 {
     // High-level information on breakpoint
@@ -127,7 +131,7 @@ class jtag2: public jtag
     int devdescrlen;
     bool signedIn;
     bool haveHiddenBreakpoint;
-    bool useDebugWire;
+    enum debugproto proto;
     bool is_xmega;
     bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
                                        // allows for full Xmega support (>= 7.x)
@@ -151,14 +155,14 @@ class jtag2: public jtag
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    jtag2(const char *dev, char *name, bool useDW = false,
+    jtag2(const char *dev, char *name, enum debugproto prot = PROTO_JTAG,
 	  bool is_dragon = false, bool nsrst = false,
           bool xmega = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
 	signedIn = haveHiddenBreakpoint = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
-	useDebugWire = useDW;
+	proto = prot;
 	apply_nSRST = nsrst;
         is_xmega = xmega;
 	xmega_n_bps = 0;

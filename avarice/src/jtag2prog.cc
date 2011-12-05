@@ -63,7 +63,7 @@ static void initImage(BFDimage *image)
 
 void jtag2::enableProgramming(void)
 {
-    if (!useDebugWire)
+    if (proto != PROTO_DW)
     {
 	programmingEnabled = true;
 	doSimpleJtagCommand(CMND_ENTER_PROGMODE);
@@ -73,7 +73,7 @@ void jtag2::enableProgramming(void)
 
 void jtag2::disableProgramming(void)
 {
-    if (!useDebugWire)
+    if (proto != PROTO_DW)
     {
 	programmingEnabled = false;
 	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);

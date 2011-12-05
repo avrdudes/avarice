@@ -422,8 +422,6 @@ void jtag2::setDeviceDescriptor(jtag_device_def_type *dev)
 
     check(doJtagCommand(command, devdescrlen, response, respSize),
 	  "JTAG ICE: Failed to set device description");
-
-    delete [] response;
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
@@ -522,8 +520,23 @@ void jtag2::startJtagLink(void)
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
 
-	    val = useDebugWire? EMULATOR_MODE_DEBUGWIRE:
-                (is_xmega? EMULATOR_MODE_JTAG_XMEGA: EMULATOR_MODE_JTAG);
+	    switch (proto)
+	    {
+		case PROTO_JTAG:
+		    if (is_xmega)
+			val = EMULATOR_MODE_JTAG_XMEGA;
+		    else
+			val = EMULATOR_MODE_JTAG;
+		    break;
+
+		case PROTO_DW:
+		    val = EMULATOR_MODE_DEBUGWIRE;
+		    break;
+
+		case PROTO_PDI:
+		    val = EMULATOR_MODE_PDI;
+		    break;
+	    }
 	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
 	    signedIn = true;
 
@@ -554,7 +567,7 @@ void jtag2::deviceAutoConfig(void)
     configDaisyChain();
 
     /* Read in the JTAG device ID to determine device */
-    if (useDebugWire)
+    if (proto == PROTO_DW)
     {
 	getJtagParameter(PAR_TARGET_SIGNATURE, resp, respSize);
 	jtagCheck(respSize == 2);
@@ -562,6 +575,15 @@ void jtag2::deviceAutoConfig(void)
 	delete [] resp;
 
 	statusOut("Reported debugWire device ID: 0x%0X\n", device_id);
+    }
+    else if (proto == PROTO_PDI)
+    {
+        resp = jtagRead(SIG_SPACE_ADDR_OFFSET, 3);
+        check(resp, "Cannot read JTAG ID in PDI mode");
+        device_id = resp[2] | (resp[1] << 8);
+        delete [] resp;
+
+        statusOut("Reported PDI device ID: 0x%0X\n", device_id);
     }
     else
     {
@@ -679,7 +701,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
     // debugWire cannot read or manipulate fuse or lock bits
-    if (!useDebugWire)
+    if (proto != PROTO_DW)
     {
       uchar br;
       if (bitrate >= 6400000)

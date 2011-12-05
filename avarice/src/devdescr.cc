@@ -4501,7 +4501,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	125 * 4,	// 125 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
-        false,
+	true,
 	{
 	    0	// no mkI support
 	},
