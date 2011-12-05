@@ -700,8 +700,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
-    // debugWire cannot read or manipulate fuse or lock bits
-    if (proto != PROTO_DW)
+    if (proto == PROTO_JTAG)
     {
       uchar br;
       if (bitrate >= 6400000)
@@ -714,34 +713,10 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 	br = 255;
       // Set JTAG bitrate
       setJtagParameter(PAR_OCD_JTAG_CLK, &br, 1);
-
-
-      // When attaching we can't change fuse bits, etc, as
-      // enabling+disabling programming resets the processor
-      enableProgramming();
-
-      // Ensure on-chip debug enable fuse is enabled ie '0'
-      uchar *fuseBits = 0;
-      statusOut("\nEnabling on-chip debugging:\n");
-      fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
-      if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
-      {
-	  fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
-        jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
-      }
-
-      jtagDisplayFuses(fuseBits);
-
-      if (fuseBits)
-      {
-	  delete [] fuseBits;
-	  fuseBits = 0;
-      }
-
-      disableProgramming();
     }
 
+    // Ensure on-chip debug enable fuse is enabled ie '0'
+    jtagActivateOcdenFuse();
 
     resetProgram();
     uchar timers = 0;		// stopped

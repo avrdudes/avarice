@@ -179,6 +179,12 @@ typedef struct {
     gdb_io_reg_def_type *io_reg_defs;
 
     bool is_xmega;                     // Device is an ATxmega part
+    unsigned int fusemap;              // Bitmap of fuses supported (0b00000111 = 0x07 for
+                                       // classic megaAVR devices, 0b00110111 = 0x37 for
+                                       // Xmega devices
+    unsigned int ocden_fuse;           // bitmask of the OCDEN fuse, bit [15:0] => high
+                                       // fuse byte, so 0x00008000 for megaAVRs (Xmega
+                                       // devices don't have OCDEN at all)
 
     jtag1_device_desc_type dev_desc1;  // Device descriptor to download to
                                        // mkI device
@@ -844,6 +850,11 @@ class jtag
     Shows extended, high and low fuse byte.
   */
   void jtagDisplayFuses(uchar *fuseBits);
+
+
+  /** Activate OCDEN.
+   */
+  void jtagActivateOcdenFuse(void);
 
 
   /** Write lockbits to target.
