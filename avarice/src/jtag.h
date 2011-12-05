@@ -235,36 +235,8 @@ enum
     JTAG_RESPONSE_TIMEOUT	      = 1000000,
     JTAG_COMM_TIMEOUT		      = 100000,
 
-    // Lock Bit Values
-    LOCK_BITS_ALL_UNLOCKED            = 0xff,
-
-    // Fuse Bit Values
-    // XXX -- should be configurable, newer devices might no
-    // longer match that fixed pattern.  Basically, the pattern
-    // is the ATmega64/128 one.
-    FUSE_M103C                        = 0x02,
-    FUSE_WDTON                        = 0x01,
-
-    FUSE_OCDEN                        = 0x80,
-    FUSE_JTAGEN                       = 0x40,
-    FUSE_SPIEN                        = 0x20,
-    FUSE_CKOPT                        = 0x10,
-    FUSE_EESAVE                       = 0x08,
-    FUSE_BOOTSZ1                      = 0x04,
-    FUSE_BOOTSZ0                      = 0x02,
-    FUSE_BOOTRST                      = 0x01,
-
-    FUSE_BODLEVEL                     = 0x80,
-    FUSE_BODEN                        = 0x40,
-    FUSE_SUT1                         = 0x20,
-    FUSE_SUT0                         = 0x10,
-    FUSE_CKSEL3                       = 0x08,
-    FUSE_CKSEL2                       = 0x04,
-    FUSE_CKSEL1                       = 0x02,
-    FUSE_CKSEL0                       = 0x01,
-
-    MAX_FLASH_PAGE_SIZE               = 256,
-    MAX_EEPROM_PAGE_SIZE              = 16,
+    MAX_FLASH_PAGE_SIZE               = 512,
+    MAX_EEPROM_PAGE_SIZE              = 32,
 
     // JTAG ICE mkI protocol constants
 
