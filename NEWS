@@ -14,6 +14,8 @@ Summary of changes since AVaRICE 2.11
 
 . Moved source code repository from CVS to SVN.
 
+. Implement PDI debugging (JTAGICEmkII / Xmega).
+
 =====================================================================
 
 Summary of changes in AVaRICE 2.11

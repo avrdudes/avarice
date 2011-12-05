@@ -2,7 +2,7 @@
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
 Copyright (C) 2003, 2004 Theodore A. Roth
-Copyright (C) 2005 - 2008 Joerg Wunsch
+Copyright (C) 2005 - 2008,2011 Joerg Wunsch
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -336,11 +336,14 @@ in two digit hexidecimal format with zero padding if needed. All three bytes
 must currently be given.
 .TP
 .BR \-x ,\  \-\-xmega
-The target device is an ATxmega part.
+The target device is an ATxmega part, using JTAG transport.
 Since the ATxmega uses a different JTAG communication than other AVRs,
 the normal device autodetection based on the JTAG ID does not work.
 If the device has been explicitly selected through the \-P option,
 it is not necessary to also specify the \-x option.
+.TP
+.BR \-X ,\  \-\-pdi
+The target device is an ATxmega part, using PDI transport.
 .br
 .B NOTE:
 Current, if the target device doesn't have an extended fuse byte

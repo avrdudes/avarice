@@ -1,3 +1,19 @@
+2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Implement PDI debugging for the JTAGICEmkII (and AVR Dragon) and
+	Xmega devices.  This is basically the same as JTAG, except for the
+	different ICE initialization.
+	* src/jtag.h: add EMULATOR_MODE_PDI
+	* src/jtag2.h: add an enum debugproto
+	* src/jtag2io.cc: handle the `proto' field
+	* src/jtag2rw.cc: (Dito.)
+	* src/jtag2bp.cc: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtag2prog.cc: (Dito.)
+	* src/devdescr.cc (atxmega128a1_revd): fix is_xmega field
+	* src/main.cc: implement new -X (--pdi) option
+	* doc/avarice.1: document the new option
+
 2011-12-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version to 2.12.rc1.

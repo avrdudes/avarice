@@ -206,7 +206,9 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
     fprintf(stderr,
-            "  -x, --xmega                 AVR part is an ATxmega device.\n");
+            "  -x, --xmega                 AVR part is an ATxmega device, using JTAG.\n");
+    fprintf(stderr,
+            "  -X, --pdi                   AVR part is an ATxmega device, using PDI.\n");
     fprintf(stderr,
 	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
 	    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
@@ -294,6 +296,7 @@ static struct option long_opts[] = {
     { "debugwire",           0,       0,     'w' },
     { "write-fuses",         1,       0,     'W' },
     { "xmega",               0,       0,     'x' },
+    { "pdi",                 0,       0,     'X' },
     { 0,                     0,       0,      0 }
 };
 
@@ -328,7 +331,7 @@ int main(int argc, char **argv)
     bool is_xmega = false;
     char *progname = argv[0];
     enum {
-	MKI, MKII, MKII_DW
+	MKI, MKII, MKII_DW, MKII_PDI
     } protocol = MKI;		// default to mkI protocol
     int  option_index;
     unsigned int units_before = 0;
@@ -345,7 +348,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:x",
+        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -361,7 +364,7 @@ int main(int argc, char **argv)
 		break;
 	    case '2':
 		// If we've already seen a -w option, don't revert to -2.
-		if (protocol != MKII_DW)
+		if (protocol != MKII_DW && protocol != MKII_PDI)
 		    protocol = MKII;
 		break;
             case 'B':
@@ -401,7 +404,7 @@ int main(int argc, char **argv)
                 break;
 	    case 'g':
 		// If we've already seen a -w option, don't revert to -2.
-		if (protocol != MKII_DW)
+		if (protocol != MKII_DW && protocol != MKII_PDI)
 		    protocol = MKII;
 	        is_dragon = true;
 		break;
@@ -444,6 +447,10 @@ int main(int argc, char **argv)
                 break;
             case 'x':
                 is_xmega = true;
+                break;
+            case 'X':
+                is_xmega = true;
+                protocol = MKII_PDI;
                 break;
             default:
                 fprintf (stderr, "getop() did something screwey");
@@ -539,13 +546,18 @@ int main(int argc, char **argv)
 	    break;
 
 	case MKII:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, false,
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_JTAG,
 				   is_dragon, apply_nsrst, is_xmega);
 	    break;
 
 	case MKII_DW:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, true,
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_DW,
 				   is_dragon, apply_nsrst);
+	    break;
+
+	case MKII_PDI:
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_PDI,
+				   is_dragon, apply_nsrst, true);
 	    break;
 	}
 

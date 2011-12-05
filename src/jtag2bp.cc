@@ -400,7 +400,7 @@ bool jtag2::layoutBreakpoints(void)
 
     // Turn off everything but software breakpoints for DebugWire,
     // or for old firmware ICEs with Xmega devices
-    if (useDebugWire ||
+    if (proto == PROTO_DW ||
         (is_xmega && !has_full_xmega_support))
       {
 	  int k;
