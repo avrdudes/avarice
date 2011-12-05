@@ -546,7 +546,7 @@ void jtag::jtagDisplayFuses(uchar *fuseBits)
              i--, mask >>= 1)
         {
             if ((global_p_device_def->fusemap & mask) != 0)
-                statusOut("Fuse byte %d -> 0x%02x\n",
+                statusOut("  Fuse byte %d -> 0x%02x\n",
                           i, fuseBits[i]);
         }
     }
