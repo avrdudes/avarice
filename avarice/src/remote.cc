@@ -430,7 +430,7 @@ static bool singleStep()
     if (theJtagICE->codeBreakpointAt(newPC))
 	return true;
     // assume interrupt when PC goes into interrupt table
-    if (ignoreInterrupts && newPC < global_p_device_def->vectors_end) 
+    if (ignoreInterrupts && newPC < theJtagICE->deviceDef->vectors_end) 
 	return handleInterrupt();
 
     return true;
@@ -786,7 +786,7 @@ void talkToGdb(void)
 
             /* If there is an io_reg_defs for this device then respond */
 
-            io_reg_defs = global_p_device_def->io_reg_defs;
+            io_reg_defs = theJtagICE->deviceDef->io_reg_defs;
             if (io_reg_defs)
             {
                 // count the number of defined registers

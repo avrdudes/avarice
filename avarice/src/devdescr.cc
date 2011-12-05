@@ -29,8 +29,6 @@
 #include "jtag.h"
 #include "jtag1.h"
 
-jtag_device_def_type *global_p_device_def;
-
 /* Device descriptor magic from Atmel's documents. Let's hope it's more
    accurate than the rest of that text... */
 

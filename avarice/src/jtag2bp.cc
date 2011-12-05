@@ -154,7 +154,7 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length)
 
     // Some devices don't support software breakpoints.  Also there
     // might be an upper limit on software breakpoints, do we care?
-    if ((global_p_device_def->device_flags & DEVFL_NO_SOFTBP) != 0)
+    if ((deviceDef->device_flags & DEVFL_NO_SOFTBP) != 0)
       {
 	  // There are only 3 hardware BPs available, the fourth one
 	  // is reserved by the ICE for single-stepping.
@@ -393,7 +393,7 @@ bool jtag2::layoutBreakpoints(void)
     bool softwarebps = true;
     bool hadroom = true;
 
-    if (global_p_device_def->device_flags == DEVFL_NO_SOFTBP)
+    if (deviceDef->device_flags == DEVFL_NO_SOFTBP)
       {
 	  softwarebps = false;
       }
