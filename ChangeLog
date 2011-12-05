@@ -1,5 +1,17 @@
 2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: Get rid of the global variable global_p_device_def,
+	replacing it by public member deviceDef
+	* src/remote.cc: (Dito.)
+	* src/jtag2io.cc: (Dito.)
+	* src/jtagio.cc: (Dito.)
+	* src/jtag2rw.cc: (Dito.)
+	* src/jtag2bp.cc: (Dito.)
+	* src/devdescr.cc: (Dito.)
+	* src/jtaggeneric.cc: (Dito.)
+
+2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Major overhaul of the fuse handling.
 	* src/jtag.h: add device config parameters `fusemap' and
 	`ocden_fuse'; add method jtagActivateOcdenFuse() to centralize the

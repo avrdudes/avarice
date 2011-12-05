@@ -124,13 +124,13 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	break;
 
     case MTYPE_FLASH_PAGE:
-	pageSize = global_p_device_def->flash_page_size;
+	pageSize = deviceDef->flash_page_size;
 	cachePtr = flashCache;
 	cacheBaseAddr = &flashCachePageAddr;
 	break;
 
     case MTYPE_EEPROM_PAGE:
-	pageSize = global_p_device_def->eeprom_page_size;
+	pageSize = deviceDef->eeprom_page_size;
 	cachePtr = eepromCache;
 	cacheBaseAddr = &eepromCachePageAddr;
 	break;
@@ -236,11 +236,11 @@ bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     switch (whichSpace)
     {
     case MTYPE_FLASH_PAGE:
-	pageSize = global_p_device_def->flash_page_size;
+	pageSize = deviceDef->flash_page_size;
 	break;
 
     case MTYPE_EEPROM_PAGE:
-	pageSize = global_p_device_def->eeprom_page_size;
+	pageSize = deviceDef->eeprom_page_size;
 	break;
     }
     if (pageSize > 0) {

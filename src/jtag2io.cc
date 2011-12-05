@@ -652,7 +652,7 @@ void jtag2::deviceAutoConfig(void)
 
     device_name = (char*)pDevice->name;
 
-    global_p_device_def = pDevice;
+    deviceDef = pDevice;
 
     setDeviceDescriptor(pDevice);
 }

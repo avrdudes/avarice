@@ -195,7 +195,7 @@ typedef struct {
                                        // JTAGICE mkII and AVR Dragon
 } jtag_device_def_type;
 
-extern jtag_device_def_type *global_p_device_def, deviceDefinitions[];
+extern jtag_device_def_type deviceDefinitions[];
 
 // various enums
 enum
@@ -660,6 +660,9 @@ class jtag
 
   // Name of the device controlled by the JTAG ICE
   char *device_name;
+
+  // Pointer to device definition
+  jtag_device_def_type *deviceDef;
 
   // Daisy chain info
   struct {
