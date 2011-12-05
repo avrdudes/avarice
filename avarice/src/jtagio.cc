@@ -437,30 +437,8 @@ void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
     // Set JTAG bitrate
     setJtagParameter(JTAG_P_CLOCK, br);
 
-    // When attaching we can't change fuse bits, etc, as 
-    // enabling+disabling programming resets the processor
-    enableProgramming();
-
     // Ensure on-chip debug enable fuse is enabled ie '0'
-    uchar *fuseBits = 0;
-    statusOut("\nEnabling on-chip debugging:\n");
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
-    if ((fuseBits[1] & FUSE_OCDEN) == FUSE_OCDEN)
-    {
-        fuseBits[1] = fuseBits[1] & ~FUSE_OCDEN; // clear bit
-        jtagWrite(FUSE_SPACE_ADDR_OFFSET + 1, 1, &fuseBits[1]);
-    }
-
-    jtagDisplayFuses(fuseBits);
-
-    if (fuseBits)
-    {
-        delete [] fuseBits;
-        fuseBits = 0;
-    }
-
-    disableProgramming();
+    jtagActivateOcdenFuse();
 
     resetProgram(false);
     setJtagParameter(JTAG_P_TIMERS_RUNNING, 0x00);

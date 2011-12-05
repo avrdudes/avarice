@@ -1,5 +1,19 @@
 2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Major overhaul of the fuse handling.
+	* src/jtag.h: add device config parameters `fusemap' and
+	`ocden_fuse'; add method jtagActivateOcdenFuse() to centralize the
+	OCDEN fuse activation
+	* src/devdescr.cc: add fusemap and ocden_fuse values
+	* src/jtaggeneric.cc: implement jtagActivateOcdenFuse(), restrict
+	jtagWriteFuses() to non-Xmega devices, make jtagDisplayFuses()
+	display Xmega fuses correctly
+	* src/jtagio.cc (initJtagOnChipDebugging): resort OCDEN activation
+	to jtagActivateOcdenFuse()
+	* src/jtag2io.cc (initJtagOnChipDebugging): (Dito.)
+
+2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Implement PDI debugging for the JTAGICEmkII (and AVR Dragon) and
 	Xmega devices.  This is basically the same as JTAG, except for the
 	different ICE initialization.

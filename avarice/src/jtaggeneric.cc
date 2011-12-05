@@ -403,6 +403,12 @@ void jtag::jtagWriteFuses(char *fuses)
     uchar *readfuseBits;
     unsigned int c;
 
+    if (global_p_device_def->fusemap > 0x07)
+    {
+        statusOut("Fuse byte writing not supported on this device.\n");
+        return;
+    }
+
     check(fuses,
           "Error: No fuses string given");
 
@@ -434,13 +440,33 @@ void jtag::jtagWriteFuses(char *fuses)
 }
 
 
+static unsigned int countFuses(void)
+{
+    unsigned int nfuses = 0;
+
+    for (unsigned int i = 7, mask = 0x80;
+         mask != 0;
+         i--, mask >>= 1)
+    {
+        if ((global_p_device_def->fusemap & mask) != 0)
+        {
+            nfuses = i + 1;
+            break;
+        }
+    }
+    check(nfuses != 0, "Device has no fuses?  Confused.");
+
+    return nfuses;
+}
+
+
 void jtag::jtagReadFuses(void)
 {
     uchar *fuseBits = 0;
 
     enableProgramming();
     statusOut("\nReading Fuse Bytes:\n");
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, countFuses());
     disableProgramming();
 
     check(fuseBits, "Error reading fuses");
@@ -451,11 +477,79 @@ void jtag::jtagReadFuses(void)
 }
 
 
+void jtag::jtagActivateOcdenFuse(void)
+{
+    if (global_p_device_def->ocden_fuse == 0)
+        return;                 // device without an OCDEN fuse
+
+    unsigned int nfuses = countFuses();
+
+    if (nfuses > 3)
+        statusOut("jtag::jtagActivateOcdenFuse(): "
+                  "Device has more than 3 fuses: %d, cannot handle\n",
+                  nfuses);
+
+    enableProgramming();
+
+    uchar *fuseBits = 0;
+    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+    check(fuseBits, "Cannot read fuses");
+
+    unsigned int fusevect = (fuseBits[2] << 16) |
+        (fuseBits[1] << 8) |
+        fuseBits[0];
+
+    if ((fusevect & global_p_device_def->ocden_fuse) != 0)
+    {
+        statusOut("\nEnabling on-chip debugging:\n");
+
+        fusevect &= ~global_p_device_def->ocden_fuse; // clear bit
+        fuseBits[2] = fusevect >> 16;
+        fuseBits[1] = fusevect >> 8;
+        fuseBits[0] = fusevect;
+        unsigned int offset;
+        if (global_p_device_def->ocden_fuse > 0x8000)
+            offset = 2;
+        else if (global_p_device_def->ocden_fuse > 0x80)
+            offset = 1;
+        else
+            offset = 0;
+        jtagWrite(FUSE_SPACE_ADDR_OFFSET + offset, 1, &fuseBits[offset]);
+    }
+
+    disableProgramming();
+    delete [] fuseBits;
+}
+
 void jtag::jtagDisplayFuses(uchar *fuseBits)
 {
-    statusOut("  Extended Fuse byte -> 0x%02x\n", fuseBits[2]);
-    statusOut("      High Fuse byte -> 0x%02x\n", fuseBits[1]);
-    statusOut("       Low Fuse byte -> 0x%02x\n", fuseBits[0]);
+    if (global_p_device_def->fusemap <= 0x07)
+    {
+        // tinyAVR/megaAVR: low/high/[extended] fuse
+        const char *fusenames[3] = { "       Low",
+                                     "      High",
+                                     "  Extended" };
+        for (unsigned int i = 2, mask = 0x04;
+             mask != 0;
+             i--, mask >>= 1)
+        {
+            if ((global_p_device_def->fusemap & mask) != 0)
+                statusOut("%s Fuse byte -> 0x%02x\n",
+                          fusenames[i], fuseBits[i]);
+        }
+    }
+    else
+    {
+        // Xmega: fuse0 ... fuse7 (or just some of them)
+        for (unsigned int i = 7, mask = 0x80;
+             mask != 0;
+             i--, mask >>= 1)
+        {
+            if ((global_p_device_def->fusemap & mask) != 0)
+                statusOut("Fuse byte %d -> 0x%02x\n",
+                          i, fuseBits[i]);
+        }
+    }
 }
 
 
