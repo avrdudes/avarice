@@ -1,3 +1,9 @@
+2011-12-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc (opendev): Don't attempt to free(serno); it's
+	the result of strchr() rather than any kind of memory allocation
+	operation.
+
 2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag.h: Get rid of bogus fuse definition enum values

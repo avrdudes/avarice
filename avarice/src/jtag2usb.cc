@@ -172,12 +172,8 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
   {
     printf("did not find any%s USB device \"%s\"\n",
 	   serno? " (matching)": "", jtagDeviceName);
-    if (serno)
-      free (serno);
     return NULL;
   }
-  if (serno)
-    free (serno);
   if (dev->config == NULL)
   {
       statusOut("USB device has no configuration\n");
