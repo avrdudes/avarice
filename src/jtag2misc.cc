@@ -43,14 +43,23 @@ void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
      */
     unsigned char buf[2 + 4], *resp;
 
-    check(valSize <= 4, "Parameter too large in setJtagParameter");
+    if (valSize > 4)
+        throw jtag_exception("Parameter too large in setJtagParameter");
 
     buf[0] = CMND_SET_PARAMETER;
     buf[1] = item;
     memcpy(buf + 2, newValue, valSize);
 
-    check(doJtagCommand(buf, valSize + 2, resp, respsize),
-	  "set paramater command failed");
+    try
+    {
+        doJtagCommand(buf, valSize + 2, resp, respsize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "set paramater command failed: %s\n",
+                e.what());
+        throw;
+    }
 
     delete [] resp;
 }
@@ -71,10 +80,18 @@ void jtag2::getJtagParameter(uchar item, uchar *&resp, int &respSize)
     buf[0] = CMND_GET_PARAMETER;
     buf[1] = item;
 
-    check(doJtagCommand(buf, 2, resp, respSize),
-	  "get paramater command failed");
-    check(resp[0] == RSP_PARAMETER && respSize > 1,
-	  "unexpected response to get paramater command");
+    try
+    {
+        doJtagCommand(buf, 2, resp, respSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "get paramater command failed: %s\n",
+                e.what());
+        throw;
+    }
+    if (resp[0] != RSP_PARAMETER || respSize <= 1)
+        throw jtag_exception("unexpected response to get paramater command");
 }
 
 

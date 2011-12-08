@@ -64,16 +64,22 @@ static void initImage(BFDimage *image)
 void jtag1::enableProgramming(void)
 {
     programmingEnabled = true;
-    check(doSimpleJtagCommand(0xa3, 1), 
-	      "JTAG ICE: Failed to enable programming");
+    if (doSimpleJtagCommand(0xa3, 1) < 0)
+    {
+        fprintf(stderr, "JTAG ICE: Failed to enable programming\n");
+        throw jtag_exception();
+    }
 }
 
 
 void jtag1::disableProgramming(void)
 {
     programmingEnabled = false;
-    check(doSimpleJtagCommand(0xa4, 1), 
-	  "JTAG ICE: Failed to disable programming");
+    if (doSimpleJtagCommand(0xa4, 1) < 0)
+    {
+        fprintf(stderr, "JTAG ICE: Failed to disable programming\n");
+        throw jtag_exception();
+    }
 }
 
 
@@ -81,8 +87,11 @@ void jtag1::disableProgramming(void)
 // (unless the save-eeprom fuse is set).
 void jtag1::eraseProgramMemory(void)
 {
-    check(doSimpleJtagCommand(0xa5, 1), 
-	  "JTAG ICE: Failed to erase program memory");
+    if (doSimpleJtagCommand(0xa5, 1) < 0)
+    {
+        fprintf(stderr, "JTAG ICE: Failed to erase program memory\n");
+        throw jtag_exception();
+    }
 }
 
 void jtag1::eraseProgramPage(unsigned long address)
@@ -94,7 +103,11 @@ void jtag1::eraseProgramPage(unsigned long address)
     command[2] = address;
 
     response = doJtagCommand(command, sizeof(command), 1);
-    check(response[0] == JTAG_R_OK, "Page erase failed\n");
+    if (response[0] != JTAG_R_OK)
+    {
+        fprintf(stderr, "Page erase failed\n");
+        throw jtag_exception();
+    }
 
     delete [] response;
 }
@@ -254,7 +267,8 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
     flashimg.name = BFDmemoryTypeString[MEM_FLASH];
     eepromimg.name = BFDmemoryTypeString[MEM_EEPROM];
 
-    unixCheck(stat(filename, &ifstat), "Can't stat() file %s", filename);
+    if (stat(filename, &ifstat) < 0)
+        throw jtag_exception("Can't stat() image file");
 
     // Open the input file.
     bfd_init();
@@ -270,7 +284,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
         {
             fprintf( stderr, "Could not open input file %s:%s\n", filename,
                      bfd_errmsg(bfd_get_error()) );
-            exit(-1);
+            return;
         }
         
         // Check if file format is supported. If not, go for binary mode.
@@ -322,7 +336,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
     
     disableProgramming();
 
-    unixCheck(bfd_close(file), "Error closing %s", filename);
+    (void)(bfd_close(file));
 
     statusOut("\nDownload complete.\n");
 }

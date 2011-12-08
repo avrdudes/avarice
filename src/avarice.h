@@ -42,16 +42,4 @@ void vstatusOut(const char *fmt, va_list args);
 void statusOut(const char *fmt, ...);
 void statusFlush();
 
-/** Abort program with error message 'fmt, ...' if !ok.
-
-    Error message is sent via statusOut and gdbOut **/
-void check(bool ok, const char *fmt, ...);
-
-/** Abort program with error message 'fmt, ...' if status < 0. 
-    Error message also includes error indicated by 'errno'
-
-    Error message is sent via statusOut and gdbOut **/
-void unixCheck(int status, const char *fmt, ...);
-
-
 #endif // INCLUDE_AVARICE_H

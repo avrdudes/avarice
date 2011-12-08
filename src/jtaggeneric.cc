@@ -53,11 +53,6 @@ const int BFDmemorySpaceOffset[] = {
  * Generic functions applicable to both, the mkI and mkII ICE.
  */
 
-void jtag::jtagCheck(int status)
-{
-    unixCheck(status, JTAG_CAUSE, NULL);
-}
-
 void jtag::restoreSerialPort()
 {
   if (!is_usb && jtagBox >= 0 && oldtioValid)
@@ -95,18 +90,24 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
 	// tty because we don't want to get killed if linenoise sends
 	// CTRL-C.
 	jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
-	unixCheck(jtagBox, "Failed to open %s", jtagDeviceName);
+	if (jtagBox < 0)
+	{
+	    fprintf(stderr, "Failed to open %s", jtagDeviceName);
+	    throw jtag_exception();
+	}
 
 	// save current serial port settings and plan to restore them on exit
-	jtagCheck(tcgetattr(jtagBox, &oldtio));
+	if (tcgetattr(jtagBox, &oldtio) < 0)
+	    throw jtag_exception();
 	oldtioValid = true;
 
 	memset(&newtio, 0, sizeof(newtio));
 	newtio.c_cflag = CS8 | CLOCAL | CREAD;
 
 	// set baud rates in a platform-independent manner
-	jtagCheck(cfsetospeed(&newtio, B19200));
-	jtagCheck(cfsetispeed(&newtio, B19200));
+	if (cfsetospeed(&newtio, B19200) < 0 ||
+	    cfsetispeed(&newtio, B19200) < 0)
+	    throw jtag_exception();
 
 	// IGNPAR  : ignore bytes with parity errors
 	//           otherwise make device raw (no other input processing)
@@ -126,8 +127,9 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
 	// arrives
 
 	// now clean the serial line and activate the settings for the port
-	jtagCheck(tcflush(jtagBox, TCIFLUSH));
-	jtagCheck(tcsetattr(jtagBox,TCSANOW,&newtio));
+	if (tcflush(jtagBox, TCIFLUSH) < 0 ||
+	    tcsetattr(jtagBox, TCSANOW, &newtio) < 0)
+	    throw jtag_exception();
       }
 }
 
@@ -160,7 +162,6 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout)
            here. */
         if ((selected < 0) && (errno == EAGAIN || errno == EINTR))
             continue;
-	//jtagCheck(selected);
 
 	if (selected == 0)
 	    return actual;
@@ -168,7 +169,8 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout)
 	ssize_t thisread = read(jtagBox, &buffer[actual], count - actual);
         if ((thisread < 0) && (errno == EAGAIN))
             continue;
-	jtagCheck(thisread);
+	if (thisread < 0)
+            throw jtag_exception();
 
 	actual += thisread;
     }
@@ -213,7 +215,8 @@ void jtag::changeLocalBitRate(int newBitRate)
     // Change the local port bitrate.
     struct termios tio;
 
-    jtagCheck(tcgetattr(jtagBox, &tio));
+    if (tcgetattr(jtagBox, &tio) < 0)
+        throw jtag_exception();
 
     speed_t newPortSpeed = B19200;
     // Linux doesn't support 14400. Let's hope it doesn't end up there...
@@ -236,14 +239,15 @@ void jtag::changeLocalBitRate(int newBitRate)
 	break;
     default:
 	debugOut("unsupported bitrate: %d\n", newBitRate);
-	exit(1);
+        throw jtag_exception("unsupported bitrate");
     }
 
     cfsetospeed(&tio, newPortSpeed);
     cfsetispeed(&tio, newPortSpeed);
 
-    jtagCheck(tcsetattr(jtagBox,TCSANOW,&tio));
-    jtagCheck(tcflush(jtagBox, TCIFLUSH));
+    if (tcsetattr(jtagBox,TCSANOW,&tio) < 0 ||
+        tcflush(jtagBox, TCIFLUSH) < 0)
+        throw jtag_exception();
 }
 
 static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
@@ -304,7 +308,7 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
     if (! image->has_data)
     {
         fprintf(stderr, "File contains no data.\n");
-        exit(-1);
+        return;
     }
 
 
@@ -328,11 +332,17 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                 for (i=0; i<page_size; i++)
                     buf[i] = image->image[i+addr].val;
 
-                check(jtagWrite(BFDmemorySpaceOffset[memtype] + addr,
-                                page_size,
-                                buf),
-                      "Error writing to target");
-                // No need for statusOut here, since jtagWrite does it.
+                try
+                {
+                    jtagWrite(BFDmemorySpaceOffset[memtype] + addr,
+                              page_size,
+                              buf);
+                }
+                catch (jtag_exception& e)
+                {
+                    fprintf(stderr, "Error writing to target: %s\n",
+                            e.what());
+                }
             }
 
             addr += page_size;
@@ -391,7 +401,11 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
         statusOut("\n");
         statusFlush();
 
-        check(is_verified, "\nVerification failed!");
+        if (!is_verified)
+        {
+            fprintf(stderr, "\nVerification failed!\n");
+            throw jtag_exception();
+        }
     }
 }
 
@@ -404,17 +418,23 @@ void jtag::jtagWriteFuses(char *fuses)
 
     if (deviceDef->fusemap > 0x07)
     {
-        statusOut("Fuse byte writing not supported on this device.\n");
+        fprintf(stderr, "Fuse byte writing not supported on this device.\n");
         return;
     }
 
-    check(fuses,
-          "Error: No fuses string given");
+    if (fuses == 0)
+    {
+        fprintf(stderr, "Error: No fuses string given");
+        return;
+    }
 
     // Convert fuses to hex values (this avoids endianess issues)
     c = sscanf(fuses, "%02x%02x%02x", temp+2, temp+1, temp );
-    check(c == 3,
-          "Error: Fuses specified are not in hexidecimal");
+    if (c != 3)
+    {
+        fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
+        return;
+    }
 
     fuseBits[0] = (uchar)temp[0];
     fuseBits[1] = (uchar)temp[1];
@@ -425,15 +445,24 @@ void jtag::jtagWriteFuses(char *fuses)
 
     enableProgramming();
 
-    check(jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits),
-          "Error writing fuses");
+    try
+    {
+        jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Error writing fuses: %s\n",
+                e.what());
+    }
 
     readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
 
     disableProgramming();
 
-    check(memcmp(fuseBits, readfuseBits, 3) == 0,
-          "Error verifying written fuses");
+    if (memcmp(fuseBits, readfuseBits, 3) != 0)
+    {
+        fprintf(stderr, "Error verifying written fuses");
+    }
 
     delete [] readfuseBits;
 }
@@ -453,7 +482,11 @@ static unsigned int countFuses(unsigned int fusemap)
             break;
         }
     }
-    check(nfuses != 0, "Device has no fuses?  Confused.");
+    if (nfuses == 0)
+    {
+        fprintf(stderr, "Device has no fuses?  Confused.");
+        throw jtag_exception();
+    }
 
     return nfuses;
 }
@@ -468,8 +501,6 @@ void jtag::jtagReadFuses(void)
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0,
                         countFuses(deviceDef->fusemap));
     disableProgramming();
-
-    check(fuseBits, "Error reading fuses");
 
     jtagDisplayFuses(fuseBits);
 
@@ -493,7 +524,6 @@ void jtag::jtagActivateOcdenFuse(void)
 
     uchar *fuseBits = 0;
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-    check(fuseBits, "Cannot read fuses");
 
     unsigned int fusevect = (fuseBits[2] << 16) |
         (fuseBits[1] << 8) |
@@ -560,16 +590,25 @@ void jtag::jtagWriteLockBits(char *lock)
     uchar *readlockBits;
     unsigned int c;
 
-    check(lock,
-          "Error: No lock bit string given");
+    if (lock == 0)
+    {
+        fprintf(stderr, "Error: No lock bit string given");
+        return;
+    }
 
-    check(strlen(lock) == 2,
-          "Error: Fuses must be one byte exactly");
+    if (strlen(lock) != 2)
+    {
+        fprintf(stderr, "Error: Fuses must be one byte exactly");
+        return;
+    }
 
     // Convert lockbits to hex value
     c = sscanf(lock, "%02x", temp);
-    check(c == 1,
-          "Error: Fuses specified are not in hexidecimal");
+    if (c != 1)
+    {
+        fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
+        return;
+    }
 
     lockBits[0] = (uchar)temp[0];
 
@@ -577,15 +616,24 @@ void jtag::jtagWriteLockBits(char *lock)
 
     enableProgramming();
 
-    check(jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits),
-          "Error writing lockbits" );
+    try
+    {
+        jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Error writing lockbits: %s\n",
+                e.what());
+    }
 
     readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
 
     disableProgramming();
 
-    check(memcmp(lockBits, readlockBits, 1) == 0,
-          "Error verifying written lock bits");
+    if (memcmp(lockBits, readlockBits, 1) != 0)
+    {
+        fprintf(stderr, "Error verifying written lock bits");
+    }
 
     delete [] readlockBits;
 }
@@ -599,8 +647,6 @@ void jtag::jtagReadLockBits(void)
     statusOut("\nReading Lock Bits:\n");
     lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
     disableProgramming();
-
-    check(lockBits, "Error reading lock bits");
 
     jtagDisplayLockBits(lockBits);
 

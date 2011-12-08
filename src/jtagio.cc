@@ -49,8 +49,8 @@
  
 SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
 {
-    check((*tries)++ < MAX_JTAG_COMM_ATTEMPS,
-	      "JTAG ICE: Cannot synchronise");
+    if ((*tries)++ >= MAX_JTAG_COMM_ATTEMPS)
+        throw jtag_exception("JTAG communication failed");
 
     debugOut("\ncommand[%c, %d]: ", command[0], *tries);
 
@@ -60,16 +60,19 @@ SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
     debugOut("\n");
 
     // before writing, clean up any "unfinished business".
-    jtagCheck(tcflush(jtagBox, TCIFLUSH));
+    if (tcflush(jtagBox, TCIFLUSH) < 0)
+        throw jtag_exception();
 
     int count = safewrite(command, commandSize);
     if (count < 0)
-      jtagCheck(count);
-    else // this shouldn't happen
-      check(count == commandSize, JTAG_CAUSE);
+        throw jtag_exception();
+    else if (count != commandSize)
+        // this shouldn't happen
+        throw jtag_exception();
 
     // And wait for all characters to go to the JTAG box.... can't hurt!
-    jtagCheck(tcdrain(jtagBox));
+    if (tcdrain(jtagBox) < 0)
+        throw jtag_exception();
 
     // We should get JTAG_R_OK, but we might get JTAG_R_INFO too (we just
     // ignore it)
@@ -77,7 +80,8 @@ SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
       {
 	uchar ok;
 	count = timeout_read(&ok, 1, JTAG_RESPONSE_TIMEOUT);
-	jtagCheck(count);
+	if (count < 0)
+            throw jtag_exception();
 
 	// timed out
 	if (count == 0)
@@ -131,7 +135,8 @@ uchar *jtag1::getJtagResponse(int responseSize)
 
     numCharsRead = timeout_read(response, responseSize,
                                 JTAG_RESPONSE_TIMEOUT);
-    jtagCheck(numCharsRead);
+    if (numCharsRead < 0)
+        throw jtag_exception();
 
     debugOut("response: ");
     for (int i = 0; i < numCharsRead; i++)
@@ -165,7 +170,8 @@ uchar *jtag1::doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 	{
 	case send_ok:
 	    response = getJtagResponse(responseSize);
-	    check(response != NULL, JTAG_CAUSE);
+	    if (response == NULL)
+                throw jtag_exception();
 	    return response;
 	case send_failed:
 	    // We're out of sync. Attempt to resync.
@@ -238,8 +244,8 @@ void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
     uchar *command = (uchar *)(&dev->dev_desc1);
 
     response = doJtagCommand(command, sizeof dev->dev_desc1, 1);
-    check(response[0] == JTAG_R_OK,
-	      "JTAG ICE: Failed to set device description");
+    if (response[0] != JTAG_R_OK)
+        throw jtag_exception ("JTAG ICE: Failed to set device description");
 
     delete [] response;
 }
@@ -280,7 +286,8 @@ bool jtag1::synchroniseAt(int bitrate)
 	// 'E  ' is enough, but not always...)
 	sendJtagCommand((uchar *)"SE  ", 4, &tries);
 	usleep(2 * JTAG_COMM_TIMEOUT); // let rest of response come before we ignore it
-	jtagCheck(tcflush(jtagBox, TCIFLUSH));
+	if (tcflush(jtagBox, TCIFLUSH) < 0)
+            throw jtag_exception();
 	if (checkForEmulator())
 	    return true;
     }
@@ -297,7 +304,7 @@ void jtag1::startJtagLink(void)
 	if (synchroniseAt(bitrates[i]))
 	    return;
 
-    check(false, "Failed to synchronise with the JTAG ICE (is it connected and powered?)");
+    throw jtag_exception("Failed to synchronise with the JTAG ICE (is it connected and powered?)");
 }
 
 /** Device automatic configuration 
@@ -345,11 +352,17 @@ void jtag1::deviceAutoConfig(void)
 
             pDevice++;
         }
-	check((pDevice->device_flags & DEVFL_MKII_ONLY) == 0,
-	      "Device is not supported by JTAG ICE mkI");
-        check(pDevice->name,
-              "No configuration available for device ID: %0x\n",
-              device_id); 
+	if ((pDevice->device_flags & DEVFL_MKII_ONLY) != 0)
+        {
+            fprintf(stderr, "Device is not supported by JTAG ICE mkI");
+            throw jtag_exception();
+        }
+        if (pDevice->name == 0)
+        {
+            fprintf(stderr, "No configuration available for device ID: %0x\n",
+                    device_id);
+            throw jtag_exception();
+        }
     }
     else
     {
@@ -362,11 +375,17 @@ void jtag1::deviceAutoConfig(void)
 
             pDevice++;
         }
-	check((pDevice->device_flags & DEVFL_MKII_ONLY) == 0,
-	      "Device is not supported by JTAG ICE mkI");
-	check(pDevice->name,
-              "No configuration available for Device: %s\n",
-              device_name);
+	if ((pDevice->device_flags & DEVFL_MKII_ONLY) != 0)
+        {
+            fprintf(stderr, "Device is not supported by JTAG ICE mkI");
+            throw jtag_exception();
+        }
+        if (pDevice->name == 0)
+        {
+            fprintf(stderr, "No configuration available for Device: %s\n",
+                    device_name);
+            throw jtag_exception();
+        }
     }
 
     if (device_name)
@@ -405,7 +424,6 @@ void jtag1::initJtagBox(void)
 
     uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
     statusOut("Hardware Version: 0x%02x\n", hw_ver);
-    //check(hw_ver == 0xc0, "JTAG ICE: Unknown hardware version");
 
     uchar sw_ver = getJtagParameter(JTAG_P_SW_VERSION);
     statusOut("Software Version: 0x%02x\n", sw_ver);

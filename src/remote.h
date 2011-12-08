@@ -28,11 +28,6 @@ extern int gdbFileDescriptor;
 /** Talk to gdb over file descriptor 'fd' **/
 void setGdbFile(int fd);
 
-#define GDB_CAUSE "gdb communications failure"
-
-/** If status < 0: Report gdb communication error & exit **/
-void gdbCheck(int status);
-
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
 int getDebugChar(void);
