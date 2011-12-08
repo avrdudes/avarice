@@ -84,7 +84,7 @@ PRAGMA_DIAG_IGNORED("-Wunused-parameter")
 
 bool jtag2::resetProgram(bool possible_nSRST_ignored)
 {
-    if (proto != PROTO_DW) {
+    if (proto == PROTO_DW) {
 	/* The JTAG ICE mkII and Dragon do not respond correctly to
 	 * the CMND_RESET command while in debugWire mode. */
 	return interruptProgram()
