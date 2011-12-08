@@ -1,3 +1,8 @@
+2011-12-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2run.cc (jtag2::resetProgram): Fix a logic error
+	introduced in r259.
+
 2011-12-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2usb.cc (opendev): Don't attempt to free(serno); it's
