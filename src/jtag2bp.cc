@@ -561,9 +561,10 @@ void jtag2::updateBreakpoints(void)
                     {
                         doJtagCommand(cmd, 6, response, responseSize);
                     }
-                    catch (exception&)
+                    catch (jtag_exception& e)
                     {
-                        fprintf(stderr, "Failed to clear breakpoint");
+                        fprintf(stderr, "Failed to clear breakpoint: %s\n",
+                                e.what());
                         throw;
                     }
 
