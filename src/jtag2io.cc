@@ -584,7 +584,7 @@ void jtag2::startJtagLink(void)
 
 	    signedIn = true;
 
-	    if (apply_nSRST) {
+	    if (proto == PROTO_JTAG && apply_nSRST) {
 		val = 0x01;
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
