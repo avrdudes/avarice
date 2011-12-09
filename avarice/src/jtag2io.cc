@@ -717,13 +717,25 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
     }
 
     // Ensure on-chip debug enable fuse is enabled ie '0'
+
+    // The enableProgramming()/disableProgramming() pair might seem to
+    // be not needed (as the fuse read/write operations would enforce
+    // going to programming mode anyway), but for devices that don't
+    // feature an OCDEN fuse (i.e., Xmega devices),
+    // jtagActivateOcdenFuse() bails out immediately.  At least with
+    // firmware 7.13, the ICE seems to become totally upset then when
+    // debugging an Xmega device without having went through a
+    // programming-mode cycle before.  Upon a reset command, it
+    // confirms the reset, but the target happily proceeds in RUNNING
+    // state.
+    enableProgramming();
     jtagActivateOcdenFuse();
+    disableProgramming();
 
     resetProgram();
     uchar timers = 0;		// stopped
     if (!is_xmega)
         setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
-    resetProgram();
 }
 
 void jtag2::configDaisyChain(void)
