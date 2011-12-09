@@ -589,26 +589,7 @@ int main(int argc, char **argv)
 
 	// Init JTAG box.
 	theJtagICE->initJtagBox();
-    }
-    catch (const char *msg)
-      {
-	fprintf(stderr, "%s\n", msg);
-	return 1;
-      }
-    catch (jtag_exception& e)
-      {
-	fprintf(stderr, "Cannot initialize JTAG ICE: %s\n",
-                e.what());
-	return 1;
-      }
-    catch (...)
-      {
-	fprintf(stderr, "Cannot initialize JTAG ICE\n");
-	return 1;
-      }
 
-    try
-    {
         if (erase)
         {
             if (protocol == MKII_DW)
@@ -730,6 +711,11 @@ int main(int argc, char **argv)
                 talkToGdb();
         }
     }
+    catch (const char *msg)
+      {
+	fprintf(stderr, "%s\n", msg);
+	return 1;
+      }
     catch (jtag_exception&)
     {
         // ignored; guarantee theJtagICE object will be deleted
