@@ -374,22 +374,33 @@ void jtag2::doJtagCommand(uchar *command, int  commandSize,
 			  bool retryOnTimeout)
     throw (jtag_exception)
 {
-    int tryCount = 0;
+    int sizeseen = 0;
+    uchar code;
 
-    // Send command until we get an OK response
-    for (;;)
+    for (int tryCount = 0; tryCount < 8; tryCount++)
     {
 	if (sendJtagCommand(command, commandSize, tryCount, response, responseSize, false))
 	    return;
 
 	if (!retryOnTimeout)
-            throw jtag_timeout_exception();
+	{
+	    if (responseSize == 0)
+		throw jtag_timeout_exception();
+	    else
+		throw jtag_io_exception(response[0]);
+	}
 
 	if (responseSize > 0 && response[0] > RSP_FAILED)
 	    // no point in retrying failures other than FAILED
-            throw jtag_io_exception(response[0]);
+	    throw jtag_io_exception(response[0]);
 
-	if (tryCount > 3 && responseSize == 0 && ctrlPipe != -1)
+	if (responseSize > 0)
+	{
+	    sizeseen = responseSize;
+	    code = response[0];
+	}
+
+	if (tryCount == 4 && responseSize == 0 && ctrlPipe != -1)
 	  {
 	    /* signal the USB daemon to reset the EPs */
 	    debugOut("Resetting EPs...\n");
@@ -397,6 +408,10 @@ void jtag2::doJtagCommand(uchar *command, int  commandSize,
 	    (void)(write(ctrlPipe, cmd, 1) != 0);
 	  }
     }
+    if (sizeseen > 0)
+	throw jtag_io_exception(code);
+    else
+	throw jtag_timeout_exception();
 }
 
 void jtag2::doSimpleJtagCommand(uchar command)
