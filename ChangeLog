@@ -1,5 +1,11 @@
 2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2io.cc (jtag2::initJtagOnChipDebugging): ensure the
+	device went once through a programming-mode cycle, as at least
+	firmware 7.13 otherwise gets royally confused on Xmega devices.
+
+2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2::startJtagLink): set the signedIn flag
 	as soon as we succeeded with synchronizeAt() (which has sent
 	the sign-on message), so we properly say good-bye afterwards
