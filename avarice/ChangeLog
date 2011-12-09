@@ -1,5 +1,10 @@
 2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2io.cc (jtag2::startJtagLink): external reset is
+	only applicable to the JTAG protocol
+
+2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2::initJtagOnChipDebugging): ensure the
 	device went once through a programming-mode cycle, as at least
 	firmware 7.13 otherwise gets royally confused on Xmega devices.
