@@ -923,6 +923,7 @@ void talkToGdb(void)
                     hex2mem(ptr, reg, 1);
                     theJtagICE->jtagWrite(theJtagICE->cpuRegisterAreaAddress() + regno,
                                           1, reg);
+                    ok();
                     break;
                 }
                 else if (regno == SREG)
@@ -936,19 +937,20 @@ void talkToGdb(void)
                     hex2mem(ptr, reg, 2);
                     theJtagICE->jtagWrite(theJtagICE->statusAreaAddress(),
                                           2, reg);
+                    ok();
                 }
                 else if (regno == PC)
                 {
                     hex2mem(ptr, reg, 4);
                     theJtagICE->setProgramCounter(reg[0] | reg[1] << 8 |
                                                   reg[2] << 16 | reg[3] << 24);
+                    ok();
                 }
             }
             catch (jtag_exception& e)
             {
-                break;
+                // ignore, error state already set above
             }
-            ok();
         }
 	break;
 
