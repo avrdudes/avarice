@@ -319,8 +319,10 @@ void jtag2::jtagSingleStep(void)
         {
             if (e.get_response() != RSP_ILLEGAL_MCU_STATE)
                 throw;
+            continue;
         }
 	delete [] resp;
+        break;
     }
     while (--i >= 0);
     if (i < 0)
