@@ -492,7 +492,7 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
       udev = opendev(jtagDeviceName, emu_type, usb_interface);
       if (udev == NULL)
       {
-          fprintf(stderr, "USB device not found");
+          fprintf(stderr, "USB device not found\n");
           exit(0);
       }
       kill(getppid(), SIGUSR1); // tell the parent we are ready to go
