@@ -698,17 +698,20 @@ void talkToGdb(void)
     {
 	uchar *jtagBuffer;
 
-	error(1); // default is error
 	if((hexToInt(&ptr, &addr)) &&
 	   (*(ptr++) == ',') &&
 	   (hexToInt(&ptr, &length)))
 	{
 	    debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
-	    jtagBuffer = theJtagICE->jtagRead(addr, length);
-	    if (jtagBuffer)
+	    try
 	    {
+		jtagBuffer = theJtagICE->jtagRead(addr, length);
 		mem2hex(jtagBuffer, remcomOutBuffer, length);
 		delete [] jtagBuffer;
+	    }
+	    catch (jtag_exception&)
+	    {
+		error(1);
 	    }
 	}
 	break;
