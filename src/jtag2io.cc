@@ -375,7 +375,7 @@ void jtag2::doJtagCommand(uchar *command, int  commandSize,
     throw (jtag_exception)
 {
     int sizeseen = 0;
-    uchar code;
+    uchar code = 0;
 
     for (int tryCount = 0; tryCount < 8; tryCount++)
     {
@@ -589,6 +589,7 @@ void jtag2::startJtagLink(void)
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
 
+	    const char *protoName = "unknown";
 	    switch (proto)
 	    {
 		case PROTO_JTAG:
@@ -596,17 +597,30 @@ void jtag2::startJtagLink(void)
 			val = EMULATOR_MODE_JTAG_XMEGA;
 		    else
 			val = EMULATOR_MODE_JTAG;
+		    protoName = "JTAG";
 		    break;
 
 		case PROTO_DW:
 		    val = EMULATOR_MODE_DEBUGWIRE;
+		    protoName = "debugWIRE";
 		    break;
 
 		case PROTO_PDI:
 		    val = EMULATOR_MODE_PDI;
+		    protoName = "PDI";
 		    break;
 	    }
-	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
+	    try
+	    {
+		setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
+	    }
+	    catch (jtag_io_exception&)
+	    {
+		fprintf(stderr,
+			"Failed to activate %s debugging protocol\n",
+			protoName);
+		throw;
+	    }
 
 	    return;
 	}
