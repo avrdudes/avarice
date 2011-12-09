@@ -1,3 +1,9 @@
+2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2io.cc (jtag2::startJtagLink): set the signedIn flag
+	as soon as we succeeded with synchronizeAt() (which has sent
+	the sign-on message), so we properly say good-bye afterwards
+
 2011-12-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2run.cc (jtag2::resetProgram): Fix a logic error

@@ -515,6 +515,8 @@ void jtag2::startJtagLink(void)
 	if (synchroniseAt(bitrates[i])) {
 	    uchar val;
 
+	    signedIn = true;
+
 	    if (apply_nSRST) {
 		val = 0x01;
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
@@ -538,7 +540,6 @@ void jtag2::startJtagLink(void)
 		    break;
 	    }
 	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
-	    signedIn = true;
 
 	    return;
 	}
