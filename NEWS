@@ -3,7 +3,12 @@
 Summary of changes since AVaRICE 2.12
 ==================================
 
-. ...
+. Rearrange the entire error handling to use exceptions, rather than a
+  mix between error code returns, and prematurely exiting the program
+  from deep inside, without any attempt to cleanup the JTAG ICE
+  connection status.  This is a lot cleaner now, with a much reduced
+  chance to leave the ICE in an unworkable state when exiting the
+  program.
 
 =====================================================================
 
