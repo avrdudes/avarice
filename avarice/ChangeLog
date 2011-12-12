@@ -1,3 +1,7 @@
+2011-12-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/devdescr.cc (atxmega16d4): new entry
+
 2011-12-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2io.cc (jtag2::startJtagLink): external reset is
