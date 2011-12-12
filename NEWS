@@ -10,7 +10,7 @@ Summary of changes since AVaRICE 2.11
 
 . Cache the PC returned by BREAK events, to speedup the communication.
 
-. New devices: ATxmega256A3, ATtiny4313
+. New devices: ATxmega256A3, ATxmega16D4, ATtiny4313
 
 . Moved source code repository from CVS to SVN.
 
