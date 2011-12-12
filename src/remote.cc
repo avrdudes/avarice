@@ -612,13 +612,13 @@ void talkToGdb(void)
     case 'R':
         try
         {
-            theJtagICE->resetProgram(false);
-        }
-        catch (jtag_exception&)
-        {
+	    theJtagICE->resetProgram(false);
+	}
+	catch (jtag_exception& e)
+	{
 	    gdbOut("reset failed\n");
-            dontSendReply = true;
-        }
+	}
+	dontSendReply = true;
 	break;
 
     case '!':
@@ -1000,10 +1000,12 @@ void talkToGdb(void)
                 try
                 {
                     theJtagICE->resetProgram(false);
-                }
-                catch (jtag_exception&)
-                {
                     reportStatusExtended(SIGTRAP);
+                }
+                catch (jtag_exception& e)
+                {
+                    fprintf(stderr, "Failed to reset MCU: %s\n",
+                            e.what());
                 }
             }
         }
