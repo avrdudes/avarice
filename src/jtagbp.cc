@@ -59,10 +59,10 @@ void jtag1::deleteAllBreakpoints(void)
     numBreakpointsData = numBreakpointsCode = 0;
 }
 
-bool jtag1::stopAt(unsigned int address)
+void jtag1::stopAt(unsigned int address)
 {
     uchar zero = 0;
-    return jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
+    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
 }
 
 PRAGMA_DIAG_PUSH

@@ -130,7 +130,6 @@ class jtag2: public jtag
     unsigned short command_sequence;
     int devdescrlen;
     bool signedIn;
-    bool haveHiddenBreakpoint;
     enum debugproto proto;
     bool is_xmega;
     bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
@@ -159,7 +158,7 @@ class jtag2: public jtag
 	  bool is_dragon = false, bool nsrst = false,
           bool xmega = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
-	signedIn = haveHiddenBreakpoint = false;
+	signedIn = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
 	proto = prot;
@@ -187,7 +186,7 @@ class jtag2: public jtag
     virtual bool layoutBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
-    virtual bool stopAt(unsigned int address);
+    virtual void stopAt(unsigned int address);
     virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);
@@ -197,15 +196,15 @@ class jtag2: public jtag
     virtual void downloadToTarget(const char* filename, bool program, bool verify);
 
     virtual unsigned long getProgramCounter(void);
-    virtual bool setProgramCounter(unsigned long pc);
-    virtual bool resetProgram(bool ignored = false);
-    virtual bool interruptProgram(void);
-    virtual bool resumeProgram(bool restoreTarget);
-    virtual bool jtagSingleStep(bool useHLL = false);
+    virtual void setProgramCounter(unsigned long pc);
+    virtual void resetProgram(bool ignored = false);
+    virtual void interruptProgram(void);
+    virtual void resumeProgram(void);
+    virtual void jtagSingleStep(void);
     virtual bool jtagContinue(void);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
-    virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
+    virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
     virtual unsigned int statusAreaAddress(void) const {
         return (is_xmega? 0x3D: 0x5D) + DATA_SPACE_ADDR_OFFSET;
     };
@@ -265,13 +264,13 @@ class jtag2: public jtag
 	if no (positive or negative) response arrived in time, abort
 	after too many retries.
 
-	If a negative response arrived, return false, otherwise true.
+	If a negative response arrived, throw an exception.
 
 	Caller must delete [] the response.
     **/
-    bool doJtagCommand(uchar *command, int  commandSize,
+    void doJtagCommand(uchar *command, int  commandSize,
 		       uchar *&response, int &responseSize,
-		       bool retryOnTimeout = true);
+		       bool retryOnTimeout = true) throw(jtag_exception);
 
     /** Simplified form of doJtagCommand:
 	Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a
@@ -311,5 +310,21 @@ class jtag2: public jtag
      **/
     void xmegaSendBPs(void);
 };
+
+class jtag_io_exception: public jtag_exception
+{
+  private:
+    unsigned int response_code;
+
+  public:
+    jtag_io_exception(): jtag_exception("Unknown JTAG response exception")
+    {
+        response_code = 0;
+    }
+    jtag_io_exception(unsigned int code);
+
+    unsigned int get_response(void) { return response_code; }
+};
+
 
 #endif

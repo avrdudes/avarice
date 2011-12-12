@@ -28,8 +28,12 @@
 #include <sys/types.h>
 #include <termios.h>
 
+#include <exception>
+
 #include "pragma.h"
 #include "ioreg.h"
+
+using namespace std;
 
 /* The data in this structure will be sent directorly to the jtagice box. */
 
@@ -600,9 +604,6 @@ typedef struct {
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
 #define JTAG_EOM 0x20, 0x20
 
-// A generic error message when nothing good comes to mind
-#define JTAG_CAUSE "JTAG ICE communication failed"
-
 class jtag
 {
   protected:
@@ -674,9 +675,6 @@ class jtag
   // Basic JTAG I/O
   // -------------
 
-  /** If status < 0: Report JTAG ICE communication error & exit **/
-  void jtagCheck(int status);
-
   /** Send initial configuration to setup the JTAG box itself. 
    **/
   virtual void initJtagBox(void) = 0;
@@ -727,7 +725,7 @@ class jtag
       end (exclusive) */
   virtual bool codeBreakpointBetween(unsigned int start, unsigned int end) = 0;
 
-  virtual bool stopAt(unsigned int address) = 0;
+  virtual void stopAt(unsigned int address) = 0;
 
   /** Parse a list of event names to *not* cause a break. */
   virtual void parseEvents(const char *) = 0;
@@ -755,24 +753,24 @@ class jtag
   /** Retrieve the current Program Counter value, or PC_INVALID if fails */
   virtual unsigned long getProgramCounter(void) = 0;
 
-  /** Set program counter to 'pc'. Return true iff successful **/
-  virtual bool setProgramCounter(unsigned long pc) = 0;
+  /** Set program counter to 'pc' **/
+  virtual void setProgramCounter(unsigned long pc) = 0;
 
-  /** Reset AVR. Return true iff successful **/
-  virtual bool resetProgram(bool possible_nSRST) = 0;
+  /** Reset AVR. **/
+  virtual void resetProgram(bool possible_nSRST) = 0;
 
-  /** Interrupt AVR. Return true iff successful **/
-  virtual bool interruptProgram(void) = 0;
+  /** Interrupt AVR. **/
+  virtual void interruptProgram(void) = 0;
 
-  /** Resume program execution. Return true iff successful.
+  /** Resume program execution.
       Note: the gdb 'continue' command is handled by jtagContinue,
       this is just the low level command to resume after interruptProgram
   **/
-  virtual bool resumeProgram(bool restoreTarget = false) = 0;
+  virtual void resumeProgram(void) = 0;
 
-  /** Issue a "single step" command to the JTAG box. 
-      Return true iff successful **/
-  virtual bool jtagSingleStep(bool useHLL = false) = 0;
+  /** Issue a "single step" command to the JTAG box.
+  **/
+  virtual void jtagSingleStep(void) = 0;
 
   /** Send the program on it's merry way, and wait for a breakpoint or
       input from gdb.
@@ -802,7 +800,7 @@ class jtag
     Note: The current behaviour for program-space writes is pretty
     weird (does not match jtagRead). See comments in jtagrw.cc.
   **/
-  virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) = 0;
+  virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) = 0;
 
 
   /** Write fuses to target.
@@ -868,6 +866,31 @@ class jtag
   **/
   virtual unsigned int cpuRegisterAreaAddress(void) const = 0;
 
+};
+
+class jtag_exception: public exception
+{
+  protected:
+    const char *reason;
+  public:
+    jtag_exception()
+    {
+        reason =  "JTAG exception";
+    }
+    jtag_exception(const char *r)
+    {
+        reason = r;
+    }
+    virtual const char * what() const throw()
+    {
+        return reason;
+    }
+};
+
+class jtag_timeout_exception: public jtag_exception
+{
+  public:
+    jtag_timeout_exception(): jtag_exception("JTAG ICE timeout exception") {}
 };
 
 extern struct jtag *theJtagICE;

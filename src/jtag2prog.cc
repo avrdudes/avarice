@@ -99,9 +99,17 @@ void jtag2::eraseProgramPage(unsigned long address)
     command[3] = (address & 0xff00) >> 8;
     command[4] = address;
 
-    check(doJtagCommand(command, sizeof(command),
-			response, respSize),
-	  "Page erase failed\n");
+    try
+    {
+        doJtagCommand(command, sizeof(command),
+                      response, respSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Page erase failed: %s\n",
+                e.what());
+        throw;
+    }
 
     delete [] response;
 }
@@ -261,7 +269,8 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
     flashimg.name = BFDmemoryTypeString[MEM_FLASH];
     eepromimg.name = BFDmemoryTypeString[MEM_EEPROM];
 
-    unixCheck(stat(filename, &ifstat), "Can't stat() file %s", filename);
+    if (stat(filename, &ifstat) < 0)
+        throw jtag_exception("Can't stat() image file");
 
     // Open the input file.
     bfd_init();
@@ -331,7 +340,7 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
 
     disableProgramming();
 
-    unixCheck(bfd_close(file), "Error closing %s", filename);
+    (void)(bfd_close(file));
 
     statusOut("\nDownload complete.\n");
 }

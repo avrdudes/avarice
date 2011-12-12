@@ -63,60 +63,49 @@ unsigned long jtag1::getProgramCounter(void)
     return result;
 }
 
-bool jtag1::setProgramCounter(unsigned long pc)
+void jtag1::setProgramCounter(unsigned long pc)
 {
     uchar *response = NULL;
     uchar command[] = {'3', 0, 0, 0, JTAG_EOM };
-    bool result;
 
     // See decoding in getProgramCounter
     encodeAddress(&command[1], pc / 2 + 1);
 
     response = doJtagCommand(command, sizeof(command), 1);
 
-    result = response[0] == JTAG_R_OK;
+    if (response[0] != JTAG_R_OK)
+        throw jtag_exception();
 
     delete [] response;
-
-    return result;
 }
 
-bool jtag1::resetProgram(bool possible_nSRST)
+void jtag1::resetProgram(bool possible_nSRST)
 {
-  bool result;
-
   if (possible_nSRST && apply_nSRST) {
     setJtagParameter(JTAG_P_EXTERNAL_RESET, 0x01);
   }
-  result = doSimpleJtagCommand('x', 1);
+  doSimpleJtagCommand('x', 1);
   if (possible_nSRST && apply_nSRST) {
     setJtagParameter(JTAG_P_EXTERNAL_RESET, 0x00);
   }
-  return result;
 }
 
-bool jtag1::interruptProgram(void)
+void jtag1::interruptProgram(void)
 {
     // Just ignore the returned PC. It appears to be wrong if the most
     // recent instruction was a branch.
-    return doSimpleJtagCommand('F', 4);
+    doSimpleJtagCommand('F', 4);
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-bool jtag1::resumeProgram(bool restoreTarget)
+void jtag1::resumeProgram(void)
 {
-    // restoreTarget not implemented in JTAG ICE mkI
-    return doSimpleJtagCommand('G', 0);
+    doSimpleJtagCommand('G', 0);
 }
 
-bool jtag1::jtagSingleStep(bool useHLL)
+void jtag1::jtagSingleStep(void)
 {
-    return doSimpleJtagCommand('1', 1);
+    doSimpleJtagCommand('1', 1);
 }
-
-PRAGMA_DIAG_POP
 
 void jtag1::parseEvents(const char *)
 {
@@ -151,7 +140,11 @@ bool jtag1::jtagContinue(void)
 	maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
 
 	int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
-	unixCheck(numfds, "GDB/JTAG ICE communications failure");
+	if (numfds < 0)
+        {
+            fprintf(stderr, "GDB/JTAG ICE communications failure");
+            throw jtag_exception();
+        }
 
 	if (FD_ISSET(gdbFileDescriptor, &readfds))
 	{
@@ -194,18 +187,18 @@ bool jtag1::jtagContinue(void)
 	    {
 	    case JTAG_R_BREAK:
 		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
-		jtagCheck(count);
-		check(count == 2, JTAG_CAUSE);
+		if (count < 2)
+		    throw jtag_exception();
 		breakpoint = true;
-                debugOut(": Break Status Register = 0x%02x%02x\n",
-                         buf[0], buf[1]);
+		debugOut(": Break Status Register = 0x%02x%02x\n",
+			 buf[0], buf[1]);
 		break;
 	    case JTAG_R_INFO: case JTAG_R_SLEEP:
 		// we could do something here, esp. for info
 		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
-		jtagCheck(count);
-		check(count == 2, JTAG_CAUSE);
-                debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
+		if (count < 2)
+		    throw jtag_exception();
+		debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
 		break;
 	    case JTAG_R_POWER:
 		// apparently no args?

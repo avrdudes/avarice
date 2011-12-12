@@ -48,8 +48,17 @@ unsigned long jtag2::getProgramCounter(void)
     int responseSize;
     uchar command[] = { CMND_READ_PC };
 
-    check(doJtagCommand(command, sizeof(command), response, responseSize, true),
-	  "cannot read program counter");
+    try
+    {
+        doJtagCommand(command, sizeof(command), response, responseSize, true);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "cannot read program counter: %s\n",
+                e.what());
+        throw;
+    }
+
     unsigned long result = b4_to_u32(response + 1);
     delete [] response;
 
@@ -61,7 +70,7 @@ unsigned long jtag2::getProgramCounter(void)
     return cached_pc = result;
 }
 
-bool jtag2::setProgramCounter(unsigned long pc)
+void jtag2::setProgramCounter(unsigned long pc)
 {
     uchar *response;
     int responseSize;
@@ -69,70 +78,68 @@ bool jtag2::setProgramCounter(unsigned long pc)
 
     u32_to_b4(command + 1, pc / 2);
 
-    check(doJtagCommand(command, sizeof(command), response, responseSize),
-	  "cannot write program counter");
+    try
+    {
+        doJtagCommand(command, sizeof(command), response, responseSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "cannot write program counter: %s\n",
+                e.what());
+        throw;
+    }
 
     delete [] response;
 
     cached_pc_is_valid = false;
-
-    return true;
 }
 
 PRAGMA_DIAG_PUSH
 PRAGMA_DIAG_IGNORED("-Wunused-parameter")
 
-bool jtag2::resetProgram(bool possible_nSRST_ignored)
+void jtag2::resetProgram(bool possible_nSRST_ignored)
 {
     if (proto == PROTO_DW) {
 	/* The JTAG ICE mkII and Dragon do not respond correctly to
 	 * the CMND_RESET command while in debugWire mode. */
-	return interruptProgram()
-	    && setProgramCounter(0);
+	interruptProgram();
+        setProgramCounter(0);
     } else {
 	uchar cmd[2] = { CMND_RESET, 0x01 };
 	uchar *resp;
 	int respSize;
 
-	bool rv = doJtagCommand(cmd, 2, resp, respSize);
+	doJtagCommand(cmd, 2, resp, respSize);
 	delete [] resp;
 
 	/* Await the BREAK event that is posted by the ICE. */
 	bool bp, gdb;
 	expectEvent(bp, gdb);
-
-	return rv;
     }
 }
 
 PRAGMA_DIAG_POP
 
-bool jtag2::interruptProgram(void)
+void jtag2::interruptProgram(void)
 {
     uchar cmd[2] = { CMND_FORCED_STOP, 0x01 };
     uchar *resp;
     int respSize;
 
-    bool rv = doJtagCommand(cmd, 2, resp, respSize);
+    doJtagCommand(cmd, 2, resp, respSize);
     delete [] resp;
 
     bool bp, gdb;
     expectEvent(bp, gdb);
-
-    return rv;
 }
 
-bool jtag2::resumeProgram(bool restoreTarget)
+void jtag2::resumeProgram(void)
 {
     xmegaSendBPs();
 
-    if (restoreTarget)
-	doSimpleJtagCommand(CMND_RESTORE_TARGET);
     doSimpleJtagCommand(CMND_GO);
 
     cached_pc_is_valid = false;
-
-    return true;
 }
 
 void jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt)
@@ -260,7 +267,8 @@ bool jtag2::eventLoop(void)
 	    maxfd = jtagBox;
 
 	  int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
-	  unixCheck(numfds, "GDB/JTAG ICE communications failure");
+	  if (numfds < 0)
+              throw jtag_exception("GDB/JTAG ICE communications failure");
 
 	  if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds))
 	    {
@@ -288,14 +296,12 @@ bool jtag2::eventLoop(void)
 }
 
 
-bool jtag2::jtagSingleStep(bool useHLL)
+void jtag2::jtagSingleStep(void)
 {
     uchar cmd[3] = { CMND_SINGLE_STEP,
-		     0x01,
-		     useHLL? 0x00: 0x01 };
+		     0x01, 0x01 };
     uchar *resp;
     int respSize, i = 2;
-    bool rv;
 
     xmegaSendBPs();
 
@@ -303,25 +309,25 @@ bool jtag2::jtagSingleStep(bool useHLL)
 
     do
     {
-	rv = doJtagCommand(cmd, 3, resp, respSize);
-	uchar stat = resp[0];
+        try
+        {
+            doJtagCommand(cmd, 3, resp, respSize);
+        }
+        catch (jtag_io_exception& e)
+        {
+            if (e.get_response() != RSP_ILLEGAL_MCU_STATE)
+                throw;
+            continue;
+        }
 	delete [] resp;
-
-	if (rv)
-	    break;
-
-	if (stat != RSP_ILLEGAL_MCU_STATE)
-	    break;
+        break;
     }
     while (--i >= 0);
-
-    if (!rv)
-        return false;
+    if (i < 0)
+        throw jtag_exception("Single-step failed");
 
     bool bp, gdb;
     expectEvent(bp, gdb);
-
-    return true;
 }
 
 void jtag2::parseEvents(const char *evtlist)
@@ -403,19 +409,9 @@ bool jtag2::jtagContinue(void)
 {
     updateBreakpoints(); // download new bp configuration
 
-    if (haveHiddenBreakpoint)
-    {
-	// One of our breakpoints has been set as the high-level
-	// language boundary address of our current statement, so
-	// perform a high-level language single step.
-	(void)jtagSingleStep(true);
-    }
-    else
-    {
-	xmegaSendBPs();
+    xmegaSendBPs();
 
-	doSimpleJtagCommand(CMND_GO);
-    }
+    doSimpleJtagCommand(CMND_GO);
 
     return eventLoop();
 }

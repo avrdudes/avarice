@@ -86,10 +86,10 @@ void jtag2::deleteAllBreakpoints(void)
 }
 
 
-bool jtag2::stopAt(unsigned int address)
+void jtag2::stopAt(unsigned int address)
 {
     uchar one = 1;
-    return jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
+    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
 }
 
 #ifdef notyet
@@ -557,8 +557,16 @@ void jtag2::updateBreakpoints(void)
 
 		    uchar *response;
 		    int responseSize;
-		    if(!doJtagCommand(cmd, 6, response, responseSize))
-			check(false, "Failed to clear breakpoint");
+                    try
+                    {
+                        doJtagCommand(cmd, 6, response, responseSize);
+                    }
+                    catch (jtag_exception& e)
+                    {
+                        fprintf(stderr, "Failed to clear breakpoint: %s\n",
+                                e.what());
+                        throw;
+                    }
 
 		    delete [] response;
 		}
@@ -585,7 +593,8 @@ void jtag2::updateBreakpoints(void)
 		if (is_xmega && has_full_xmega_support &&
 		    bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
 		{
-		    check(xmega_n_bps < 2, "Too many hard BPs for Xmega");
+		    if (xmega_n_bps >= 2)
+			throw jtag_exception("Too many hard BPs for Xmega");
 		    // Xmega code breakpoint
 		    xmega_bps[xmega_n_bps++] = bp[bp_i].address;
 		    // these breakpoints are auto-removed by the ICE
@@ -633,14 +642,22 @@ void jtag2::updateBreakpoints(void)
 			    cmd[1] = 0x01;
 			    break;
 			default:
-			    check(false, "Invalid bp mode (for data bp)");
+			    throw jtag_exception("Invalid bp mode (for data bp)");
 			    break;
 		    }
 
 		    uchar *response;
 		    int responseSize;
-		    check(doJtagCommand(cmd, 8, response, responseSize),
-			  "Failed to set breakpoint");
+                    try
+                    {
+                        doJtagCommand(cmd, 8, response, responseSize);
+                    }
+                    catch (jtag_exception& e)
+                    {
+                        fprintf(stderr, "Failed to set breakpoint: %s\n",
+                                e.what());
+                        throw;
+                    }
 		    delete [] response;
 
 		    bp[bp_i].icestatus = true;
@@ -667,8 +684,16 @@ void jtag2::xmegaSendBPs(void)
     if (xmega_n_bps > 1)
 	u32_to_b4(cmdx + 5, (xmega_bps[1] / 2));
     cmdx[12] = xmega_n_bps;
-    check(doJtagCommand(cmdx, 14, response, responseSize),
-	  "Failed to set Xmega breakpoints");
+    try
+    {
+        doJtagCommand(cmdx, 14, response, responseSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Failed to set Xmega breakpoints: %s\n",
+                e.what());
+        throw;
+    }
     delete [] response;
 
     xmega_n_bps = 0; // must be set again upon next run

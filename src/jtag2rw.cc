@@ -169,8 +169,16 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	    {
 		// read from device, cache result, and copy over our part
 		u32_to_b4(command + 6, pageAddr);
-		check(doJtagCommand(command, sizeof command, resp, responseSize, true),
-		      "Failed to read target memory space");
+                try
+                {
+                    doJtagCommand(command, sizeof command, resp, responseSize, true);
+                }
+                catch (jtag_exception& e)
+                {
+                    fprintf(stderr, "Failed to read target memory space: %s\n",
+                            e.what());
+                    throw;
+                }
 		memcpy(cachePtr, resp + 1, pageSize);
 		*cacheBaseAddr = pageAddr;
 		memcpy(response + targetOffset,
@@ -189,8 +197,16 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	u32_to_b4(command + 2, numBytes);
 	u32_to_b4(command + 6, addr);
 
-	check(doJtagCommand(command, sizeof command, response, responseSize, true),
-	      "Failed to read target memory space");
+	try
+        {
+            doJtagCommand(command, sizeof command, response, responseSize, true);
+        }
+        catch (jtag_exception& e)
+        {
+            fprintf(stderr, "Failed to read target memory space: %s\n",
+                    e.what());
+            throw;
+        }
 	if (offset > 0)
 	    memmove(response, response + 1 + offset, responseSize - 1 - offset);
 	else
@@ -203,10 +219,10 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
     return response;
 }
 
-bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
+void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
     if (numBytes == 0)
-	return true;
+	return;
 
     debugOut("jtagWrite ");
     uchar whichSpace = memorySpace(addr);
@@ -246,8 +262,8 @@ bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     if (pageSize > 0) {
 	unsigned int mask = pageSize - 1;
 	addr &= ~mask;
-	check(numBytes == pageSize,
-	      "jtagWrite(): numByte does not match page size");
+	if (numBytes != pageSize)
+	    throw ("jtagWrite(): numByte does not match page size");
     }
     uchar *command = new uchar [10 + numBytes];
     command[0] = CMND_WRITE_MEMORY;
@@ -264,13 +280,19 @@ bool jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     uchar *response;
     int responseSize;
 
-    check(doJtagCommand(command, 10 + numBytes, response, responseSize),
-	  "Failed to write target memory space");
+    try
+    {
+        doJtagCommand(command, 10 + numBytes, response, responseSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Failed to write target memory space: %s\n",
+                e.what());
+        throw;
+    }
     delete [] command;
     delete [] response;
 
     if (needProgmode && !wasProgmode)
        disableProgramming();
-
-    return true;
 }

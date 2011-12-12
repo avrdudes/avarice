@@ -60,16 +60,12 @@ static void error(int n);
 
 int gdbFileDescriptor = -1;
 
-void gdbCheck(int status)
-{
-    unixCheck(status, GDB_CAUSE);
-}
-
 void setGdbFile(int fd)
 {
     gdbFileDescriptor = fd;
     int ret = fcntl(gdbFileDescriptor, F_SETFL, O_NONBLOCK);
-    gdbCheck(ret);
+    if (ret < 0)
+        throw jtag_exception();
 }
 
 static void waitForGdbOutput(void)
@@ -81,7 +77,8 @@ static void waitForGdbOutput(void)
     FD_SET (gdbFileDescriptor, &writefds);
 
     numfds = select (gdbFileDescriptor + 1, 0, &writefds, 0, 0);
-    gdbCheck(numfds);
+    if (numfds < 0)
+        throw jtag_exception();
 }
 
 /** Send single char to gdb. Abort in case of problem. **/
@@ -97,10 +94,10 @@ static void putDebugChar(char c)
 	    return;
 
 	if (ret == 0) // this shouldn't happen?
-	    check(false, GDB_CAUSE);
+	    throw jtag_exception();
 
-	if (errno != EAGAIN)
-	    gdbCheck(ret);
+	if (errno != EAGAIN && ret < 0)
+	    throw jtag_exception();
 
 	waitForGdbOutput();
     }
@@ -115,7 +112,8 @@ static void waitForGdbInput(void)
     FD_SET (gdbFileDescriptor, &readfds);
 
     numfds = select (gdbFileDescriptor + 1, &readfds, 0, 0, 0);
-    gdbCheck(numfds);
+    if (numfds < 0)
+        throw jtag_exception();
 }
 
 /** Return single char read from gdb. Abort in case of problem,
@@ -132,14 +130,14 @@ int getDebugChar(void)
     }
     while (result < 0 && errno == EAGAIN);
 
-    gdbCheck(result);
+    if (result < 0)
+        throw jtag_exception();
 
     if (result == 0) // gdb exited
     {
 	statusOut("gdb exited.\n");
-	theJtagICE->resumeProgram(true);
-	delete theJtagICE;
-	exit(0);
+	theJtagICE->resumeProgram();
+        throw jtag_exception("gdb exited");
     }
 
     return (int)c;
@@ -155,13 +153,14 @@ int checkForDebugChar(void)
     if (result < 0 && errno == EAGAIN)
 	return -1;
 
-    gdbCheck(result);
+    if (result < 0)
+        throw jtag_exception();
 
     if (result == 0) // gdb exited
     {
 	statusOut("gdb exited.\n");
 	theJtagICE->resumeProgram();
-	exit(0);
+        throw jtag_exception("gdb exited");
     }
 
     return (int)c;
@@ -423,8 +422,14 @@ bool handleInterrupt(void)
 
 static bool singleStep()
 {
-    if (!theJtagICE->jtagSingleStep())
+    try
+    {
+        theJtagICE->jtagSingleStep();
+    }
+    catch (jtag_exception& e)
+    {
 	gdbOut("Failed to single-step");
+    }
 
     unsigned int newPC = theJtagICE->getProgramCounter();
     if (theJtagICE->codeBreakpointAt(newPC))
@@ -605,9 +610,15 @@ void talkToGdb(void)
 	break;
 
     case 'R':
-	if (!theJtagICE->resetProgram(false))
+        try
+        {
+	    theJtagICE->resetProgram(false);
+	}
+	catch (jtag_exception& e)
+	{
 	    gdbOut("reset failed\n");
-        dontSendReply = true;
+	}
+	dontSendReply = true;
 	break;
 
     case '!':
@@ -667,8 +678,16 @@ void talkToGdb(void)
                 length--;
             }
 
-	    if (theJtagICE->jtagWrite(addr, length, jtagBuffer))
-		ok();
+	    try
+            {
+                theJtagICE->jtagWrite(addr, length, jtagBuffer);
+            }
+            catch (jtag_exception&)
+            {
+                delete [] jtagBuffer;
+                break;
+            }
+            ok();
 	    delete [] jtagBuffer;
 
 	}
@@ -679,17 +698,20 @@ void talkToGdb(void)
     {
 	uchar *jtagBuffer;
 
-	error(1); // default is error
 	if((hexToInt(&ptr, &addr)) &&
 	   (*(ptr++) == ',') &&
 	   (hexToInt(&ptr, &length)))
 	{
 	    debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
-	    jtagBuffer = theJtagICE->jtagRead(addr, length);
-	    if (jtagBuffer)
+	    try
 	    {
+		jtagBuffer = theJtagICE->jtagRead(addr, length);
 		mem2hex(jtagBuffer, remcomOutBuffer, length);
 		delete [] jtagBuffer;
+	    }
+	    catch (jtag_exception&)
+	    {
+		error(1);
 	    }
 	}
 	break;
@@ -897,35 +919,41 @@ void talkToGdb(void)
         {
             uchar reg[4];
 
-            if (regno >= 0 && regno < NUMREGS)
+            try
             {
-		hex2mem(ptr, reg, 1);
-                if (theJtagICE->jtagWrite(theJtagICE->cpuRegisterAreaAddress() + regno,
-					  1, reg))
-		    ok();
-		break;
-	    }
-	    else if (regno == SREG)
-	    {
-		hex2mem(ptr, reg, 1);
-		if (theJtagICE->jtagWrite(theJtagICE->statusAreaAddress() + 2,
-					  1, reg))
-		    ok();
-	    }
-	    else if (regno == SP)
-	    {
-		hex2mem(ptr, reg, 2);
-		if (theJtagICE->jtagWrite(theJtagICE->statusAreaAddress(),
-					  2, reg))
-		    ok();
-	    }
-	    else if (regno == PC)
-	    {
-		hex2mem(ptr, reg, 4);
-		if (theJtagICE->setProgramCounter(reg[0] | reg[1] << 8 |
-				      reg[2] << 16 | reg[3] << 24))
-		    ok();
-	    }
+                if (regno >= 0 && regno < NUMREGS)
+                {
+                    hex2mem(ptr, reg, 1);
+                    theJtagICE->jtagWrite(theJtagICE->cpuRegisterAreaAddress() + regno,
+                                          1, reg);
+                    ok();
+                    break;
+                }
+                else if (regno == SREG)
+                {
+                    hex2mem(ptr, reg, 1);
+                    theJtagICE->jtagWrite(theJtagICE->statusAreaAddress() + 2,
+					  1, reg);
+                }
+                else if (regno == SP)
+                {
+                    hex2mem(ptr, reg, 2);
+                    theJtagICE->jtagWrite(theJtagICE->statusAreaAddress(),
+                                          2, reg);
+                    ok();
+                }
+                else if (regno == PC)
+                {
+                    hex2mem(ptr, reg, 4);
+                    theJtagICE->setProgramCounter(reg[0] | reg[1] << 8 |
+                                                  reg[2] << 16 | reg[3] << 24);
+                    ok();
+                }
+            }
+            catch (jtag_exception& e)
+            {
+                // ignore, error state already set above
+            }
         }
 	break;
 
@@ -940,8 +968,14 @@ void talkToGdb(void)
 	// try to read optional parameter, pc unchanged if no parm
 	if (hexToInt(&ptr, &addr))
 	{
-	    if (!theJtagICE->setProgramCounter(addr))
+	    try
+            {
+                theJtagICE->setProgramCounter(addr);
+            }
+            catch (jtag_exception&)
+            {
 		gdbOut("Failed to set PC");
+            }
 	}
 	repStatus(singleStep());
 	break;
@@ -963,9 +997,15 @@ void talkToGdb(void)
         {
             if (sig == SIGHUP)
             {
-                if (theJtagICE->resetProgram(false))
+                try
                 {
+                    theJtagICE->resetProgram(false);
                     reportStatusExtended(SIGTRAP);
+                }
+                catch (jtag_exception& e)
+                {
+                    fprintf(stderr, "Failed to reset MCU: %s\n",
+                            e.what());
                 }
             }
         }
@@ -976,8 +1016,14 @@ void talkToGdb(void)
 	// try to read optional parameter, pc unchanged if no parm
 	if (hexToInt(&ptr, &addr))
 	{
-	    if (!theJtagICE->setProgramCounter(addr))
+	    try
+            {
+                theJtagICE->setProgramCounter(addr);
+            }
+            catch (jtag_exception&)
+            {
 		gdbOut("Failed to set PC");
+            }
 	}
 	repStatus(theJtagICE->jtagContinue());
 	break;
@@ -985,10 +1031,16 @@ void talkToGdb(void)
     case 'D':
         // Detach, resumes target. Can get control back with step
 	// or continue
-      if (theJtagICE->resumeProgram())
-	    ok();
-	else
+        try
+        {
+            theJtagICE->resumeProgram();
+        }
+        catch (jtag_exception&)
+        {
 	    error(1);
+            break;
+        }
+        ok();
 	break;
 
     case 'Z':
@@ -1020,20 +1072,32 @@ void talkToGdb(void)
 		break;
 	    default:
 		debugOut("Unknown breakpoint type from GDB.\n");
-		delete theJtagICE;
-		exit(1);
+                throw jtag_exception();
 	    }
 
 	    if (adding)
 	    {
-		if (theJtagICE->addBreakpoint(addr, mode, length))
-		    ok();
+		try
+                {
+                    theJtagICE->addBreakpoint(addr, mode, length);
+                }
+                catch (jtag_exception&)
+                {
+                    break;
+                }
 	    }
 	    else
 	    {
-		if (theJtagICE->deleteBreakpoint(addr, mode, length))
-		    ok();
+		try
+                {
+                    theJtagICE->deleteBreakpoint(addr, mode, length);
+                }
+                catch (jtag_exception&)
+                {
+                    break;
+                }
 	    }
+            ok();
 	}
 	break;
 

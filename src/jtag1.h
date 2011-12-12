@@ -98,7 +98,7 @@ class jtag1: public jtag
     virtual void updateBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
-    virtual bool stopAt(unsigned int address);
+    virtual void stopAt(unsigned int address);
     virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);
@@ -108,15 +108,15 @@ class jtag1: public jtag
     virtual void downloadToTarget(const char* filename, bool program, bool verify);
 
     virtual unsigned long getProgramCounter(void);
-    virtual bool setProgramCounter(unsigned long pc);
-    virtual bool resetProgram(bool possible_nSRST);
-    virtual bool interruptProgram(void);
-    virtual bool resumeProgram(bool restoreTarget);
-    virtual bool jtagSingleStep(bool useHLL = false);
+    virtual void setProgramCounter(unsigned long pc);
+    virtual void resetProgram(bool possible_nSRST);
+    virtual void interruptProgram(void);
+    virtual void resumeProgram(void);
+    virtual void jtagSingleStep(void);
     virtual bool jtagContinue(void);
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
-    virtual bool jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
+    virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
     virtual unsigned int statusAreaAddress(void) const {
         /* no Xmega handling in JTAG ICE mkI */
         return 0x5D + DATA_SPACE_ADDR_OFFSET;

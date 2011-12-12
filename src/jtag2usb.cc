@@ -114,7 +114,11 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
 	  cp2[x] = '\0';
 	}
 
-      unixCheck(strlen(serno) <= 12, "invalid serial number \"%s\"", serno);
+      if (strlen(serno) > 12)
+      {
+	  fprintf(stderr, "invalid serial number \"%s\"", serno);
+	  return NULL;
+      }
     }
 
   usb_init();
@@ -138,8 +142,12 @@ static usb_dev_handle *opendev(const char *jtagDeviceName, emulator emu_type,
 		  int rv = usb_get_string_simple(udev,
 						 dev->descriptor.iSerialNumber,
 						 string, sizeof(string));
-		  unixCheck(rv >= 0, "cannot read serial number \"%s\"",
-			    usb_strerror());
+		  if (rv < 0)
+		  {
+		      fprintf(stderr, "cannot read serial number \"%s\"",
+			      usb_strerror());
+		      return NULL;
+		  }
 
 		  debugOut("Found JTAG ICE, serno: %s\n", string);
 		  if (serno != NULL)
@@ -466,10 +474,10 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
   int pype[2], cpipe[2];
   usb_dev_handle *udev;
 
-  unixCheck(socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) == 0,
-            "cannot create pipe");
-  unixCheck(socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, cpipe) == 0,
-	    "cannot create control pipe");
+  if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) < 0)
+      throw jtag_exception("cannot create pipe");
+  if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, cpipe) < 0)
+      throw jtag_exception("cannot create control pipe");
 
   signal(SIGCHLD, childhandler);
   signal(SIGUSR1, usr1handler);
@@ -482,7 +490,11 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
       close(cpipe[1]);
 
       udev = opendev(jtagDeviceName, emu_type, usb_interface);
-      check(udev != NULL, "USB device not found");
+      if (udev == NULL)
+      {
+          fprintf(stderr, "USB device not found\n");
+          exit(0);
+      }
       kill(getppid(), SIGUSR1); // tell the parent we are ready to go
 
       usb_daemon(udev, pype[0], cpipe[0]);
@@ -493,7 +505,8 @@ pid_t jtag::openUSB(const char *jtagDeviceName)
       break;
 
     case -1:
-      unixCheck(-1, "Cannot fork");
+      fprintf(stderr, "Cannot fork");
+      throw jtag_exception();
       break;
 
     default:

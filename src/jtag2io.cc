@@ -41,19 +41,63 @@
 #include "jtag2.h"
 #include "jtag2_defs.h"
 
+jtag_io_exception::jtag_io_exception(unsigned int code)
+{
+    static char buffer[50];
+    response_code = code;
+
+    switch (code)
+    {
+        case RSP_DEBUGWIRE_SYNC_FAILED:
+            reason = "DEBUGWIRE SYNC FAILED"; break;
+        case RSP_FAILED:
+            reason = "FAILED"; break;
+        case RSP_GET_BREAK:
+            reason = "GET BREAK"; break;
+        case RSP_ILLEGAL_BREAKPOINT:
+            reason = "ILLEGAL BREAKPOINT"; break;
+        case RSP_ILLEGAL_COMMAND:
+            reason = "ILLEGAL COMMAND"; break;
+        case RSP_ILLEGAL_EMULATOR_MODE:
+            reason = "ILLEGAL EMULATOR MODE"; break;
+        case RSP_ILLEGAL_JTAG_ID:
+            reason = "ILLEGAL JTAG ID"; break;
+        case RSP_ILLEGAL_MCU_STATE:
+            reason = "ILLEGAL MCU STATE"; break;
+        case RSP_ILLEGAL_MEMORY_TYPE:
+            reason = "ILLEGAL MEMORY TYPE"; break;
+        case RSP_ILLEGAL_MEMORY_RANGE:
+            reason = "ILLEGAL MEMORY RANGE"; break;
+        case RSP_ILLEGAL_PARAMETER:
+            reason = "ILLEGAL PARAMETER"; break;
+        case RSP_ILLEGAL_POWER_STATE:
+            reason = "ILLEGAL POWER STATE"; break;
+        case RSP_ILLEGAL_VALUE:
+            reason = "ILLEGAL VALUE"; break;
+        case RSP_NO_TARGET_POWER:
+            reason = "NO TARGET POWER"; break;
+        case RSP_SET_N_PARAMETERS:
+            reason = "SET N PARAMETERS"; break;
+        default:
+            snprintf(buffer, sizeof buffer, "Unknwon response code 0x%0x", code);
+            reason = buffer;
+    }
+}
+
+
 jtag2::~jtag2(void)
 {
     // Terminate connection to JTAG box.
     if (signedIn)
       {
-	  // Do not use doSimpleJtagCommand() here as it aborts
-	  // avarice on failure; in case CMND_RESTORE_TARGET fails,
-	  // we'd like to try the sign-off command anyway.
-
-	  uchar *response, rstcmd = CMND_RESTORE_TARGET;
-	  int responseSize;
-	  (void)doJtagCommand(&rstcmd, 1, response, responseSize);
-	  delete [] response;
+	  try
+	  {
+	      doSimpleJtagCommand(CMND_RESTORE_TARGET);
+	  }
+	  catch (jtag_exception&)
+	  {
+	      // just proceed with the sign-off
+	  }
 	  doSimpleJtagCommand(CMND_SIGN_OFF);
 	  signedIn = false;
       }
@@ -67,7 +111,6 @@ jtag2::~jtag2(void)
 void jtag2::sendFrame(uchar *command, int commandSize)
 {
     unsigned char *buf = new unsigned char[commandSize + 10];
-    check(buf != NULL, "Out of memory");
 
     buf[0] = MESSAGE_START;
     u16_to_b2(buf + 1, command_sequence);
@@ -82,9 +125,10 @@ void jtag2::sendFrame(uchar *command, int commandSize)
     delete [] buf;
 
     if (count < 0)
-      jtagCheck(count);
-    else // this shouldn't happen
-      check(count == commandSize + 10, JTAG_CAUSE);
+        throw jtag_exception();
+    else if (count != commandSize + 10)
+        // this shouldn't happen
+        throw jtag_exception("Invalid write size");
 }
 
 /*
@@ -194,8 +238,6 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 		    headeridx = 0;
 		} else {
 		    buf = new unsigned char[msglen + 10];
-		    check(buf != NULL, "Out of memory");
-
 		    memcpy(buf, header, 8);
 		}
 	    } else {
@@ -293,8 +335,8 @@ int jtag2::recv(uchar *&msg)
 bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
 			    uchar *&msg, int &msgsize, bool verify)
 {
-    check(tries++ < MAX_JTAG_COMM_ATTEMPS,
-	      "JTAG ICE: Cannot synchronise");
+    if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
+        throw jtag_exception("JTAG communication failed");
 
     debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
 
@@ -306,8 +348,8 @@ bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
     sendFrame(command, commandSize);
 
     msgsize = recv(msg);
-    if (verify)
-	jtagCheck(msgsize - 1);
+    if (verify && msgsize == 0)
+        throw jtag_exception("no response received");
     else if (msgsize < 1)
 	return false;
 
@@ -327,26 +369,38 @@ bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
 }
 
 
-bool jtag2::doJtagCommand(uchar *command, int  commandSize,
+void jtag2::doJtagCommand(uchar *command, int  commandSize,
 			  uchar *&response, int  &responseSize,
 			  bool retryOnTimeout)
+    throw (jtag_exception)
 {
-    int tryCount = 0;
+    int sizeseen = 0;
+    uchar code = 0;
 
-    // Send command until we get an OK response
-    for (;;)
+    for (int tryCount = 0; tryCount < 8; tryCount++)
     {
 	if (sendJtagCommand(command, commandSize, tryCount, response, responseSize, false))
-	    return true;
+	    return;
 
 	if (!retryOnTimeout)
-	    return false;
+	{
+	    if (responseSize == 0)
+		throw jtag_timeout_exception();
+	    else
+		throw jtag_io_exception(response[0]);
+	}
 
 	if (responseSize > 0 && response[0] > RSP_FAILED)
 	    // no point in retrying failures other than FAILED
-	    return false;
+	    throw jtag_io_exception(response[0]);
 
-	if (tryCount > 3 && responseSize == 0 && ctrlPipe != -1)
+	if (responseSize > 0)
+	{
+	    sizeseen = responseSize;
+	    code = response[0];
+	}
+
+	if (tryCount == 4 && responseSize == 0 && ctrlPipe != -1)
 	  {
 	    /* signal the USB daemon to reset the EPs */
 	    debugOut("Resetting EPs...\n");
@@ -354,6 +408,10 @@ bool jtag2::doJtagCommand(uchar *command, int  commandSize,
 	    (void)(write(ctrlPipe, cmd, 1) != 0);
 	  }
     }
+    if (sizeseen > 0)
+	throw jtag_io_exception(code);
+    else
+	throw jtag_timeout_exception();
 }
 
 void jtag2::doSimpleJtagCommand(uchar command)
@@ -365,14 +423,15 @@ void jtag2::doSimpleJtagCommand(uchar command)
     for (;;)
     {
 	if (sendJtagCommand(&command, 1, tryCount, replydummy, dummy, false)) {
-	    check(replydummy != NULL, JTAG_CAUSE);
-	    check(dummy == 1 && replydummy[0] == RSP_OK,
-		  "Unexpected response in doSimpleJtagCommand");
+	    if (replydummy == NULL)
+		throw jtag_io_exception();
+	    if (dummy != 1)
+		throw jtag_exception("Unexpected response size in doSimpleJtagCommand");
+	    if (replydummy[0] != RSP_OK)
+		throw jtag_io_exception(replydummy[0]);
 	    delete [] replydummy;
 	    return;
 	}
-	// See whether it timed out only.  If so, retry.
-	jtagCheck(dummy <= 0);
     }
 }
 
@@ -420,8 +479,16 @@ void jtag2::setDeviceDescriptor(jtag_device_def_type *dev)
     else
 	command = (uchar *)&dev->dev_desc2;
 
-    check(doJtagCommand(command, devdescrlen, response, respSize),
-	  "JTAG ICE: Failed to set device description");
+    try
+    {
+        doJtagCommand(command, devdescrlen, response, respSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "JTAG ICE: Failed to set device description: %s\n",
+                e.what());
+        throw;
+    }
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
@@ -438,8 +505,8 @@ bool jtag2::synchroniseAt(int bitrate)
     while (tries < MAX_JTAG_SYNC_ATTEMPS)
     {
 	if (sendJtagCommand(&signoncmd, 1, tries, signonmsg, msgsize, false)) {
-	    check(signonmsg[0] == RSP_SIGN_ON && msgsize > 17,
-		  "Unexpected response to sign-on command");
+            if (signonmsg[0] != RSP_SIGN_ON || msgsize <= 17)
+                throw jtag_exception("Unexpected response to sign-on command");
 	    signonmsg[msgsize - 1] = '\0';
 	    statusOut("Found a device: %s\n", signonmsg + 16);
 	    statusOut("Serial number:  %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -522,6 +589,7 @@ void jtag2::startJtagLink(void)
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
 
+	    const char *protoName = "unknown";
 	    switch (proto)
 	    {
 		case PROTO_JTAG:
@@ -529,22 +597,35 @@ void jtag2::startJtagLink(void)
 			val = EMULATOR_MODE_JTAG_XMEGA;
 		    else
 			val = EMULATOR_MODE_JTAG;
+		    protoName = "JTAG";
 		    break;
 
 		case PROTO_DW:
 		    val = EMULATOR_MODE_DEBUGWIRE;
+		    protoName = "debugWIRE";
 		    break;
 
 		case PROTO_PDI:
 		    val = EMULATOR_MODE_PDI;
+		    protoName = "PDI";
 		    break;
 	    }
-	    setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
+	    try
+	    {
+		setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
+	    }
+	    catch (jtag_io_exception&)
+	    {
+		fprintf(stderr,
+			"Failed to activate %s debugging protocol\n",
+			protoName);
+		throw;
+	    }
 
 	    return;
 	}
 
-    check(false, "Failed to synchronise with the JTAG ICE (is it connected and powered?)");
+    throw jtag_exception("Failed to synchronise with the JTAG ICE (is it connected and powered?)");
 }
 
 /** Device automatic configuration
@@ -571,7 +652,8 @@ void jtag2::deviceAutoConfig(void)
     if (proto == PROTO_DW)
     {
 	getJtagParameter(PAR_TARGET_SIGNATURE, resp, respSize);
-	jtagCheck(respSize == 2);
+	if (respSize < 3)
+            throw jtag_exception("Invalid response size to PAR_TARGET_SIGNATURE");
 	device_id = resp[1] | (resp[2] << 8);
 	delete [] resp;
 
@@ -579,17 +661,17 @@ void jtag2::deviceAutoConfig(void)
     }
     else if (proto == PROTO_PDI)
     {
-        resp = jtagRead(SIG_SPACE_ADDR_OFFSET, 3);
-        check(resp, "Cannot read JTAG ID in PDI mode");
-        device_id = resp[2] | (resp[1] << 8);
-        delete [] resp;
+	resp = jtagRead(SIG_SPACE_ADDR_OFFSET, 3);
+	device_id = resp[2] | (resp[1] << 8);
+	delete [] resp;
 
-        statusOut("Reported PDI device ID: 0x%0X\n", device_id);
+	statusOut("Reported PDI device ID: 0x%0X\n", device_id);
     }
     else
     {
 	getJtagParameter(PAR_JTAGID, resp, respSize);
-	jtagCheck(respSize == 4);
+	if (respSize < 5)
+            throw jtag_exception("Invalid response size to PAR_TARGET_SIGNATURE");
 	device_id = resp[1] | (resp[2] << 8) | (resp[3] << 16) | resp[4] << 24;
 	delete [] resp;
 
@@ -612,9 +694,12 @@ void jtag2::deviceAutoConfig(void)
 
             pDevice++;
         }
-        check(pDevice->name,
-              "No configuration available for device ID: %0x\n",
-              device_id);
+        if (pDevice->name == 0)
+        {
+            fprintf(stderr, "No configuration available for device ID: %0x\n",
+                    device_id);
+            throw jtag_exception();
+        }
     }
     else
     {
@@ -627,9 +712,12 @@ void jtag2::deviceAutoConfig(void)
 
             pDevice++;
         }
-        check(pDevice->name,
-              "No configuration available for Device: %s\n",
-              device_name);
+        if (pDevice->name == 0)
+        {
+            fprintf(stderr, "No configuration available for device ID: %0x\n",
+                    device_id);
+            throw jtag_exception();
+        }
     }
 
     if (device_name)

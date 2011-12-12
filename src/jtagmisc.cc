@@ -45,7 +45,8 @@ void jtag1::setJtagParameter(uchar item, uchar newValue)
     command[2] = newValue;
 
     response = doJtagCommand(command, sizeof(command), 1);
-    check(response[0] == JTAG_R_OK, "JTAG ICE: Unknown parameter\n");
+    if (response[0] != JTAG_R_OK)
+        throw jtag_exception("Unknown parameter");
 
     delete [] response;
 }
@@ -58,7 +59,8 @@ uchar jtag1::getJtagParameter(uchar item)
 
     command[1] = item;
     response = doJtagCommand(command, sizeof(command), 2);
-    check(response[1] == JTAG_R_OK, "JTAG ICE: Unknown parameter\n");
+    if (response[1] != JTAG_R_OK)
+        throw jtag_exception("Unknown parameter");
 
     result = response[0];
 

@@ -1,5 +1,50 @@
 2011-12-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	(Merging branch /branches/jwunsch_except/avarice)
+	* src/jtag.h: Remove the restoreTarget parameter from the
+	resumeProgram() method again; target restoration upon GDB
+	disconnect is now being handled properly by catching the exception
+	thrown in that case, through the destruction of theJtagICE object.
+	* src/jtag1.h: (Dito.)
+	* src/jtag2.h: (Dito.)
+	* src/remote.cc: (Dito.)
+	* src/jtag2io.cc: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtagrun.cc: (Dito.)
+
+2011-12-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	(Merging branch /branches/jwunsch_except/avarice)
+	* src/remote.cc: Rearrange the entire error handling to use
+	exceptions, rather than a mix between error code returns, and
+	prematurely exiting the program from deep inside, without any
+	attempt to cleanup the JTAG ICE connection status.  Get rid of all
+	those scary check(), unixCheck() and jtagCheck() functions, catch
+	exceptions where it makes sense.
+	* src/remote.h: (Dito.)
+	* src/jtag2io.cc: (Dito.)
+	* src/jtagmisc.cc: (Dito.)
+	* src/jtag1.h: (Dito.)
+	* src/jtag2.h: (Dito.)
+	* src/avarice.h: (Dito.)
+	* src/jtagio.cc: (Dito.)
+	* src/jtag2rw.cc: (Dito.)
+	* src/main.cc: (Dito.)
+	* src/jtag.h: (Dito.)
+	* src/jtag2bp.cc: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtagrw.cc: (Dito.)
+	* src/jtag2prog.cc: (Dito.)
+	* src/utils.cc: (Dito.)
+	* src/jtagbp.cc: (Dito.)
+	* src/jtagrun.cc: (Dito.)
+	* src/jtagprog.cc: (Dito.)
+	* src/jtag2usb.cc: (Dito.)
+	* src/jtaggeneric.cc: (Dito.)
+	* src/jtag2misc.cc: (Dito.)
+
+2011-12-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* configure.ac: Bump version for post-release.
 
 2011-12-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>

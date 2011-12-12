@@ -158,7 +158,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
     return NULL;
 }
 
-bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
+void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
     uchar *response;
     int whichSpace = 0;
@@ -166,7 +166,7 @@ bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     uchar command[] = { 'W', 0, 0, 0, 0, 0, JTAG_EOM }; 
 
     if (numBytes == 0)
-	return true;
+	return;
 
     debugOut("jtagWrite ");
     whichSpace = memorySpace(&addr);
@@ -180,8 +180,7 @@ bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	// We don't handle odd lengths or start addresses
 	if ((addr & 1))
         {
-            debugOut ("\nOdd pgm wr addr\n");
-	    return false;
+	    throw jtag_exception("Odd program memory write operation");
         }
 
         // Odd length: Write one more byte.
@@ -200,17 +199,12 @@ bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	{
 	    whichSpace = ADDR_PROG_SPACE_PROG_DISABLED;
 	    swapBytes(buffer, numBytes);
-#if 0
-	    // Doesn't work out of programming mode, as far as I can tell
-	    // (there's probably some magic that would make it work, but...)
-	    return false;
-#endif
 	}
     }
 
     // This is the maximum write size
     if (numLocations > 256)
-	return false;
+	throw jtag_exception("Attempt to write more than 256 bytes");
 
     // Writing is a two part process
 
@@ -221,7 +215,7 @@ bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
     response = doJtagCommand(command, sizeof command, 0);
     if (!response)
-	return false;
+	throw jtag_exception();
     delete [] response;
 
     // Part 2: send the data in the following form:
@@ -252,9 +246,7 @@ bool jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     delete [] txBuffer;
 
     if (!response)
-	return false;
+	throw jtag_exception();
     delete [] response;
-
-    return true;
 }
 

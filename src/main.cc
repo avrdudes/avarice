@@ -55,24 +55,33 @@ static int makeSocket(struct sockaddr_in *name)
     struct protoent *protoent;
 
     sock = socket(PF_INET, SOCK_STREAM, 0);
-    gdbCheck(sock);
+    if (sock < 0)
+        throw jtag_exception();
 
     // Allow rapid reuse of this port.
     tmp = 1;
-    gdbCheck(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&tmp, sizeof(tmp)));
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&tmp, sizeof(tmp)) < 0)
+        throw jtag_exception();
 
     // Enable TCP keep alive process.
     tmp = 1;
-    gdbCheck(setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&tmp, sizeof(tmp)));
+    if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&tmp, sizeof(tmp)) < 0)
+        throw jtag_exception();
 
-    gdbCheck(bind(sock, (struct sockaddr *)name, sizeof(*name)));
+    if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0)
+        throw jtag_exception();
 
     protoent = getprotobyname("tcp");
-    check(protoent != NULL, "tcp protocol unknown (oops?)");
+    if (protoent == NULL)
+    {
+        fprintf(stderr, "tcp protocol unknown (oops?)");
+        throw jtag_exception();
+    }
 
     tmp = 1;
-    gdbCheck(setsockopt(sock, protoent->p_proto, TCP_NODELAY,
-			(char *)&tmp, sizeof(tmp)));
+    if (setsockopt(sock, protoent->p_proto, TCP_NODELAY,
+                   (char *)&tmp, sizeof(tmp)) < 0)
+        throw jtag_exception();
 
     return sock;
 }
@@ -91,7 +100,11 @@ static void initSocketAddress(struct sockaddr_in *name,
     if (inet_aton(hostname, &name->sin_addr) == 0)
     {
 	hostInfo = gethostbyname(hostname);
-	check(hostInfo != NULL, "Unknown host %s", hostname);
+	if (hostInfo == NULL)
+	{
+	    fprintf(stderr, "Unknown host %s", hostname);
+	    throw jtag_exception();
+	}
 	name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
     }
 }
@@ -101,7 +114,11 @@ static unsigned long parseJtagBitrate(const char *val)
     char *endptr, c;
     unsigned long v;
 
-    check(*val != '\0', "invalid number in JTAG bit rate");
+    if (*val == '\0')
+    {
+        fprintf(stderr, "invalid number in JTAG bit rate");
+        throw jtag_exception();
+    }
     v = strtoul(val, &endptr, 10);
     if (*endptr == '\0')
 	return v;
@@ -121,8 +138,8 @@ static unsigned long parseJtagBitrate(const char *val)
     if (strcmp(endptr, "Hz") == 0)
 	return v;
 
-    check(false, "invalid number in JTAG bit rate");
-    return 0UL;
+    fprintf(stderr, "invalid number in JTAG bit rate");
+    throw jtag_exception();
 }
 
 static void usage(const char *progname)
@@ -572,123 +589,137 @@ int main(int argc, char **argv)
 
 	// Init JTAG box.
 	theJtagICE->initJtagBox();
+
+        if (erase)
+        {
+            if (protocol == MKII_DW)
+            {
+                statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
+            }
+            else
+            {
+                theJtagICE->enableProgramming();
+                statusOut("Erasing program memory.\n");
+                theJtagICE->eraseProgramMemory();
+                statusOut("Erase complete.\n");
+                theJtagICE->disableProgramming();
+            }
+        }
+
+        if (readFuses)
+        {
+            theJtagICE->jtagReadFuses();
+        }
+
+        if (readLockBits)
+        {
+            theJtagICE->jtagReadLockBits();
+        }
+
+        if (writeFuses)
+            theJtagICE->jtagWriteFuses(fuses);
+
+        // Init JTAG debugger for initial use.
+        //   - If we're attaching to a running target, we cannot do this.
+        //   - If we're running as a standalone programmer, we don't want
+        //     this.
+        if( gdbServerMode && ( ! capture ) )
+            theJtagICE->initJtagOnChipDebugging(jtagBitrate);
+
+        if (inFileName != (char *)0)
+        {
+            if ((program == false) && (verify == false)) {
+                /* If --file is given and neither --program or --verify, then we
+                   program, but not verify so as to be backward compatible with
+                   the old meaning of --file from before the addition of --program
+                   and --verify. */
+
+                program = true;
+            }
+
+            if ((erase == false) && (program == true)) {
+                statusOut("WARNING: The default behaviour has changed.\n"
+                          "Programming no longer erases by default. If you want to"
+                          " erase and program\nin a single step, use the --erase "
+                          "in addition to --program. The reason for\nthis change "
+                          "is to allow programming multiple sections (e.g. "
+                          "application and\nbootloader) in multiple passes.\n\n");
+            }
+
+            theJtagICE->downloadToTarget(inFileName, program, verify);
+            theJtagICE->resetProgram(false);
+        }
+        else
+        {
+            if( (program) || (verify))
+            {
+                fprintf(stderr, 
+                   "\nERROR: Filename not specified."
+                   " Use the --file option.\n");
+                throw jtag_exception();
+            }
+        }
+
+        // Write fuses after all programming parts have completed.
+        if (writeLockBits)
+            theJtagICE->jtagWriteLockBits(lockBits);
+
+        // Quit & resume mote for operations that don't interact with gdb.
+        if (!gdbServerMode)
+            theJtagICE->resumeProgram();
+        else
+        {
+            initSocketAddress(&name, hostName, hostPortNumber);
+            sock = makeSocket(&name);
+            statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
+            if (listen(sock, 1) < 0)
+                throw jtag_exception();
+
+            if (detach)
+            {
+                int child = fork();
+
+                if (child < 0)
+                {
+                    fprintf(stderr, "Failed to fork");
+                    throw jtag_exception();
+                }
+                if (child != 0)
+                    _exit(0);
+                else
+                    if (setsid() < 0)
+                    {
+                        fprintf(stderr, "setsid failed - weird bug");
+                        throw jtag_exception();
+                    }
+            }
+
+            // Connection request on original socket.
+            socklen_t size = (socklen_t)sizeof(clientname);
+            int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
+            if (gfd < 0)
+                throw jtag_exception();
+            statusOut("Connection opened by host %s, port %hu.\n",
+                      inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port));
+
+            setGdbFile(gfd);
+
+            // Now do the actual processing of GDB messages
+            // We stay here until exiting because of error of EOF on the
+            // gdb connection
+            for (;;)
+                talkToGdb();
+        }
     }
-    catch(const char *msg)
+    catch (const char *msg)
       {
 	fprintf(stderr, "%s\n", msg);
 	return 1;
       }
-    catch(...)
-      {
-	fprintf(stderr, "Cannot initialize JTAG ICE\n");
-	return 1;
-      }
-
-    if (erase)
+    catch (jtag_exception&)
     {
-	if (protocol == MKII_DW)
-	{
-	    statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
-	}
-	else
-	{
-	    theJtagICE->enableProgramming();
-	    statusOut("Erasing program memory.\n");
-	    theJtagICE->eraseProgramMemory();
-	    statusOut("Erase complete.\n");
-	    theJtagICE->disableProgramming();
-	}
-    }
-
-    if (readFuses)
-    {
-        theJtagICE->jtagReadFuses();
-    }
-
-    if (readLockBits)
-    {
-        theJtagICE->jtagReadLockBits();
-    }
-
-    if (writeFuses)
-        theJtagICE->jtagWriteFuses(fuses);
-
-    // Init JTAG debugger for initial use.
-    //   - If we're attaching to a running target, we cannot do this.
-    //   - If we're running as a standalone programmer, we don't want
-    //     this.
-    if( gdbServerMode && ( ! capture ) )
-        theJtagICE->initJtagOnChipDebugging(jtagBitrate);
-
-    if (inFileName != (char *)0)
-    {
-        if ((program == false) && (verify == false)) {
-            /* If --file is given and neither --program or --verify, then we
-               program, but not verify so as to be backward compatible with
-               the old meaning of --file from before the addition of --program
-               and --verify. */
-
-            program = true;
-        }
-
-        if ((erase == false) && (program == true)) {
-            statusOut("WARNING: The default behaviour has changed.\n"
-                      "Programming no longer erases by default. If you want to"
-                      " erase and program\nin a single step, use the --erase "
-                      "in addition to --program. The reason for\nthis change "
-                      "is to allow programming multiple sections (e.g. "
-                      "application and\nbootloader) in multiple passes.\n\n");
-        }
-
-        theJtagICE->downloadToTarget(inFileName, program, verify);
-        theJtagICE->resetProgram(false);
-    }
-    else
-    {
-	check( (!program) && (!verify),
-	      "\nERROR: Filename not specified."
-	      " Use the --file option.\n");
-    }
-
-    // Write fuses after all programming parts have completed.
-    if (writeLockBits)
-        theJtagICE->jtagWriteLockBits(lockBits);
-
-    // Quit & resume mote for operations that don't interact with gdb.
-    if (!gdbServerMode)
-	theJtagICE->resumeProgram();
-    else
-    {
-        initSocketAddress(&name, hostName, hostPortNumber);
-        sock = makeSocket(&name);
-        statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
-        gdbCheck(listen(sock, 1));
-
-        if (detach)
-        {
-            int child = fork();
-
-            unixCheck(child, "Failed to fork");
-            if (child != 0)
-                _exit(0);
-            else
-                unixCheck(setsid(), "setsid failed - weird bug");
-        }
-
-        // Connection request on original socket.
-        socklen_t size = (socklen_t)sizeof(clientname);
-        int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
-        gdbCheck(gfd);
-        statusOut("Connection opened by host %s, port %hu.\n",
-                  inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port));
-
-        setGdbFile(gfd);
-
-        // Now do the actual processing of GDB messages
-        // We stay here until exiting because of error of EOF on the
-        // gdb connection
-        for (;;)
-            talkToGdb();
+        // ignored; guarantee theJtagICE object will be deleted
+        // correctly, as this says "good-bye" to the JTAG ICE mkII
     }
 
     delete theJtagICE;
