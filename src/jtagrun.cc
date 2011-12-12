@@ -97,16 +97,10 @@ void jtag1::interruptProgram(void)
     doSimpleJtagCommand('F', 4);
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-void jtag1::resumeProgram(bool restoreTarget)
+void jtag1::resumeProgram(void)
 {
-    // restoreTarget not implemented in JTAG ICE mkI
     doSimpleJtagCommand('G', 0);
 }
-
-PRAGMA_DIAG_POP
 
 void jtag1::jtagSingleStep(void)
 {

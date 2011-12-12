@@ -90,14 +90,14 @@ jtag2::~jtag2(void)
     // Terminate connection to JTAG box.
     if (signedIn)
       {
-	  // Do not use doSimpleJtagCommand() here as it aborts
-	  // avarice on failure; in case CMND_RESTORE_TARGET fails,
-	  // we'd like to try the sign-off command anyway.
-
-	  uchar *response, rstcmd = CMND_RESTORE_TARGET;
-	  int responseSize;
-	  (void)doJtagCommand(&rstcmd, 1, response, responseSize);
-	  delete [] response;
+	  try
+	  {
+	      doSimpleJtagCommand(CMND_RESTORE_TARGET);
+	  }
+	  catch (jtag_exception&)
+	  {
+	      // just proceed with the sign-off
+	  }
 	  doSimpleJtagCommand(CMND_SIGN_OFF);
 	  signedIn = false;
       }

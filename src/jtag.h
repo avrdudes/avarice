@@ -766,7 +766,7 @@ class jtag
       Note: the gdb 'continue' command is handled by jtagContinue,
       this is just the low level command to resume after interruptProgram
   **/
-  virtual void resumeProgram(bool restoreTarget = false) = 0;
+  virtual void resumeProgram(void) = 0;
 
   /** Issue a "single step" command to the JTAG box.
   **/

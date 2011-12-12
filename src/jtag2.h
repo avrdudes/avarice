@@ -199,7 +199,7 @@ class jtag2: public jtag
     virtual void setProgramCounter(unsigned long pc);
     virtual void resetProgram(bool ignored = false);
     virtual void interruptProgram(void);
-    virtual void resumeProgram(bool restoreTarget);
+    virtual void resumeProgram(void);
     virtual void jtagSingleStep(void);
     virtual bool jtagContinue(void);
 

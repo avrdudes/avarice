@@ -133,12 +133,10 @@ void jtag2::interruptProgram(void)
     expectEvent(bp, gdb);
 }
 
-void jtag2::resumeProgram(bool restoreTarget)
+void jtag2::resumeProgram(void)
 {
     xmegaSendBPs();
 
-    if (restoreTarget)
-	doSimpleJtagCommand(CMND_RESTORE_TARGET);
     doSimpleJtagCommand(CMND_GO);
 
     cached_pc_is_valid = false;

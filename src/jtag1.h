@@ -111,7 +111,7 @@ class jtag1: public jtag
     virtual void setProgramCounter(unsigned long pc);
     virtual void resetProgram(bool possible_nSRST);
     virtual void interruptProgram(void);
-    virtual void resumeProgram(bool restoreTarget);
+    virtual void resumeProgram(void);
     virtual void jtagSingleStep(void);
     virtual bool jtagContinue(void);
 

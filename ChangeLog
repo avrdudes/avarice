@@ -1,5 +1,18 @@
 2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h: Remove the restoreTarget parameter from the
+	resumeProgram() method again; target restoration upon GDB
+	disconnect is now being handled properly by catching the exception
+	thrown in that case, through the destruction of theJtagICE object.
+	* src/jtag1.h: (Dito.)
+	* src/jtag2.h: (Dito.)
+	* src/remote.cc: (Dito.)
+	* src/jtag2io.cc: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtagrun.cc: (Dito.)
+
+2011-12-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/remote.cc: Rearrange the entire error handling to use
 	exceptions, rather than a mix between error code returns, and
 	prematurely exiting the program from deep inside, without any
