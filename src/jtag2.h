@@ -130,6 +130,7 @@ class jtag2: public jtag
     unsigned short command_sequence;
     int devdescrlen;
     bool signedIn;
+    bool debug_active;
     enum debugproto proto;
     bool is_xmega;
     bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
@@ -158,7 +159,7 @@ class jtag2: public jtag
 	  bool is_dragon = false, bool nsrst = false,
           bool xmega = false):
       jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
-	signedIn = false;
+	signedIn = debug_active = false;
 	command_sequence = 0;
 	devdescrlen = sizeof(jtag2_device_desc_type);
 	proto = prot;

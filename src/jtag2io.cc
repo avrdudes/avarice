@@ -92,7 +92,8 @@ jtag2::~jtag2(void)
       {
 	  try
 	  {
-	      doSimpleJtagCommand(CMND_RESTORE_TARGET);
+	      if (debug_active)
+		  doSimpleJtagCommand(CMND_RESTORE_TARGET);
 	  }
 	  catch (jtag_exception&)
 	  {
@@ -613,6 +614,7 @@ void jtag2::startJtagLink(void)
 	    try
 	    {
 		setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
+		debug_active = true;
 	    }
 	    catch (jtag_io_exception&)
 	    {
