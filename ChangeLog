@@ -1,5 +1,9 @@
 2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* doc/avarice.1: Update list of devices.
+
+2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2.h: Keep track of whether starting a debugging session
 	with the ICE actually succeeded, and only ever attempt to send a
 	CMND_RESTORE_TARGET in that case.  Sending it without a debugWIRE
