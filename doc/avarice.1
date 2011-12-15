@@ -71,21 +71,21 @@ at90pwm316 (\fBo\fP) (\fB+\fP)
 .br
 at90pwm3b (\fBo\fP) (\fB+\fP)
 .br
-at90usb1287 (\fB*\fP)
+at90usb1287 (\fBo\fP)
 .br
 at90usb162 (\fBo\fP) (\fB+\fP)
 .br
-at90usb646 (\fB*\fP)
+at90usb646 (\fBo\fP)
 .br
-at90usb647 (\fB*\fP)
+at90usb647 (\fBo\fP)
 .br
 atmega128
 .br
-atmega1280 (\fB*\fP)
+atmega1280 (\fBo\fP)
 .br
-atmega1281 (\fB*\fP)
+atmega1281 (\fBo\fP)
 .br
-atmega1284p (\fB*\fP)
+atmega1284p (\fBo\fP)
 .br
 atmega128rfa1 (\fBo\fP)
 .br
@@ -107,9 +107,9 @@ atmega169
 .br
 atmega16hva (\fBo\fP)
 .br
-atmega2560 (\fB*\fP)
+atmega2560 (\fBo\fP)
 .br
-atmega2561 (\fB*\fP)
+atmega2561 (\fBo\fP)
 .br
 atmega32
 .br
@@ -143,7 +143,7 @@ atmega32m1 (\fBo\fP) (\fB+\fP)
 .br
 atmega32u4 (\fBo\fP)
 .br
-atmega406 (\fB*\fP)
+atmega406 (\fBo\fP)
 .br
 atmega48 (\fBo\fP) (\fB+\fP)
 .br
@@ -151,19 +151,19 @@ atmega48p (\fBo\fP) (\fB+\fP)
 .br
 atmega64
 .br
-atmega640 (\fB*\fP)
+atmega640 (\fBo\fP)
 .br
-atmega644 (\fB*\fP)
+atmega644 (\fBo\fP)
 .br
-atmega644p (\fB*\fP)
+atmega644p (\fBo\fP)
 .br
-atmega645 (\fB*\fP)
+atmega645 (\fBo\fP)
 .br
-atmega6450 (\fB*\fP)
+atmega6450 (\fBo\fP)
 .br
-atmega649 (\fB*\fP)
+atmega649 (\fBo\fP)
 .br
-atmega6490 (\fB*\fP)
+atmega6490 (\fBo\fP)
 .br
 atmega88 (\fBo\fP) (\fB+\fP)
 .br
@@ -201,18 +201,19 @@ attiny861 (\fBo\fP) (\fB+\fP)
 .br
 attiny88 (\fBo\fP) (\fB+\fP)
 .br
-atxmega128a1 (\fB*\fP)
+atxmega128a1 (\fBo\fP) (\fB*\fP)
 .br
-atxmega128a1revd (\fB*\fP)
+atxmega128a1revd (\fBo\fP) (\fB*\fP)
 .br
-atxmega16d4 (\fB*\fP)
+atxmega16d4 (\fBo\fP) (\fB*\fP)
 .br
-atxmega256a3 (\fB*\fP)
+atxmega256a3 (\fBo\fP) (\fB*\fP)
 .RE
 .PP
-\fB*\fP \- Only supported by the JTAG ICE mkII device.
-.br
 \fBo\fP \- Only supported by the JTAG ICE mkII and AVR Dragon device.
+.br
+\fB*\fP \- Xmega device, requires firmware version of at least 7.x
+(as shipped with AVR Studio 5)
 .br
 \fB+\fP \- debugWire, see below
 .SS Supported File Formats
