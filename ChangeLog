@@ -1,5 +1,10 @@
 2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* doc/avarice.1: Drop the remark that software breakpoints were
+	currently not supported: they are.
+
+2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* doc/avarice.1: Update list of devices.
 
 2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
