@@ -1,3 +1,8 @@
+2012-01-18  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Add a test whether libbfd requires libdl; fix
+	the broken (always positive) test for libz as well.
+
 2011-12-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* doc/avarice.1: Drop the remark that software breakpoints were

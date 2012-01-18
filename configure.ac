@@ -112,12 +112,24 @@ AC_LINK_IFELSE(
   [#include <bfd.h>
   int main(void) {
     bfd_init();
-    bfd_object();
     bfd_openr("foo", 0);
     return 42;
   }], [AC_MSG_RESULT([no])],
   [AC_MSG_RESULT([yes])
    AC_CHECK_LIB([z], [inflate], [LIBS="$LIBS -lz"])])
+
+AC_MSG_CHECKING([whether libbfd requires libdl])
+AC_LINK_IFELSE(
+  [#include <bfd.h>
+  bfd *file;
+  int main(void) {
+    bfd_init();
+    file = bfd_openr("foo", 0);
+    bfd_get_section_name(file, file->sections);
+    return 42;
+  }], [AC_MSG_RESULT([no])],
+  [AC_MSG_RESULT([yes])
+   AC_CHECK_LIB([dl], [dlopen], [LIBS="$LIBS -ldl"])])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
