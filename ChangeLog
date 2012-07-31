@@ -1,3 +1,8 @@
+2012-07-31  Canyon Bliss  <canyon@recursivebliss.com>
+
+	* doc/avarice.1: Updated list of devices.
+	* src/devdescr.cc: Added xmegaB devices: ATxmega128B1, ATxmega128B3, 
+	ATxmega64B1, ATxmega64B3.
 2012-01-18  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Add a test whether libbfd requires libdl; fix
