@@ -1,5 +1,10 @@
 2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: In AC_LINK_IFELSE, use AC_LANG_SOURCE for the
+	source code to be compiled, in order to silence a warning.
+
+2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Deprecate target ELF file programming (downloading).
 	* configure.ac: Implement the --enable-target-programming
 	configuration option; disabled by default.  No longer require
