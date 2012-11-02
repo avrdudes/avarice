@@ -36,12 +36,16 @@
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
-#include <bfd.h>
+
+#if ENABLE_TARGET_PROGRAMMING
+#  include <bfd.h>
+#endif
 
 #include "avarice.h"
 #include "jtag.h"
 #include "jtag2.h"
 
+#if ENABLE_TARGET_PROGRAMMING
 // The API changed for this in bfd.h. This is a work around.
 #ifndef bfd_get_section_size
 #  define bfd_get_section_size bfd_get_section_size_before_reloc
@@ -60,60 +64,6 @@ static void initImage(BFDimage *image)
         image->image[i].used = false;
     }
 }
-
-void jtag2::enableProgramming(void)
-{
-    if (proto != PROTO_DW)
-    {
-	programmingEnabled = true;
-	doSimpleJtagCommand(CMND_ENTER_PROGMODE);
-    }
-}
-
-
-void jtag2::disableProgramming(void)
-{
-    if (proto != PROTO_DW)
-    {
-	programmingEnabled = false;
-	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
-    }
-}
-
-
-// This is really a chip-erase which erases flash, lock-bits and eeprom
-// (unless the save-eeprom fuse is set).
-void jtag2::eraseProgramMemory(void)
-{
-    doSimpleJtagCommand(CMND_CHIP_ERASE);
-}
-
-void jtag2::eraseProgramPage(unsigned long address)
-{
-    uchar *response;
-    int respSize;
-    uchar command[5] = { CMND_ERASEPAGE_SPM };
-
-    command[1] = (address & 0xff000000) >> 24;
-    command[2] = (address & 0xff0000) >> 16;
-    command[3] = (address & 0xff00) >> 8;
-    command[4] = address;
-
-    try
-    {
-        doJtagCommand(command, sizeof(command),
-                      response, respSize);
-    }
-    catch (jtag_exception& e)
-    {
-        fprintf(stderr, "Page erase failed: %s\n",
-                e.what());
-        throw;
-    }
-
-    delete [] response;
-}
-
 
 // Check if file format is supported.
 // return nonzero on errors.
@@ -247,10 +197,65 @@ static void jtag_create_image(bfd *file, asection *section,
         image->has_data = true;
     }
 }
+#endif	// ENABLE_TARGET_PROGRAMMING
+
+void jtag2::enableProgramming(void)
+{
+    if (proto != PROTO_DW)
+    {
+	programmingEnabled = true;
+	doSimpleJtagCommand(CMND_ENTER_PROGMODE);
+    }
+}
+
+
+void jtag2::disableProgramming(void)
+{
+    if (proto != PROTO_DW)
+    {
+	programmingEnabled = false;
+	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
+    }
+}
+
+
+// This is really a chip-erase which erases flash, lock-bits and eeprom
+// (unless the save-eeprom fuse is set).
+void jtag2::eraseProgramMemory(void)
+{
+    doSimpleJtagCommand(CMND_CHIP_ERASE);
+}
+
+void jtag2::eraseProgramPage(unsigned long address)
+{
+    uchar *response;
+    int respSize;
+    uchar command[5] = { CMND_ERASEPAGE_SPM };
+
+    command[1] = (address & 0xff000000) >> 24;
+    command[2] = (address & 0xff0000) >> 16;
+    command[3] = (address & 0xff00) >> 8;
+    command[4] = address;
+
+    try
+    {
+        doJtagCommand(command, sizeof(command),
+                      response, respSize);
+    }
+    catch (jtag_exception& e)
+    {
+        fprintf(stderr, "Page erase failed: %s\n",
+                e.what());
+        throw;
+    }
+
+    delete [] response;
+}
 
 
 void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
 {
+#if ENABLE_TARGET_PROGRAMMING
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.
     struct stat ifstat;
@@ -343,4 +348,8 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
     (void)(bfd_close(file));
 
     statusOut("\nDownload complete.\n");
+#else  // !ENABLE_TARGET_PROGRAMMING
+    statusOut("\nDownload not done.\n");
+    throw jtag_exception("AVaRICE was not configured for target programming");
+#endif	// ENABLE_TARGET_PROGRAMMING
 }

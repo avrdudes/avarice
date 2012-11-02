@@ -2,7 +2,7 @@
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
 Copyright (C) 2003, 2004 Theodore A. Roth
-Copyright (C) 2005 - 2008,2011 Joerg Wunsch
+Copyright (C) 2005 - 2008,2011,2012 Joerg Wunsch
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -284,6 +284,10 @@ Default is "none,run,target_power_on,target_sleep,target_wakeup"
 .BR \-f ,\  \-\-file \ <filename>
 Specify a file for use with the --program and --verify options. If --file is
 passed and neither --program or --verify are given then --program is implied.
+.BR
+.B NOTE:
+deprecated feature, must be enabled using the --enable-target-programming
+configuration option.
 .TP
 .BR \-g ,\  \-\-dragon
 Connect to an AVR Dragon.
@@ -291,9 +295,6 @@ This option implies the \fB-2\fP option.
 .TP
 .BR \-I ,\  \-\-ignore-intr
 Automatically step over interrupts.
-.br
-Note: EXPERIMENTAL. Can not currently handle
-devices fused for compatibility.
 .TP
 .BR \-j ,\  \-\-jtag \ <devname>
 Port attached to JTAG box (default: /dev/avrjtag). If the JTAG_DEV environmental
@@ -328,11 +329,10 @@ autodetection.
 .TP
 .BR \-p ,\  \-\-program
 Program the target. Binary filename must be specified with --file option.
-.br
+.BR
 .B NOTE:
-The old behaviour of automatically erasing the target before
-programming is no longer done. You must explicitly give the --erase option
-for the target to be erased.
+deprecated feature, must be enabled using the --enable-target-programming
+configuration option.
 .TP
 .BR \-R ,\  \-\-reset-srst
 Apply nSRST signal (external reset) when connecting.
@@ -346,6 +346,10 @@ Print version information.
 .TP
 .BR \-v ,\  \-\-verify
 Verify program in device against file specified with --file option.
+.BR
+.B NOTE:
+deprecated feature, must be enabled using the --enable-target-programming
+configuration option.
 .TP
 .BR \-w ,\  \-\-debugwire
 Connect to JTAG ICE mkII (or AVR Dragon), talking debugWire protocol to the target.

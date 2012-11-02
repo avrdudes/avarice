@@ -1,5 +1,21 @@
 2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Deprecate target ELF file programming (downloading).
+	* configure.ac: Implement the --enable-target-programming
+	configuration option; disabled by default.  No longer require
+	the presence and usability of libbfd if not configured for
+	the target programming feature.
+	* src/main.cc: Disable --file, --program, and --verify
+	unless ENABLE_TARGET_PROGRAMMING is in effect.
+	* src/jtag2prog.cc: Turn the downloadTarget method into a
+	dummy unless ENABLE_TARGET_PROGRAMMING is in effect; remove
+	all dependencies from bfd.h / libbfd otherwise.
+	* src/jtagprog.cc: (Dito.)
+	* doc/avarice.1: Document that --file, --program, and --verify
+	are deprecated, and no longer enabled by default
+
+2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* tools/devdescr.xsl: update for recent changes of src/jtag.h:
 	generate fuses, and an empty Xmega device descriptor
 

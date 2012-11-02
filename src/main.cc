@@ -179,11 +179,13 @@ static void usage(const char *progname)
             "  -E, --event <eventlist>     List of events that do not interrupt.\n"
             "                                JTAG ICE mkII and AVR Dragon only.\n"
             "                                Default is \"none,run,target_power_on,target_sleep,target_wakeup\"\n");
+#if ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
 	    "  -f, --file <filename>       Specify a file for use with the --program and\n"
             "                                --verify options. If --file is passed and\n"
             "                                neither --program or --verify are given then\n"
             "                                --program is implied.\n");
+#endif	// ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
 	    "  -g, --dragon                Connect to an AVR Dragon rather than a JTAG ICE.\n"
 	    "                                This implies --mkII, but might be required in\n"
@@ -204,19 +206,23 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -P, --part <name>           Target device name (e.g."
             " atmega16)\n\n");
+#if ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
 	    "  -p, --program               Program the target.\n"
 	    "                                Binary filename must be specified with --file\n"
 	    "                                option.\n");
+#endif	// ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
             "  -r, --read-fuses            Read fuses bytes.\n");
     fprintf(stderr,
             "  -R, --reset-srst            External reset through nSRST signal.\n");
     fprintf(stderr,
 	    "  -V, --version               Print version information.\n");
+#if ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
             "  -v, --verify                Verify program in device against file specified\n"
             "                                with --file option.\n");
+#endif	// ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
 	    "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
 	    "                                using debugWire protocol rather than JTAG.\n");
@@ -555,6 +561,8 @@ int main(int argc, char **argv)
 	jtagDeviceName = "/dev/avrjtag";
     }
 
+    int rv = 0;			// return value from main()
+
     try {
 	// And say hello to the JTAG box
 	switch (protocol) {
@@ -628,6 +636,7 @@ int main(int argc, char **argv)
 
         if (inFileName != (char *)0)
         {
+#if ENABLE_TARGET_PROGRAMMING
             if ((program == false) && (verify == false)) {
                 /* If --file is given and neither --program or --verify, then we
                    program, but not verify so as to be backward compatible with
@@ -648,15 +657,30 @@ int main(int argc, char **argv)
 
             theJtagICE->downloadToTarget(inFileName, program, verify);
             theJtagICE->resetProgram(false);
+#else  // !ENABLE_TARGET_PROGRAMMING
+	    statusOut("\n\n"
+		      "AVaRICE has not been configured for target programming\n"
+		      "through the --program option.  Target programming in\n"
+		      "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
+	    rv = 1;
+#endif // ENABLE_TARGET_PROGRAMMING
         }
         else
         {
             if( (program) || (verify))
             {
+#if ENABLE_TARGET_PROGRAMMING
                 fprintf(stderr, 
                    "\nERROR: Filename not specified."
                    " Use the --file option.\n");
                 throw jtag_exception();
+#else  // !ENABLE_TARGET_PROGRAMMING
+		statusOut("\n\n"
+			  "AVaRICE has not been configured for target programming\n"
+			  "through the --program option.  Target programming in\n"
+			  "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
+		rv = 1;
+#endif // ENABLE_TARGET_PROGRAMMING
             }
         }
 
@@ -720,9 +744,10 @@ int main(int argc, char **argv)
     {
         // ignored; guarantee theJtagICE object will be deleted
         // correctly, as this says "good-bye" to the JTAG ICE mkII
+        rv = 1;
     }
 
     delete theJtagICE;
 
-    return 0;
+    return rv;
 }

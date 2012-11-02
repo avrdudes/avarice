@@ -67,18 +67,11 @@ AC_CHECK_LIB([iberty], [xmalloc])
 AC_CHECK_LIB([bfd], [bfd_init], , [ac_found_bfd=no])
 AC_CHECK_LIB([usb], [usb_get_string_simple])
 
-if test "x$ac_found_bfd" = "xno"; then
-  AC_MSG_ERROR([You need to install libbfd.a from binutils.])
-fi
-
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h])
 
 AC_CHECK_HEADERS([bfd.h], , [ac_found_bfd_h=no])
-if test "x$ac_found_bfd_h" = "xno"; then
-  AC_MSG_ERROR([Your libbfd.a needs an accompanying bfd.h file.])
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -154,6 +147,31 @@ AC_ARG_ENABLE(
 	[ENABLE_WARNINGS="-Wall -Wextra"])
 
 AC_SUBST([AM_CPPFLAGS], [$ENABLE_WARNINGS])
+
+# --enable-target-programming / --disable-target-programming
+AC_ARG_ENABLE(
+	[target-programming],
+	AC_HELP_STRING(
+		[--enable-target-programming],
+		[Enable programming (downloading) the target from ELF file]),
+	[case "${enableval}" in
+	      yes) ENABLE_TARGET_PROGRAMMING="-DENABLE_TARGET_PROGRAMMING=1" ;;
+	      no)  ENABLE_TARGET_PROGRAMMING="-DENABLE_TARGET_PROGRAMMING=0" ;;
+	      *) AC_MSG_ERROR(bad value ${enableval} for ensable-target-programming option) ;;
+	      esac],
+	[ENABLE_TARGET_PROGRAMMING="-DENABLE_TARGET_PROGRAMMING=0"])
+
+AC_SUBST([AM_CPPFLAGS], [$ENABLE_TARGET_PROGRAMMING])
+
+if test "x$enable_target_programming" = "xyes"; then
+   if test "x$ac_found_bfd" = "xno"; then
+      AC_MSG_ERROR([You need to install libbfd.a from binutils, or configure with --disable-target-programming.])
+   fi
+
+   if test "x$ac_found_bfd_h" = "xno"; then
+      AC_MSG_ERROR([Your libbfd.a needs an accompanying bfd.h file, or configure with --disable-target-programming.])
+   fi
+fi
 
 AC_CONFIG_FILES([
 	scripts/Makefile
