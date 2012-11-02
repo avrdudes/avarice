@@ -2,6 +2,7 @@
 
 	* configure.ac: In AC_LINK_IFELSE, use AC_LANG_SOURCE for the
 	source code to be compiled, in order to silence a warning.
+	Bump version to svn20121102.
 
 2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
