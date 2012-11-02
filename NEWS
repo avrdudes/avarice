@@ -10,7 +10,8 @@ Summary of changes since AVaRICE 2.12
   chance to leave the ICE in an unworkable state when exiting the
   program.
   
-. New devices: ATxmega128B1, ATxmega128B3, ATxmega64B1, ATxmega64B3
+. New devices: ATxmega128B1, ATxmega128B3, ATxmega64B1, ATxmega64B3,
+  ATmega16M1, ATmega64M1, ATmega64C1
 
 =====================================================================
 
