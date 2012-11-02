@@ -186,6 +186,11 @@
       </xsl:choose>
       <xsl:text>,&#010;</xsl:text>
 
+      <!-- XXX -->
+      <xsl:text>&#009;</xsl:text>
+      <xsl:text>0x00, 0x0000, // fuses</xsl:text>
+      <xsl:text>&#010;</xsl:text>
+
       <!-- more static stuff -->
       <xsl:text>&#009;{&#010;&#009;    0&#009;// no mkI support&#010;</xsl:text>
       <xsl:text>&#009;},&#010;&#009;{&#010;&#009;</xsl:text>
@@ -359,8 +364,14 @@
       </xsl:call-template>
       <xsl:text>),&#009;// EECRAddress&#010;</xsl:text>
 
-      <!-- trailer -->
       <xsl:text>&#009;},&#010;</xsl:text>
+
+      <!-- XXX -->
+      <xsl:text>&#009;</xsl:text>
+      <xsl:text>{ 0 },&#009;&#009;// Xmega device descr.</xsl:text>
+      <xsl:text>&#010;</xsl:text>
+
+      <!-- trailer -->
       <xsl:text>    },&#010;</xsl:text>
 
       </xsl:if> <!-- JTAGICEmkII is present -->

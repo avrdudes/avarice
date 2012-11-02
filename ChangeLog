@@ -1,5 +1,10 @@
 2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* tools/devdescr.xsl: update for recent changes of src/jtag.h:
+	generate fuses, and an empty Xmega device descriptor
+
+2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/devdescr.cc: Added megaM1 and megaC1 device: ATmega16M1,
 	ATmega64M1, ATmega64C1
 	* doc/avarice.1: Document new devices.
