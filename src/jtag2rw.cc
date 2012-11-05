@@ -78,10 +78,10 @@ uchar jtag2::memorySpace(unsigned long &addr)
     case DATA_SPACE_ADDR_OFFSET:
 	return MTYPE_SRAM;
     default:
-	if (proto == PROTO_DW || programmingEnabled)
-	    return MTYPE_FLASH_PAGE;
-	else if (is_xmega && has_full_xmega_support)
+	if (is_xmega && has_full_xmega_support)
 	    return MTYPE_XMEGA_APP_FLASH;
+	else if (proto == PROTO_DW || programmingEnabled)
+	    return MTYPE_FLASH_PAGE;
 	else
 	    return MTYPE_SPM;
     }

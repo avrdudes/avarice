@@ -1,5 +1,11 @@
 2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Contributed by Chris Thunes (patch #3497114):
+	* src/jtag2rw.cc (jtag2::memorySpace): Return the correct
+	memory type for Xmega write operations.
+
+2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Contributed by Mihai Hagianu (patch #3496094): add ATxmega128A3
 	Contributed by Chris Thunes (patch #3497114): add ATxmega32A4
 	* src/devdescr.cc (ATxmega32A4, ATxmega128A3): new entries
