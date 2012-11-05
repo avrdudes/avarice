@@ -271,7 +271,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4,   256,    // 1K EEPROM
 	0x50,	     // 20 interrupt vectors
 	DEVFL_NONE,
-	NULL,	     // io reg defs not defined yet
+	atmega323_io_registers,
 	false,
 	0x03, 0x8000, // fuses
 	{
@@ -424,7 +424,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   256,    // 2K bytes EEPROM
 	0x8c,	     // 35 interrupt vectors
 	DEVFL_NONE,
-	atmega128_io_registers,
+	atmega64_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -576,7 +576,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0x94,	     // 37 interrupt vectors
 	DEVFL_NONE,
-	iocan128_io_registers,
+	at90can128_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -652,7 +652,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega164p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -712,7 +712,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega324p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -772,7 +772,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   256,    // 2K bytes EEPROM
 	28 * 4,	     // 28 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,			// not yet defined
+	atmega644_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -825,7 +825,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega325_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -887,7 +887,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega3250_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -949,7 +949,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega645_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1011,7 +1011,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega6450_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1072,7 +1072,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4,   256,    // 1K bytes EEPROM
 	23 * 4,	     // 23 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,			// not yet defined
+	atmega329_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1124,7 +1124,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4,   256,    // 1K bytes EEPROM
 	25 * 4,	     // 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,			// not yet defined
+	atmega3290_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1176,7 +1176,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   256,    // 2K bytes EEPROM
 	23 * 4,	     // 23 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,			// not yet defined
+	atmega649_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1228,7 +1228,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   256,    // 2K bytes EEPROM
 	25 * 4,	     // 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,			// not yet defined
+	atmega6490_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1280,7 +1280,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0xe4,	     // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
-	atmega128_io_registers,	// XXX should be changed
+	atmega640_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1338,7 +1338,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0xe4,	     // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
-	atmega128_io_registers,	// XXX should be changed
+	atmega1280_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1396,7 +1396,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0xe4,	     // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
-	atmega128_io_registers,	// XXX should be changed
+	atmega1281_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1454,7 +1454,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0xe4,	     // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
-	atmega128_io_registers,	// XXX should be changed
+	atmega2560_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1512,7 +1512,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8,   512,    // 4K bytes EEPROM
 	0xe4,	     // 57 interrupt vectors
 	DEVFL_MKII_ONLY,
-	atmega128_io_registers,	// XXX should be changed
+	atmega2561_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -1570,7 +1570,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4,  64,	   // 256 bytes EEPROM
 	26 * 2,	   // 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	   // not yet defined
+	atmega48_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -1628,7 +1628,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega88_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -1690,7 +1690,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega168_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -1752,7 +1752,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	1, 64,	// 64 bytes EEPROM
 	10 * 2,	// 10 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny13_io_registers,
 	false,
 	0x03, 0x0000, // fuses
 	{
@@ -1814,7 +1814,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 32,	// 128 bytes EEPROM
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny2313_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -1937,7 +1937,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm2_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -1999,7 +1999,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm3_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2061,7 +2061,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm2b_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2123,7 +2123,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 2,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm3b_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2248,7 +2248,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
-	false,
+	atmega32m1_io_registers,
 	0x00, 0x0000, // fuses
 	{
 	    0	// no mkI support
@@ -2372,7 +2372,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
 	NULL,	// registers not yet defined
-	false,
+	atmega32c1_io_registers,
 	0x00, 0x0000, // fuses
 	{
 	    0	// no mkI support
@@ -2495,7 +2495,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 32,	// 128 bytes EEPROM
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny24_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2557,7 +2557,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny44_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2619,7 +2619,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	17 * 2,	// 17 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny84_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2681,7 +2681,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 32,	// 128 bytes EEPROM
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny25_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2743,7 +2743,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny45_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2805,7 +2805,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	15 * 2,	// 15 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny85_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2867,7 +2867,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 32,	// 128 bytes EEPROM
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny261_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2929,7 +2929,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny461_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -2991,7 +2991,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	19 * 2,	// 19 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny861_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3053,7 +3053,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 128,	// 1024 bytes EEPROM
 	37 * 4,	// 37 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90can32_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3113,7 +3113,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	37 * 4,	// 37 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90can64_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3173,7 +3173,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 4,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm216_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3235,7 +3235,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	32 * 4,	// 32 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90pwm316_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3297,7 +3297,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 512,	// 4096 bytes EEPROM
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90usb1287_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3357,7 +3357,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90usb162_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3419,7 +3419,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90usb646_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3479,7 +3479,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	38 * 4,	// 38 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	at90usb647_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3539,7 +3539,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 512,	// 4096 bytes EEPROM
 	35 * 4,	// 35 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega1284p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3599,7 +3599,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega165_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3659,7 +3659,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega165p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3719,7 +3719,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega168p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3781,7 +3781,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	21 * 4,	// 21 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega16hva_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -3843,7 +3843,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega3250p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3903,7 +3903,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	22 * 4,	// 22 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega325p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -3963,7 +3963,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	26 * 4,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega328p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4025,7 +4025,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	25 * 4,	// 25 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega3290p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -4085,7 +4085,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	23 * 4,	// 23 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega329p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -4145,7 +4145,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	29 * 4,	// 29 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega32hvb_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4207,7 +4207,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	43 * 4,	// 43 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega32u4_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -4267,7 +4267,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	23 * 4,	// 23 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega406_io_registers,
 	false,
 	0x07, 0x0200, // fuses
 	{
@@ -4327,7 +4327,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega48p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4389,7 +4389,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega644p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{
@@ -4449,7 +4449,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	26 * 2,	// 26 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega88p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4511,7 +4511,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	20 * 4,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny167_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4571,7 +4571,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 16,	// 64 bytes EEPROM
 	16 * 2,	// 16 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny43u_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4633,7 +4633,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 16,	// 64 bytes EEPROM
 	20 * 2,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny48_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -4695,7 +4695,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 16,	// 64 bytes EEPROM
 	20 * 2,	// 20 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	attiny88_io_registers,
 	false,
 	0x07, 0x0000, // fuses
 	{
@@ -5243,7 +5243,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 512,	// 4096 bytes EEPROM
 	72 * 4,	// 72 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	atmega128rfa1_io_registers,
 	false,
 	0x07, 0x8000, // fuses
 	{

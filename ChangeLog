@@ -1,5 +1,15 @@
 2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Contributed by Martin Cerveny (patch #3495107):
+	Add IO register info for a large number of mega and tiny AVRs
+	* src/devdescr.cc: add pointers to IO register definitions
+	* src/ioreg.h: add declarations for the IO register definitions,
+	extend "reg_addr" to "unsigned int" to accomodate space for the
+	IO registers in newer AVRs
+	* src/ioreg.cc: add new IO register definitions
+
+2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Contributed by Chris Thunes (patch #3497114):
 	* src/jtag2prog.cc (jtag2::eraseProgramMemory): Use
 	CMND_XMEGA_ERASE to erase Xmega program memory

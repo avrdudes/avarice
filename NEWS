@@ -18,6 +18,21 @@ Summary of changes since AVaRICE 2.12
   configure option.  If not enabled, AVaRICE no longer depends on
   libbfd and its prerequisites.  Use AVRDUDE for device programming.
 
+. Added IO register definitions (for GDB's "info io_registers"
+  command) for the following devices: ATmega323, ATmega64, AT90CAN128,
+  ATmega164p, ATmega324p, ATmega644, ATmega325, ATmega3250, ATmega645,
+  ATmega6450, ATmega329, ATmega3290, ATmega649, ATmega6490, ATmega640,
+  ATmega1280, ATmega1281, ATmega2560, ATmega2561, ATmega48, ATmega88,
+  ATmega168, ATtiny13, ATtiny2313, AT90PWM2, AT90PWM3, AT90PWM2B,
+  AT90PWM3B, ATmega32M1, ATmega32C1, ATtiny24, ATtiny44, ATtiny84,
+  ATtiny25, ATtiny45, ATtiny85, ATtiny261, ATtiny461, ATtiny861,
+  AT90CAN32, AT90CAN64, AT90PWM216, AT90PWM316, AT90USB1287,
+  AT90USB162, AT90USB646, AT90USB647, ATmega1284P, ATmega165,
+  ATmega165P, ATmega168P, ATmega16HVA, ATmega3250P, ATmega325P,
+  ATmega328P, ATmega3290P, ATmega329P, ATmega32HVB, ATmega32U4,
+  ATmega406, ATmega48P, ATmega644P, ATmega88P, ATtiny167, ATtiny43U,
+  ATtiny48, ATtiny88, ATmega128RFA1
+
 =====================================================================
 
 Summary of changes in AVaRICE 2.12
