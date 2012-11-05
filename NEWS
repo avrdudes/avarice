@@ -11,7 +11,7 @@ Summary of changes since AVaRICE 2.12
   program.
 
 . New devices: ATxmega128B1, ATxmega128B3, ATxmega64B1, ATxmega64B3,
-  ATmega16M1, ATmega64M1, ATmega64C1
+  ATmega16M1, ATmega64M1, ATmega64C1, ATxmega128A3, ATxmega32A4
 
 . Deprecate target programming (downloading) from the ELF file.  It
   must be explicitly enabled now by the --enable-target-programming

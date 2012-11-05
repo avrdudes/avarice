@@ -1,3 +1,10 @@
+2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Contributed by Mihai Hagianu (patch #3496094): add ATxmega128A3
+	Contributed by Chris Thunes (patch #3497114): add ATxmega32A4
+	* src/devdescr.cc (ATxmega32A4, ATxmega128A3): new entries
+	* doc/avarice.1: Document new devices.
+
 2012-11-02  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: In AC_LINK_IFELSE, use AC_LANG_SOURCE for the
