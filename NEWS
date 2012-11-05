@@ -1,6 +1,6 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.12
+Summary of changes in AVaRICE 2.13
 ==================================
 
 . Rearrange the entire error handling to use exceptions, rather than a

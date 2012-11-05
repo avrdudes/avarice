@@ -1,5 +1,9 @@
 2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version for release 2.13
+
+2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Contributed by Martin Cerveny (patch #3495107):
 	Add IO register info for a large number of mega and tiny AVRs
 	* src/devdescr.cc: add pointers to IO register definitions
