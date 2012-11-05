@@ -91,6 +91,7 @@
 #define CMND_SPI_CMD 0x1D
 #define CMND_WRITE_MEMORY 0x04
 #define CMND_WRITE_PC 0x06
+#define CMND_XMEGA_ERASE 0x34
 
 /* ICE responses */
 #define RSP_DEBUGWIRE_SYNC_FAILED 0xAC

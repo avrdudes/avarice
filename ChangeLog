@@ -1,6 +1,14 @@
 2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Contributed by Chris Thunes (patch #3497114):
+	* src/jtag2prog.cc (jtag2::eraseProgramMemory): Use
+	CMND_XMEGA_ERASE to erase Xmega program memory
+	* src/jtag_defs.h: add CMND_XMEGA_ERASE
+	* src/jtag.h: (Dito)
+
+2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Contributed by Chris Thunes (patch #3497114):
 	* src/jtag2rw.cc (jtag2::memorySpace): Return the correct
 	memory type for Xmega write operations.
 

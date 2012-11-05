@@ -397,6 +397,7 @@ enum
     CMND_SPI_CMD		= 0x1D,
     CMND_WRITE_MEMORY		= 0x04,
     CMND_WRITE_PC		= 0x06,
+    CMND_XMEGA_ERASE		= 0x34,
 
     // ICE responses
     RSP_DEBUGWIRE_SYNC_FAILED	= 0xAC,

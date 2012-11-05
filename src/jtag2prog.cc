@@ -223,7 +223,38 @@ void jtag2::disableProgramming(void)
 // (unless the save-eeprom fuse is set).
 void jtag2::eraseProgramMemory(void)
 {
-    doSimpleJtagCommand(CMND_CHIP_ERASE);
+    if (is_xmega)
+    {
+        uchar *response;
+        int respSize;
+        uchar command[6] = { CMND_XMEGA_ERASE };
+
+        // ERASE_MODE (erase chip)
+        command[1] = 0x00;
+
+        // ADDRESS
+        command[2] = 0x00;
+        command[3] = 0x00;
+        command[4] = 0x00;
+        command[5] = 0x00;
+
+	try
+	{
+	    doJtagCommand(command, sizeof(command),
+			  response, respSize);
+	}
+	catch (jtag_exception& e)
+	{
+	    fprintf(stderr, "Failed to erase Xmega program memory: %s\n",
+		    e.what());
+	    throw;
+	}
+        delete [] response;
+    }
+    else
+    {
+        doSimpleJtagCommand(CMND_CHIP_ERASE);
+    }
 }
 
 void jtag2::eraseProgramPage(unsigned long address)
