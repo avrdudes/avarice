@@ -1,3 +1,8 @@
+2012-11-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* tools/pdml.xsl: New XSLT stylesheet to analyze Wireshark
+	USB traces exported as PDML data
+
 2012-11-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version for post-release 2.13
