@@ -1,3 +1,8 @@
+2012-11-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* tools/ocdrev.xsl: Extract OCD_REVISION out of Atmel Studio
+	6.x XML device files
+
 2012-11-15  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* tools/pdml.xsl: New XSLT stylesheet to analyze Wireshark
