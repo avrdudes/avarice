@@ -1,3 +1,9 @@
+2012-12-06  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc (usb_daemon): Restructure the receiver
+	logic so it no longer depends on the JTAGICEmkII message
+	length indication.
+
 2012-11-20  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* tools/ocdrev.xsl: Extract OCD_REVISION out of Atmel Studio

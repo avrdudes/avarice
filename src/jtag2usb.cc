@@ -56,6 +56,8 @@
 #define JTAGICE_BULK_EP_READ  0x82
 #define JTAGICE_MAX_XFER 64
 
+#define MAX_MESSAGE      512
+
 static volatile sig_atomic_t signalled, exiting, ready;
 static pid_t usb_kid;
 
@@ -303,7 +305,7 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd)
       struct timeval tv;
       int rv;
       bool do_read, clear_eps;
-      char buf[JTAGICE_MAX_XFER];
+      char buf[MAX_MESSAGE];
 
       do_read = false;
       clear_eps = false;
@@ -411,42 +413,34 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd)
 	  else
 	    {
 	      /*
-	       * We read a (partial) packet from USB.  Return
-	       * what we've got so far to AVaRICE, and examine
-	       * the length field to see whether we have to
-	       * expect more.
+	       * We read a packet from USB.  If it's been a partial
+	       * one (result matches the endpoint size), see to get
+	       * more, until we have either a short read, or a ZLP.
 	       */
 	      polling = false;
-	      if (write(fd, buf, rv) != rv)
-		{
-		  fprintf(stderr, "short write to AVaRICE: %s\n",
-			  strerror(errno));
-		  exit(1);
-		}
-	      unsigned int pkt_len = (unsigned char)buf[3] +
-		((unsigned char)buf[4] << 8) + ((unsigned char)buf[5] << 16) +
-		((unsigned char)buf[6] << 24);
-	      const unsigned int header_size = 8;
-	      const unsigned int crc_size = 2;
-	      pkt_len += header_size + crc_size;
-	      pkt_len -= rv;
-	      /* OK, if there is more to read, do so. */
-	      while (!exiting && pkt_len > 0)
-		{
-		  rv = usb_bulk_read(udev, JTAGICE_BULK_EP_READ, buf,
-				     pkt_len > JTAGICE_MAX_XFER? JTAGICE_MAX_XFER: pkt_len,
-				     100);
 
-		  /*
-		   * Zero-length reads are not expected here,
-		   * as we carefully examined the packet
-		   * length from the header.
-		   */
+	      unsigned int pkt_len = rv;
+	      bool needmore = rv == JTAGICE_MAX_XFER;
+
+	      /* OK, if there is more to read, do so. */
+	      while (!exiting && needmore)
+		{
+		  int maxlen = MAX_MESSAGE - pkt_len;
+		  if (maxlen > JTAGICE_MAX_XFER)
+		    maxlen = JTAGICE_MAX_XFER;
+		  rv = usb_bulk_read(udev, JTAGICE_BULK_EP_READ, buf + pkt_len,
+				     maxlen, 100);
+
 		  if (rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
 		    {
 		      continue;
 		    }
-		  if (rv <= 0)
+		  if (rv == 0)
+		    {
+		      /* Zero-length packet: we are done. */
+		      break;
+		    }
+		  if (rv < 0)
 		    {
 		      if (!exiting)
 			fprintf(stderr,
@@ -454,13 +448,22 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd)
 				usb_strerror());
 		      exit(1);
 		    }
-		  if (write(fd, buf, rv) != rv)
+
+		  needmore = rv == JTAGICE_MAX_XFER;
+		  pkt_len += rv;
+		  if (pkt_len == MAX_MESSAGE)
 		    {
-		      fprintf(stderr, "short write to AVaRICE: %s\n",
-			      strerror(errno));
-		      exit(1);
+		      /* should not happen */
+		      fprintf(stderr, "Message too big in USB receive.\n");
+		      break;
 		    }
-		  pkt_len -= rv;
+		}
+
+	      if (write(fd, buf, pkt_len) != pkt_len)
+	        {
+		  fprintf(stderr, "short write to AVaRICE: %s\n",
+			  strerror(errno));
+		  exit(1);
 		}
 	    }
 	}
