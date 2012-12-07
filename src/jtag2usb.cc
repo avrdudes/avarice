@@ -330,15 +330,34 @@ static void usb_daemon(usb_dev_handle *udev, int fd, int cfd)
 	{
 	  if (FD_ISSET(fd, &r))
 	    {
-	      if ((rv = read(fd, buf, JTAGICE_MAX_XFER)) > 0)
+	      if ((rv = read(fd, buf, MAX_MESSAGE)) > 0)
 		{
-		  if (usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE, buf,
-				     rv, 5000) !=
-		      rv)
+		  int offset = 0;
+
+		  while (rv != 0)
 		    {
-		      fprintf(stderr, "USB bulk write error: %s\n",
-			      usb_strerror());
-		      exit(1);
+		      int amnt, result;
+
+		      if (rv > JTAGICE_MAX_XFER)
+			amnt = JTAGICE_MAX_XFER;
+		      else
+			amnt = rv;
+		      result = usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE,
+					      buf + offset, amnt, 5000);
+		      if (result != amnt)
+		        {
+			  fprintf(stderr, "USB bulk write error: %s\n",
+				  usb_strerror());
+			  exit(1);
+			}
+		      if (rv == JTAGICE_MAX_XFER)
+		        {
+			  /* send ZLP */
+			  usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE, buf,
+					 0, 5000);
+			}
+		      rv -= amnt;
+		      offset += amnt;
 		    }
 		  continue;
 		}
