@@ -20,27 +20,27 @@
  * $Id$
 -->
 <!--
- * Extract OCD_REVISION out of Atmel Studio 6.x device XML files.
+ * Extract OCD_REVISION and OSCCAL out of Atmel Studio 6.x device XML files.
 -->
     <xsl:output method="text"/>
 
+    <xsl:template match="//property[@name='OCD_REVISION'][//register[@name='OSCCAL']]">
+
+      <xsl:value-of select="//device/@name" />
+      <xsl:text>&#9;</xsl:text>
+      <xsl:value-of select="//register[@name='OSCCAL']/@offset" />
+      <xsl:text>&#9;</xsl:text>
+      <xsl:value-of select="//property[@name='OCD_REVISION']/@value" />
+      <xsl:text>&#10;</xsl:text>
+
+    </xsl:template>
+
+    <xsl:template match="node()">
+      <xsl:apply-templates />
+    </xsl:template>
+
     <xsl:template match="/">
-
-      <xsl:for-each select='//avr-tools-device-file/devices/device'>
-
-	<xsl:variable name='devname' select='@name' />
-
-	<xsl:for-each select='property-groups/property-group/property'>
-	  <xsl:if test='@name="OCD_REVISION"'>
-	    <xsl:value-of select="$devname" />
-	    <xsl:text>&#9;</xsl:text>
-	    <xsl:value-of select='@value' />
-	    <xsl:text>&#10;</xsl:text>
-	  </xsl:if>
-	</xsl:for-each>
-
-      </xsl:for-each>
-
+      <xsl:apply-templates />
     </xsl:template>
 
 </xsl:stylesheet>
