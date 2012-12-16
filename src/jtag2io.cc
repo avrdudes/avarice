@@ -79,7 +79,7 @@ jtag_io_exception::jtag_io_exception(unsigned int code)
         case RSP_SET_N_PARAMETERS:
             reason = "SET N PARAMETERS"; break;
         default:
-            snprintf(buffer, sizeof buffer, "Unknwon response code 0x%0x", code);
+            snprintf(buffer, sizeof buffer, "Unknown response code 0x%0x", code);
             reason = buffer;
     }
 }
