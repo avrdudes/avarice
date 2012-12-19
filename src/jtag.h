@@ -618,9 +618,6 @@ class jtag
   // For the mkII device, is the box attached via USB?
   bool is_usb;
 
-  // A control pipe to talk to the USB daemon.
-  int ctrlPipe;
-
   // The type of our emulator: JTAG ICE, or AVR Dragon.
   emulator emu_type;
 
@@ -647,7 +644,8 @@ class jtag
   } dchain;
 
   protected:
-  pid_t openUSB(const char *jtagDeviceName);
+  void openUSB(const char *jtagDeviceName);
+  void resetUSB(void);
   int safewrite(const void *b, int count);
   void changeLocalBitRate(int newBitRate);
   void restoreSerialPort(void);

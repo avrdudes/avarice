@@ -30,6 +30,11 @@ AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])
 dnl We don't want the gzip distribution tarball anymore.
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
 
+m4_include([m4_ax_pthread.m4])
+AX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS"
+	   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+           CC="$PTHREAD_CC"])
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC

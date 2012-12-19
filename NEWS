@@ -3,6 +3,8 @@
 Summary of changes since AVaRICE 2.13
 ==================================
 
+. Replace the USB daemon by Posix threads (bug #15).
+
 
 Summary of changes in AVaRICE 2.13
 ==================================

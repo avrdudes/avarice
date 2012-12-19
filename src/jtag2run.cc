@@ -244,13 +244,6 @@ bool jtag2::eventLoop(void)
     // Now that we are "going", wait for either a response from the JTAG
     // box or a nudge from GDB.
 
-    if (ctrlPipe != -1)
-      {
-	  /* signal the USB daemon to start polling. */
-	  char cmd[1] = { 'p' };
-	  (void)(write(ctrlPipe, cmd, 1) != 0);
-      }
-
     for (;;)
       {
 	  debugOut("Waiting for input.\n");

@@ -63,7 +63,6 @@ jtag::jtag(void)
 {
   jtagBox = 0;
   oldtioValid = is_usb = false;
-  ctrlPipe = -1;
 }
 
 jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
@@ -72,7 +71,6 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
 
     jtagBox = 0;
     oldtioValid = is_usb = false;
-    ctrlPipe = -1;
     device_name = name;
     emu_type = type;
     if (strncmp(jtagDeviceName, "usb", 3) == 0)

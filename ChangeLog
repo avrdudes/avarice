@@ -1,5 +1,17 @@
 2012-12-16  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by Martin Cerveny:
+	Bug #15 usblib timeouts does not work correctly on solaris platforms
+	* src/jtag2usb.cc: Rewrite the USB daemon into Posix threads.
+	* src/jtag2io.cc: (Dito.)
+	* src/jtag.h: (Dito.)
+	* src/jtag2run.cc: (Dito.)
+	* src/jtaggeneric.cc: (Dito.)
+	* m4_ax_pthread.m4: New file (pthread glue)
+	* configure.ac: Include pthread detection.
+
+2012-12-16  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc (jtag2_io_exception::jtag2_io_exception):
 	Fix a typo.
 

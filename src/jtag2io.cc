@@ -156,13 +156,6 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
 
     msg = NULL;
 
-    if (ctrlPipe != -1)
-      {
-	/* signal the USB daemon we are ready to get data */
-	char cmd[1] = { 'r' };
-	(void)(write(ctrlPipe, cmd, 1) != 0);
-      }
-
     while (state != sDONE) {
 	if (state == sDATA) {
 	    debugOut("sDATA: reading %d bytes\n", msglen);
@@ -401,13 +394,14 @@ void jtag2::doJtagCommand(uchar *command, int  commandSize,
 	    code = response[0];
 	}
 
-	if (tryCount == 4 && responseSize == 0 && ctrlPipe != -1)
+#ifdef HAVE_LIBUSB
+	if (tryCount == 4 && responseSize == 0 && is_usb)
 	  {
 	    /* signal the USB daemon to reset the EPs */
 	    debugOut("Resetting EPs...\n");
-	    char cmd[1] = { 'c' };
-	    (void)(write(ctrlPipe, cmd, 1) != 0);
+	    resetUSB();
 	  }
+#endif
     }
     if (sizeseen > 0)
 	throw jtag_io_exception(code);
