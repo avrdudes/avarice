@@ -1,3 +1,10 @@
+2012-12-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Add hooks to detect libusb20 API (on FreeBSD)
+	* src/jtag2usb.cc: Use libusb20 API if present; the libusb-0.1
+	emulation that sits on top of it in FreeBSD 8+ doesn't allow for
+	the kind of multithreading used here.
+
 2012-12-16  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Martin Cerveny:
