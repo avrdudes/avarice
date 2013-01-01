@@ -115,7 +115,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 
 	delete [] response;
 
-	return NULL;
+	throw jtag_exception();
     }
     else
     {
@@ -151,11 +151,11 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 
 	    return response;
 	}
-    }
 
-    delete [] response;
-    
-    return NULL;
+	delete [] response;
+
+	throw jtag_exception();
+    }
 }
 
 void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])

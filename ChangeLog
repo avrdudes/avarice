@@ -1,3 +1,9 @@
+2013-01-01  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtagrw.cc (jtag1::jtagRead): throw a jtag_exception
+	rather than returning a NULL pointer if the ICE's response
+	is not JTAG_R_OK.
+
 2012-12-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Add hooks to detect libusb20 API (on FreeBSD)
