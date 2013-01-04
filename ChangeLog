@@ -1,5 +1,9 @@
 2013-01-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac (AC_INIT): Bump version.
+
+2013-01-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Bring in the initial JTAGICE3 support.  Not quite everything is
 	working, but it's good enough for a start.
 	* src/jtag.h: Add parameter structure for ICE3.
