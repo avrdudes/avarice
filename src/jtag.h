@@ -157,6 +157,39 @@ typedef struct {
     unsigned char mcu_base_addr[2];	// IO space base address of MCU control
 } xmega_device_desc_type;
 
+// JTAGICE3 megaAVR parameter structure
+typedef struct {
+    unsigned char flash_page_size[2];   // in bytes
+    unsigned char flash_size[4];        // in bytes
+    unsigned char dummy1[4];            // always 0
+    unsigned char boot_address[4];      // maximal (BOOTSZ = 3) bootloader
+                                        // address, in 16-bit words (!)
+    unsigned char sram_offset[2];       // pointing behind IO registers
+    unsigned char eeprom_size[2];
+    unsigned char eeprom_page_size;
+    unsigned char ocd_revision;         // see XML; basically:
+                                        // t13*, t2313*, t4313:        0
+                                        // all other DW devices:       1
+                                        // ATmega128(A):               1 (!)
+                                        // ATmega16*,162,169*,32*,64*: 2
+                                        // ATmega2560/2561:            4
+                                        // all other megaAVR devices:  3
+    unsigned char always_one;           // always = 1
+    unsigned char allow_full_page_bitstream; // old AVRs, see XML
+    unsigned char dummy2[2];            // always 0
+                                        // all IO addresses below are given
+                                        // in IO number space (without
+                                        // offset 0x20), even though e.g.
+                                        // OSCCAL always resides outside
+    unsigned char idr_address;          // IDR, aka. OCDR
+    unsigned char eearh_address;        // EEPROM access
+    unsigned char eearl_address;
+    unsigned char eecr_address;
+    unsigned char eedr_address;
+    unsigned char spmcr_address;
+    unsigned char osccal_address;
+} jtag3_device_desc_type;
+
 #define fill_b4(u) \
 { ((u) & 0xffUL), (((u) & 0xff00UL) >> 8), \
   (((u) & 0xff0000UL) >> 16), (((u) & 0xff000000UL) >> 24) }
@@ -189,6 +222,9 @@ typedef struct {
     unsigned int ocden_fuse;           // bitmask of the OCDEN fuse, bit [15:0] => high
                                        // fuse byte, so 0x00008000 for megaAVRs (Xmega
                                        // devices don't have OCDEN at all)
+
+    unsigned char osccal;              // OSCCAL offset (XML param)
+    unsigned char ocdrev;              // OCD revision (Studio 6 XML param)
 
     jtag1_device_desc_type dev_desc1;  // Device descriptor to download to
                                        // mkI device
@@ -238,6 +274,7 @@ enum
 
     JTAG_RESPONSE_TIMEOUT	      = 1000000,
     JTAG_COMM_TIMEOUT		      = 100000,
+    JTAG3_PIPE_TIMEOUT                = 100,
 
     MAX_FLASH_PAGE_SIZE               = 512,
     MAX_EEPROM_PAGE_SIZE              = 32,
@@ -358,6 +395,11 @@ enum
 
     MESSAGE_START		= 0x1b,
     TOKEN			= 0x0e,
+
+    // On the JTAGICE3, the USB reader framework modifies the token of
+    // a received event into this so the upper layers can tell an event
+    // message apart from a normal response message.
+    TOKEN_EVT3			= 'T',
 
     // Max message size we are willing to accept.  Prevents us from trying
     // to allocate too much VM in case we received a nonsensical packet
@@ -576,6 +618,7 @@ extern const int BFDmemorySpaceOffset[];
 enum emulator {
   EMULATOR_JTAGICE,
   EMULATOR_DRAGON,
+  EMULATOR_JTAGICE3,
 };
 
 
@@ -604,6 +647,10 @@ typedef struct {
 
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
 #define JTAG_EOM 0x20, 0x20
+
+enum debugproto {
+    PROTO_JTAG, PROTO_DW, PROTO_PDI,
+};
 
 class jtag
 {
@@ -891,6 +938,22 @@ class jtag_timeout_exception: public jtag_exception
   public:
     jtag_timeout_exception(): jtag_exception("JTAG ICE timeout exception") {}
 };
+
+class jtag_io_exception: public jtag_exception
+{
+  protected:
+    unsigned int response_code;
+
+  public:
+    jtag_io_exception(): jtag_exception("Unknown JTAG response exception")
+    {
+        response_code = 0;
+    }
+    jtag_io_exception(unsigned int code);
+
+    unsigned int get_response(void) { return response_code; }
+};
+
 
 extern struct jtag *theJtagICE;
 

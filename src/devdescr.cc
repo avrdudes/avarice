@@ -46,6 +46,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega16_io_registers,
 	false,
 	0x03, 0x8000, // fuses
+	0x51, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF },
@@ -122,6 +124,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega162_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x24, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xF7, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
@@ -198,6 +202,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega169_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xBB, 0xE0 }, 
@@ -274,6 +280,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega323_io_registers,
 	false,
 	0x03, 0x8000, // fuses
+	0x51, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xCF, 0xAF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFF, 0xFF }, 
@@ -350,6 +358,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega32_io_registers,
 	false,
 	0x03, 0x8000, // fuses
+	0x51, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xFF, 0x6F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
@@ -427,6 +437,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega64_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x6f, // osccal
+	2, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF },
@@ -503,6 +515,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega128_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x6f, // osccal
+	1, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xCF, 0x2F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 
@@ -579,6 +593,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90can128_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    JTAG_C_SET_DEVICE_DESCRIPTOR,
 	    { 0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x7C, 0xBB, 0xE8 }, 
@@ -655,6 +671,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega164p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -715,6 +733,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega324p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -775,6 +795,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega644_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -828,6 +850,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega325_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -890,6 +914,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega3250_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -952,6 +978,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega645_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1014,6 +1042,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega6450_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1075,6 +1105,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega329_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1127,6 +1159,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega3290_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1179,6 +1213,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega649_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1231,6 +1267,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega6490_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1283,6 +1321,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega640_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1341,6 +1381,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega1280_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1399,6 +1441,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega1281_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1457,6 +1501,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega2560_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	4, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1515,6 +1561,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega2561_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	4, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1573,6 +1621,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega48_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	  0			// no mkI support
 	},
@@ -1631,6 +1681,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega88_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1693,6 +1745,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega168_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1755,6 +1809,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny13_io_registers,
 	false,
 	0x03, 0x0000, // fuses
+	0x51, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1817,6 +1873,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny2313_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1879,6 +1937,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -1940,6 +2000,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm2_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2002,6 +2064,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm3_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2064,6 +2128,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm2b_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2126,6 +2192,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm3b_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2188,6 +2256,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2250,6 +2320,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	atmega32m1_io_registers,
 	0x00, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2312,6 +2384,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2374,6 +2448,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	atmega32c1_io_registers,
 	0x00, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2436,6 +2512,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2498,6 +2576,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny24_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2560,6 +2640,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny44_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2622,6 +2704,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny84_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2684,6 +2768,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny25_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2746,6 +2832,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny45_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2808,6 +2896,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny85_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2870,6 +2960,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny261_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2932,6 +3024,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny461_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -2994,6 +3088,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny861_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3056,6 +3152,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90can32_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3116,6 +3214,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90can64_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3176,6 +3276,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm216_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3238,6 +3340,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90pwm316_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3300,6 +3404,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90usb1287_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3360,6 +3466,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90usb162_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3422,6 +3530,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90usb646_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3482,6 +3592,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	at90usb647_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3542,6 +3654,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega1284p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3602,6 +3716,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega165_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3662,6 +3778,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega165p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3722,6 +3840,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega168p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3784,6 +3904,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega16hva_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3846,6 +3968,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega3250p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3906,6 +4030,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega325p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -3966,6 +4092,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega328p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4028,6 +4156,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega3290p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4088,6 +4218,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega329p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4148,6 +4280,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega32hvb_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4210,6 +4344,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega32u4_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4270,6 +4406,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega406_io_registers,
 	false,
 	0x07, 0x0200, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4330,6 +4468,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega48p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4392,6 +4532,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega644p_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4452,6 +4594,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega88p_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4514,6 +4658,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny167_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4574,6 +4720,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny43u_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x51, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4636,6 +4784,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny48_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4698,6 +4848,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	attiny88_io_registers,
 	false,
 	0x07, 0x0000, // fuses
+	0x66, // osccal
+	1, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4760,6 +4912,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4841,6 +4995,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -4922,6 +5078,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -5003,6 +5161,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -5084,6 +5244,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -5165,6 +5327,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -5246,6 +5410,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	atmega128rfa1_io_registers,
 	false,
 	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
 	{
 	    0	// no mkI support
 	},
@@ -5314,6 +5480,8 @@ jtag_device_def_type deviceDefinitions[] = {
         NULL,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
         {
             0   // no mkI support
         },
@@ -5395,6 +5563,8 @@ jtag_device_def_type deviceDefinitions[] = {
         NULL,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
         {
             0   // no mkI support
         },
@@ -5476,6 +5646,8 @@ jtag_device_def_type deviceDefinitions[] = {
         NULL,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
         {
             0   // no mkI support
         },
@@ -5557,6 +5729,8 @@ jtag_device_def_type deviceDefinitions[] = {
         NULL,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
         {
             0   // no mkI support
         },
@@ -5638,6 +5812,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,			// io reg defs
 	false,			// is_xmega
 	0x00, 0x0000,		// fuses
+	0,			// osccal
+	0,			// OCD revision
 	{ 0 },			// mkI device descriptor information
 	{ 0 },			// mkII device descriptor
 	{ 0 },			// Xmega device descr.

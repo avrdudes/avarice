@@ -44,6 +44,7 @@
 #include "jtag.h"
 #include "jtag1.h"
 #include "jtag2.h"
+#include "jtag3.h"
 #include "gnu_getopt.h"
 
 bool ignoreInterrupts;
@@ -295,6 +296,7 @@ static struct option long_opts[] = {
     /* name,                 has_arg, flag,   val */
     { "mkI",                 0,       0,     '1' },
     { "mkII",                0,       0,     '2' },
+    { "jtag3",               0,       0,     '3' },
     { "jtag-bitrate",        1,       0,     'B' },
     { "capture",             0,       0,     'C' },
     { "daisy-chain",         1,       0,     'c' },
@@ -349,13 +351,13 @@ int main(int argc, char **argv)
     bool detach = false;
     bool capture = false;
     bool verify = false;
-    bool is_dragon = false;
     bool apply_nsrst = false;
     bool is_xmega = false;
     char *progname = argv[0];
     enum {
-	MKI, MKII, MKII_DW, MKII_PDI
-    } protocol = MKI;		// default to mkI protocol
+	MKI, MKII, DRAGON, JTAG3
+    } devicetype = MKI;		// default to mkI devicetype
+    enum debugproto proto = PROTO_JTAG;
     int  option_index;
     unsigned int units_before = 0;
     unsigned int units_after = 0;
@@ -371,7 +373,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "12B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
+        int c = getopt_long (argc, argv, "123B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -383,12 +385,13 @@ int main(int argc, char **argv)
             case 'k':
                 knownParts();
 	    case '1':
-		protocol = MKI;
+		devicetype = MKI;
 		break;
 	    case '2':
-		// If we've already seen a -w option, don't revert to -2.
-		if (protocol != MKII_DW && protocol != MKII_PDI)
-		    protocol = MKII;
+		devicetype = MKII;
+		break;
+	    case '3':
+		devicetype = JTAG3;
 		break;
             case 'B':
 		jtagBitrate = parseJtagBitrate(optarg);
@@ -426,10 +429,7 @@ int main(int argc, char **argv)
                 inFileName = optarg;
                 break;
 	    case 'g':
-		// If we've already seen a -w option, don't revert to -2.
-		if (protocol != MKII_DW && protocol != MKII_PDI)
-		    protocol = MKII;
-	        is_dragon = true;
+		devicetype = DRAGON;
 		break;
             case 'I':
                 ignoreInterrupts = true;
@@ -462,7 +462,7 @@ int main(int argc, char **argv)
                 verify = true;
                 break;
             case 'w':
-	        protocol = MKII_DW;
+		proto = PROTO_DW;
 		break;
             case 'W':
                 fuses = optarg;
@@ -473,7 +473,7 @@ int main(int argc, char **argv)
                 break;
             case 'X':
                 is_xmega = true;
-                protocol = MKII_PDI;
+		proto = PROTO_PDI;
                 break;
             default:
                 fprintf (stderr, "getop() did something screwey");
@@ -537,7 +537,7 @@ int main(int argc, char **argv)
         usage (progname);
     }
 
-    if (jtagBitrate == 0 && (protocol == MKI || protocol == MKII))
+    if (jtagBitrate == 0 && (proto == PROTO_JTAG))
     {
         fprintf (stdout,
                  "Defaulting JTAG bitrate to 250 kHz.\n\n");
@@ -555,7 +555,7 @@ int main(int argc, char **argv)
 
       if (cp != NULL)
 	jtagDeviceName = cp;
-      else if (is_dragon)
+      else if (devicetype == DRAGON || devicetype == JTAG3)
 	jtagDeviceName = "usb";
       else
 	jtagDeviceName = "/dev/avrjtag";
@@ -565,24 +565,20 @@ int main(int argc, char **argv)
 
     try {
 	// And say hello to the JTAG box
-	switch (protocol) {
+	switch (devicetype) {
 	case MKI:
 	    theJtagICE = new jtag1(jtagDeviceName, device_name, apply_nsrst);
 	    break;
 
 	case MKII:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_JTAG,
-				   is_dragon, apply_nsrst, is_xmega);
+	case DRAGON:
+	    theJtagICE = new jtag2(jtagDeviceName, device_name, proto,
+				   devicetype == DRAGON, apply_nsrst, is_xmega);
 	    break;
 
-	case MKII_DW:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_DW,
-				   is_dragon, apply_nsrst);
-	    break;
-
-	case MKII_PDI:
-	    theJtagICE = new jtag2(jtagDeviceName, device_name, PROTO_PDI,
-				   is_dragon, apply_nsrst, true);
+	case JTAG3:
+	    theJtagICE = new jtag3(jtagDeviceName, device_name, proto,
+				   apply_nsrst, is_xmega);
 	    break;
 	}
 
@@ -600,7 +596,7 @@ int main(int argc, char **argv)
 
         if (erase)
         {
-            if (protocol == MKII_DW)
+            if (proto == PROTO_DW)
             {
                 statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
             }

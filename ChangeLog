@@ -1,3 +1,27 @@
+2013-01-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Bring in the initial JTAGICE3 support.  Not quite everything is
+	working, but it's good enough for a start.
+	* src/jtag.h: Add parameter structure for ICE3.
+	* src/jtag2.h: Move enum debugproto and class jtag_io_exception
+	out into jtag.h as the ICE3 also uses them.
+	* src/main.cc: Add the -3/--jtag3 option, and handle jtag3 object
+	instanciation
+	* src/devdescr.cc: Add osccal and ocdrev fields to each record.
+	* src/jtaggeneric.cc: extend default contructor.
+	* src/Makefile.am: Add new files to infrastructure.
+	* configure.ac: Swap check for pthread and C++ compiler, so the
+	CXXFLAGS get set correctly (-g -O2).
+	* src/jtag3prog.cc: New file.
+	* src/jtag3.h: (Dito.)
+	* src/jtag3misc.cc: (Dito.)
+	* src/jtag3run.cc: (Dito.)
+	* src/jtag3io.cc: (Dito.)
+	* src/jtag2usb.cc: (Dito.)
+	* src/jtag3rw.cc: (Dito.)
+	* src/jtag3bp.cc: (Dito.)
+	* tools/pdml.xsl: Add timestamp to output.
+
 2013-01-01  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtagrw.cc (jtag1::jtagRead): throw a jtag_exception

@@ -32,6 +32,11 @@
 
       <xsl:for-each select='//pdml/packet/proto/field'>
 
+	<xsl:if test='@name="frame.time_relative"'>
+	  <xsl:value-of select='@show' />
+	  <xsl:text>: </xsl:text>
+	</xsl:if>
+
       <xsl:if test='@name="usb.endpoint_number"'>
 	<xsl:if test='@show!="0x80"'>
 	  <!-- ignore the CONTROL endpoint data -->

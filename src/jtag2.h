@@ -88,10 +88,6 @@ enum {
   MAX_TOTAL_BREAKPOINTS2 = 255
 };
 
-enum debugproto {
-    PROTO_JTAG, PROTO_DW, PROTO_PDI,
-};
-
 struct breakpoint2
 {
     // High-level information on breakpoint
@@ -311,21 +307,5 @@ class jtag2: public jtag
      **/
     void xmegaSendBPs(void);
 };
-
-class jtag_io_exception: public jtag_exception
-{
-  private:
-    unsigned int response_code;
-
-  public:
-    jtag_io_exception(): jtag_exception("Unknown JTAG response exception")
-    {
-        response_code = 0;
-    }
-    jtag_io_exception(unsigned int code);
-
-    unsigned int get_response(void) { return response_code; }
-};
-
 
 #endif

@@ -73,6 +73,8 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
     oldtioValid = is_usb = false;
     device_name = name;
     emu_type = type;
+    programmingEnabled = 0;
+    deviceDef = NULL;
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
       {
 #ifdef HAVE_LIBUSB

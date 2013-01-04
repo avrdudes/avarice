@@ -16,7 +16,7 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file implements the libusb-based USB connection to a JTAG ICE
- * mkII.
+ * mkII.  It is also used by the JTAGICE3.
  *
  * $Id$
  */
@@ -61,16 +61,23 @@
 #define USB_VENDOR_ATMEL 1003
 #define USB_DEVICE_JTAGICEMKII 0x2103
 #define USB_DEVICE_AVRDRAGON   0x2107
-/*
- * Should we query the endpoint number and max transfer size from USB?
- * After all, the JTAG ICE mkII docs document these values.
- */
-#define JTAGICE_BULK_EP_WRITE 0x02
-#define JTAGICE_BULK_EP_READ  0x82
-#define JTAGICE_MAX_XFER 64
+#define USB_DEVICE_JTAGICE3    0x2110
+
+/* JTAGICEmkII */
+#define USBDEV_BULK_EP_WRITE_MKII 0x02
+#define USBDEV_BULK_EP_READ_MKII  0x82
+#define USBDEV_MAX_XFER_MKII 64
+
+/* JTAGICE3 */
+#define USBDEV_BULK_EP_WRITE_3    0x01
+#define USBDEV_BULK_EP_READ_3     0x82
+#define USBDEV_EVT_EP_READ_3      0x83
+#define USBDEV_MAX_XFER_3    512
+#define USBDEV_MAX_EVT_3     64
 
 #define MAX_MESSAGE      512
 
+static int read_ep, write_ep, event_ep, max_xfer;
 #ifdef HAVE_LIBUSB_2_0
 typedef struct libusb20_device usb_dev_t;
 #else
@@ -85,12 +92,11 @@ static pthread_t utid;
 static struct libusb20_backend *be;
 static struct libusb20_transfer *xfr_out;
 static struct libusb20_transfer *xfr_in;
+static struct libusb20_transfer *xfr_evt;
 #else
-static pthread_t rtid, wtid;
+static pthread_t rtid, wtid, etid;
 #endif
 static int usb_interface;
-
-static void cleanup_usb(void);
 
 #ifdef HAVE_LIBUSB_2_0
 /* convert LIBUSB20_ERROR into textual description */
@@ -208,6 +214,12 @@ usb_transfer_msg(uint8_t r)
 
   return msg;
 }
+
+static void usb20_cleanup(usb_dev_t *d)
+{
+  libusb20_dev_close(d);
+  libusb20_be_free(be);
+}
 #endif
 
 
@@ -232,10 +244,26 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     {
     case EMULATOR_JTAGICE:
       pid = USB_DEVICE_JTAGICEMKII;
+      read_ep = USBDEV_BULK_EP_READ_MKII;
+      write_ep = USBDEV_BULK_EP_WRITE_MKII;
+      event_ep = 0;
+      max_xfer = USBDEV_MAX_XFER_MKII;
       break;
 
     case EMULATOR_DRAGON:
       pid = USB_DEVICE_AVRDRAGON;
+      read_ep = USBDEV_BULK_EP_READ_MKII;
+      write_ep = USBDEV_BULK_EP_WRITE_MKII;
+      event_ep = 0;
+      max_xfer = USBDEV_MAX_XFER_MKII;
+      break;
+
+    case EMULATOR_JTAGICE3:
+      pid = USB_DEVICE_JTAGICE3;
+      read_ep = USBDEV_BULK_EP_READ_3;
+      write_ep = USBDEV_BULK_EP_WRITE_3;
+      event_ep = USBDEV_EVT_EP_READ_3;
+      max_xfer = USBDEV_MAX_XFER_3;
       break;
 
     default:
@@ -299,7 +327,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       if (ddp->idVendor == USB_VENDOR_ATMEL &&
 	  ddp->idProduct == pid)
 	{
-	  int rv = libusb20_dev_open(pdev, 2);
+	  int rv = libusb20_dev_open(pdev, 3);
 	  if (rv < 0)
 	    {
 	      fprintf(stderr, "cannot open device \"%s\"",
@@ -316,7 +344,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 	    {
 	      fprintf(stderr, "cannot read serial number \"%s\"",
 		      usb_error(rv));
-	      cleanup_usb();
+	      usb20_cleanup(pdev);
 	      return NULL;
 	    }
 
@@ -405,7 +433,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   if ((rv = libusb20_dev_set_config_index(pdev, 0)) != 0)
     {
       fprintf(stderr, "libusb20_dev_set_config_index: %s\n", usb_error(rv));
-      cleanup_usb();
+      usb20_cleanup(pdev);
       return NULL;
     }
   /*
@@ -414,28 +442,51 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
    */
   xfr_out = libusb20_tr_get_pointer(pdev, 0);
   xfr_in = libusb20_tr_get_pointer(pdev, 1);
+  if (event_ep != 0)
+    xfr_evt = libusb20_tr_get_pointer(pdev, 2);
 
   if (xfr_in == NULL || xfr_out == NULL)
     {
       fprintf(stderr, "libusb20_tr_get_pointer: %s\n", usb_error(rv));
-      cleanup_usb();
+      usb20_cleanup(pdev);
       return NULL;
     }
 
   /*
-   * Open both transfers, the "out" one for the write endpoint, the
-   * "in" one for the read endpoint (ep | 0x80).
+   * Open all transfers, the "out" one for the write endpoint, the
+   * "in" one for the read endpoint (ep | 0x80), and the event EP
+   * for the JTAGICE3 events.
    */
-  if ((rv = libusb20_tr_open(xfr_out, 0, 1, JTAGICE_BULK_EP_WRITE)) != 0)
+  if ((rv = libusb20_tr_open(xfr_out, 0, 1, write_ep)) != 0)
     {
       fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
-      cleanup_usb();
+      usb20_cleanup(pdev);
       return NULL;
     }
-  if ((rv = libusb20_tr_open(xfr_in, 0, 1, JTAGICE_BULK_EP_READ)) != 0)
+  uint32_t max_packet_l;
+  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_out)) < max_xfer)
+    {
+      statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
+		max_xfer, max_packet_l, write_ep);
+      max_xfer = max_packet_l;
+    }
+  if ((rv = libusb20_tr_open(xfr_in, 0, 1, read_ep)) != 0)
     {
       fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
-      cleanup_usb();
+      usb20_cleanup(pdev);
+      return NULL;
+    }
+  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_in)) < max_xfer)
+    {
+      statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
+		max_xfer, max_packet_l, read_ep);
+      max_xfer = max_packet_l;
+    }
+  if (event_ep != 0 &&
+      (rv = libusb20_tr_open(xfr_evt, 0, 1, event_ep)) != 0)
+    {
+      fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
+      usb20_cleanup(pdev);
       return NULL;
     }
 #else
@@ -460,7 +511,44 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
                 usb_interface, usb_strerror());
       goto fail;
   }
+  struct usb_endpoint_descriptor *epp = dev->config[0].interface[0].altsetting[0].endpoint;
+  for (int i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; i++)
+  {
+    if ((epp[i].bEndpointAddress == read_ep || epp[i].bEndpointAddress == write_ep) &&
+	epp[i].wMaxPacketSize < max_xfer)
+    {
+      statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
+		max_xfer, epp[i].wMaxPacketSize, epp[i].bEndpointAddress);
+      max_xfer = epp[i].wMaxPacketSize;
+    }
+  }
 #endif
+
+  /*
+   * As of, at least, firmware 2.12, the JTAGICE3 does not handle
+   * splitting large packets into smaller chunks correctly when being
+   * operated on an USB 1.1 connection where wMaxPacketSize is
+   * downgraded from 512 to 64 bytes.  The initial packets are sent
+   * correctly, but subsequent packets contain wrong data.
+   *
+   * Performing the check below in a version-dependent manner is
+   * possible (obtaining the firmware version only requires small
+   * reply packets), but some means would have to be added to
+   * communicate the information below back to the next higher layers.
+   * As long as no fixed firmware is known, simply bail out here
+   * instead.
+   */
+  if (event_ep != 0 &&
+      max_xfer < USBDEV_MAX_XFER_3)
+    {
+      statusOut("Sorry, the JTAGICE3's firmware is broken on USB 1.1 connections\n");
+#ifdef HAVE_LIBUSB_2_0
+      usb20_cleanup(pdev);
+#else
+      usb_close(pdev);
+#endif
+      return NULL;
+    }
 
   return pdev;
 }
@@ -482,13 +570,22 @@ static void *usb_thread(void * data)
     {
       char buf[MAX_MESSAGE];
       char rbuf[MAX_MESSAGE];
+      char ebuf[USBDEV_MAX_EVT_3];
       int rv;
 
       if (!libusb20_tr_pending(xfr_in))
 	{
 	  // setup and start new bulk IN transfer
-	  libusb20_tr_setup_bulk(xfr_in, rbuf, JTAGICE_MAX_XFER, 0);
+	  libusb20_tr_setup_bulk(xfr_in, rbuf, max_xfer, 0);
 	  libusb20_tr_start(xfr_in);
+	}
+
+      if (event_ep != 0 &&
+	  !libusb20_tr_pending(xfr_evt))
+	{
+	  // setup and start new bulk IN transfer
+	  libusb20_tr_setup_bulk(xfr_evt, ebuf, USBDEV_MAX_EVT_3, 0);
+	  libusb20_tr_start(xfr_evt);
 	}
 
       fds[0].revents = fds[1].revents = 0;
@@ -528,8 +625,8 @@ static void *usb_thread(void * data)
 		{
 		  uint32_t amnt, result;
 
-		  if (rv > JTAGICE_MAX_XFER)
-		    amnt = JTAGICE_MAX_XFER;
+		  if (rv > max_xfer)
+		    amnt = max_xfer;
  		  else
 		    amnt = rv;
 		  // right now, we run the bulk writes synchronously
@@ -550,7 +647,7 @@ static void *usb_thread(void * data)
 			      result, amnt);
 		      pthread_exit((void *)1);
 		    }
-		  if (rv == JTAGICE_MAX_XFER)
+		  if (rv == max_xfer)
 		    {
 		      /* send ZLP */
 		      libusb20_tr_bulk_intr_sync(xfr_out, buf, 0,
@@ -560,7 +657,7 @@ static void *usb_thread(void * data)
 		  offset += amnt;
 		}
 
-	      libusb20_tr_setup_bulk(xfr_in, rbuf, JTAGICE_MAX_XFER, 0);
+	      libusb20_tr_setup_bulk(xfr_in, rbuf, max_xfer, 0);
 	      libusb20_tr_start(xfr_in);
 	    }
 	  else if (errno != EINTR && errno != EAGAIN)
@@ -574,69 +671,129 @@ static void *usb_thread(void * data)
       if (fds[1].revents != 0)
 	{
 	  // something's available on USB
-	  if ((rv = libusb20_dev_process(udev)) != 0 ||
-	      libusb20_tr_pending(xfr_in))
-	    // not our turn?
+	  if ((rv = libusb20_dev_process(udev)) != 0)
+	    // what's up?
 	    continue;
 
-	  uint32_t result = libusb20_tr_get_actual_length(xfr_in);
-	  uint8_t xfrstatus = libusb20_tr_get_status(xfr_in);
-
-	  if (xfrstatus !=
-	      (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED)
+	  if (!libusb20_tr_pending(xfr_in))
 	    {
-	      fprintf(stderr, "USB bulk read error: %s\n",
-		      usb_transfer_msg(xfrstatus));
-	      pthread_exit((void *)1);
-	    }
-	  /*
-	   * We read a packet from USB.  If it's been a partial
-	   * one (result matches the endpoint size), see to get
-	   * more, until we have either a short read, or a ZLP.
-	   *
-	   * We do it synchronously right now.
-	   */
-	  unsigned int pkt_len = result;
-	  bool needmore = result == JTAGICE_MAX_XFER;
 
-	  /* OK, if there is more to read, do so. */
-	  while (needmore)
-	    {
-	      int maxlen = MAX_MESSAGE - pkt_len;
-	      if (maxlen > JTAGICE_MAX_XFER)
-		maxlen = JTAGICE_MAX_XFER;
-	      xfrstatus = libusb20_tr_bulk_intr_sync(xfr_in, rbuf + pkt_len, maxlen,
-						     &result, 100);
+	      uint32_t result = libusb20_tr_get_actual_length(xfr_in);
+	      uint8_t xfrstatus = libusb20_tr_get_status(xfr_in);
 
 	      if (xfrstatus !=
 		  (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED)
 		{
-		  fprintf(stderr, "USB bulk read error in continuation block: %s\n",
+		  fprintf(stderr, "USB bulk read error: %s\n",
 			  usb_transfer_msg(xfrstatus));
 		  pthread_exit((void *)1);
 		}
-	      if (result == 0)
+	      /*
+	       * We read a packet from USB.  If it's been a partial
+	       * one (result matches the endpoint size), see to get
+	       * more, until we have either a short read, or a ZLP.
+	       *
+	       * We do it synchronously right now.
+	       */
+	      unsigned int pkt_len = result;
+	      bool needmore = result == max_xfer;
+
+	      /* OK, if there is more to read, do so. */
+	      while (needmore)
 		{
-		  /* Zero-length packet: we are done. */
-		  break;
+		  int maxlen = MAX_MESSAGE - pkt_len;
+		  if (maxlen > max_xfer)
+		    maxlen = max_xfer;
+		  xfrstatus = libusb20_tr_bulk_intr_sync(xfr_in, rbuf + pkt_len, maxlen,
+							 &result, 100);
+
+		  if (xfrstatus !=
+		      (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED)
+		    {
+		      fprintf(stderr, "USB bulk read error in continuation block: %s\n",
+			      usb_transfer_msg(xfrstatus));
+		      pthread_exit((void *)1);
+		    }
+		  if (result == 0)
+		    {
+		      /* Zero-length packet: we are done. */
+		      break;
+		    }
+
+		  needmore = rv == max_xfer;
+		  pkt_len += rv;
+		  if (pkt_len == MAX_MESSAGE)
+		    {
+		      /* should not happen */
+		      fprintf(stderr, "Message too big in USB receive.\n");
+		      break;
+		    }
 		}
 
-	      needmore = rv == JTAGICE_MAX_XFER;
-	      pkt_len += rv;
-	      if (pkt_len == MAX_MESSAGE)
+	      /*
+	       * On the JTAGICE3, we send the message length first, so
+	       * the parent knows how much data to expect from the
+	       * pipe.
+	       */
+	      if (event_ep != 0)
+		write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+
+	      if (write(pype[0], rbuf, pkt_len) != pkt_len)
 		{
-		  /* should not happen */
-		  fprintf(stderr, "Message too big in USB receive.\n");
-		  break;
+		  fprintf(stderr, "short write to AVaRICE: %s\n",
+			  strerror(errno));
+		  pthread_exit((void *)1);
 		}
 	    }
 
-	  if (write(pype[0], rbuf, pkt_len) != pkt_len)
+	  if (event_ep != 0 &&
+	      !libusb20_tr_pending(xfr_evt))
 	    {
-	      fprintf(stderr, "short write to AVaRICE: %s\n",
-		      strerror(errno));
-	      pthread_exit((void *)1);
+
+	      uint32_t result = libusb20_tr_get_actual_length(xfr_evt);
+	      uint8_t xfrstatus = libusb20_tr_get_status(xfr_evt);
+
+	      if (xfrstatus !=
+		  (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED)
+		{
+		  fprintf(stderr, "USB bulk read error: %s\n",
+			  usb_transfer_msg(xfrstatus));
+		  pthread_exit((void *)1);
+		}
+
+	      if (result != 0)
+		{
+		  /* No partial packet handling needed on the event EP */
+
+		  if (ebuf[0] != TOKEN)
+		    {
+		      fprintf(stderr,
+			      "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
+			      ebuf[0]);
+		    }
+		  else
+		    {
+		      unsigned int pkt_len = result;
+
+		      /*
+		       * On the JTAGICE3, we send the message length first, so
+		       * the parent knows how much data to expect from the
+		       * pipe.
+		       */
+		      write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+
+		      ebuf[0] = TOKEN_EVT3;
+
+		      if (write(pype[0], ebuf, pkt_len) != pkt_len)
+			{
+			  fprintf(stderr, "short write to AVaRICE: %s\n",
+				  strerror(errno));
+			  pthread_exit((void *)1);
+			}
+		    }
+		}
 	    }
+
 	}
     }
 }
@@ -659,11 +816,11 @@ static void *usb_thread_write(void * data)
 	  {
 	    int amnt, result;
 
-	    if (rv > JTAGICE_MAX_XFER)
-	      amnt = JTAGICE_MAX_XFER;
+	    if (rv > max_xfer)
+	      amnt = max_xfer;
 	    else
 	      amnt = rv;
-	    result = usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE,
+	    result = usb_bulk_write(udev, write_ep,
 				    buf + offset, amnt, 5000);
 	    if (result != amnt)
 	    {
@@ -671,11 +828,10 @@ static void *usb_thread_write(void * data)
 		      usb_strerror());
 	      pthread_exit((void *)1);
 	    }
-	    if (rv == JTAGICE_MAX_XFER)
+	    if (rv == max_xfer)
 	    {
 	      /* send ZLP */
-	      usb_bulk_write(udev, JTAGICE_BULK_EP_WRITE, buf,
-			     0, 5000);
+	      usb_bulk_write(udev, write_ep, buf, 0, 5000);
 	    }
 	    rv -= amnt;
 	    offset += amnt;
@@ -691,7 +847,7 @@ static void *usb_thread_write(void * data)
     }
 }
 
-/* USB reader thread */
+/* USB event reader thread (JTAGICE3 only) */
 static void *usb_thread_read(void *data)
 {
   while (1)
@@ -699,16 +855,15 @@ static void *usb_thread_read(void *data)
       char buf[MAX_MESSAGE];
       int rv;
 
-      rv = usb_bulk_read(udev, JTAGICE_BULK_EP_READ, buf,
-			 JTAGICE_MAX_XFER, 0);
+      rv = usb_bulk_read(udev, read_ep, buf, max_xfer, 0);
       if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
       {
 	/* OK, try again */
       }
       else if (rv < 0)
       {
-	fprintf(stderr, "USB bulk read error: %s\n",
-		usb_strerror());
+	fprintf(stderr, "USB bulk read error: %s (%d)\n",
+		usb_strerror(), rv);
 	pthread_exit((void *)1);
       }
       else
@@ -719,15 +874,15 @@ static void *usb_thread_read(void *data)
 	 * more, until we have either a short read, or a ZLP.
 	 */
 	unsigned int pkt_len = rv;
-	bool needmore = rv == JTAGICE_MAX_XFER;
+	bool needmore = rv == max_xfer;
 
 	/* OK, if there is more to read, do so. */
 	while (needmore)
 	{
 	  int maxlen = MAX_MESSAGE - pkt_len;
-	  if (maxlen > JTAGICE_MAX_XFER)
-	    maxlen = JTAGICE_MAX_XFER;
-	  rv = usb_bulk_read(udev, JTAGICE_BULK_EP_READ, buf + pkt_len,
+	  if (maxlen > max_xfer)
+	    maxlen = max_xfer;
+	  rv = usb_bulk_read(udev, read_ep, buf + pkt_len,
 			     maxlen, 100);
 
 	  if (rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
@@ -747,7 +902,7 @@ static void *usb_thread_read(void *data)
 	    pthread_exit((void *)1);
 	  }
 
-	  needmore = rv == JTAGICE_MAX_XFER;
+	  needmore = rv == max_xfer;
 	  pkt_len += rv;
 	  if (pkt_len == MAX_MESSAGE)
 	  {
@@ -757,11 +912,73 @@ static void *usb_thread_read(void *data)
 	  }
 	}
 
+	/*
+	 * On the JTAGICE3, we send the message length first, so
+	 * the parent knows how much data to expect from the
+	 * pipe.
+	 */
+	if (event_ep != 0)
+	  write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+
 	if (write(pype[0], buf, pkt_len) != pkt_len)
 	{
 	  fprintf(stderr, "short write to AVaRICE: %s\n",
 		  strerror(errno));
 	  pthread_exit((void *)1);
+	}
+      }
+    }
+}
+
+/* USB reader thread */
+static void *usb_thread_event(void *data)
+{
+  while (1)
+    {
+      /*
+       * Events are shorter than regular data packets, so no
+       * reassembly and ZLP handling is needed here.
+       */
+      char buf[USBDEV_MAX_EVT_3];
+      int rv;
+
+      rv = usb_bulk_read(udev, event_ep, buf, USBDEV_MAX_EVT_3, 0);
+      if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
+      {
+	/* OK, try again */
+      }
+      else if (rv < 0)
+      {
+	fprintf(stderr, "USB event read error: %s (%d)\n",
+		usb_strerror(), rv);
+	pthread_exit((void *)1);
+      }
+      else
+      {
+	if (buf[0] != TOKEN)
+	{
+	  fprintf(stderr,
+		  "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
+		  buf[0]);
+	}
+	else
+	{
+	  unsigned int pkt_len = rv;
+
+	  /*
+	   * On the JTAGICE3, we send the message length first, so
+	   * the parent knows how much data to expect from the
+	   * pipe.
+	   */
+	  write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+
+	  buf[0] = TOKEN_EVT3;
+	  if (write(pype[0], buf, pkt_len) != pkt_len)
+	  {
+	    fprintf(stderr, "short write to AVaRICE: %s\n",
+		    strerror(errno));
+	    pthread_exit((void *)1);
+	  }
 	}
       }
     }
@@ -773,8 +990,10 @@ void jtag::resetUSB(void)
 #ifndef HAVE_LIBUSB_2_0
   if (udev)
     {
-      usb_resetep(udev, JTAGICE_BULK_EP_READ);
-      usb_resetep(udev, JTAGICE_BULK_EP_WRITE);
+      usb_resetep(udev, read_ep);
+      usb_resetep(udev, write_ep);
+      if (event_ep != 0)
+	usb_resetep(udev, event_ep);
     }
 #endif
 }
@@ -783,8 +1002,7 @@ static void
 cleanup_usb(void)
 {
 #ifdef HAVE_LIBUSB_2_0
-  libusb20_dev_close(udev);
-  libusb20_be_free(be);
+  usb20_cleanup(udev);
 #else
   usb_release_interface(udev, usb_interface);
   usb_close(udev);
@@ -809,9 +1027,13 @@ void jtag::openUSB(const char *jtagDeviceName)
 #else
   pthread_create(&rtid, NULL, usb_thread_read, NULL);
   pthread_create(&wtid, NULL, usb_thread_write, NULL);
+  if (event_ep != 0)
+    pthread_create(&etid, NULL, usb_thread_event, NULL);
 #  ifdef __FreeBSD__
   pthread_set_name_np(rtid, "USB reader thread");
   pthread_set_name_np(wtid, "USB writer thread");
+  if (event_ep != 0)
+    pthread_set_name_np(etid, "USB event thread");
 #  endif
 #endif
 

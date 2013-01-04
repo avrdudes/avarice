@@ -33,6 +33,7 @@ avarice_SOURCES =	\
 	jtag.h		\
 	jtag1.h		\
 	jtag2.h		\
+	jtag3.h		\
 	jtag2bp.cc	\
 	jtag2io.cc	\
 	jtag2misc.cc	\
@@ -41,6 +42,12 @@ avarice_SOURCES =	\
 	jtag2rw.cc	\
 	jtag2_defs.h	\
 	jtag2usb.cc	\
+	jtag3bp.cc	\
+	jtag3io.cc	\
+	jtag3misc.cc	\
+	jtag3prog.cc	\
+	jtag3run.cc	\
+	jtag3rw.cc	\
 	jtagbp.cc	\
 	jtaggeneric.cc	\
 	jtagio.cc	\
