@@ -1,5 +1,11 @@
 2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag.h (struct breakpoint2): Introduce the has_mask flag.
+	* src/jtaggeneric.cc: Fix the logic to commit data mask breakpoints
+	to the ICE.
+
+2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2io.cc: Centralize addBreakpoint(), deleteBreakpoint(),
 	and layoutBreakpoints() as they are common between the JTAGICE mkII
 	and JTAGICE3.

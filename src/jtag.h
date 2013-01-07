@@ -684,6 +684,7 @@ struct breakpoint2
     bool toremove;  // Delete this guy in ICE
     bool toadd;     // Add this guy in ICE
     uchar bpnum;    // ICE's breakpoint number (0x00 for software)
+    bool has_mask;  // data watchpoint has a mask associated
 };
 
 const struct breakpoint2 default_bp =
@@ -697,6 +698,7 @@ const struct breakpoint2 default_bp =
     false,			/* toremove */
     false,			/* toadd */
     0,				/* bpnum*/
+    false,			/* has_mask */
 };
 
 // Enumerations for target memory type.

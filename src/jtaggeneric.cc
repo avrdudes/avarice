@@ -763,6 +763,7 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 		    debugOut("FAILED\n");
 		    bp[bp_i].last = true;
 		    bp[bp_i].enabled = false;
+		    bp[bp_i].has_mask = true;
 		    return false;
                 }
 
@@ -799,9 +800,7 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 	  bp[bp_i].enabled = false;
 	  bp[bp_i].toadd = false;
 
-	  if ((bp[bp_i].type == READ_DATA) ||
-              (bp[bp_i].type == WRITE_DATA) ||
-              (bp[bp_i].type == ACCESS_DATA))
+	  if (bp[bp_i].has_mask)
               // these BP types have an associated mask
             {
 		bp[bp[bp_i].mask_pointer].enabled = false;
@@ -921,33 +920,42 @@ bool jtag::layoutBreakpoints(void)
       }
 
     // Do data watchpoints first
-    bp_i = 0;
-
-    while (!bp[bp_i].last)
+    for (bp_i = 0; !bp[bp_i].last; bp_i++)
       {
-        // Find the next data breakpoint that needs somewhere to live
 	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
-	      ((bp[bp_i].type == READ_DATA) ||
-	       (bp[bp_i].type == WRITE_DATA) ||
-	       (bp[bp_i].type == ACCESS_DATA)))
+	      bp[bp_i].type == DATA_MASK)
 	    {
-		// Check if we have both slots available
-		if (!remaining_bps[BREAKPOINT2_DATA_MASK] ||
-		    !remaining_bps[BREAKPOINT2_FIRST_DATA])
+		// Check if we have the mask slot available
+		if (!remaining_bps[BREAKPOINT2_DATA_MASK])
 		{
 		    debugOut("Not enough room to store range breakpoint\n");
 		    bp[bp[bp_i].mask_pointer].enabled = false;
 		    bp[bp[bp_i].mask_pointer].toadd = false;
 		    bp[bp_i].enabled = false;
 		    bp[bp_i].toadd = false;
-		    bp_i++;
 		    hadroom = false;
 		    continue; // Skip this breakpoint
 		}
-		else
+		remaining_bps[BREAKPOINT2_DATA_MASK] = false;
+		bp[bp_i].bpnum = BREAKPOINT2_DATA_MASK;
+		continue;
+	    }
+
+        // Find the next data breakpoint that needs somewhere to live
+	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
+	      ((bp[bp_i].type == READ_DATA) ||
+	       (bp[bp_i].type == WRITE_DATA) ||
+	       (bp[bp_i].type == ACCESS_DATA)))
+	    {
+		// Check if we have one of both slots available
+		if (!remaining_bps[BREAKPOINT2_DATA_MASK] &&
+		    !remaining_bps[BREAKPOINT2_FIRST_DATA])
 		{
-		    remaining_bps[BREAKPOINT2_DATA_MASK] = false;
-		    bp[bp[bp_i].mask_pointer].bpnum = BREAKPOINT2_DATA_MASK;
+		    debugOut("Not enough room to store range breakpoint\n");
+		    bp[bp_i].enabled = false;
+		    bp[bp_i].toadd = false;
+		    hadroom = false;
+		    continue; // Skip this breakpoint
 		}
 
 		// Find next available slot
@@ -967,8 +975,6 @@ bool jtag::layoutBreakpoints(void)
 		bp[bp_i].bpnum = bpnum;
 		remaining_bps[bpnum] = false;
 	    }
-
-	  bp_i++;
       }
 
     // Do CODE breakpoints now
@@ -980,7 +986,7 @@ bool jtag::layoutBreakpoints(void)
 	  bpnum = 0x00;
 	  while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2))
             {
-		debugOut("Slot %d full\n", bpnum);
+		//debugOut("Slot %d full\n", bpnum);
 		bpnum++;
             }
 
