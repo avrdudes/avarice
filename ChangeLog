@@ -1,5 +1,9 @@
 2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/remote.cc: Implement the "monitor" GDB command.
+
+2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h (struct breakpoint2): Introduce the has_mask flag.
 	* src/jtaggeneric.cc: Fix the logic to commit data mask breakpoints
 	to the ICE.

@@ -50,6 +50,9 @@ enum
 
     // Number of bytes of registers.  See GDB gdb/avr-tdep.c
     NUMREGBYTES = (NUMREGS + 1 + 2 + 4),
+
+    // max number of bytes in a "monitor" command request
+    MONMAX      = 100,
 };
 
 static char remcomInBuffer[BUFMAX];
@@ -198,7 +201,7 @@ static int hex(unsigned char ch)
     Advances '*ptr' to 1st non-hex character found.
     Returns number of characters used in conversion.
  **/
-static int hexToInt(char **ptr, int *intValue)
+static int hexToInt(char **ptr, int *intValue, int nMax = 0)
 {
     int numChars = 0;
     int hexValue;
@@ -217,6 +220,8 @@ static int hexToInt(char **ptr, int *intValue)
 	    break;
 	}
 	(*ptr)++;
+        if (nMax != 0 && numChars >= nMax)
+            return numChars;
     }
     return (numChars);
 }
@@ -564,6 +569,47 @@ static void error(int n)
     *ptr = '\0';
 }
 
+// put "s" into remcomOutBuffer, obeying the packet size limit
+static void replyString(const char *s)
+{
+    unsigned int i = 0;
+    char c, *ptr;
+
+    ptr = remcomOutBuffer;
+    while ((c = *s++) != 0 && i < BUFMAX - 1)
+    {
+        ptr = byteToHex((int)c, ptr);
+        i += 2;
+    }
+    *ptr = '\0';
+}
+
+/** reply to a "monitor" command */
+static bool monitor(const char *cmd)
+{
+    unsigned int ln = strlen(cmd);
+    if (strncmp(cmd, "help", ln) == 0 ||
+        strcmp(cmd, "?") == 0)
+    {
+        replyString("AVaRICE commands:\n"
+                    "help, ?:   get help\n"
+                    "version:   ask AVaRICE version\n");
+        return true;
+    }
+
+    if (strncmp(cmd, "version", ln) == 0)
+    {
+        char reply[80];
+        sprintf(reply, "AVaRICE version %s, %s %s\n",
+                PACKAGE_VERSION, __DATE__, __TIME__);
+        replyString(reply);
+        return true;
+    }
+
+    return false;
+}
+
+
 static void repStatus(bool breaktime)
 {
     if (breaktime)
@@ -908,6 +954,26 @@ void talkToGdb(void)
                     }
                 }
             }
+        }
+        else if (length > 5 && strncmp(ptr, "Rcmd,", 4) == 0)
+        {
+            char cmdbuf[MONMAX];
+            int i;
+            ptr += 5;
+            length -= 5;
+            for (i = 0; i < MONMAX && length >= 0; i++)
+            {
+                int c;
+                length -= hexToInt(&ptr, &c, 2);
+                cmdbuf[i] = (char)c;
+            }
+            cmdbuf[i] = 0;
+            debugOut("\nGDB: (monitor) %s\n", cmdbuf);
+
+            // when creating a response, minde the BUFMAX bytes per
+            // packet limit above
+            if (!monitor(cmdbuf))
+                remcomOutBuffer[0] = '\0'; // not recognized
         }
 
         break;
