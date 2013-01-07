@@ -286,8 +286,6 @@ class jtag3: public jtag
     virtual void updateBreakpoints(void);
     virtual bool layoutBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
-    virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
-    virtual void stopAt(unsigned int address);
     virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);

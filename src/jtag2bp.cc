@@ -54,23 +54,6 @@ bool jtag2::codeBreakpointAt(unsigned int address)
     return false;
 }
 
-bool jtag2::codeBreakpointBetween(unsigned int start, unsigned int end)
-{
-    int i;
-
-    i = 0;
-    while (!bp[i].last)
-      {
-	  if ((bp[i].address >= start && bp[i].address < end) &&
-	      (bp[i].type == CODE) && bp[i].enabled)
-	      return true;
-
-	  i++;
-      }
-
-    return false;
-}
-
 void jtag2::deleteAllBreakpoints(void)
 {
     int i = 0;
@@ -85,12 +68,6 @@ void jtag2::deleteAllBreakpoints(void)
       }
 }
 
-
-void jtag2::stopAt(unsigned int address)
-{
-    uchar one = 1;
-    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &one);
-}
 
 #ifdef notyet
 bool jtag2::BreakpointRoom(bpType type, unsigned int length)

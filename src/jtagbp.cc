@@ -45,24 +45,9 @@ bool jtag1::codeBreakpointAt(unsigned int address)
   return false;
 }
 
-bool jtag1::codeBreakpointBetween(unsigned int start, unsigned int end) 
-{
-  start /= 2; end /= 2;
-  for (int i = 0; i < numBreakpointsCode; i++)
-    if (bpCode[i].address >= start && bpCode[i].address < end)
-      return true;
-  return false;
-}
-
 void jtag1::deleteAllBreakpoints(void)
 {
     numBreakpointsData = numBreakpointsCode = 0;
-}
-
-void jtag1::stopAt(unsigned int address)
-{
-    uchar zero = 0;
-    jtagWrite(BREAKPOINT_SPACE_ADDR_OFFSET + address / 2, 1, &zero);
 }
 
 PRAGMA_DIAG_PUSH

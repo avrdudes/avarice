@@ -1,3 +1,16 @@
+2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* jtag.h: Remove codeBreakpointBetween() and stopAt() methods
+	* jtag1.h: (Dito.)
+	* jtag2.h: (Dito.)
+	* jtag3.h: (Dito.)
+	* jtagbp.cc: (Dito.)
+	* jtagio.cc: (Dito.)
+	* jtag2bp.cc: (Dito.)
+	* jtag2io.cc: (Dito.)
+	* jtag3bp.cc: (Dito.)
+	* jtag3io.cc: (Dito.)
+
 2013-01-04  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac (AC_INIT): Bump version.

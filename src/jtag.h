@@ -767,12 +767,6 @@ class jtag
   /** True if there is a breakpoint at address */
   virtual bool codeBreakpointAt(unsigned int address) = 0;
 
-  /** True if there is a breakpoint between start (inclusive) and 
-      end (exclusive) */
-  virtual bool codeBreakpointBetween(unsigned int start, unsigned int end) = 0;
-
-  virtual void stopAt(unsigned int address) = 0;
-
   /** Parse a list of event names to *not* cause a break. */
   virtual void parseEvents(const char *) = 0;
 

@@ -97,8 +97,6 @@ class jtag1: public jtag
     virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual void updateBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
-    virtual bool codeBreakpointBetween(unsigned int start, unsigned int end);
-    virtual void stopAt(unsigned int address);
     virtual void parseEvents(const char *);
 
     virtual void enableProgramming(void);
