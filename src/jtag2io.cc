@@ -557,6 +557,7 @@ bool jtag2::synchroniseAt(int bitrate)
 			    "Warning, S_MCU firmware version (%u.%02u) too old to work "
 			    "correctly for Xmega devices, >= 7.x required\n",
 			    (unsigned)signonmsg[8], (unsigned)signonmsg[7]);
+                    softbp_only = true;
 		}
 	    }
 
@@ -598,6 +599,7 @@ void jtag2::startJtagLink(void)
 		case PROTO_DW:
 		    val = EMULATOR_MODE_DEBUGWIRE;
 		    protoName = "debugWIRE";
+                    softbp_only = true;
 		    break;
 
 		case PROTO_PDI:

@@ -25,41 +25,6 @@
 
 #include "jtag.h"
 
-enum {
-  // We distinguish the total possible breakpoints and those for each type
-  // (code or data) - see above
-  MAX_BREAKPOINTS3_CODE = 4,
-  MAX_BREAKPOINTS3_DATA = 2,
-  MAX_BREAKPOINTS3 = 4,
-  // various slot #s
-  BREAKPOINT3_XMEGA_UNAVAIL = 1,
-  BREAKPOINT3_FIRST_DATA = 2,
-  BREAKPOINT3_DATA_MASK = 3,
-
-  MAX_TOTAL_BREAKPOINTS3 = 255,
-
-  MAX_MESSAGE_SIZE_JTAGICE3 = 512,
-};
-
-struct breakpoint3
-{
-    // High-level information on breakpoint
-    unsigned int address;
-    unsigned int mask_pointer;
-    bpType type;
-    bool enabled;
-
-    // Used to flag end of list
-    bool last;
-
-    // Low-level information on breakpoint
-    bool icestatus; // Status of breakpoint in ICE itself: 'true'
-                    // when is enabled in ACTUAL device
-    bool toremove;  // Delete this guy in ICE
-    bool toadd;     // Add this guy in ICE
-    uchar bpnum;    // ICE's breakpoint number (0x00 for software)
-};
-
 enum jtag3consts
 {
     SCOPE_INFO = 0x00,
@@ -206,21 +171,11 @@ enum jtag3consts
     XMEGA_ERASE_BOOT_PAGE = 0x05,
     XMEGA_ERASE_EEPROM_PAGE = 0x06,
     XMEGA_ERASE_USERSIG = 0x07,
-};
 
 
-const struct breakpoint3 default_bp3 =
-{
-    0,				/* address */
-    0,				/* mask_pointer */
-    NONE,			/* type */
-    false,			/* enabled */
-    true,			/* last */
-    false,			/* icestatus */
-    false,			/* toremove */
-    false,			/* toadd */
-    0,				/* bpnum*/
+    MAX_MESSAGE_SIZE_JTAGICE3 = 512,
 };
+
 
 class jtag3: public jtag
 {
@@ -229,23 +184,13 @@ class jtag3: public jtag
     bool signedIn;
     bool debug_active;
     enum debugproto proto;
-    bool is_xmega;
     unsigned long cached_pc;
     bool cached_pc_is_valid;
-
-    // Total breakpoints including software
-    breakpoint3 bp[MAX_TOTAL_BREAKPOINTS3];
-
-    // Xmega hard breakpoing break handling
-    unsigned int xmega_n_bps;
-    unsigned long xmega_bps[2];
 
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
     unsigned int flashCachePageAddr;
     unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
     unsigned int eepromCachePageAddr;
-
-    breakpoint3 softBPcache[MAX_BREAKPOINTS3];
 
     unsigned long appsize;
     unsigned int device_id;
@@ -265,11 +210,9 @@ class jtag3: public jtag
 	xmega_n_bps = 0;
 	flashCachePageAddr = (unsigned int)-1;
 	eepromCachePageAddr = (unsigned short)-1;
-	for (int i = 0; i < MAX_BREAKPOINTS3; i++)
-	  softBPcache[i].type = NONE;
 
-	for (int j = 0; j < MAX_TOTAL_BREAKPOINTS3; j++)
-	  bp[j] = default_bp3;
+	for (int j = 0; j < MAX_TOTAL_BREAKPOINTS2; j++)
+	  bp[j] = default_bp;
         cached_pc_is_valid = false;
         appsize = 0;
         device_id = 0;
@@ -281,10 +224,7 @@ class jtag3: public jtag
     virtual void initJtagOnChipDebugging(unsigned long bitrate);
 
     virtual void deleteAllBreakpoints(void);
-    virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual void updateBreakpoints(void);
-    virtual bool layoutBreakpoints(void);
     virtual bool codeBreakpointAt(unsigned int address);
     virtual void parseEvents(const char *);
 

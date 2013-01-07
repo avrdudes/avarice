@@ -1,5 +1,18 @@
 2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2io.cc: Centralize addBreakpoint(), deleteBreakpoint(),
+	and layoutBreakpoints() as they are common between the JTAGICE mkII
+	and JTAGICE3.
+	* src/jtag2.h: (Dito.)
+	* src/jtag3.h: (Dito.)
+	* src/jtag.h: (Dito.)
+	* src/jtag2bp.cc: (Dito.)
+	* src/jtag3io.cc: (Dito.)
+	* src/jtaggeneric.cc: (Dito.)
+	* src/jtag3bp.cc: (Dito.)
+
+2013-01-07  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* jtag.h: Remove codeBreakpointBetween() and stopAt() methods
 	* jtag1.h: (Dito.)
 	* jtag2.h: (Dito.)

@@ -477,6 +477,7 @@ void jtag3::startJtagLink(void)
 
     case PROTO_DW:
       paramdata[0] = PARM3_CONN_DW;
+      softbp_only = true;
       break;
 
     case PROTO_PDI:

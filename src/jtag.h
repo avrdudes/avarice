@@ -595,6 +595,54 @@ enum {
     PC_INVALID			      = 0xffffffff
 };
 
+/*
+ * JTAG ICE mkII breakpoints are quite tricky.
+ *
+ * There are four possible breakpoint slots in JTAG.  The first one is
+ * always reserved for single-stepping, and cannot be accessed
+ * directly.  The second slot (ID #1) can be freely used as a code
+ * breakpoint (only).  The third and fourth slot can either be used as
+ * a code breakpoint, as an independent (byte-wide) data breakpoint
+ * (i.e. a watchpoint in GDB terms), or together as a data breakpoint
+ * consisting of an address and a mask.  The latter does not match
+ * directly to GDB watchpoints (of a certain lenght > 1) but imposes
+ * the additional requirement that the base address be aligned
+ * properly wrt. the mask.
+ *
+ * The single-step breakpoint can indirectly be used by filling the
+ * respective high-level language information into the event memory,
+ * and issuing a high-level "step over" single-step.  As GDB does not
+ * install the breakpoints for "stepi"-style single-steps (which would
+ * require the very same JTAG breakpoint register), this ought to
+ * work.
+ *
+ * Finally, there are software breakpoints where the respective
+ * instruction will be replaced by a BREAK instruction in flash ROM by
+ * means of an SPM call.  Some devices do not allow for this (as they
+ * are said to be broken), and in general as this method contributes
+ * to flash wear, we rather do not uninstall and reinstall these
+ * breakpoints each time GDB asks for it, but instead "cache" them
+ * locally, and only delete and add them as they actually change.
+ *
+ * To add to the mess, GDB's remote protocol isn't very smart about
+ * telling us whether the next list of breakpoints + resume are
+ * actually meant to be a high-level language (HLL) single-step
+ * command.  Thus, always assume the last breakpoint that comes in to
+ * be a single-step breakpoint, and replace the "resume" operation by
+ * a "step" one in that case.  At least, GDB issues the breakpoint
+ * list in the order of breakpoint numbers, so any possible HLL
+ * single-step breakoint must be the last one in the list.
+ *
+ * Finally, GDB has explicit commands for setting hardware-assisted
+ * breakpoints, but the default "break" command uses a software
+ * breakpoint.  We try to replace as many software breakpoints as
+ * possible by hardware breakpoints though, for the sake of
+ * efficiency, yet would want to respect the user's choice for setting
+ * a hardware breakpoint ("hbreak" or "thbreak")...
+ *
+ * XXX This is not done yet.
+ */
+
 enum bpType
 {
     NONE,           // disabled.
@@ -603,6 +651,52 @@ enum bpType
     READ_DATA,      // read data space breakpoint (ie "watch").
     ACCESS_DATA,    // read/write data space breakpoint (ie "watch").
     DATA_MASK,      // mask for data space breakpoint.
+};
+
+enum {
+  // We distinguish the total possible breakpoints and those for each type
+  // (code or data) - see above
+  MAX_BREAKPOINTS2_CODE = 4,
+  MAX_BREAKPOINTS2_DATA = 2,
+  MAX_BREAKPOINTS2 = 4,
+  // various slot #s
+  BREAKPOINT2_XMEGA_UNAVAIL = 1,
+  BREAKPOINT2_FIRST_DATA = 2,
+  BREAKPOINT2_DATA_MASK = 3,
+
+  MAX_TOTAL_BREAKPOINTS2 = 255
+};
+
+struct breakpoint2
+{
+    // High-level information on breakpoint
+    unsigned int address;
+    unsigned int mask_pointer;
+    bpType type;
+    bool enabled;
+
+    // Used to flag end of list
+    bool last;
+
+    // Low-level information on breakpoint
+    bool icestatus; // Status of breakpoint in ICE itself: 'true'
+                    // when is enabled in ACTUAL device
+    bool toremove;  // Delete this guy in ICE
+    bool toadd;     // Add this guy in ICE
+    uchar bpnum;    // ICE's breakpoint number (0x00 for software)
+};
+
+const struct breakpoint2 default_bp =
+{
+    0,				/* address */
+    0,				/* mask_pointer */
+    NONE,			/* type */
+    false,			/* enabled */
+    true,			/* last */
+    false,			/* icestatus */
+    false,			/* toremove */
+    false,			/* toadd */
+    0,				/* bpnum*/
 };
 
 // Enumerations for target memory type.
@@ -670,6 +764,19 @@ class jtag
 
   // Whether nSRST is to be applied when connecting (override JTD bit).
   bool apply_nSRST;
+
+  // Total breakpoints including software
+  breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
+
+  // Xmega hard breakpoing break handling
+  unsigned int xmega_n_bps;
+  unsigned long xmega_bps[2];
+
+  // This device or connection cannot handle hard BPs
+  bool softbp_only;
+
+  // Target device is an ATxmega one
+  bool is_xmega;
 
   public:
   // Whether we are in "programming mode" (changes how program memory
@@ -756,10 +863,12 @@ class jtag
   virtual void deleteAllBreakpoints(void) = 0;
 
   /** Delete breakpoint at the specified address. */
-  virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length) = 0;
+  bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
 
   /** Add a code breakpoint at the specified address. */
-  virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length) = 0;
+  bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
+
+  bool layoutBreakpoints(void);
 
   /** Send the breakpoint details down to the JTAG box. */
   virtual void updateBreakpoints(void) = 0;
