@@ -27,6 +27,7 @@
 #include <termios.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -451,13 +452,14 @@ static bool singleStep()
     Return pointer to null-terminated, actual packet data (without $, #,
     the checksum)
 **/
-static char *getpacket(void)
+static char *getpacket(int &len)
 {
     char *buffer = &remcomInBuffer[0];
     unsigned char checksum;
     unsigned char xmitcsum;
     int count;
     char ch;
+    bool is_escaped;
 
     // scan for the sequence $<data>#<checksum>
     while(1)
@@ -468,13 +470,20 @@ static char *getpacket(void)
 
       retry:
 	checksum = 0;
-	xmitcsum = 0; // This was -1 but compiler got upset
 	count = 0;
+	is_escaped = false;
 
 	// now, read until a # or end of buffer is found
 	while(count < BUFMAX - 1)
 	{
 	    ch = getDebugChar();
+	    if(is_escaped)
+	    {
+		checksum = checksum + ch;
+		ch ^= 0x20;
+		is_escaped = false;
+		goto have_char;
+	    }
 	    if(ch == '$')
 	    {
 		goto retry;
@@ -484,6 +493,12 @@ static char *getpacket(void)
 		break;
 	    }
 	    checksum = checksum + ch;
+	    if(ch == '}')
+	    {
+		is_escaped = true;
+		continue;
+	    }
+	  have_char:
 	    buffer[count] = ch;
 	    count = count + 1;
 	}
@@ -518,9 +533,12 @@ static char *getpacket(void)
 		    putDebugChar(buffer[0]);
 		    putDebugChar(buffer[1]);
 
+		    len = count - 3;
+
 		    return &buffer[3];
 		}
 
+		len = count;
 		return &buffer[0];
 	    }
 	}
@@ -624,11 +642,35 @@ static void repStatus(bool breaktime)
     }
 }
 
+static char *makeSafeString(const char *s, int inLength)
+{
+  int l = 4 * inLength + 1;
+  char *r = new char[l];
+  char c;
+
+  int i = 0;
+  int j = 0;
+  while (j++ < inLength)
+    {
+      c = *s++;
+      if (isprint(c))
+	{
+	  r[i++] = c;
+	}
+      else
+	{
+	  i += sprintf(r + i, "\\x%02x", (unsigned)c & 0xff);
+	}
+    }
+  r[i] = '\0';
+  return r;
+}
+
 
 void talkToGdb(void)
 {
     int addr;
-    int length;
+    int length, plen;
     int i;
     unsigned int newPC;
     int regno;
@@ -637,10 +679,17 @@ void talkToGdb(void)
     bool dontSendReply = false;
     char cmd;
     static char last_cmd = 0;
+    static unsigned char *flashbuf;
+    static int maxaddr;
 
-    ptr = getpacket();
+    ptr = getpacket(plen);
 
-    debugOut("GDB: <%s>\n", ptr);
+    if (debugMode)
+      {
+	char *s = makeSafeString(ptr, plen);
+	debugOut("GDB: <%s>\n", s);
+	delete [] s;
+      }
 
     // default empty response
     remcomOutBuffer[0] = 0;
@@ -955,6 +1004,23 @@ void talkToGdb(void)
                 }
             }
         }
+	else if (strncmp(ptr, "Supported:", 10) == 0)
+	{
+	    strcpy(remcomOutBuffer, "qXfer:memory-map:read+");
+	}
+	else if (strncmp(ptr, "Xfer:memory-map:read::", 22) == 0)
+	{
+	  sprintf(remcomOutBuffer,
+		  "l<memory-map>\n"
+		  "  <memory type=\"ram\" start=\"0x800000\" length=\"0x10000\" />\n"
+		  "  <memory type=\"flash\" start=\"0\" length=\"0x%x\">\n"
+		  "     <property name=\"blocksize\">0x%0x</property>\n"
+		  "  </memory>\n"
+		  "</memory-map>\n",
+		  theJtagICE->deviceDef->flash_page_size *
+		  theJtagICE->deviceDef->flash_page_count,
+		  theJtagICE->deviceDef->flash_page_size);
+	}
         else if (length > 5 && strncmp(ptr, "Rcmd,", 4) == 0)
         {
             char cmdbuf[MONMAX];
@@ -1107,6 +1173,52 @@ void talkToGdb(void)
             break;
         }
         ok();
+	break;
+
+    case 'v':
+        if (strncmp(ptr, "FlashErase:", 11) == 0)
+	{
+	    ptr += 11;
+	    int offset, length;
+	    hexToInt(&ptr, &offset);
+	    ptr++;
+	    hexToInt(&ptr, &length);
+	    statusOut("erasing %d bytes @ 0x%0x\n", length, offset);
+	    theJtagICE->enableProgramming();
+	    theJtagICE->eraseProgramMemory();
+	    flashbuf = new unsigned char[theJtagICE->deviceDef->flash_page_size *
+					 theJtagICE->deviceDef->flash_page_count];
+	    maxaddr = 0;
+	    memset(flashbuf, 0xff, theJtagICE->deviceDef->flash_page_size *
+		   theJtagICE->deviceDef->flash_page_count);
+	    ok();
+	}
+	else if (strncmp(ptr, "FlashWrite:", 11) == 0)
+	{
+	    char *optr = ptr;
+	    ptr += 11;
+	    int offset;
+	    hexToInt(&ptr, &offset);
+	    ptr++;		// past ":"
+	    int amount = plen - 1 - (ptr - optr);
+	    statusOut("buffering data, %d bytes @ 0x%x\n", amount, offset);
+	    if (offset + amount > maxaddr)
+		maxaddr = offset + amount;
+	    memcpy(flashbuf + offset, ptr, amount);
+	    ok();
+	}
+	else if (strncmp(ptr, "FlashDone", 9) == 0)
+	{
+	    statusOut("committing to flash\n");
+	    int pagesize = theJtagICE->deviceDef->flash_page_size;
+	    for (int offset = 0; offset < maxaddr; offset += pagesize)
+	    {
+		theJtagICE->jtagWrite(offset, pagesize, flashbuf + offset);
+	    }
+	    theJtagICE->disableProgramming();
+	    delete [] flashbuf;
+	    ok();
+	}
 	break;
 
     case 'Z':
