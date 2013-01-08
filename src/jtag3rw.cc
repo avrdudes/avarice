@@ -281,7 +281,7 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	u32_to_b4(cmd + 4, addr);
     }
     cmd[12] = 0;
-    memcpy(cmd + 12, buffer, numBytes);
+    memcpy(cmd + 13, buffer, numBytes);
 
     uchar *response;
     int responsesize;
