@@ -443,8 +443,6 @@ void jtag::jtagWriteFuses(char *fuses)
     statusOut("\nWriting Fuse Bytes:\n");
     jtagDisplayFuses(fuseBits);
 
-    enableProgramming();
-
     try
     {
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits);
@@ -456,8 +454,6 @@ void jtag::jtagWriteFuses(char *fuses)
     }
 
     readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
-    disableProgramming();
 
     if (memcmp(fuseBits, readfuseBits, 3) != 0)
     {
@@ -496,11 +492,9 @@ void jtag::jtagReadFuses(void)
 {
     uchar *fuseBits = 0;
 
-    enableProgramming();
     statusOut("\nReading Fuse Bytes:\n");
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0,
                         countFuses(deviceDef->fusemap));
-    disableProgramming();
 
     jtagDisplayFuses(fuseBits);
 
@@ -519,8 +513,6 @@ void jtag::jtagActivateOcdenFuse(void)
         statusOut("jtag::jtagActivateOcdenFuse(): "
                   "Device has more than 3 fuses: %d, cannot handle\n",
                   nfuses);
-
-    enableProgramming();
 
     uchar *fuseBits = 0;
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
@@ -546,8 +538,6 @@ void jtag::jtagActivateOcdenFuse(void)
             offset = 0;
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + offset, 1, &fuseBits[offset]);
     }
-
-    disableProgramming();
     delete [] fuseBits;
 }
 

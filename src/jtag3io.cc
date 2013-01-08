@@ -501,13 +501,21 @@ void jtag3::startJtagLink(void)
     unsigned int did = resp[3] | (resp[4] << 8) | (resp[5] << 16) | resp[6] << 24;
     delete [] resp;
 
-    debugOut("AVR sign-on responded with device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n",
-	     did,
-	     (did & 0xF0000000) >> 28,
-	     (did & 0x0FFFF000) >> 12,
-	     (did & 0x00000FFE) >> 1);
+    if (proto == PROTO_JTAG)
+    {
+      debugOut("AVR sign-on responded with device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n",
+	       did,
+	       (did & 0xF0000000) >> 28,
+	       (did & 0x0FFFF000) >> 12,
+	       (did & 0x00000FFE) >> 1);
 
-    device_id = (did & 0x0FFFF000) >> 12;
+      device_id = (did & 0x0FFFF000) >> 12;
+    }
+    else // debugWIRE
+    {
+      debugOut("AVR sign-on responded with device ID = 0x%0X\n", did);
+      device_id = did;
+    }
   }
   else
   {
@@ -723,35 +731,33 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
       setJtagParameter(SCOPE_AVR, 1, param, value, 2);
     }
 
-#if 0
     // Ensure on-chip debug enable fuse is enabled ie '0'
-
-    // The enableProgramming()/disableProgramming() pair might seem to
-    // be not needed (as the fuse read/write operations would enforce
-    // going to programming mode anyway), but for devices that don't
-    // feature an OCDEN fuse (i.e., Xmega devices),
-    // jtagActivateOcdenFuse() bails out immediately.  At least with
-    // firmware 7.13, the ICE seems to become totally upset then when
-    // debugging an Xmega device without having went through a
-    // programming-mode cycle before.  Upon a reset command, it
-    // confirms the reset, but the target happily proceeds in RUNNING
-    // state.
-    enableProgramming();
     jtagActivateOcdenFuse();
-    disableProgramming();
-#endif
 
     uchar timers = 0;		// stopped
     setJtagParameter(SCOPE_AVR, 3, PARM3_TIMERS_RUNNING, &timers, 1);
 
-    uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
-    uchar *resp;
-    int respsize;
+    if (proto == PROTO_DW)
+    {
+        uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
+        uchar *resp;
+        int respsize;
 
-    doJtagCommand(cmd, sizeof cmd, "start debugging", resp, respsize);
-    delete [] resp;
+        doJtagCommand(cmd, sizeof cmd, "start debugging", resp, respsize);
+        delete [] resp;
+    }
 
-    resetProgram();
+    // Sometimes (like, after just enabling the OCDEN fuse), the first
+    // resetProgram() runs into an error code 0x32.  Just retry it once.
+    try
+      {
+	resetProgram();
+      }
+    catch (jtag_exception &e)
+      {
+	debugOut("retrying reset ...\n");
+	resetProgram();
+      }
 
     cached_pc_is_valid = false;
 }

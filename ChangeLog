@@ -1,5 +1,18 @@
 2013-01-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtaggeneric.cc: Remove enableProgramming()/disableProgramming()
+	calls in fuse handling; the respective backend jtagRead()/jtagWrite()
+	functions are in charge of deciding whether they need a programming
+	mode or not
+	* src/jtag3io.cc: fix device ID recognition when operating on
+	debugWIRE targets; activate the #ifdef'ed out jtagActivateOcdenFuse
+	call; only call CMD3_START_DEBUG for debugWIRE; at the end of
+	initialization, attempt resetProgram() a second time if the first
+	time failed (appears to be needed after just activating the OCDEN
+	fuse)
+
+2013-01-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag3rw.cc(jtag3::jtagWrite): fix off-by-one error that lead
 	to writing wrong data
 	* src/remote.cc: Implement GDB 7+ flash write protocol
