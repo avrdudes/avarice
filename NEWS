@@ -9,6 +9,10 @@ Summary of changes since AVaRICE 2.13
 
 . Implement the GDB 7+ flash write protocol (for the "load" command)
 
+. Implement a backend command for the GDB "monitor" command; by
+  now, this is mostly a stub, but "monitor help" and "monitor
+  version" are already around.
+
 
 Summary of changes in AVaRICE 2.13
 ==================================
