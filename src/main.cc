@@ -26,6 +26,7 @@
 
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,7 +71,11 @@ static int makeSocket(struct sockaddr_in *name)
         throw jtag_exception();
 
     if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0)
-        throw jtag_exception();
+    {
+	if (errno == EADDRINUSE)
+	    fprintf(stderr, "bind() failed: another server is still running on this port\n");
+        throw jtag_exception("bind() failed");
+    }
 
     protoent = getprotobyname("tcp");
     if (protoent == NULL)

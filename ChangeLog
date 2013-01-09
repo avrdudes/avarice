@@ -1,3 +1,8 @@
+2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/main.cc (makeSocket): Be a little more verbose if bind()
+	failed with EADDRINUSE.
+
 2013-01-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtaggeneric.cc: Remove enableProgramming()/disableProgramming()
