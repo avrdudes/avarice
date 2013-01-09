@@ -1,5 +1,10 @@
 2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* doc/avarice.1: Document the JTAGICE3 support.
+	* src/main.cc (usage): (Dito.)
+
+2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/main.cc (makeSocket): Be a little more verbose if bind()
 	failed with EADDRINUSE.
 

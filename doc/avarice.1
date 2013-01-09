@@ -250,6 +250,9 @@ Connect to JTAG ICE mkI (default).
 .BR \-2 ,\  \-\-mkII
 Connect to JTAG ICE mkII.
 .TP
+.BR \-3 ,\  \-\-jtag3
+Connect to JTAGICE3.
+.TP
 .BR \-B ,\  \-\-jtag-bitrate \ <rate>
 Set the bitrate that the JTAG box communicates with the AVR target device.
 This must be less than 1/4 of the frequency of the target. Valid values are
@@ -311,7 +314,7 @@ If there are multiple JTAG ICE mkII devices connected to the system
 through USB, this string may be followed by the (trailing part of the)
 ICE's serial number, delimited from the \fIusb\fR by a colon.
 .br
-The AVR Dragon can only be connected through USB, so this option
+The AVR Dragon and JTAGICE3 can only be connected through USB, so this option
 defaults to "usb" in that case.
 .TP
 .BR \-k ,\  \-\-known-devices
@@ -356,7 +359,7 @@ deprecated feature, must be enabled using the --enable-target-programming
 configuration option.
 .TP
 .BR \-w ,\  \-\-debugwire
-Connect to JTAG ICE mkII (or AVR Dragon), talking debugWire protocol to the target.
+Connect to JTAG ICE mkII, JTAGICE3, or AVR Dragon, talking debugWire protocol to the target.
 This option implies the \fB-2\fP option.
 See the DEBUGWIRE section below.
 .TP
@@ -365,6 +368,10 @@ Write fuses bytes. \fBee\fR is the extended fuse byte, \fBhh\fR is the high
 fuse byte and \fBll\fR is the low fuse byte. The fuse byte data must be given
 in two digit hexidecimal format with zero padding if needed. All three bytes
 must currently be given.
+.br
+.B NOTE:
+Current, if the target device doesn't have an extended fuse byte
+(e.g. the atmega16), the you should set ee==ll when writing the fuse bytes.
 .TP
 .BR \-x ,\  \-\-xmega
 The target device is an ATxmega part, using JTAG transport.
@@ -375,10 +382,6 @@ it is not necessary to also specify the \-x option.
 .TP
 .BR \-X ,\  \-\-pdi
 The target device is an ATxmega part, using PDI transport.
-.br
-.B NOTE:
-Current, if the target device doesn't have an extended fuse byte
-(e.g. the atmega16), the you should set ee==ll when writing the fuse bytes.
 .PP
 \fIHOST_NAME\fR defaults to 0.0.0.0 (listen on any interface) if not given.
 .PP
@@ -389,6 +392,8 @@ avarice --erase --program --file test.bin --jtag /dev/ttyS0 :4242
 Program the file \fItest.bin\fR into the JTAG ICE (mkI) connected to
 /dev/ttyS0 after erasing the device, then listen in GDB mode on the
 local port 4242.
+This functionality is deprecated, and no longer configured by default.
+Use GDB's "load" command instead.
 .PP
 avarice --jtag usb:1234 --mkII :4242
 .PP
@@ -462,4 +467,4 @@ David Gay made major improvements bringing avarice up to 2.0.
 .PP
 Joerg Wunsch reworked the code to abstract the JTAG ICE communication
 from the remainder, and then extended the code to support the JTAG ICE
-mkII protocol (see Atmel appnote AVR067).
+mkII protocol (see Atmel appnote AVR067), as well as the JTAGICE3 protocol.

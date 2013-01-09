@@ -160,6 +160,8 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -2, --mkII                  Connect to JTAG ICE mkII\n");
     fprintf(stderr,
+	    "  -3, --jtag3                 Connect to JTAGICE3\n");
+    fprintf(stderr,
             "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
             "                                with the avr target device. This must be less\n"
             "                                than 1/4 of the frequency of the target. Valid\n"
