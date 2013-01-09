@@ -1,5 +1,10 @@
 2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag3io.cc (initJtagOnChipDebugging): reenable CMD3_START_DEBUG
+	for Xmega (even over JTAG)
+
+2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* doc/avarice.1: Document the JTAGICE3 support.
 	* src/main.cc (usage): (Dito.)
 

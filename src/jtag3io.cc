@@ -737,7 +737,7 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     uchar timers = 0;		// stopped
     setJtagParameter(SCOPE_AVR, 3, PARM3_TIMERS_RUNNING, &timers, 1);
 
-    if (proto == PROTO_DW)
+    if (proto == PROTO_DW || is_xmega)
     {
         uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
         uchar *resp;
