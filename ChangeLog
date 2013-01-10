@@ -1,3 +1,9 @@
+2013-01-10  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtagrw.cc (jtag1::jtagRead): When attempting to read more than
+	256 bytes, throw an exception rather than returning a nonsensical
+	value.
+
 2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag3io.cc (initJtagOnChipDebugging): reenable CMD3_START_DEBUG

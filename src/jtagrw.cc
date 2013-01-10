@@ -131,7 +131,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 	else
 	    numLocations = (numBytes + 1) / 2;
 	if (numLocations > 256)
-	    return false;
+	    throw jtag_exception();
 
 	command[1] = whichSpace;
 	command[2] = numLocations - 1;
