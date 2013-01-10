@@ -299,6 +299,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       if (strlen(serno) > 12)
       {
 	  fprintf(stderr, "invalid serial number \"%s\"", serno);
+	  delete [] devnamecopy;
 	  return NULL;
       }
     }
@@ -419,7 +420,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     }
 #endif // HAVE_LIBUSB_2_0
 
-  delete devnamecopy;
+  delete [] devnamecopy;
   if (!found)
   {
     printf("did not find any%s USB device \"%s\"\n",

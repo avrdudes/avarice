@@ -491,8 +491,8 @@ void jtag3::startJtagLink(void)
 
   cmd[0] = SCOPE_AVR;
   cmd[1] = CMD3_SIGN_ON;
-  cmd[3] = 0;
-  cmd[4] = proto == PROTO_JTAG && apply_nSRST;
+  cmd[2] = 0;
+  cmd[3] = proto == PROTO_JTAG && apply_nSRST;
 
   doJtagCommand(cmd, 4, "AVR sign-on", resp, respsize);
 

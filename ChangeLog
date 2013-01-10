@@ -3,6 +3,9 @@
 	* src/jtagrw.cc (jtag1::jtagRead): When attempting to read more than
 	256 bytes, throw an exception rather than returning a nonsensical
 	value.
+	* src/jtag3io.cc (jtag3::startJtagLink): Fix an off-by-one error
+	when preparing the AVR sign-on command.
+	* src/jtag2usb.cc (opendev): fix devnamecopy deletion.
 
 2013-01-09  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
