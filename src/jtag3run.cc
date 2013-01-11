@@ -45,10 +45,25 @@ unsigned long jtag3::getProgramCounter(void)
   uchar *resp;
   int respsize;
   uchar cmd[] = { SCOPE_AVR, CMD3_READ_PC, 0 };
+  int cnt = 0;
 
+  again:
   try
     {
       doJtagCommand(cmd, sizeof cmd, "read PC", resp, respsize);
+    }
+  catch (jtag_io_exception& e)
+    {
+      cnt++;
+      if (e.get_response() == RSP3_FAIL_WRONG_MODE &&
+          cnt < 2)
+      {
+          interruptProgram();
+          goto again;
+      }
+      fprintf(stderr, "cannot read program counter: %s\n",
+	      e.what());
+      throw;
     }
   catch (jtag_exception& e)
     {
@@ -309,7 +324,7 @@ void jtag3::jtagSingleStep(void)
     }
   catch (jtag_io_exception& e)
     {
-      if (e.get_response() != RSP_ILLEGAL_MCU_STATE)
+      if (e.get_response() != RSP3_FAIL_WRONG_MODE)
 	throw;
     }
   delete [] resp;

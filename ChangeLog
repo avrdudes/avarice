@@ -1,5 +1,11 @@
 2013-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag3run.cc (jtag3::getProgramCounter): Add some ugly hack
+	to work around problems single-stepping a SLEEP instruction
+	* src/jtag3rw.cc (jtag3::jtagRead): (Dito.)
+
+2013-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag3io.cc (jtag3::setDeviceDescriptor): avoid an overly
 	aggressive compiler optimization on a parameter struct d3
 

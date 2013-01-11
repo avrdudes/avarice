@@ -200,9 +200,24 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
 	u32_to_b4(cmd + 8, numBytes);
 	u32_to_b4(cmd + 4, addr);
 
+        int cnt = 0;
+      again:
 	try
         {
             doJtagCommand(cmd, sizeof cmd, "read memory", response, responsesize);
+        }
+        catch (jtag_io_exception& e)
+        {
+            cnt++;
+            if (e.get_response() == RSP3_FAIL_WRONG_MODE &&
+                cnt < 2)
+            {
+                interruptProgram();
+                goto again;
+            }
+            fprintf(stderr, "Failed to read target memory space: %s\n",
+                    e.what());
+            throw;
         }
         catch (jtag_exception& e)
         {

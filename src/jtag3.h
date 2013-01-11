@@ -89,7 +89,7 @@ enum jtag3consts
     RSP3_FAIL_PDI = 0x1B,
     RSP3_FAIL_NO_ANSWER = 0x20,
     RSP3_FAIL_NO_TARGET_POWER = 0x22,
-    RSP3_FAIL_WRONG_MODE = 0x32,    /* progmode vs. non-prog */
+    RSP3_FAIL_WRONG_MODE = 0x32,    /* CPU running vs. stopped */
     RSP3_FAIL_UNSUPP_MEMORY = 0x34, /* unsupported memory type */
     RSP3_FAIL_WRONG_LENGTH = 0x35,  /* wrong lenth for mem access */
     RSP3_FAIL_NOT_UNDERSTOOD = 0x91,
