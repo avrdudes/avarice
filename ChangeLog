@@ -1,3 +1,9 @@
+2013-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2rw.cc (jtag2::jtagRead): delete response before throwing
+	out
+	* src/jtag3rw.cc (jtag3::jtagRead): (Dito.)
+
 2013-01-10  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtagrw.cc (jtag1::jtagRead): When attempting to read more than

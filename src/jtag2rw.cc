@@ -177,6 +177,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
                 {
                     fprintf(stderr, "Failed to read target memory space: %s\n",
                             e.what());
+                    delete [] response;
                     throw;
                 }
 		memcpy(cachePtr, resp + 1, pageSize);
