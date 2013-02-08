@@ -1,3 +1,10 @@
+2013-02-08  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Turn the write operation of the packet length
+	and the packet itself into an atomic one when writing to the
+	upstream pipe, in order to avoid a race condition when handling
+	JTAGICE3 event messages.
+
 2013-01-11  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag3run.cc (jtag3::getProgramCounter): Add some ugly hack

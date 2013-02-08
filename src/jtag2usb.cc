@@ -570,14 +570,15 @@ static void *usb_thread(void * data)
   while (1)
     {
       char buf[MAX_MESSAGE];
-      char rbuf[MAX_MESSAGE];
-      char ebuf[USBDEV_MAX_EVT_3];
+      char rbuf[MAX_MESSAGE + sizeof(unsigned int)];
+      char ebuf[USBDEV_MAX_EVT_3 + sizeof(unsigned int)];
       int rv;
 
       if (!libusb20_tr_pending(xfr_in))
 	{
 	  // setup and start new bulk IN transfer
-	  libusb20_tr_setup_bulk(xfr_in, rbuf, max_xfer, 0);
+	  libusb20_tr_setup_bulk(xfr_in, rbuf + sizeof(unsigned int),
+				 max_xfer, 0);
 	  libusb20_tr_start(xfr_in);
 	}
 
@@ -585,7 +586,8 @@ static void *usb_thread(void * data)
 	  !libusb20_tr_pending(xfr_evt))
 	{
 	  // setup and start new bulk IN transfer
-	  libusb20_tr_setup_bulk(xfr_evt, ebuf, USBDEV_MAX_EVT_3, 0);
+	  libusb20_tr_setup_bulk(xfr_evt, ebuf + sizeof(unsigned int),
+				 USBDEV_MAX_EVT_3, 0);
 	  libusb20_tr_start(xfr_evt);
 	}
 
@@ -658,7 +660,8 @@ static void *usb_thread(void * data)
 		  offset += amnt;
 		}
 
-	      libusb20_tr_setup_bulk(xfr_in, rbuf, max_xfer, 0);
+	      libusb20_tr_setup_bulk(xfr_in, rbuf + sizeof(unsigned int),
+				     max_xfer, 0);
 	      libusb20_tr_start(xfr_in);
 	    }
 	  else if (errno != EINTR && errno != EAGAIN)
@@ -705,8 +708,9 @@ static void *usb_thread(void * data)
 		  int maxlen = MAX_MESSAGE - pkt_len;
 		  if (maxlen > max_xfer)
 		    maxlen = max_xfer;
-		  xfrstatus = libusb20_tr_bulk_intr_sync(xfr_in, rbuf + pkt_len, maxlen,
-							 &result, 100);
+		  xfrstatus = libusb20_tr_bulk_intr_sync(xfr_in,
+							 rbuf + sizeof(unsigned int) + pkt_len,
+							 maxlen, &result, 100);
 
 		  if (xfrstatus !=
 		      (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED)
@@ -731,15 +735,21 @@ static void *usb_thread(void * data)
 		    }
 		}
 
-	      /*
-	       * On the JTAGICE3, we send the message length first, so
-	       * the parent knows how much data to expect from the
-	       * pipe.
-	       */
+	      unsigned int writesize = pkt_len;
+	      char *writep = rbuf + sizeof(unsigned int);
 	      if (event_ep != 0)
-		write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+		{
+		  /*
+		   * On the JTAGICE3, we prepend the length, so the
+		   * parent knows how much data to expect from the
+		   * pipe.
+		   */
+		  memcpy(rbuf, &pkt_len, sizeof(unsigned int));
+		  writep -= sizeof(unsigned int);
+		  writesize += sizeof(unsigned int);
+		}
 
-	      if (write(pype[0], rbuf, pkt_len) != pkt_len)
+	      if (write(pype[0], writep, writesize) != writesize)
 		{
 		  fprintf(stderr, "short write to AVaRICE: %s\n",
 			  strerror(errno));
@@ -777,15 +787,16 @@ static void *usb_thread(void * data)
 		      unsigned int pkt_len = result;
 
 		      /*
-		       * On the JTAGICE3, we send the message length first, so
+		       * On the JTAGICE3, we prepend the message length, so
 		       * the parent knows how much data to expect from the
 		       * pipe.
 		       */
-		      write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+		      memcpy(ebuf, &pkt_len, sizeof(unsigned int));
 
-		      ebuf[0] = TOKEN_EVT3;
+		      ebuf[sizeof(unsigned int)] = TOKEN_EVT3;
 
-		      if (write(pype[0], ebuf, pkt_len) != pkt_len)
+		      if (write(pype[0], ebuf, pkt_len + sizeof(unsigned int))
+			  != pkt_len + sizeof(unsigned int))
 			{
 			  fprintf(stderr, "short write to AVaRICE: %s\n",
 				  strerror(errno));
@@ -853,10 +864,11 @@ static void *usb_thread_read(void *data)
 {
   while (1)
     {
-      char buf[MAX_MESSAGE];
+      char buf[MAX_MESSAGE + sizeof(unsigned int)];
       int rv;
 
-      rv = usb_bulk_read(udev, read_ep, buf, max_xfer, 0);
+      rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int),
+			 max_xfer, 0);
       if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
       {
 	/* OK, try again */
@@ -883,7 +895,7 @@ static void *usb_thread_read(void *data)
 	  int maxlen = MAX_MESSAGE - pkt_len;
 	  if (maxlen > max_xfer)
 	    maxlen = max_xfer;
-	  rv = usb_bulk_read(udev, read_ep, buf + pkt_len,
+	  rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int) + pkt_len,
 			     maxlen, 100);
 
 	  if (rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
@@ -913,15 +925,21 @@ static void *usb_thread_read(void *data)
 	  }
 	}
 
-	/*
-	 * On the JTAGICE3, we send the message length first, so
-	 * the parent knows how much data to expect from the
-	 * pipe.
-	 */
+	unsigned int writesize = pkt_len;
+	char *writep = buf + sizeof(unsigned int);
 	if (event_ep != 0)
-	  write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+	  {
+	    /*
+	     * On the JTAGICE3, we prepend the message length, so
+	     * the parent knows how much data to expect from the
+	     * pipe.
+	     */
+	    memcpy(buf, &pkt_len, sizeof(unsigned int));
+	    writep -= sizeof(unsigned int);
+	    writesize += sizeof(unsigned int);
+	  }
 
-	if (write(pype[0], buf, pkt_len) != pkt_len)
+	if (write(pype[0], writep, writesize) != writesize)
 	{
 	  fprintf(stderr, "short write to AVaRICE: %s\n",
 		  strerror(errno));
@@ -940,10 +958,11 @@ static void *usb_thread_event(void *data)
        * Events are shorter than regular data packets, so no
        * reassembly and ZLP handling is needed here.
        */
-      char buf[USBDEV_MAX_EVT_3];
+      char buf[USBDEV_MAX_EVT_3 + sizeof(unsigned int)];
       int rv;
 
-      rv = usb_bulk_read(udev, event_ep, buf, USBDEV_MAX_EVT_3, 0);
+      rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int),
+			 USBDEV_MAX_EVT_3, 0);
       if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
       {
 	/* OK, try again */
@@ -956,25 +975,26 @@ static void *usb_thread_event(void *data)
       }
       else
       {
-	if (buf[0] != TOKEN)
+	if (buf[sizeof(unsigned int)] != TOKEN)
 	{
 	  fprintf(stderr,
 		  "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
-		  buf[0]);
+		  buf[sizeof(unsigned int)]);
 	}
 	else
 	{
 	  unsigned int pkt_len = rv;
 
 	  /*
-	   * On the JTAGICE3, we send the message length first, so
+	   * On the JTAGICE3, we prepend the message length first,
 	   * the parent knows how much data to expect from the
 	   * pipe.
 	   */
-	  write(pype[0], (void *)&pkt_len, sizeof pkt_len);
+	  memcpy(buf, &pkt_len, sizeof(unsigned int));
 
-	  buf[0] = TOKEN_EVT3;
-	  if (write(pype[0], buf, pkt_len) != pkt_len)
+	  buf[sizeof(unsigned int)] = TOKEN_EVT3;
+	  if (write(pype[0], buf, pkt_len + sizeof(unsigned int)) !=
+	      pkt_len + sizeof(unsigned int))
 	  {
 	    fprintf(stderr, "short write to AVaRICE: %s\n",
 		    strerror(errno));
