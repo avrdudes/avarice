@@ -105,5 +105,6 @@ extern gdb_io_reg_def_type attiny43u_io_registers[];
 extern gdb_io_reg_def_type attiny48_io_registers[];
 extern gdb_io_reg_def_type attiny88_io_registers[];
 extern gdb_io_reg_def_type atmega128rfa1_io_registers[];
+extern gdb_io_reg_def_type atmega256rfr2_io_registers[];
 
 #endif /* INCLUDE_IOREG_H */
