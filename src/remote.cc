@@ -1012,7 +1012,12 @@ void talkToGdb(void)
 	{
 	  sprintf(remcomOutBuffer,
 		  "l<memory-map>\n"
-		  "  <memory type=\"ram\" start=\"0x800000\" length=\"0x10000\" />\n"
+		  /* The RAM size indicated includes the possible
+		   * EEPROM range, so GDB will treat EEPROM uploads
+		   * just like simple SRAM load operations.  AVaRICE
+		   * will disambiguate them based on their virtual
+		   * offset. */
+		  "  <memory type=\"ram\" start=\"0x800000\" length=\"0x20000\" />\n"
 		  "  <memory type=\"flash\" start=\"0\" length=\"0x%x\">\n"
 		  "     <property name=\"blocksize\">0x%0x</property>\n"
 		  "  </memory>\n"

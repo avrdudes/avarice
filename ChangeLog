@@ -1,3 +1,9 @@
+2013-04-16 Joerg Wunsch <joerg.wunsch@atmel.com>
+
+	* src/remote.cc (talkToGdb): When returning a memory map to GDB,
+	treat the possible EEPROM range just like normal RAM, so GDB
+	won't refuse to load it.
+
 2013-03-19 Joerg Wunsch <joerg.wunsch@atmel.com>
 
 	* src/devdescr.cc (ATmega256RFR2, ATmega2564RFR2, ATmega128RFR2,
