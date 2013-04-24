@@ -124,6 +124,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	break;
 
     case MTYPE_FLASH_PAGE:
+    case MTYPE_XMEGA_APP_FLASH:
 	pageSize = deviceDef->flash_page_size;
 	cachePtr = flashCache;
 	cacheBaseAddr = &flashCachePageAddr;
@@ -140,6 +141,8 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
     command[1] = whichSpace;
 
     if (pageSize > 0) {
+	if (pageSize > 256)
+	    pageSize = 256;	// more cannot be handled
 	u32_to_b4(command + 2, pageSize);
 	response = new uchar[numBytes];
 
@@ -148,7 +151,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	unsigned int chunksize = numBytes;
 	unsigned int targetOffset = 0;
 
-	if (addr + numBytes >= pageAddr + pageSize)
+	if (addr + chunksize >= pageAddr + pageSize)
 	    // Chunk would cross a page boundary, reduce it
 	    // appropriately.
 	    chunksize -= (addr + numBytes - (pageAddr + pageSize));
@@ -253,6 +256,7 @@ void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     switch (whichSpace)
     {
     case MTYPE_FLASH_PAGE:
+    case MTYPE_XMEGA_APP_FLASH:
 	pageSize = deviceDef->flash_page_size;
 	break;
 
@@ -260,39 +264,49 @@ void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 	pageSize = deviceDef->eeprom_page_size;
 	break;
     }
+    unsigned int chunksize = numBytes;
     if (pageSize > 0) {
 	unsigned int mask = pageSize - 1;
 	addr &= ~mask;
 	if (numBytes != pageSize)
 	    throw ("jtagWrite(): numByte does not match page size");
+	if (pageSize > 256) {
+	    chunksize = 256; // that's all the JTAGICEmkII can handle at a time
+	}
     }
-    uchar *command = new uchar [10 + numBytes];
+    uchar *command = new uchar [10 + chunksize];
     command[0] = CMND_WRITE_MEMORY;
     command[1] = whichSpace;
-    if (pageSize) {
-	u32_to_b4(command + 2, pageSize);
-	u32_to_b4(command + 6, addr);
-    } else {
-	u32_to_b4(command + 2, numBytes);
-	u32_to_b4(command + 6, addr);
-    }
-    memcpy(command + 10, buffer, numBytes);
+    uchar *bp = buffer;
 
-    uchar *response;
-    int responseSize;
+    do
+    {
+	u32_to_b4(command + 2, chunksize);
+	u32_to_b4(command + 6, addr);
+	memcpy(command + 10, bp, chunksize);
 
-    try
-    {
-        doJtagCommand(command, 10 + numBytes, response, responseSize);
-    }
-    catch (jtag_exception& e)
-    {
-        fprintf(stderr, "Failed to write target memory space: %s\n",
-                e.what());
-        throw;
-    }
+	uchar *response;
+	int responseSize;
+
+	try
+	{
+	    doJtagCommand(command, 10 + chunksize, response, responseSize);
+	}
+	catch (jtag_exception& e)
+	{
+	    fprintf(stderr, "Failed to write target memory space: %s\n",
+		    e.what());
+	    throw;
+	}
+
+	delete [] response;
+
+	addr += chunksize;
+	numBytes -= chunksize;
+	bp += chunksize;
+    } while (numBytes != 0);
+
     delete [] command;
-    delete [] response;
 
     if (needProgmode && !wasProgmode)
        disableProgramming();

@@ -1,3 +1,9 @@
+2013-04-24 Joerg Wunsch <joerg.wunsch@atmel.com>
+
+	* src/jtag2rw.cc (jtagRead, jtagWrite): Handle Xmega page sizes of
+	more than 256 bytes which need to be split into multiple transfers
+	on the JTAGICEmkII.
+
 2013-04-16 Joerg Wunsch <joerg.wunsch@atmel.com>
 
 	* src/remote.cc (talkToGdb): When returning a memory map to GDB,
