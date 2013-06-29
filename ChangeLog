@@ -1,3 +1,8 @@
+2013-06-29 Joerg Wunsch <joerg.wunsch@atmel.com>
+
+	* src/jtag3bp.cc (jtag3::updateBreakpoints): don't accidentally
+	truncate code breakpoints to 64 KiB
+
 2013-04-24 Joerg Wunsch <joerg.wunsch@atmel.com>
 
 	* src/jtag2rw.cc (jtagRead, jtagWrite): Handle Xmega page sizes of

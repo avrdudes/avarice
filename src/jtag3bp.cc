@@ -172,7 +172,8 @@ void jtag3::updateBreakpoints(void)
 
 	  // JTAGICE3 handles all BP addresses (including CODE) as
 	  // byte addresses
-	  if (bp[bp_i].type == DATA_MASK)
+	  if (bp[bp_i].type == DATA_MASK ||
+	      bp[bp_i].type == CODE)
 	      u32_to_b4(cmd + 5, bp[bp_i].address);
 	  else
 	      u32_to_b4(cmd + 5, bp[bp_i].address & ~ADDR_SPACE_MASK);
