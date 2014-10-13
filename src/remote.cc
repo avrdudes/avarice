@@ -611,7 +611,8 @@ static bool monitor(const char *cmd)
     {
         replyString("AVaRICE commands:\n"
                     "help, ?:   get help\n"
-                    "version:   ask AVaRICE version\n");
+                    "version:   ask AVaRICE version\n"
+                    "reset:     reset target\n");
         return true;
     }
 
@@ -621,6 +622,23 @@ static bool monitor(const char *cmd)
         sprintf(reply, "AVaRICE version %s, %s %s\n",
                 PACKAGE_VERSION, __DATE__, __TIME__);
         replyString(reply);
+        return true;
+    }
+
+    if (strncmp(cmd, "reset", ln) == 0)
+    {
+        try
+        {
+            theJtagICE->resetProgram(false);
+            replyString("Resetting MCU...\n");
+        }
+        catch (jtag_exception& e)
+        {
+            char reply[80];
+            sprintf(reply, "Failed to reset MCU: %s\n",
+                    e.what());
+            replyString(reply);
+        }
         return true;
     }
 
@@ -1032,13 +1050,13 @@ void talkToGdb(void)
             int i;
             ptr += 5;
             length -= 5;
+            memset(cmdbuf, 0, sizeof cmdbuf);
             for (i = 0; i < MONMAX && length >= 0; i++)
             {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);
                 cmdbuf[i] = (char)c;
             }
-            cmdbuf[i] = 0;
             debugOut("\nGDB: (monitor) %s\n", cmdbuf);
 
             // when creating a response, minde the BUFMAX bytes per

@@ -1,4 +1,8 @@
-2013-09-19 Joerg Wunsch <joerg.wunsch@atmel.com>
+2014-10-13 Joerg Wunsch <joerg.wunsch@atmel.com>
+
+	* src/remote.cc (monitor): implement a "mon reset" command.
+
+2014-09-19 Joerg Wunsch <joerg.wunsch@atmel.com>
 
 	* tools/edbg.lua: New file.
 
