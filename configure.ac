@@ -22,7 +22,7 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.13svn20130104)
+AC_INIT(avarice, 2.13svn20141210)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])

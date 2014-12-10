@@ -1,8 +1,12 @@
-2014-10-13 Joerg Wunsch <joerg.wunsch@atmel.com>
+2014-12-10 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Bump version date.
+
+2014-10-13 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/remote.cc (monitor): implement a "mon reset" command.
 
-2014-09-19 Joerg Wunsch <joerg.wunsch@atmel.com>
+2014-09-19 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* tools/edbg.lua: New file.
 
