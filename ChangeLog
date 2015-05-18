@@ -1,3 +1,9 @@
+2015-05-18 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Tobias Frost <tobi@debian.org>:
+	Bug #34 Fix compilation with GCC 5
+	* src/pragma.h: Fix pragmas for GCC > 4
+
 2014-12-10 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version date.
