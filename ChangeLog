@@ -1,3 +1,9 @@
+2015-06-24 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Uwe Frank <frank@drello.de>
+	* src/devdescr.cc (ATxmega192A3): New entry
+	* doc/avarice.1: Document the new entry.
+
 2015-05-18 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Tobias Frost <tobi@debian.org>:
