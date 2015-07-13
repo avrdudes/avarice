@@ -5080,6 +5080,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	NULL,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
 	{
 	    0	// no mkI support
 	},
