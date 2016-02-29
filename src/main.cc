@@ -160,7 +160,9 @@ static void usage(const char *progname)
     fprintf(stderr,
 	    "  -2, --mkII                  Connect to JTAG ICE mkII\n");
     fprintf(stderr,
-	    "  -3, --jtag3                 Connect to JTAGICE3\n");
+	    "  -3, --jtag3                 Connect to JTAGICE3 (Firmware 2.x)\n");
+    fprintf(stderr,
+            "  -4, --edbg                  Atmel-ICE, or JTAGICE3 (firmware 3.x), or EDBG Integrated Debugger\n");
     fprintf(stderr,
             "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
             "                                with the avr target device. This must be less\n"
@@ -304,6 +306,7 @@ static struct option long_opts[] = {
     { "mkI",                 0,       0,     '1' },
     { "mkII",                0,       0,     '2' },
     { "jtag3",               0,       0,     '3' },
+    { "edbg",                0,       0,     '4' },
     { "jtag-bitrate",        1,       0,     'B' },
     { "capture",             0,       0,     'C' },
     { "daisy-chain",         1,       0,     'c' },
@@ -362,7 +365,7 @@ int main(int argc, char **argv)
     bool is_xmega = false;
     char *progname = argv[0];
     enum {
-	MKI, MKII, DRAGON, JTAG3
+	MKI, MKII, DRAGON, JTAG3, EDBG
     } devicetype = MKI;		// default to mkI devicetype
     enum debugproto proto = PROTO_JTAG;
     int  option_index;
@@ -380,7 +383,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "123B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
+        int c = getopt_long (argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -400,6 +403,9 @@ int main(int argc, char **argv)
 	    case '3':
 		devicetype = JTAG3;
 		break;
+            case '4':
+                devicetype = EDBG;
+                break;
             case 'B':
 		jtagBitrate = parseJtagBitrate(optarg);
                 break;
@@ -562,11 +568,14 @@ int main(int argc, char **argv)
 
       if (cp != NULL)
 	jtagDeviceName = cp;
-      else if (devicetype == DRAGON || devicetype == JTAG3)
+      else if (devicetype == DRAGON || devicetype == JTAG3 || devicetype == EDBG)
 	jtagDeviceName = "usb";
       else
 	jtagDeviceName = "/dev/avrjtag";
     }
+
+    if (debugMode)
+      setvbuf(stderr, NULL, _IOLBF, 0);
 
     int rv = 0;			// return value from main()
 
@@ -586,6 +595,11 @@ int main(int argc, char **argv)
 	case JTAG3:
 	    theJtagICE = new jtag3(jtagDeviceName, device_name, proto,
 				   apply_nsrst, is_xmega);
+	    break;
+
+	case EDBG:
+	    theJtagICE = new jtag3(jtagDeviceName, device_name, proto,
+				   apply_nsrst, is_xmega, true);
 	    break;
 	}
 

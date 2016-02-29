@@ -50,6 +50,11 @@
 #  include <usb.h>
 #endif
 
+#ifdef HAVE_LIBHIDAPI
+#  include <poll.h>
+#  include <hidapi/hidapi.h>
+#endif
+
 #include <pthread.h>
 
 #ifdef __FreeBSD__
@@ -62,6 +67,7 @@
 #define USB_DEVICE_JTAGICEMKII 0x2103
 #define USB_DEVICE_AVRDRAGON   0x2107
 #define USB_DEVICE_JTAGICE3    0x2110
+#define USB_DEVICE_EDBG        0x2111
 
 /* JTAGICEmkII */
 #define USBDEV_BULK_EP_WRITE_MKII 0x02
@@ -75,7 +81,19 @@
 #define USBDEV_MAX_XFER_3    512
 #define USBDEV_MAX_EVT_3     64
 
+/* EDBG (JTAGICE3 3.x, Atmel-ICE, Integrated EDBG */
+#define USBDEV_INTERRUPT_EP_WRITE_EDBG 0x01
+#define USBDEV_INTERRUPT_EP_READ_EDBG  0X82
+#define USBDEV_MAX_XFER_EDBG 512
+
 #define MAX_MESSAGE      512
+
+#ifdef HAVE_LIBHIDAPI
+struct hid_thread_data
+{
+  unsigned int max_pkt_size;
+};
+#endif
 
 static int read_ep, write_ep, event_ep, max_xfer;
 #ifdef HAVE_LIBUSB_2_0
@@ -85,6 +103,10 @@ typedef usb_dev_handle usb_dev_t;
 #endif
 
 static usb_dev_t *udev = NULL;
+#ifdef HAVE_LIBHIDAPI
+static hid_device *hdev = NULL;
+static pthread_t htid;
+#endif
 static int pype[2];
 
 #ifdef HAVE_LIBUSB_2_0
@@ -554,6 +576,112 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   return pdev;
 }
 
+#ifdef HAVE_LIBHIDAPI
+/*
+ * Open HID, used for CMSIS-DAP (EDBG) devices
+ */
+static hid_device *openhid(const char *jtagDeviceName)
+{
+  char string[256];
+  hid_device *pdev;
+  char *devnamecopy, *serno, *cp2;
+  size_t x;
+  wchar_t wserno[15];
+  size_t serlen = 0;
+
+  devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
+  memcpy(devnamecopy, jtagDeviceName, x);
+
+  /*
+   * The syntax for usb devices is defined as:
+   *
+   * -P usb[:serialnumber]
+   *
+   * See if we've got a serial number passed here.  The serial number
+   * might contain colons which we remove below, and we compare it
+   * right-to-left, so only the least significant nibbles need to be
+   * specified.
+   */
+  if ((serno = strchr(devnamecopy, ':')) != NULL)
+    {
+      /* first, drop all colons there if any */
+      cp2 = ++serno;
+
+      while ((cp2 = strchr(cp2, ':')) != NULL)
+	{
+	  x = strlen(cp2) - 1;
+	  memmove(cp2, cp2 + 1, x);
+	  cp2[x] = '\0';
+	}
+
+      serlen = strlen(serno);
+      if (serlen > 12)
+      {
+	  fprintf(stderr, "invalid serial number \"%s\"", serno);
+	  delete [] devnamecopy;
+	  return NULL;
+      }
+      mbstowcs(wserno, serno, 15);
+    }
+  delete [] devnamecopy;
+
+  pdev = NULL;
+
+  /*
+   * Find any Atmel device which is a HID.  Then, look at the product
+   * string whether it contains the mandatory substring "CMSIS-DAP".
+   * (This distinguishes the ICEs from e.g. a keyboard or mouse demo
+   * using the Atmel VID.)
+   *
+   * If a serial number has been asked for, try to match it as well.
+   */
+  struct hid_device_info *list, *walk;
+  list = hid_enumerate(USB_VENDOR_ATMEL, 0);
+  if (list == NULL)
+    return NULL;
+
+  walk = list;
+  while (walk)
+    {
+      if (wcsstr(walk->product_string, L"CMSIS-DAP") != NULL)
+	{
+	  debugOut("Found HID PID:VID 0x%04x:0x%04x, serno %ls\n",
+		   walk->vendor_id, walk->product_id,
+		   walk->serial_number);
+	  // Atmel CMSID-DAP device found
+	  // If no serial number requested, we are done.
+	  if (serlen == 0)
+	    break;
+	  // Otherwise, match the serial number
+	  if (wcscmp(walk->serial_number + serlen, wserno) == 0)
+	    {
+	      // found matching serial number
+	      debugOut("...matched\n");
+	      break;
+	    }
+	  // else: proceed to next device
+	}
+      walk = walk->next;
+    }
+  if (walk == NULL)
+    {
+      fprintf(stderr, "No (matching) HID found\n");
+      hid_free_enumeration(list);
+      return NULL;
+    }
+
+  pdev = hid_open_path(walk->path);
+  hid_free_enumeration(list);
+  if (pdev == NULL)
+    // can't happen?
+    return NULL;
+
+  hid_set_nonblocking(pdev, 1);
+
+  return pdev;
+}
+#endif	// HAVE_LIBHIDAPI
+
 #ifdef HAVE_LIBUSB_2_0
 /* USB thread */
 static void *usb_thread(void * data)
@@ -1019,6 +1147,194 @@ void jtag::resetUSB(void)
 #endif
 }
 
+#ifdef HAVE_LIBHIDAPI
+static void *hid_thread(void * data)
+{
+  struct pollfd fds[1];
+  struct hid_thread_data *hdata = (struct hid_thread_data *)data;
+
+  fds[0].fd = pype[0];
+  fds[0].events = POLLIN | POLLRDNORM;
+
+  debugOut("HID thread started\n");
+
+  while (1)
+    {
+      // the +1 is since hidapi needs one byte for the report number
+      unsigned char buf[MAX_MESSAGE + 1];
+      int rv;
+
+      // Poll for data from main thread.
+      // Wait for at most 50 ms, so we can regularly
+      // ping for events even if no upstream activity
+      // is present.
+      fds[0].revents = 0;
+      rv = poll(fds, 1, 50);
+      if (rv < 0)
+	{
+	  if (errno != EINTR)
+	    perror("poll()");
+	  continue;
+	}
+      if (rv == 0)
+        {
+	  // timed out, so just ping for event
+	  buf[0] = 0;
+	  buf[1] = EDBG_VENDOR_AVR_EVT;
+	  rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+	  if (rv < 0)
+	    throw jtag_exception("Querying for event: hid_write() failed");
+
+	  rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 50);
+	  if (rv <= 0)
+	  {
+	    debugOut("Querying for event: hid_read() failed (%d)\n",
+		     rv);
+	    continue;
+	  }
+	  // Now examine whether the reply actually contained an event.
+	  if (buf[0] != EDBG_VENDOR_AVR_EVT)
+	  {
+	    debugOut("Querying for event: unexpected response (0x%02x)\n",
+		     buf[0]);
+	    continue;
+	  }
+	  if (buf[1] == 0 && buf[2] == 0)
+	    // nothing returned
+	    continue;
+	  unsigned int len = buf[1] * 256 + buf[2];
+	  if (len > MAX_MESSAGE - 10)
+	  {
+	    debugOut("Querying for event: insane event size %u\n",
+		     len);
+	    continue;
+	  }
+	  // tag this as an event packet
+	  buf[3] = TOKEN_EVT3;
+	  // make room to prepend packet length
+	  memmove(buf + sizeof(unsigned int), buf + 3, len);
+	  memcpy(buf, &len, sizeof(unsigned int));
+	  // pass event upstream
+	  write(pype[0], buf, len + sizeof(unsigned int));
+	  continue;
+	}
+
+      if ((fds[0].revents & POLLERR) != 0)
+	{
+	  fprintf(stderr, "poll() returned POLLERR, why?\n");
+	  fds[0].revents &= ~POLLERR;
+	}
+      if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
+	// fd is closed
+	pthread_exit((void *)0);
+
+      if (fds[0].revents != 0)
+	{
+	  // something is in the pipe there, presumably a command
+	  if ((rv = read(pype[0], buf, MAX_MESSAGE)) > 0)
+	    {
+	      if (rv < 6)
+	      {
+		debugOut("Reading command from AVaRICE failed\n");
+		continue;
+	      }
+	      if (rv > MAX_MESSAGE - 4)
+	      {
+		throw jtag_exception("Oversized command requested");
+	      }
+	      memmove(buf + 5, buf, rv);
+	      buf[0] = 0;	// no report ID
+	      buf[1] = EDBG_VENDOR_AVR_CMD;
+	      buf[2] = 0x11;	// XXX fragment info
+	      buf[3] = (unsigned int)rv >> 8;
+	      buf[4] = (unsigned int)rv;
+	      rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+	      if (rv != hdata->max_pkt_size + 1)
+	      {
+		debugOut("hid_write: short write, %u vs. %d\n",
+			 hdata->max_pkt_size + 1, rv);
+		continue;
+	      }
+	      for (;;)
+	      {
+		rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 50);
+		if (rv < 0)
+		  throw jtag_exception("Error reading HID");
+		if (rv == 0)
+		  continue;
+		if (buf[0] != EDBG_VENDOR_AVR_CMD)
+		{
+		  debugOut("Unexpected response to CMD: 0x%02x\n", buf[0]);
+		  continue;
+		}
+		break;
+	      }
+
+	      // Query response
+	      for (;;)
+	      {
+		buf[0] = 0;
+		buf[1] = EDBG_VENDOR_AVR_RSP;
+		rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+		if (rv < 0)
+		  throw jtag_exception("Querying for response: hid_write() failed");
+
+		rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 500);
+		if (rv <= 0)
+		{
+		  debugOut("Querying for response: hid_read() failed (%d)\n",
+			   rv);
+		  continue;
+		}
+		debugOut("buf %02x %02x %02x %02x %02x %02x %02x %02x\n",
+			 buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
+			 buf[6], buf[7]);
+		// Now examine whether the reply actually contained a response.
+		if (buf[0] != EDBG_VENDOR_AVR_RSP)
+		{
+		  debugOut("Querying for response: unexpected response (0x%02x)\n",
+			   buf[0]);
+		  continue;
+		}
+		if (buf[1] != 0x11)
+		  // XXX support fragments
+		  throw jtag_exception("No fragment support yet");
+
+		if (buf[2] == 0 && buf[3] == 0)
+		  // nothing returned
+		  continue;
+		unsigned int len = buf[2] * 256 + buf[3];
+		if (len > MAX_MESSAGE - 10)
+		{
+		  debugOut("Querying for response: insane event size %u\n",
+			   len);
+		  continue;
+		}
+		memcpy(buf, &len, sizeof(unsigned int));
+		// pass event upstream
+		write(pype[0], buf, len + sizeof(unsigned int));
+		break;
+	      }
+
+	    }
+	  else if (errno != EINTR && errno != EAGAIN)
+	    {
+	      fprintf(stderr, "read error from AVaRICE: %s\n",
+		      strerror(errno));
+	      pthread_exit((void *)1);
+	    }
+	}
+    }
+}
+
+static void
+cleanup_hid(void)
+{
+  hid_close(hdev);
+  hdev = NULL;
+}
+#endif
+
 static void
 cleanup_usb(void)
 {
@@ -1036,29 +1352,50 @@ void jtag::openUSB(const char *jtagDeviceName)
   if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) < 0)
       throw jtag_exception("cannot create pipe");
 
-  udev = opendev(jtagDeviceName, emu_type, usb_interface);
-  if (udev == NULL)
-    throw jtag_exception("cannot open USB device");
+  if (emu_type == EMULATOR_EDBG)
+    {
+#ifdef HAVE_LIBHIDAPI
+      hdev = openhid(jtagDeviceName);
+      if (hdev == NULL)
+	throw jtag_exception("cannot open HID");
+
+      static struct hid_thread_data hdata;
+      hdata.max_pkt_size = 512; // getMaxPktSize();
+      pthread_create(&htid, NULL, hid_thread, &hdata);
+#  ifdef __FreeBSD__
+      pthread_set_name_np(htid, "HID thread");
+#  endif
+      atexit(cleanup_hid);
+#else  // !HAVE_LIBHIDAPI
+      throw jtag_exception("EDBG/CMSIS-DAP devices require libhidapi support");
+#endif
+    }
+  else
+    {
+      udev = opendev(jtagDeviceName, emu_type, usb_interface);
+      if (udev == NULL)
+	throw jtag_exception("cannot open USB device");
 
 #ifdef HAVE_LIBUSB_2_0
-  pthread_create(&utid, NULL, usb_thread, NULL);
+      pthread_create(&utid, NULL, usb_thread, NULL);
 #  ifdef __FreeBSD__
-  pthread_set_name_np(utid, "USB thread");
+      pthread_set_name_np(utid, "USB thread");
 #  endif
 #else
-  pthread_create(&rtid, NULL, usb_thread_read, NULL);
-  pthread_create(&wtid, NULL, usb_thread_write, NULL);
-  if (event_ep != 0)
-    pthread_create(&etid, NULL, usb_thread_event, NULL);
+      pthread_create(&rtid, NULL, usb_thread_read, NULL);
+      pthread_create(&wtid, NULL, usb_thread_write, NULL);
+      if (event_ep != 0)
+	pthread_create(&etid, NULL, usb_thread_event, NULL);
 #  ifdef __FreeBSD__
-  pthread_set_name_np(rtid, "USB reader thread");
-  pthread_set_name_np(wtid, "USB writer thread");
-  if (event_ep != 0)
-    pthread_set_name_np(etid, "USB event thread");
+      pthread_set_name_np(rtid, "USB reader thread");
+      pthread_set_name_np(wtid, "USB writer thread");
+      if (event_ep != 0)
+	pthread_set_name_np(etid, "USB event thread");
 #  endif
 #endif
 
-  atexit(cleanup_usb);
+      atexit(cleanup_usb);
+    }
 
   jtagBox = pype[1];
 }

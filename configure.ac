@@ -77,6 +77,24 @@ if test x$have_libusb_2_0 = xyes; then
    AC_CHECK_HEADERS([libusb20.h])
 fi
 
+AH_TEMPLATE([HAVE_LIBHIDAPI],
+            [Define if HID support is enabled via libhidapi])
+AC_SEARCH_LIBS([hid_init], [hidapi hidapi-libusb hidapi-hidraw], [have_libhidapi=yes])
+if test x$have_libhidapi = xyes; then
+   case $target in
+       *-*-darwin*)
+               LIBHIDAPI="-lhidapi -iframework CoreFoundation -framework IOKit"
+               ;;
+       *)
+               LIBHIDAPI="$ac_cv_lib_hid_init"
+               ;;
+   esac
+   AC_DEFINE([HAVE_LIBHIDAPI])
+   AC_CHECK_HEADERS([hidapi/hidapi.h])
+fi
+AC_SUBST(LIBHIDAPI, $LIBHIDAPI)
+
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h])

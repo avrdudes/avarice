@@ -186,6 +186,7 @@ class jtag3: public jtag
     enum debugproto proto;
     unsigned long cached_pc;
     bool cached_pc_is_valid;
+    bool is_edbg;
 
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
     unsigned int flashCachePageAddr;
@@ -200,8 +201,9 @@ class jtag3: public jtag
   public:
     jtag3(const char *dev, char *name, enum debugproto prot = PROTO_JTAG,
 	  bool nsrst = false,
-          bool xmega = false):
-      jtag(dev, name, EMULATOR_JTAGICE3) {
+          bool xmega = false,
+          bool edbg = false):
+        jtag(dev, name, edbg? EMULATOR_EDBG: EMULATOR_JTAGICE3) {
 	signedIn = debug_active = false;
 	command_sequence = 0;
 	proto = prot;
@@ -217,6 +219,7 @@ class jtag3: public jtag
         appsize = 0;
         device_id = 0;
         cached_event = NULL;
+        is_edbg = edbg;
     };
     virtual ~jtag3(void);
 

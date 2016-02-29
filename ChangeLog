@@ -1,3 +1,17 @@
+2016-02-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/main.cc: Improve explanation of -4 option, default EDBG to
+	USB, and set debug output to line buffered mode
+	* src/jtag2usb.cc: Fix packet size when passing event upstream
+
+2016-02-26 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Implement libhidapi support for EDBG-based ICEs
+
+2016-02-22 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Add hooks for libhidapi
+
 2015-06-24 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Uwe Frank <frank@drello.de>

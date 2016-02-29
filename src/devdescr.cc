@@ -2317,8 +2317,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
 	atmega32m1_io_registers,
+	false,
 	0x00, 0x0000, // fuses
 	0x66, // osccal
 	1, // OCD revision
@@ -2445,8 +2445,8 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 256,	// 1024 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
 	atmega32c1_io_registers,
+	false,
 	0x00, 0x0000, // fuses
 	0x66, // osccal
 	1, // OCD revision
