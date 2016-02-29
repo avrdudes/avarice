@@ -1,5 +1,10 @@
 2016-02-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* configure.ac: Bump version date after merging jwunsch_edbg
+	branch back into trunk
+
+2016-02-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/main.cc: Improve explanation of -4 option, default EDBG to
 	USB, and set debug output to line buffered mode
 	* src/jtag2usb.cc: Fix packet size when passing event upstream
