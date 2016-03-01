@@ -580,7 +580,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 /*
  * Open HID, used for CMSIS-DAP (EDBG) devices
  */
-static hid_device *openhid(const char *jtagDeviceName)
+static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_size)
 {
   char string[256];
   hid_device *pdev;
@@ -677,6 +677,57 @@ static hid_device *openhid(const char *jtagDeviceName)
     return NULL;
 
   hid_set_nonblocking(pdev, 1);
+
+  /*
+   * Probe for the endpoint size.  Atmel tools are very picky about
+   * always being talked to with full-sized packets.  Alas, libhidapi
+   * has no API function to obtain the endpoint size, so we first send
+   * an inquiry in 64 bytes (for mEDBG), and if we don't get a timely
+   * response, provide another 448 bytes to complete the 512-byte
+   * packet (JTAGICE3, Atmel-ICE, full EDBG).
+   */
+  debugOut("Probing for HID max. packet size\n");
+  max_pkt_size = 64;            // first guess
+  unsigned char probebuf[512 + 1] = {
+    0, // no HID report number used
+    0, // DAP_info command
+    0xFF, // get max. packet size
+  };
+  hid_write(pdev, probebuf, 64 + 1);
+  int res = hid_read_timeout(pdev, probebuf, 10 /* bytes */, 50 /* milliseconds */);
+  if (res == 0)
+  {
+    // no timely response, assume 512 byte size
+    hid_write(pdev, probebuf, (512 - 64) + 1);
+    max_pkt_size = 512;
+    res = hid_read_timeout(pdev, probebuf, 10, 50);
+  }
+  if (res <= 0)
+  {
+    fprintf(stderr, "openhid(): device not responding to DAP_Info\n");
+    hid_close(pdev);
+    return NULL;
+  }
+  if (probebuf[0] != 0 || probebuf[1] != 2)
+  {
+    debugOut("Unexpected DAP_Info response 0x%02x 0x%02x\n",
+	     probebuf[0], probebuf[1]);
+  }
+  else
+  {
+    unsigned int probesize = probebuf[2] + (probebuf[3] << 8);
+    if (probesize != 64 && probesize != 512)
+    {
+      debugOut("Unexpected max. packet size %u, proceeding with %u\n",
+	       probesize, max_pkt_size);
+    }
+    else
+    {
+      debugOut("Setting max. packet size to %u from DAP_Info\n",
+	       probesize);
+      max_pkt_size = probesize;
+    }
+  }
 
   return pdev;
 }
@@ -1242,6 +1293,7 @@ static void *hid_thread(void * data)
 	      {
 		throw jtag_exception("Oversized command requested");
 	      }
+
 	      memmove(buf + 5, buf, rv);
 	      buf[0] = 0;	// no report ID
 	      buf[1] = EDBG_VENDOR_AVR_CMD;
@@ -1355,12 +1407,11 @@ void jtag::openUSB(const char *jtagDeviceName)
   if (emu_type == EMULATOR_EDBG)
     {
 #ifdef HAVE_LIBHIDAPI
-      hdev = openhid(jtagDeviceName);
+      static struct hid_thread_data hdata;
+      hdev = openhid(jtagDeviceName, hdata.max_pkt_size = 512);
       if (hdev == NULL)
 	throw jtag_exception("cannot open HID");
 
-      static struct hid_thread_data hdata;
-      hdata.max_pkt_size = 512; // getMaxPktSize();
       pthread_create(&htid, NULL, hid_thread, &hdata);
 #  ifdef __FreeBSD__
       pthread_set_name_np(htid, "HID thread");

@@ -1,3 +1,8 @@
+2016-03-01 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc: Determine max. transfer size from DAP_Info
+	response
+
 2016-02-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump version date after merging jwunsch_edbg
