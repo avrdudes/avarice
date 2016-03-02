@@ -1211,8 +1211,9 @@ static void *hid_thread(void * data)
 
   while (1)
     {
-      // the +1 is since hidapi needs one byte for the report number
-      unsigned char buf[MAX_MESSAGE + 1];
+      // One additional byte is for libhidapi to tell we don't use HID
+      // report numbers.  Four bytes are wrapping overhead.
+      unsigned char buf[MAX_MESSAGE + 5];
       int rv;
 
       // Poll for data from main thread.
@@ -1282,92 +1283,117 @@ static void *hid_thread(void * data)
       if (fds[0].revents != 0)
 	{
 	  // something is in the pipe there, presumably a command
-	  if ((rv = read(pype[0], buf, MAX_MESSAGE)) > 0)
+	  // read to offset 5 to leave room for the wrapper
+	  if ((rv = read(pype[0], buf + 5, MAX_MESSAGE)) > 0)
 	    {
 	      if (rv < 6)
 	      {
 		debugOut("Reading command from AVaRICE failed\n");
 		continue;
 	      }
-	      if (rv > MAX_MESSAGE - 4)
-	      {
-		throw jtag_exception("Oversized command requested");
-	      }
 
-	      memmove(buf + 5, buf, rv);
-	      buf[0] = 0;	// no report ID
-	      buf[1] = EDBG_VENDOR_AVR_CMD;
-	      buf[2] = 0x11;	// XXX fragment info
-	      buf[3] = (unsigned int)rv >> 8;
-	      buf[4] = (unsigned int)rv;
-	      rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
-	      if (rv != hdata->max_pkt_size + 1)
-	      {
-		debugOut("hid_write: short write, %u vs. %d\n",
-			 hdata->max_pkt_size + 1, rv);
-		continue;
-	      }
-	      for (;;)
-	      {
-		rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 50);
-		if (rv < 0)
-		  throw jtag_exception("Error reading HID");
-		if (rv == 0)
-		  continue;
-		if (buf[0] != EDBG_VENDOR_AVR_CMD)
+	      // used in both, request and reply data
+	      unsigned int npackets =
+	        (rv + hdata->max_pkt_size - 1) /
+	        hdata->max_pkt_size;
+	      unsigned int thispacket = 1;
+	      unsigned int len = rv;
+	      // used in reassembling reply data
+	      size_t offset = sizeof(unsigned int);
+	      unsigned int totlength = 0;
+
+	      while (thispacket <= npackets)
 		{
-		  debugOut("Unexpected response to CMD: 0x%02x\n", buf[0]);
-		  continue;
+		  if (thispacket != 1)
+		    memmove(buf + 5,
+			    buf + (hdata->max_pkt_size - 4) + 5,
+			    len);
+
+		  buf[0] = 0;	// libhidapi: no report ID
+		  buf[1] = EDBG_VENDOR_AVR_CMD;
+		  buf[2] = (thispacket << 4) | npackets;
+		  unsigned int cursize =
+		    (len > hdata->max_pkt_size - 4)?
+		    hdata->max_pkt_size - 4: len;
+		  buf[3] = cursize >> 8;
+		  buf[4] = cursize;
+		  rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+		  if (rv != hdata->max_pkt_size + 1)
+		    {
+		      debugOut("hid_write: short write, %u vs. %d\n",
+			       hdata->max_pkt_size + 1, rv);
+		      goto done;
+		    }
+
+		  rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 50);
+		  if (rv < 0)
+		    throw jtag_exception("Error reading HID");
+
+		  thispacket++;
+		  len -= cursize;
 		}
-		break;
-	      }
 
 	      // Query response
-	      for (;;)
+	      for (npackets = 0, thispacket = 0; thispacket <= npackets; thispacket++)
 	      {
-		buf[0] = 0;
-		buf[1] = EDBG_VENDOR_AVR_RSP;
-		rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+		buf[offset] = 0;
+		buf[offset + 1] = EDBG_VENDOR_AVR_RSP;
+		rv = hid_write(hdev, buf + offset, hdata->max_pkt_size + 1);
 		if (rv < 0)
 		  throw jtag_exception("Querying for response: hid_write() failed");
 
-		rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 500);
+		rv = hid_read_timeout(hdev, buf + offset, hdata->max_pkt_size + 1, 500);
 		if (rv <= 0)
 		{
 		  debugOut("Querying for response: hid_read() failed (%d)\n",
 			   rv);
-		  continue;
+		  goto done;
 		}
-		debugOut("buf %02x %02x %02x %02x %02x %02x %02x %02x\n",
-			 buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
-			 buf[6], buf[7]);
+		debugOut("Received 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+			 buf[offset], buf[offset + 1], buf[offset + 2],
+			 buf[offset + 3], buf[offset + 4], buf[offset + 5]);
 		// Now examine whether the reply actually contained a response.
-		if (buf[0] != EDBG_VENDOR_AVR_RSP)
+		if (buf[offset] != EDBG_VENDOR_AVR_RSP)
 		{
 		  debugOut("Querying for response: unexpected response (0x%02x)\n",
 			   buf[0]);
-		  continue;
+		  goto done;
 		}
-		if (buf[1] != 0x11)
-		  // XXX support fragments
-		  throw jtag_exception("No fragment support yet");
-
-		if (buf[2] == 0 && buf[3] == 0)
-		  // nothing returned
-		  continue;
-		unsigned int len = buf[2] * 256 + buf[3];
-		if (len > MAX_MESSAGE - 10)
+		if (npackets == 0)
+		{
+		  // first fragment arriving
+		  npackets = buf[offset + 1] & 0x0F;
+		  thispacket = 1;
+		}
+		if ((buf[offset + 1] >> 4) != thispacket)
+		{
+		  debugOut("Wrong fragment: got %d, expected %d\n",
+			   (buf[offset + 1] >> 4), thispacket);
+		  goto done;
+		}
+		unsigned int len = buf[offset + 2] * 256 + buf[offset + 3];
+		if (len < 5 || len > hdata->max_pkt_size)
 		{
 		  debugOut("Querying for response: insane event size %u\n",
 			   len);
-		  continue;
+		  goto done;
 		}
-		memcpy(buf, &len, sizeof(unsigned int));
-		// pass event upstream
-		write(pype[0], buf, len + sizeof(unsigned int));
-		break;
+		totlength += len;
+		if (totlength > MAX_MESSAGE)
+		{
+		  debugOut("reply size too large: %u\n", totlength);
+		  goto done;
+		}
+		// Update length field to pass (later) upstream
+		memcpy(buf, &totlength, sizeof(unsigned int));
+		// skip wrapper data in payload
+		memmove(buf + offset, buf + offset + 4, len);
+		offset += len;
 	      }
-
+	      // pass reply upstream
+	      write(pype[0], buf, totlength + sizeof(unsigned int));
+	    done:
+	      ;
 	    }
 	  else if (errno != EINTR && errno != EAGAIN)
 	    {

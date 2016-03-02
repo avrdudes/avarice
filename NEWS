@@ -7,6 +7,9 @@ Summary of changes since AVaRICE 2.13
 
 . Implement JTAGICE3 handling
 
+. Implement Atmel-ICE handling, including JTAGICE3 with firmware
+  version 3.x, EDBG and mEDBG integrated debuggers
+
 . Implement the GDB 7+ flash write protocol (for the "load" command)
 
 . Implement a backend command for the GDB "monitor" command; by

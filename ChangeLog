@@ -1,3 +1,8 @@
+2016-03-02 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc (hid_thread): Support packet fragmentation and
+	assembly (for mEDBG).
+
 2016-03-01 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2usb.cc: Determine max. transfer size from DAP_Info
