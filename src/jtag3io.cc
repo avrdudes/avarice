@@ -321,6 +321,7 @@ void jtag3::doJtagCommand(uchar *command, int  commandSize,
 }
 
 void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
+    throw (jtag_exception)
 {
     int dummy;
     uchar *replydummy, cmd[3];

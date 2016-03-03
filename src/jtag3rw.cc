@@ -251,7 +251,8 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // command.  If so, chip erase the device, and switch over to
     // programming mode to speed up things (drastically).
 
-    if (whichSpace == MTYPE_SPM &&
+    if (proto != PROTO_DW &&
+	whichSpace == MTYPE_SPM &&
 	addr == 0 &&
 	numBytes > 4)
     {

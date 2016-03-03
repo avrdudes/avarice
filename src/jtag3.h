@@ -319,7 +319,7 @@ class jtag3: public jtag
 	RSP_OK.
     **/
     void doSimpleJtagCommand(uchar cmd, const char *name,
-                             uchar scope = SCOPE_AVR);
+                             uchar scope = SCOPE_AVR) throw(jtag_exception);
 
     // Miscellaneous
     // -------------

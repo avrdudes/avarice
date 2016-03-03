@@ -1,3 +1,15 @@
+2016-03-03 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2rw.cc(jtag2::jtagWrite): omit chip erase when
+	operating on debugWIRE
+	* src/jtag3rw.cc(jtag3::jtagWrite): (Dito.)
+
+2016-03-03 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag3.h: Mark jtag3::doSimpleJtagCommand() as throwing
+	exceptions
+	* src/jtag3rw.cc: (Dito.)
+
 2016-03-02 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2usb.cc (hid_thread): Support packet fragmentation and
