@@ -61,6 +61,10 @@ void jtag3::disableProgramming(void)
 // (unless the save-eeprom fuse is set).
 void jtag3::eraseProgramMemory(void)
 {
+    if (proto == PROTO_DW)
+        // debugWIRE auto-erases when programming
+        return;
+
     uchar *resp;
     int respsize;
     uchar buf[8];
