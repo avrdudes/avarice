@@ -1,3 +1,8 @@
+2016-04-18 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2usb.cc (openhid): Correctly calculate the part
+	of the (HID) serial number to compare with
+
 2016-03-03 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* src/jtag2prog.cc (jtag2::eraseProgramMemory): bail out if

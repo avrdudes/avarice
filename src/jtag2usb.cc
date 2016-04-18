@@ -653,12 +653,16 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 	  if (serlen == 0)
 	    break;
 	  // Otherwise, match the serial number
-	  if (wcscmp(walk->serial_number + serlen, wserno) == 0)
+	  size_t slen = wcslen(walk->serial_number);
+	  if (slen >= serlen)
+	  {
+	    if (wcscmp(walk->serial_number + slen - serlen, wserno) == 0)
 	    {
 	      // found matching serial number
 	      debugOut("...matched\n");
 	      break;
 	    }
+	  }
 	  // else: proceed to next device
 	}
       walk = walk->next;
