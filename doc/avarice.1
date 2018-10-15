@@ -2,7 +2,7 @@
 Copyright (C) 2001 Scott Finneran
 Copyright (C) 2003 Intel Corporation
 Copyright (C) 2003, 2004 Theodore A. Roth
-Copyright (C) 2005 - 2008,2011,2012 Joerg Wunsch
+Copyright (C) 2005 - 2018 Joerg Wunsch
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -22,10 +22,10 @@ the original English.
 $Id$
 
 ..
-.TH avarice 1 "December 15, 2011"
+.TH avarice 1 "October 15, 2018"
 .LO 1
 .SH NAME
-avarice \- Provides an interface from avr-gdb to Atmel's JTAGICE box.
+avarice \- Provides an interface from avr-gdb to Atmel's AVR in-circuit debugging tools
 .SH SYNOPSIS
 .B avarice
 [\fIOPTIONS\fR]... [[\fIHOST_NAME\fR]:\fIPORT\fR]
@@ -230,7 +230,7 @@ atxmega64b1 (\fBo\fP) (\fB*\fP)
 atxmega64b3 (\fBo\fP) (\fB*\fP)
 .RE
 .PP
-\fBo\fP \- Only supported by the JTAG ICE mkII and AVR Dragon device.
+\fBo\fP \- Not supported by JTAG ICE mkI
 .br
 \fB*\fP \- Xmega device, requires firmware version of at least 7.x
 (as shipped with AVR Studio 5)
@@ -249,13 +249,20 @@ file (e.g. flash, eeprom, etc.).
 Print this message.
 .TP
 .BR \-1 ,\  \-\-mkI
-Connect to JTAG ICE mkI (default).
+Connect to original JTAG ICE (default).
+This is sometimes also called "mkI" to distinguish it from the more recent
+versions.
+Some simple clones are also around talking this protocol version.
 .TP
 .BR \-2 ,\  \-\-mkII
 Connect to JTAG ICE mkII.
 .TP
 .BR \-3 ,\  \-\-jtag3
-Connect to JTAGICE3.
+Connect to JTAGICE3 running firmware 2.x.
+.TP
+.BR \-4 ,\  \-\-edbg
+Connect to an AtmelICE, or JTAGICE3 running firmware 3+, or embedded debugger (EDBG).
+Requires that \fBavarice\fR has been compiled with libhidapi support.
 .TP
 .BR \-B ,\  \-\-jtag-bitrate \ <rate>
 Set the bitrate that the JTAG box communicates with the AVR target device.
@@ -308,7 +315,7 @@ This option implies the \fB-2\fP option.
 Automatically step over interrupts.
 .TP
 .BR \-j ,\  \-\-jtag \ <devname>
-Port attached to JTAG box (default: /dev/avrjtag). If the JTAG_DEV environmental
+Serial port attached to JTAG box (default: /dev/avrjtag). If the JTAG_DEV environmental
 variable is set, avarice will use that as the default instead.
 .br
 If \fBavarice\fR has been configured with libusb support, the JTAG ICE
@@ -318,7 +325,7 @@ If there are multiple JTAG ICE mkII devices connected to the system
 through USB, this string may be followed by the (trailing part of the)
 ICE's serial number, delimited from the \fIusb\fR by a colon.
 .br
-The AVR Dragon and JTAGICE3 can only be connected through USB, so this option
+The AVR Dragon, JTAGICE3, AtmelICE, and EDBG can only be connected through USB, so this option
 defaults to "usb" in that case.
 .TP
 .BR \-k ,\  \-\-known-devices
