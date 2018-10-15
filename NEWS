@@ -19,6 +19,9 @@ Summary of changes since AVaRICE 2.13
 . New devices: ATmega256RFR2, ATmega2564RFR2, ATmega128RFR2,
   ATmega1284RFR2, ATmega64RFR2, ATmega644RFR2
 
+. Bugfix: support software breakpoints on ATmega48P, ATmega88P,
+  ATmega168P, ATmega328P, ATtiny24, ATtiny44, ATtiny84
+
 
 Summary of changes in AVaRICE 2.13
 ==================================

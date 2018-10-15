@@ -1,4 +1,10 @@
 2018-10-15 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+	Submitted by Fabian Blaese:
+	* src/devdescr.cc (ATmega48P, ATmega88P, ATmega168P,
+	ATmega328P, ATtiny24, ATtiny44, ATtiny84): add addresses for
+	IDR and SPMCR so software breakpoints will work
+
+2018-10-15 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 	* doc/avarice.1: Update to match reality
 
 2016-04-18 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
