@@ -1,3 +1,9 @@
+2020-08-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Tobias Frost:
+	patch #35 configure.ac overwrites variable if both ...
+	* configure.ac: Avoid clobbering AM_CPPFLAGS
+
 2018-10-15 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 	Submitted by Fabian Blaese:
 	* src/devdescr.cc (ATmega48P, ATmega88P, ATmega168P,
