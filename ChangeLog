@@ -1,3 +1,9 @@
+2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Uwe Frank:
+	patch #38 Patch to support XMEGA64A3
+	* src/devdescr.cc (ATxmega64A3): New entry
+
 2020-08-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Tobias Frost:
