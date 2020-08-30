@@ -1,5 +1,12 @@
 2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by Mark Rages and nichtleiter:
+	patch #25 adds atxmega32e5
+	patch #37 Add support for atxmega8e5
+	* src/devdescr.cc (ATxmega8E5, ATxmega32E5) New entries
+
+2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag.h: Fix inconsistent naming between struct
 	and class jtag
 
