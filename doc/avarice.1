@@ -23,7 +23,6 @@ $Id$
 
 ..
 .TH avarice 1 "October 15, 2018"
-.LO 1
 .SH NAME
 avarice \- Provides an interface from avr-gdb to Atmel's AVR in-circuit debugging tools
 .SH SYNOPSIS
@@ -300,11 +299,11 @@ JTAG ICE mkII and AVR Dragon only.
 Default is "none,run,target_power_on,target_sleep,target_wakeup"
 .TP
 .BR \-f ,\  \-\-file \ <filename>
-Specify a file for use with the --program and --verify options. If --file is
-passed and neither --program or --verify are given then --program is implied.
+Specify a file for use with the \-\-program and \-\-verify options. If \-\-file is
+passed and neither \-\-program or \-\-verify are given then \-\-program is implied.
 .BR
 .B NOTE:
-deprecated feature, must be enabled using the --enable-target-programming
+deprecated feature, must be enabled using the \-\-enable-target-programming
 configuration option.
 .TP
 .BR \-g ,\  \-\-dragon
@@ -346,10 +345,10 @@ If this option is provided, it overrides the result from the
 autodetection.
 .TP
 .BR \-p ,\  \-\-program
-Program the target. Binary filename must be specified with --file option.
+Program the target. Binary filename must be specified with \-\-file option.
 .BR
 .B NOTE:
-deprecated feature, must be enabled using the --enable-target-programming
+deprecated feature, must be enabled using the \-\-enable-target-programming
 configuration option.
 .TP
 .BR \-R ,\  \-\-reset-srst
@@ -363,10 +362,10 @@ Read fuses bytes.
 Print version information.
 .TP
 .BR \-v ,\  \-\-verify
-Verify program in device against file specified with --file option.
+Verify program in device against file specified with \-\-file option.
 .BR
 .B NOTE:
-deprecated feature, must be enabled using the --enable-target-programming
+deprecated feature, must be enabled using the \-\-enable-target-programming
 configuration option.
 .TP
 .BR \-w ,\  \-\-debugwire
@@ -398,7 +397,7 @@ The target device is an ATxmega part, using PDI transport.
 .PP
 :\fIPORT\fR is required to put avarice into gdb server mode.
 .SH EXAMPLE USAGE
-avarice --erase --program --file test.bin --jtag /dev/ttyS0 :4242
+avarice \-\-erase \-\-program \-\-file test.bin \-\-jtag /dev/ttyS0 :4242
 .PP
 Program the file \fItest.bin\fR into the JTAG ICE (mkI) connected to
 /dev/ttyS0 after erasing the device, then listen in GDB mode on the
@@ -406,7 +405,7 @@ local port 4242.
 This functionality is deprecated, and no longer configured by default.
 Use GDB's "load" command instead.
 .PP
-avarice --jtag usb:1234 --mkII :4242
+avarice \-\-jtag usb:1234 \-\-mkII :4242
 .PP
 Connect to the JTAG ICE mkII attached to USB which serial number ends
 in \fI1234\fR, and listen in GDB mode on local port 4242.

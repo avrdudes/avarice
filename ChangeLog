@@ -1,3 +1,18 @@
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Christian Kastner:
+	patch #30 Man page fixes
+	patch #31 Spelling fixes
+	patch #32 Man pages for start-avarice
+	patch #33 Man page for kill-avarice
+	* doc/avarice.1: Minor fixes
+	* doc/ice-gdb.1: (Dito.)
+	* doc/start-avarice.1: (New file)
+	* doc/kill-avarice.1: (New file)
+	* src/jtag2misc.cc: Spelling ("paramater" => "parameter")
+	* src/jtag3misc.cc: (Dito.)
+	* doc/Makefile.am (man_MANS): Add new man pages
+
 2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	Submitted by Mark Rages and nichtleiter:
