@@ -37,6 +37,7 @@
 #include <math.h>
 
 #if ENABLE_TARGET_PROGRAMMING
+#  include "autoconf.h"
 #  include <bfd.h>
 #endif
 

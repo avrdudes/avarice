@@ -1,5 +1,12 @@
 2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by MJH:
+	patch #26 Fix build error if ENABLE_TARGET_PROGRAMMING is on
+	* src/jtag2prog.cc: Include "autoconf.h"
+	* src/jtagprog.cc: (Dito.)
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Submitted by Christian Kastner:
 	patch #30 Man page fixes
 	patch #31 Spelling fixes
