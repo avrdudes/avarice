@@ -1,5 +1,11 @@
 2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by Jack Bradach:
+	bug #21 Deprecated feature used as example of Avarice use
+	* src/main.cc (usage): update example usage
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	* src/jtag2prog.cc: Silence warnings
 	* src/jtag2usb.cc: Silence warnings
 	* src/jtag3io.cc: Silence warnings

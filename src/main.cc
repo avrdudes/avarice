@@ -246,8 +246,14 @@ static void usage(const char *progname)
 	    "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
 	    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
     fprintf(stderr,
-	    "e.g. %s --erase --program --file test.bin --jtag /dev/ttyS0 :4242\n\n",
-	    progname);
+            "Example usage:\n");
+    fprintf(stderr,
+            "\t%s --jtag /dev/ttyS0 :4242\n",
+            progname);
+    fprintf(stderr,
+            "\t%s --dragon :4242\n",
+            progname);
+    fprintf(stderr, "\n");
     exit(0);
 }
 
