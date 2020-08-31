@@ -204,7 +204,7 @@ static void jtag_create_image(bfd *file, asection *section,
 void jtag1::enableProgramming(void)
 {
     programmingEnabled = true;
-    if (doSimpleJtagCommand(0xa3, 1) < 0)
+    if (!doSimpleJtagCommand(0xa3, 1))
     {
         fprintf(stderr, "JTAG ICE: Failed to enable programming\n");
         throw jtag_exception();
@@ -215,7 +215,7 @@ void jtag1::enableProgramming(void)
 void jtag1::disableProgramming(void)
 {
     programmingEnabled = false;
-    if (doSimpleJtagCommand(0xa4, 1) < 0)
+    if (!doSimpleJtagCommand(0xa4, 1))
     {
         fprintf(stderr, "JTAG ICE: Failed to disable programming\n");
         throw jtag_exception();
@@ -227,7 +227,7 @@ void jtag1::disableProgramming(void)
 // (unless the save-eeprom fuse is set).
 void jtag1::eraseProgramMemory(void)
 {
-    if (doSimpleJtagCommand(0xa5, 1) < 0)
+    if (!doSimpleJtagCommand(0xa5, 1))
     {
         fprintf(stderr, "JTAG ICE: Failed to erase program memory\n");
         throw jtag_exception();
@@ -347,6 +347,9 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
 
     statusOut("\nDownload complete.\n");
 #else  // !ENABLE_TARGET_PROGRAMMING
+    (void)filename;
+    (void)program;
+    (void)verify;
     statusOut("\nDownload not done.\n");
     throw jtag_exception("AVaRICE was not configured for target programming");
 #endif // ENABLE_TARGET_PROGRAMMING

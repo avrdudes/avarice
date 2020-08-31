@@ -385,6 +385,9 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
 
     statusOut("\nDownload complete.\n");
 #else  // !ENABLE_TARGET_PROGRAMMING
+    (void)filename;
+    (void)program;
+    (void)verify;
     statusOut("\nDownload not done.\n");
     throw jtag_exception("AVaRICE was not configured for target programming");
 #endif	// ENABLE_TARGET_PROGRAMMING

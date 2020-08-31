@@ -1,5 +1,14 @@
 2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	* src/jtag2prog.cc: Silence warnings
+	* src/jtag2usb.cc: Silence warnings
+	* src/jtag3io.cc: Silence warnings
+	* src/jtag3prog.cc: Silence warnings
+	* src/jtag3run.cc: Silence warnings
+	* src/jtagprog.cc: Silence warnings
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Submitted by MJH:
 	patch #26 Fix build error if ENABLE_TARGET_PROGRAMMING is on
 	* src/jtag2prog.cc: Include "autoconf.h"

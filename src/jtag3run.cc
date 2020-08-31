@@ -157,7 +157,7 @@ void jtag3::resumeProgram(void)
 void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt)
 {
   uchar *evtbuf;
-  int evtsize, i;
+  int evtsize;
   unsigned short seqno;
 
   if (cached_event != NULL)
