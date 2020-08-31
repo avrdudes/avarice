@@ -1,5 +1,14 @@
 2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	bug #22 Unknown device is not clearly named
+	* src/avarice.h: Declare unknownDevice()
+	* src/utils.cc (unknownDevice): New function
+	* src/jtagio.cc (jtag1::deviceAutoConfig): Use unknownDevice()
+	* src/jtag2io.cc (jtag2::deviceAutoConfig): Use unknownDevice()
+	* src/jtag3io.cc (jtag3::deviceAutoConfig): Use unknownDevice()
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Submitted by Ryan Schmidt:
 	bug #25 error: use of undeclared identifier 'bfd_get_section_name'
 	* src/jtagprog.cc: Supply fallbacks for deprecated bfd functions
