@@ -1,5 +1,12 @@
 2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
+	Submitted by Ryan Schmidt:
+	bug #25 error: use of undeclared identifier 'bfd_get_section_name'
+	* src/jtagprog.cc: Supply fallbacks for deprecated bfd functions
+	* src/jtag2prog.cc: (Dito.)
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
 	Submitted by Jack Bradach:
 	bug #21 Deprecated feature used as example of Avarice use
 	* src/main.cc (usage): update example usage

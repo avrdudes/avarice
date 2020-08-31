@@ -47,8 +47,11 @@
 
 #if ENABLE_TARGET_PROGRAMMING
 // The API changed for this in bfd.h. This is a work around.
+#ifndef bfd_get_section_name
+#  define bfd_get_section_name(bfd, ptr) bfd_section_name(ptr)
+#endif
 #ifndef bfd_get_section_size
-#  define bfd_get_section_size bfd_get_section_size_before_reloc
+#  define bfd_get_section_size bfd_section_size
 #endif
 
 static void initImage(BFDimage *image)
