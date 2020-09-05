@@ -63,3 +63,16 @@ void statusFlush()
     fflush(stdout);
 }
 
+void unknownDevice(unsigned int devid, bool generic)
+{
+  fprintf(stderr,
+          "Device ID 0x%04x is not known to AVaRICE.\n"
+          "Please ask for it being added to the code",
+          devid);
+  if (generic)
+      fprintf(stderr,
+              ", or use\n"
+              "-P <device> to override the automatic decision.\n");
+  else
+      fprintf(stderr, ".\n");
+}

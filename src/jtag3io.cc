@@ -308,9 +308,6 @@ void jtag3::doJtagCommand(uchar *command, int  commandSize,
                           uchar *&response, int &responseSize)
     throw (jtag_exception)
 {
-    int sizeseen = 0;
-    uchar code = 0;
-
     if (sendJtagCommand(command, commandSize, name, response, responseSize))
         return;
 
@@ -353,12 +350,12 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
     throw jtag_exception("doSimpleJtagCommand(): too many failures");
 }
 
-void jtag3::changeBitRate(int newBitRate)
+void jtag3::changeBitRate(int newBitRate __unused)
 {
   throw;
 }
 
-bool jtag3::synchroniseAt(int bitrate)
+bool jtag3::synchroniseAt(int bitrate __unused)
 {
   throw;
 }
@@ -366,7 +363,6 @@ bool jtag3::synchroniseAt(int bitrate)
 void jtag3::setDeviceDescriptor(jtag_device_def_type *dev)
 {
   uchar *param, paramsize;
-  int respSize;
   jtag3_device_desc_type d3;
 
   if (is_xmega)
@@ -557,7 +553,6 @@ void jtag3::startJtagLink(void)
 void jtag3::deviceAutoConfig(void)
 {
     uchar *resp;
-    int respsize;
     jtag_device_def_type *pDevice = deviceDefinitions;
 
     // Auto config
@@ -581,7 +576,10 @@ void jtag3::deviceAutoConfig(void)
 	   * Hopefully, the values below will remain constant for all
 	   * Xmega devices ...
 	   */
-	  jtag_device_def_type desc = { "dummy", 0 };
+	  jtag_device_def_type desc{ "dummy", 0,
+				     0, 0, 0, 0, 0, DEVFL_NONE,
+				     nullptr, true, 0, 0, 0, 0,
+				     {}, {}, {} };
 
 	  u32_to_b4(desc.dev_desc3.nvm_data_offset, 0x1000000);
 	  u16_to_b2(desc.dev_desc3.mcu_base_addr, 0x90);
@@ -606,8 +604,7 @@ void jtag3::deviceAutoConfig(void)
         }
         if (pDevice->name == 0)
         {
-            fprintf(stderr, "No configuration available for device ID: %0x\n",
-                    device_id);
+            unknownDevice(device_id);
             throw jtag_exception();
         }
     }
@@ -624,8 +621,7 @@ void jtag3::deviceAutoConfig(void)
         }
         if (pDevice->name == 0)
         {
-            fprintf(stderr, "No configuration available for device ID: %0x\n",
-                    device_id);
+            unknownDevice(device_id, false);
             throw jtag_exception();
         }
     }

@@ -1,6 +1,6 @@
 # $Id$
 
-Summary of changes since AVaRICE 2.13
+Summary of changes in AVaRICE 2.14
 ==================================
 
 . Replace the USB daemon by Posix threads (bug #15).
@@ -17,7 +17,7 @@ Summary of changes since AVaRICE 2.13
   version" are already around.
 
 . New devices: ATmega256RFR2, ATmega2564RFR2, ATmega128RFR2,
-  ATmega1284RFR2, ATmega64RFR2, ATmega644RFR2
+  ATmega1284RFR2, ATmega64RFR2, ATmega644RFR2, ATxmega64A3
 
 . Bugfix: support software breakpoints on ATmega48P, ATmega88P,
   ATmega168P, ATmega328P, ATtiny24, ATtiny44, ATtiny84

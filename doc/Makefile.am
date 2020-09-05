@@ -21,7 +21,9 @@ AUTOMAKE_OPTIONS = foreign
 
 man_MANS = ice-gdb.1 \
            ice-insight.1 \
-           avarice.1 
+           avarice.1 \
+           start-avarice.1 \
+           kill-avarice.1
 
 EXTRA_DIST = $(man_MANS) \
              README.cygwin \

@@ -106,7 +106,7 @@ void jtag3::eraseProgramPage(unsigned long address)
 }
 
 
-void jtag3::downloadToTarget(const char* filename, bool program, bool verify)
+void jtag3::downloadToTarget(const char* filename __unused, bool program __unused, bool verify __unused)
 {
     statusOut("\nDownload not done.\n");
     throw jtag_exception("Target programming not implemented for JTAGICE3");

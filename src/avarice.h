@@ -41,5 +41,6 @@ void debugOut(const char *fmt, ...);
 void vstatusOut(const char *fmt, va_list args);
 void statusOut(const char *fmt, ...);
 void statusFlush();
+void unknownDevice(unsigned int devid, bool generic = true);
 
 #endif // INCLUDE_AVARICE_H

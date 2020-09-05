@@ -1,3 +1,84 @@
+2020-09-05 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac: Bump release number to 2.14
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	bug #22 Unknown device is not clearly named
+	* src/avarice.h: Declare unknownDevice()
+	* src/utils.cc (unknownDevice): New function
+	* src/jtagio.cc (jtag1::deviceAutoConfig): Use unknownDevice()
+	* src/jtag2io.cc (jtag2::deviceAutoConfig): Use unknownDevice()
+	* src/jtag3io.cc (jtag3::deviceAutoConfig): Use unknownDevice()
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Ryan Schmidt:
+	bug #25 error: use of undeclared identifier 'bfd_get_section_name'
+	* src/jtagprog.cc: Supply fallbacks for deprecated bfd functions
+	* src/jtag2prog.cc: (Dito.)
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Jack Bradach:
+	bug #21 Deprecated feature used as example of Avarice use
+	* src/main.cc (usage): update example usage
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag2prog.cc: Silence warnings
+	* src/jtag2usb.cc: Silence warnings
+	* src/jtag3io.cc: Silence warnings
+	* src/jtag3prog.cc: Silence warnings
+	* src/jtag3run.cc: Silence warnings
+	* src/jtagprog.cc: Silence warnings
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by MJH:
+	patch #26 Fix build error if ENABLE_TARGET_PROGRAMMING is on
+	* src/jtag2prog.cc: Include "autoconf.h"
+	* src/jtagprog.cc: (Dito.)
+
+2020-08-31 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Christian Kastner:
+	patch #30 Man page fixes
+	patch #31 Spelling fixes
+	patch #32 Man pages for start-avarice
+	patch #33 Man page for kill-avarice
+	* doc/avarice.1: Minor fixes
+	* doc/ice-gdb.1: (Dito.)
+	* doc/start-avarice.1: (New file)
+	* doc/kill-avarice.1: (New file)
+	* src/jtag2misc.cc: Spelling ("paramater" => "parameter")
+	* src/jtag3misc.cc: (Dito.)
+	* doc/Makefile.am (man_MANS): Add new man pages
+
+2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Mark Rages and nichtleiter:
+	patch #25 adds atxmega32e5
+	patch #37 Add support for atxmega8e5
+	* src/devdescr.cc (ATxmega8E5, ATxmega32E5) New entries
+
+2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* src/jtag.h: Fix inconsistent naming between struct
+	and class jtag
+
+2020-08-30 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Uwe Frank:
+	patch #38 Patch to support XMEGA64A3
+	* src/devdescr.cc (ATxmega64A3): New entry
+
+2020-08-29 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Tobias Frost:
+	patch #35 configure.ac overwrites variable if both ...
+	* configure.ac: Avoid clobbering AM_CPPFLAGS
+
 2018-10-15 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 	Submitted by Fabian Blaese:
 	* src/devdescr.cc (ATmega48P, ATmega88P, ATmega168P,

@@ -342,6 +342,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   pdev = NULL;
   bool found = false;
 #ifdef HAVE_LIBUSB_2_0
+  (void)usb_interface;
   while ((pdev = libusb20_be_device_foreach(be, pdev)) != NULL)
     {
       struct LIBUSB20_DEVICE_DESC_DECODED *ddp =
@@ -487,7 +488,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       return NULL;
     }
   uint32_t max_packet_l;
-  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_out)) < max_xfer)
+  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_out)) < (unsigned)max_xfer)
     {
       statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
 		max_xfer, max_packet_l, write_ep);
@@ -499,7 +500,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       usb20_cleanup(pdev);
       return NULL;
     }
-  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_in)) < max_xfer)
+  if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_in)) < (unsigned)max_xfer)
     {
       statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
 		max_xfer, max_packet_l, read_ep);
@@ -582,7 +583,6 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
  */
 static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_size)
 {
-  char string[256];
   hid_device *pdev;
   char *devnamecopy, *serno, *cp2;
   size_t x;
@@ -739,7 +739,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
 #ifdef HAVE_LIBUSB_2_0
 /* USB thread */
-static void *usb_thread(void * data)
+static void *usb_thread(void * data __unused)
 {
   struct pollfd fds[2];
 
@@ -883,7 +883,7 @@ static void *usb_thread(void * data)
 	       * We do it synchronously right now.
 	       */
 	      unsigned int pkt_len = result;
-	      bool needmore = result == max_xfer;
+	      bool needmore = result == (unsigned)max_xfer;
 
 	      /* OK, if there is more to read, do so. */
 	      while (needmore)
@@ -1322,7 +1322,7 @@ static void *hid_thread(void * data)
 		  buf[3] = cursize >> 8;
 		  buf[4] = cursize;
 		  rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
-		  if (rv != hdata->max_pkt_size + 1)
+		  if ((unsigned)rv != hdata->max_pkt_size + 1)
 		    {
 		      debugOut("hid_write: short write, %u vs. %d\n",
 			       hdata->max_pkt_size + 1, rv);

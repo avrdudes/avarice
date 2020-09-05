@@ -1067,6 +1067,6 @@ class jtag_io_exception: public jtag_exception
 };
 
 
-extern struct jtag *theJtagICE;
+extern class jtag *theJtagICE;
 
 #endif

@@ -22,7 +22,7 @@
 #
 
 AC_PREREQ(2.57)
-AC_INIT(avarice, 2.13svn20160229)
+AC_INIT(avarice, 2.14)
 AC_CONFIG_AUX_DIR([config-aux])
 AC_CONFIG_SRCDIR([src/main.cc])
 AC_CONFIG_HEADERS([src/autoconf.h:src/autoconf.hin])
@@ -174,7 +174,7 @@ AC_ARG_ENABLE(
 	      esac],
 	[ENABLE_WARNINGS="-Wall -Wextra"])
 
-AC_SUBST([AM_CPPFLAGS], [$ENABLE_WARNINGS])
+_CPPFLAGS="$ENABLE_WARNINGS"
 
 # --enable-target-programming / --disable-target-programming
 AC_ARG_ENABLE(
@@ -189,7 +189,9 @@ AC_ARG_ENABLE(
 	      esac],
 	[ENABLE_TARGET_PROGRAMMING="-DENABLE_TARGET_PROGRAMMING=0"])
 
-AC_SUBST([AM_CPPFLAGS], [$ENABLE_TARGET_PROGRAMMING])
+_CPPFLAGS="$_CPPFLAGS $ENABLE_TARGET_PROGRAMMING"
+
+AC_SUBST([AM_CPPFLAGS], [$_CPPFLAGS])
 
 if test "x$enable_target_programming" = "xyes"; then
    if test "x$ac_found_bfd" = "xno"; then

@@ -359,8 +359,7 @@ void jtag1::deviceAutoConfig(void)
         }
         if (pDevice->name == 0)
         {
-            fprintf(stderr, "No configuration available for device ID: %0x\n",
-                    device_id);
+            unknownDevice(device_id);
             throw jtag_exception();
         }
     }
@@ -382,8 +381,7 @@ void jtag1::deviceAutoConfig(void)
         }
         if (pDevice->name == 0)
         {
-            fprintf(stderr, "No configuration available for Device: %s\n",
-                    device_name);
+            unknownDevice(device_id, false);
             throw jtag_exception();
         }
     }

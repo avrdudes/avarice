@@ -55,7 +55,7 @@ void jtag3::setJtagParameter(uchar scope, uchar section, uchar item,
   }
   catch (jtag_exception& e)
   {
-    fprintf(stderr, "set paramater command failed: %s\n",
+    fprintf(stderr, "set parameter command failed: %s\n",
 	    e.what());
     throw;
   }
@@ -86,16 +86,16 @@ void jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length,
   }
   catch (jtag_exception& e)
   {
-    fprintf(stderr, "get paramater command failed: %s\n",
+    fprintf(stderr, "get parameter command failed: %s\n",
 	    e.what());
     throw;
   }
   if (resp[1] != RSP3_DATA || respsize < 3 + length)
   {
-    debugOut("unexpected response to get paramater command: 0x%02x\n",
+    debugOut("unexpected response to get parameter command: 0x%02x\n",
 	     resp[1]);
     delete [] resp;
-    throw jtag_exception("unexpected response to get paramater command");
+    throw jtag_exception("unexpected response to get parameter command");
   }
 }
 
