@@ -350,12 +350,12 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
     throw jtag_exception("doSimpleJtagCommand(): too many failures");
 }
 
-void jtag3::changeBitRate(int newBitRate __unused)
+void jtag3::changeBitRate(int newBitRate __attribute__((unused)))
 {
   throw;
 }
 
-bool jtag3::synchroniseAt(int bitrate __unused)
+bool jtag3::synchroniseAt(int bitrate __attribute__((unused)))
 {
   throw;
 }

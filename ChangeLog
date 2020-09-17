@@ -1,3 +1,10 @@
+2020-09-17 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	patch #39 Compilation error in jtag3io.cc: (avarice 2.14)
+	* src/jtag2usb.cc: replace __unused by __attribute__((unused))
+	* src/jtag3io.cc: (Dito.)
+	* src/jtag3prog.cc: (Dito.)
+
 2020-09-05 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Bump release number to post-2.14

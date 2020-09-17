@@ -5,6 +5,8 @@ Summary of changes since AVaRICE 2.14
 
 . 
 
+. patch #39 Compilation error in jtag3io.cc: (avarice 2.14)
+
 
 Summary of changes in AVaRICE 2.14
 ==================================

@@ -739,7 +739,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
 #ifdef HAVE_LIBUSB_2_0
 /* USB thread */
-static void *usb_thread(void * data __unused)
+static void *usb_thread(void * data __attribute__((unused)))
 {
   struct pollfd fds[2];
 
