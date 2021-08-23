@@ -306,7 +306,6 @@ bool jtag3::sendJtagCommand(uchar *command, int commandSize,
 void jtag3::doJtagCommand(uchar *command, int  commandSize,
                           const char *name,
                           uchar *&response, int &responseSize)
-    throw (jtag_exception)
 {
     if (sendJtagCommand(command, commandSize, name, response, responseSize))
         return;
@@ -318,7 +317,6 @@ void jtag3::doJtagCommand(uchar *command, int  commandSize,
 }
 
 void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
-    throw (jtag_exception)
 {
     int dummy;
     uchar *replydummy, cmd[3];

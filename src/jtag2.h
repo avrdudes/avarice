@@ -156,7 +156,7 @@ class jtag2: public jtag
     **/
     void doJtagCommand(uchar *command, int  commandSize,
 		       uchar *&response, int &responseSize,
-		       bool retryOnTimeout = true) throw(jtag_exception);
+		       bool retryOnTimeout = true);
 
     /** Simplified form of doJtagCommand:
 	Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a

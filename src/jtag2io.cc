@@ -366,7 +366,6 @@ bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
 void jtag2::doJtagCommand(uchar *command, int  commandSize,
 			  uchar *&response, int  &responseSize,
 			  bool retryOnTimeout)
-    throw (jtag_exception)
 {
     int sizeseen = 0;
     uchar code = 0;

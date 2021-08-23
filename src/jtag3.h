@@ -311,7 +311,7 @@ class jtag3: public jtag
     **/
     void doJtagCommand(uchar *command, int  commandSize,
                        const char *name,
-		       uchar *&response, int &responseSize) throw(jtag_exception);
+		       uchar *&response, int &responseSize);
 
     /** Simplified form of doJtagCommand:
 	Send 1-byte command 'cmd' to JTAG ICE, expecting a
@@ -319,7 +319,7 @@ class jtag3: public jtag
 	RSP_OK.
     **/
     void doSimpleJtagCommand(uchar cmd, const char *name,
-                             uchar scope = SCOPE_AVR) throw(jtag_exception);
+                             uchar scope = SCOPE_AVR);
 
     // Miscellaneous
     // -------------

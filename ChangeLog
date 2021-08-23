@@ -1,3 +1,13 @@
+2021-08-23 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	Submitted by Joris Putcuyps:
+	patch #40 Remove old style exception throw specifier
+	(bug #34 AVaRICE 2.14 won't compile on Arch Linux)
+	* src/jtag2.h: (Dito.)
+	* src/jtag2io.cc: (Dito.)
+	* src/jtag3.h: (Dito.)
+	* src/jtag3io.cc: (Dito.)
+
 2020-09-17 Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	patch #39 Compilation error in jtag3io.cc: (avarice 2.14)

@@ -3,9 +3,10 @@
 Summary of changes since AVaRICE 2.14
 ==================================
 
-. 
-
 . patch #39 Compilation error in jtag3io.cc: (avarice 2.14)
+
+. patch #40 Remove old style exception throw specifier
+  (bug #34 AVaRICE 2.14 won't compile on Arch Linux)
 
 
 Summary of changes in AVaRICE 2.14
