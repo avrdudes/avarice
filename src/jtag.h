@@ -872,10 +872,10 @@ class jtag
   virtual void deleteAllBreakpoints(void) = 0;
 
   /** Delete breakpoint at the specified address. */
-  bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
+  virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
 
   /** Add a code breakpoint at the specified address. */
-  bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
+  virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
 
   bool layoutBreakpoints(void);
 
