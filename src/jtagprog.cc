@@ -204,7 +204,7 @@ static void jtag_create_image(bfd *file, asection *section,
 #endif	// ENABLE_TARGET_PROGRAMMING
 
 
-void jtag1::enableProgramming(void)
+void jtag1::enableProgramming()
 {
     programmingEnabled = true;
     if (!doSimpleJtagCommand(0xa3, 1))
@@ -215,7 +215,7 @@ void jtag1::enableProgramming(void)
 }
 
 
-void jtag1::disableProgramming(void)
+void jtag1::disableProgramming()
 {
     programmingEnabled = false;
     if (!doSimpleJtagCommand(0xa4, 1))
@@ -228,7 +228,7 @@ void jtag1::disableProgramming(void)
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag1::eraseProgramMemory(void)
+void jtag1::eraseProgramMemory()
 {
     if (!doSimpleJtagCommand(0xa5, 1))
     {

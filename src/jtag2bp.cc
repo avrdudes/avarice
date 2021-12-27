@@ -54,7 +54,7 @@ bool jtag2::codeBreakpointAt(unsigned int address)
     return false;
 }
 
-void jtag2::deleteAllBreakpoints(void)
+void jtag2::deleteAllBreakpoints()
 {
     int i = 0;
 
@@ -152,7 +152,7 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length)
 }
 #endif // notyet
 
-void jtag2::updateBreakpoints(void)
+void jtag2::updateBreakpoints()
 {
     int bp_i;
 
@@ -300,7 +300,7 @@ void jtag2::updateBreakpoints(void)
       }
 }
 
-void jtag2::xmegaSendBPs(void)
+void jtag2::xmegaSendBPs()
 {
     if (!(is_xmega && has_full_xmega_support))
 	return;

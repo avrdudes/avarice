@@ -85,7 +85,7 @@ jtag_io_exception::jtag_io_exception(unsigned int code)
 }
 
 
-jtag2::~jtag2(void)
+jtag2::~jtag2()
 {
     // Terminate connection to JTAG box.
     if (signedIn)
@@ -568,7 +568,7 @@ bool jtag2::synchroniseAt(int bitrate)
 }
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
-void jtag2::startJtagLink(void)
+void jtag2::startJtagLink()
 {
     static int bitrates[] =
     { 19200, 115200, 57600, 38400, 9600 };
@@ -632,7 +632,7 @@ void jtag2::startJtagLink(void)
  May be overridden by command line parameter.
 
 */
-void jtag2::deviceAutoConfig(void)
+void jtag2::deviceAutoConfig()
 {
     unsigned int device_id;
     uchar *resp;
@@ -742,7 +742,7 @@ void jtag2::deviceAutoConfig(void)
 }
 
 
-void jtag2::initJtagBox(void)
+void jtag2::initJtagBox()
 {
     statusOut("JTAG config starting.\n");
 
@@ -821,7 +821,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
         setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
 }
 
-void jtag2::configDaisyChain(void)
+void jtag2::configDaisyChain()
 {
     unsigned char buf[4];
 

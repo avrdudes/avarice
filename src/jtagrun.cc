@@ -38,7 +38,7 @@
 #include "jtag1.h"
 #include "remote.h"
 
-unsigned long jtag1::getProgramCounter(void)
+unsigned long jtag1::getProgramCounter()
 {
     uchar *response = NULL;
     uchar command[] = {'2', JTAG_EOM };
@@ -90,19 +90,19 @@ void jtag1::resetProgram(bool possible_nSRST)
   }
 }
 
-void jtag1::interruptProgram(void)
+void jtag1::interruptProgram()
 {
     // Just ignore the returned PC. It appears to be wrong if the most
     // recent instruction was a branch.
     doSimpleJtagCommand('F', 4);
 }
 
-void jtag1::resumeProgram(void)
+void jtag1::resumeProgram()
 {
     doSimpleJtagCommand('G', 0);
 }
 
-void jtag1::jtagSingleStep(void)
+void jtag1::jtagSingleStep()
 {
     doSimpleJtagCommand('1', 1);
 }
@@ -112,7 +112,7 @@ void jtag1::parseEvents(const char *)
     // current no event name parsing in mkI
 }
 
-bool jtag1::jtagContinue(void)
+bool jtag1::jtagContinue()
 {
     updateBreakpoints();        // download new bp configuration
 

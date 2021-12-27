@@ -45,7 +45,7 @@ bool jtag1::codeBreakpointAt(unsigned int address)
   return false;
 }
 
-void jtag1::deleteAllBreakpoints(void)
+void jtag1::deleteAllBreakpoints()
 {
     numBreakpointsData = numBreakpointsCode = 0;
 }
@@ -135,7 +135,7 @@ bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
 }
 PRAGMA_DIAG_POP
 
-void jtag1::updateBreakpoints(void)
+void jtag1::updateBreakpoints()
 {
     unsigned char bpMode = 0x00;
     int bpC = 0, bpD = 0;

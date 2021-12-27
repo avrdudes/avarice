@@ -37,7 +37,7 @@
 #include "jtag3.h"
 #include "remote.h"
 
-unsigned long jtag3::getProgramCounter(void)
+unsigned long jtag3::getProgramCounter()
 {
   if (cached_pc_is_valid)
     return cached_pc;
@@ -130,7 +130,7 @@ void jtag3::resetProgram(bool possible_nSRST_ignored)
 
 PRAGMA_DIAG_POP
 
-void jtag3::interruptProgram(void)
+void jtag3::interruptProgram()
 {
   uchar cmd[] = { SCOPE_AVR, CMD3_STOP, 0, 0x01 };
   uchar *resp;
@@ -143,7 +143,7 @@ void jtag3::interruptProgram(void)
   expectEvent(bp, gdb);
 }
 
-void jtag3::resumeProgram(void)
+void jtag3::resumeProgram()
 {
   xmegaSendBPs();
 
@@ -253,7 +253,7 @@ void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt)
   delete [] evtbuf;
 }
 
-bool jtag3::eventLoop(void)
+bool jtag3::eventLoop()
 {
     int maxfd;
     fd_set readfds;
@@ -307,7 +307,7 @@ bool jtag3::eventLoop(void)
 }
 
 
-void jtag3::jtagSingleStep(void)
+void jtag3::jtagSingleStep()
 {
   uchar cmd[] = { SCOPE_AVR, CMD3_STEP,
 		  0, 0x01, 0x01 };
@@ -386,7 +386,7 @@ void jtag3::parseEvents(const char *evtlist)
 #endif
 }
 
-bool jtag3::jtagContinue(void)
+bool jtag3::jtagContinue()
 {
   updateBreakpoints(); // download new bp configuration
 

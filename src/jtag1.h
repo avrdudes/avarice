@@ -89,37 +89,37 @@ class jtag1: public jtag
 	apply_nSRST = nsrst;
     };
 
-    virtual void initJtagBox(void);
+    virtual void initJtagBox();
     virtual void initJtagOnChipDebugging(unsigned long bitrate);
 
-    virtual void deleteAllBreakpoints(void);
+    virtual void deleteAllBreakpoints();
     virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
     virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual void updateBreakpoints(void);
+    virtual void updateBreakpoints();
     virtual bool codeBreakpointAt(unsigned int address);
     virtual void parseEvents(const char *);
 
-    virtual void enableProgramming(void);
-    virtual void disableProgramming(void);
-    virtual void eraseProgramMemory(void);
+    virtual void enableProgramming();
+    virtual void disableProgramming();
+    virtual void eraseProgramMemory();
     virtual void eraseProgramPage(unsigned long address);
     virtual void downloadToTarget(const char* filename, bool program, bool verify);
 
-    virtual unsigned long getProgramCounter(void);
+    virtual unsigned long getProgramCounter();
     virtual void setProgramCounter(unsigned long pc);
     virtual void resetProgram(bool possible_nSRST);
-    virtual void interruptProgram(void);
-    virtual void resumeProgram(void);
-    virtual void jtagSingleStep(void);
-    virtual bool jtagContinue(void);
+    virtual void interruptProgram();
+    virtual void resumeProgram();
+    virtual void jtagSingleStep();
+    virtual bool jtagContinue();
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
-    virtual unsigned int statusAreaAddress(void) const {
+    virtual unsigned int statusAreaAddress() const {
         /* no Xmega handling in JTAG ICE mkI */
         return 0x5D + DATA_SPACE_ADDR_OFFSET;
     };
-    virtual unsigned int cpuRegisterAreaAddress(void) const {
+    virtual unsigned int cpuRegisterAreaAddress() const {
         /* no Xmega handling in JTAG ICE mkI */
         return DATA_SPACE_ADDR_OFFSET;
     }
@@ -128,13 +128,13 @@ class jtag1: public jtag
     virtual void changeBitRate(int newBitRate);
     virtual void setDeviceDescriptor(jtag_device_def_type *dev);
     virtual bool synchroniseAt(int bitrate);
-    virtual void startJtagLink(void);
-    virtual void deviceAutoConfig(void);
-    virtual void configDaisyChain(void);
+    virtual void startJtagLink();
+    virtual void deviceAutoConfig();
+    virtual void configDaisyChain();
 
     uchar *getJtagResponse(int responseSize);
     SendResult sendJtagCommand(uchar *command, int commandSize, int *tries);
-    bool checkForEmulator(void);
+    bool checkForEmulator();
 
     /** Send a command to the jtag, with retries, and return the 'responseSize'
 	byte response. Aborts avarice in case of to many failed retries.

@@ -996,7 +996,7 @@ static void *usb_thread(void * data __attribute__((unused)))
 #else
 
 /* USB writer thread */
-static void *usb_thread_write(void * data)
+static void *usb_thread_write(void *)
 {
   while (1)
     {
@@ -1043,7 +1043,7 @@ static void *usb_thread_write(void * data)
 }
 
 /* USB event reader thread (JTAGICE3 only) */
-static void *usb_thread_read(void *data)
+static void *usb_thread_read(void *)
 {
   while (1)
     {
@@ -1133,9 +1133,9 @@ static void *usb_thread_read(void *data)
 }
 
 /* USB reader thread */
-static void *usb_thread_event(void *data)
+static void *usb_thread_event(void *)
 {
-  while (1)
+  while (true)
     {
       /*
        * Events are shorter than regular data packets, so no
@@ -1189,7 +1189,7 @@ static void *usb_thread_event(void *data)
 }
 #endif
 
-void jtag::resetUSB(void)
+void jtag::resetUSB()
 {
 #ifndef HAVE_LIBUSB_2_0
   if (udev)
@@ -1410,7 +1410,7 @@ static void *hid_thread(void * data)
 }
 
 static void
-cleanup_hid(void)
+cleanup_hid()
 {
   hid_close(hdev);
   hdev = NULL;
@@ -1418,7 +1418,7 @@ cleanup_hid(void)
 #endif
 
 static void
-cleanup_usb(void)
+cleanup_usb()
 {
 #ifdef HAVE_LIBUSB_2_0
   usb20_cleanup(udev);

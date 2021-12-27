@@ -203,7 +203,7 @@ static void jtag_create_image(bfd *file, asection *section,
 }
 #endif	// ENABLE_TARGET_PROGRAMMING
 
-void jtag2::enableProgramming(void)
+void jtag2::enableProgramming()
 {
     if (proto != PROTO_DW)
     {
@@ -213,7 +213,7 @@ void jtag2::enableProgramming(void)
 }
 
 
-void jtag2::disableProgramming(void)
+void jtag2::disableProgramming()
 {
     if (proto != PROTO_DW)
     {
@@ -225,7 +225,7 @@ void jtag2::disableProgramming(void)
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag2::eraseProgramMemory(void)
+void jtag2::eraseProgramMemory()
 {
     if (proto == PROTO_DW)
         // debugWIRE auto-erases when programming

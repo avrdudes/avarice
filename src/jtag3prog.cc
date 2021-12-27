@@ -37,7 +37,7 @@
 #include "jtag3.h"
 
 
-void jtag3::enableProgramming(void)
+void jtag3::enableProgramming()
 {
     if (proto != PROTO_DW)
     {
@@ -47,7 +47,7 @@ void jtag3::enableProgramming(void)
 }
 
 
-void jtag3::disableProgramming(void)
+void jtag3::disableProgramming()
 {
     if (proto != PROTO_DW)
     {
@@ -59,7 +59,7 @@ void jtag3::disableProgramming(void)
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag3::eraseProgramMemory(void)
+void jtag3::eraseProgramMemory()
 {
     if (proto == PROTO_DW)
         // debugWIRE auto-erases when programming

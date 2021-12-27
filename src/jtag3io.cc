@@ -74,7 +74,7 @@ jtag3_io_exception::jtag3_io_exception(unsigned int code)
     }
 }
 
-jtag3::~jtag3(void)
+jtag3::~jtag3()
 {
   // Terminate connection to JTAG box.
   if (signedIn)
@@ -413,7 +413,7 @@ void jtag3::setDeviceDescriptor(jtag_device_def_type *dev)
   }
 }
 
-void jtag3::startJtagLink(void)
+void jtag3::startJtagLink()
 {
   doSimpleJtagCommand(CMD3_SIGN_ON, "sign-on", SCOPE_GENERAL);
 
@@ -548,7 +548,7 @@ void jtag3::startJtagLink(void)
  May be overridden by command line parameter.
 
 */
-void jtag3::deviceAutoConfig(void)
+void jtag3::deviceAutoConfig()
 {
     uchar *resp;
     jtag_device_def_type *pDevice = deviceDefinitions;
@@ -651,7 +651,7 @@ void jtag3::deviceAutoConfig(void)
 }
 
 
-void jtag3::initJtagBox(void)
+void jtag3::initJtagBox()
 {
     statusOut("JTAG config starting.\n");
 
@@ -756,7 +756,7 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     cached_pc_is_valid = false;
 }
 
-void jtag3::configDaisyChain(void)
+void jtag3::configDaisyChain()
 {
     unsigned char buf[4];
 

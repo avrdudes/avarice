@@ -30,13 +30,13 @@ void setGdbFile(int fd);
 
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
-int getDebugChar(void);
+int getDebugChar();
 
 /** printf 'fmt, ...' to gdb **/
 void gdbOut(const char *fmt, ...);
 void vgdbOut(const char *fmt, va_list args);
 
 /** GDB remote protocol interpreter */
-void talkToGdb(void);
+void talkToGdb();
 
 #endif /* INCLUDE_REMOTE_H */

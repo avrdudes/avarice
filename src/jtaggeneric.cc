@@ -59,7 +59,7 @@ void jtag::restoreSerialPort()
       tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-jtag::jtag(void)
+jtag::jtag()
 {
   jtagBox = 0;
   softbp_only = is_xmega = oldtioValid = is_usb = false;
@@ -134,7 +134,7 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
 }
 
 // NB: the destructor is virtual; class jtag2 extends it
-jtag::~jtag(void)
+jtag::~jtag()
 {
   restoreSerialPort();
 }
@@ -488,7 +488,7 @@ static unsigned int countFuses(unsigned int fusemap)
 }
 
 
-void jtag::jtagReadFuses(void)
+void jtag::jtagReadFuses()
 {
     uchar *fuseBits = 0;
 
@@ -502,7 +502,7 @@ void jtag::jtagReadFuses(void)
 }
 
 
-void jtag::jtagActivateOcdenFuse(void)
+void jtag::jtagActivateOcdenFuse()
 {
     if (deviceDef->ocden_fuse == 0)
         return;                 // device without an OCDEN fuse
@@ -629,7 +629,7 @@ void jtag::jtagWriteLockBits(char *lock)
 }
 
 
-void jtag::jtagReadLockBits(void)
+void jtag::jtagReadLockBits()
 {
     uchar *lockBits = 0;
 
@@ -862,7 +862,7 @@ PRAGMA_DIAG_POP
  * should go in hardware, vs. which breakpoints are more fixed and
  * should just be done in code would be handy
  */
-bool jtag::layoutBreakpoints(void)
+bool jtag::layoutBreakpoints()
 {
     // remaining_bps is an array showing which breakpoints are still
     // available, starting at 0x00 Note 0x00 is software breakpoint

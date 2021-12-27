@@ -252,7 +252,7 @@ void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
 
 /** Check for emulator using the 'S' command *without* retries
     (used at startup to check sync only) **/
-bool jtag1::checkForEmulator(void)
+bool jtag1::checkForEmulator()
 {
     uchar *response;
     uchar command[] = { 'S', JTAG_EOM };
@@ -295,7 +295,7 @@ bool jtag1::synchroniseAt(int bitrate)
 }
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
-void jtag1::startJtagLink(void)
+void jtag1::startJtagLink()
 {
     static int bitrates[] =
     { 115200, 19200, 57600, 38400, 9600 };
@@ -314,7 +314,7 @@ void jtag1::startJtagLink(void)
  May be overridden by command line parameter.
 
 */
-void jtag1::deviceAutoConfig(void)
+void jtag1::deviceAutoConfig()
 {
     unsigned int device_id;
     jtag_device_def_type *pDevice = deviceDefinitions;
@@ -413,7 +413,7 @@ void jtag1::deviceAutoConfig(void)
 }
 
 
-void jtag1::initJtagBox(void)
+void jtag1::initJtagBox()
 {
     statusOut("JTAG config starting.\n");
 
@@ -461,7 +461,7 @@ void jtag1::initJtagOnChipDebugging(unsigned long bitrate)
     resetProgram(true);
 }
 
-void jtag1::configDaisyChain(void)
+void jtag1::configDaisyChain()
 {
     /* Set daisy chain information (if needed) */
     if (dchain.units_before > 0)

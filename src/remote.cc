@@ -72,7 +72,7 @@ void setGdbFile(int fd)
         throw jtag_exception();
 }
 
-static void waitForGdbOutput(void)
+static void waitForGdbOutput()
 {
     int numfds;
     fd_set writefds;
@@ -107,7 +107,7 @@ static void putDebugChar(char c)
     }
 }
 
-static void waitForGdbInput(void)
+static void waitForGdbInput()
 {
     int numfds;
     fd_set readfds;
@@ -122,7 +122,7 @@ static void waitForGdbInput(void)
 
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
-int getDebugChar(void)
+int getDebugChar()
 {
     uchar c = 0;
     int result;
@@ -147,7 +147,7 @@ int getDebugChar(void)
     return (int)c;
 }
 
-int checkForDebugChar(void)
+int checkForDebugChar()
 {
     uchar c = 0;
     int result;
@@ -380,12 +380,12 @@ unsigned int readBWord(unsigned int address)
     return val;
 }
 
-unsigned int readSP(void)
+unsigned int readSP()
 {
     return readLWord(0x5d);
 }
 
-bool handleInterrupt(void)
+bool handleInterrupt()
 {
     bool result;
 
@@ -685,7 +685,7 @@ static char *makeSafeString(const char *s, int inLength)
 }
 
 
-void talkToGdb(void)
+void talkToGdb()
 {
     int addr;
     int length, plen;

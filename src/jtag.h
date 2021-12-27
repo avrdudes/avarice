@@ -808,16 +808,16 @@ class jtag
 
   protected:
   void openUSB(const char *jtagDeviceName);
-  void resetUSB(void);
+  void resetUSB();
   int safewrite(const void *b, int count);
   void changeLocalBitRate(int newBitRate);
-  void restoreSerialPort(void);
+  void restoreSerialPort();
 
   virtual void changeBitRate(int newBitRate) = 0;
   virtual void setDeviceDescriptor(jtag_device_def_type *dev) = 0;
   virtual bool synchroniseAt(int bitrate) = 0;
-  virtual void startJtagLink(void) = 0;
-  virtual void deviceAutoConfig(void) = 0;
+  virtual void startJtagLink() = 0;
+  virtual void deviceAutoConfig() = 0;
   void jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
 			bool program, bool verify);
   // Return page address of
@@ -830,16 +830,16 @@ class jtag
   unsigned int get_page_size(BFDmemoryType memtype);
 
   public:
-  jtag(void);
+  jtag();
   jtag(const char *dev, char *name, emulator type = EMULATOR_JTAGICE);
-  virtual ~jtag(void);
+  virtual ~jtag();
 
   // Basic JTAG I/O
   // -------------
 
   /** Send initial configuration to setup the JTAG box itself. 
    **/
-  virtual void initJtagBox(void) = 0;
+  virtual void initJtagBox() = 0;
 
   /**
      Send initial configuration to the JTAG box when starting a new
@@ -869,7 +869,7 @@ class jtag
   // -----------
 
   /** Clear out the breakpoints. */
-  virtual void deleteAllBreakpoints(void) = 0;
+  virtual void deleteAllBreakpoints() = 0;
 
   /** Delete breakpoint at the specified address. */
   virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
@@ -877,10 +877,10 @@ class jtag
   /** Add a code breakpoint at the specified address. */
   virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
 
-  bool layoutBreakpoints(void);
+  bool layoutBreakpoints();
 
   /** Send the breakpoint details down to the JTAG box. */
-  virtual void updateBreakpoints(void) = 0;
+  virtual void updateBreakpoints() = 0;
 
   /** True if there is a breakpoint at address */
   virtual bool codeBreakpointAt(unsigned int address) = 0;
@@ -892,13 +892,13 @@ class jtag
   // -------------------------
 
   /** Switch to faster programming mode, allows chip erase */
-  virtual void enableProgramming(void) = 0;
+  virtual void enableProgramming() = 0;
 
   /** Switch back to normal programming mode **/
-  virtual void disableProgramming(void) = 0;
+  virtual void disableProgramming() = 0;
 
   /** Erase all chip memory **/
-  virtual void eraseProgramMemory(void) = 0;
+  virtual void eraseProgramMemory() = 0;
 
   virtual void eraseProgramPage(unsigned long address) = 0;
 
@@ -909,7 +909,7 @@ class jtag
   // -----------------------------
 
   /** Retrieve the current Program Counter value, or PC_INVALID if fails */
-  virtual unsigned long getProgramCounter(void) = 0;
+  virtual unsigned long getProgramCounter() = 0;
 
   /** Set program counter to 'pc' **/
   virtual void setProgramCounter(unsigned long pc) = 0;
@@ -918,22 +918,22 @@ class jtag
   virtual void resetProgram(bool possible_nSRST) = 0;
 
   /** Interrupt AVR. **/
-  virtual void interruptProgram(void) = 0;
+  virtual void interruptProgram() = 0;
 
   /** Resume program execution.
       Note: the gdb 'continue' command is handled by jtagContinue,
       this is just the low level command to resume after interruptProgram
   **/
-  virtual void resumeProgram(void) = 0;
+  virtual void resumeProgram() = 0;
 
   /** Issue a "single step" command to the JTAG box.
   **/
-  virtual void jtagSingleStep(void) = 0;
+  virtual void jtagSingleStep() = 0;
 
   /** Send the program on it's merry way, and wait for a breakpoint or
       input from gdb.
       Return true for a breakpoint, false for gdb input. **/
-  virtual bool jtagContinue(void) = 0;
+  virtual bool jtagContinue() = 0;
 
   // R/W memory
   // ----------
@@ -973,7 +973,7 @@ class jtag
 
     Shows extended, high and low fuse byte.
   */
-  void jtagReadFuses(void);
+  void jtagReadFuses();
 
 
   /** Display fuses.
@@ -985,7 +985,7 @@ class jtag
 
   /** Activate OCDEN.
    */
-  void jtagActivateOcdenFuse(void);
+  void jtagActivateOcdenFuse();
 
 
   /** Write lockbits to target.
@@ -998,7 +998,7 @@ class jtag
 
   /** Read the lock bits from the target and display them.
    **/
-  void jtagReadLockBits(void);
+  void jtagReadLockBits();
 
 
   /** Display lockbits.
@@ -1013,7 +1013,7 @@ class jtag
     from.  0x5D + DATA_SPACE_ADDR_OFFSET for megaAVR, 0x3D +
     DATA_SPACE_ADDR_OFFSET for Xmega devices.
   **/
-  virtual unsigned int statusAreaAddress(void) const = 0;
+  virtual unsigned int statusAreaAddress() const = 0;
 
   /** Return read address for CPU registers.
 
@@ -1022,7 +1022,7 @@ class jtag
     for Xmega devices.
 
   **/
-  virtual unsigned int cpuRegisterAreaAddress(void) const = 0;
+  virtual unsigned int cpuRegisterAreaAddress() const = 0;
 
 };
 
@@ -1063,7 +1063,7 @@ class jtag_io_exception: public jtag_exception
     }
     jtag_io_exception(unsigned int code);
 
-    unsigned int get_response(void) { return response_code; }
+    unsigned int get_response() { return response_code; }
 };
 
 

@@ -221,36 +221,36 @@ class jtag3: public jtag
         cached_event = NULL;
         is_edbg = edbg;
     };
-    virtual ~jtag3(void);
+    virtual ~jtag3();
 
-    virtual void initJtagBox(void);
+    virtual void initJtagBox();
     virtual void initJtagOnChipDebugging(unsigned long bitrate);
 
-    virtual void deleteAllBreakpoints(void);
-    virtual void updateBreakpoints(void);
+    virtual void deleteAllBreakpoints();
+    virtual void updateBreakpoints();
     virtual bool codeBreakpointAt(unsigned int address);
     virtual void parseEvents(const char *);
 
-    virtual void enableProgramming(void);
-    virtual void disableProgramming(void);
-    virtual void eraseProgramMemory(void);
+    virtual void enableProgramming();
+    virtual void disableProgramming();
+    virtual void eraseProgramMemory();
     virtual void eraseProgramPage(unsigned long address);
     virtual void downloadToTarget(const char* filename, bool program, bool verify);
 
-    virtual unsigned long getProgramCounter(void);
+    virtual unsigned long getProgramCounter();
     virtual void setProgramCounter(unsigned long pc);
     virtual void resetProgram(bool ignored = false);
-    virtual void interruptProgram(void);
-    virtual void resumeProgram(void);
-    virtual void jtagSingleStep(void);
-    virtual bool jtagContinue(void);
+    virtual void interruptProgram();
+    virtual void resumeProgram();
+    virtual void jtagSingleStep();
+    virtual bool jtagContinue();
 
     virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
     virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
-    virtual unsigned int statusAreaAddress(void) const {
+    virtual unsigned int statusAreaAddress() const {
         return (is_xmega? 0x3D: 0x5D) + DATA_SPACE_ADDR_OFFSET;
     };
-    virtual unsigned int cpuRegisterAreaAddress(void) const {
+    virtual unsigned int cpuRegisterAreaAddress() const {
         return is_xmega? REGISTER_SPACE_ADDR_OFFSET: DATA_SPACE_ADDR_OFFSET;
     }
 
@@ -258,9 +258,9 @@ class jtag3: public jtag
     virtual void changeBitRate(int newBitRate);
     virtual bool synchroniseAt(int bitrate);
     virtual void setDeviceDescriptor(jtag_device_def_type *dev);
-    virtual void startJtagLink(void);
-    virtual void deviceAutoConfig(void);
-    virtual void configDaisyChain(void);
+    virtual void startJtagLink();
+    virtual void deviceAutoConfig();
+    virtual void configDaisyChain();
 
     void sendFrame(uchar *command, int commandSize);
     int recvFrame(unsigned char *&msg, unsigned short &seqno);
@@ -338,13 +338,13 @@ class jtag3: public jtag
 
     /** debugWire version of the breakpoint updater.
      **/
-    void updateBreakpintsDW(void);
+    void updateBreakpintsDW();
 
     /** Wait until either the ICE or GDB issued an event.  As this is
 	the heart of jtagContinue for the mkII, it returns true when a
 	breakpoint was reached, and false for GDB input.
      **/
-    bool eventLoop(void);
+    bool eventLoop();
 
     /** Expect an ICE event in the input stream.
      **/
@@ -352,7 +352,7 @@ class jtag3: public jtag
 
     /** Update Xmega breakpoints on target
      **/
-    void xmegaSendBPs(void);
+    void xmegaSendBPs();
 };
 
 class jtag3_io_exception: public jtag_io_exception
@@ -361,7 +361,7 @@ class jtag3_io_exception: public jtag_io_exception
     jtag3_io_exception(): jtag_io_exception(0) {}
     jtag3_io_exception(unsigned int code);
 
-    unsigned int get_response(void) { return response_code; }
+    unsigned int get_response() { return response_code; }
 };
 
 #endif

@@ -53,7 +53,7 @@ bool jtag3::codeBreakpointAt(unsigned int address)
     return false;
 }
 
-void jtag3::deleteAllBreakpoints(void)
+void jtag3::deleteAllBreakpoints()
 {
     int i = 0;
 
@@ -68,7 +68,7 @@ void jtag3::deleteAllBreakpoints(void)
 }
 
 
-void jtag3::updateBreakpoints(void)
+void jtag3::updateBreakpoints()
 {
   int bp_i;
 
@@ -241,7 +241,7 @@ void jtag3::updateBreakpoints(void)
   }
 }
 
-void jtag3::xmegaSendBPs(void)
+void jtag3::xmegaSendBPs()
 {
   if (!is_xmega)
     return;
