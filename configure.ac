@@ -34,6 +34,8 @@ AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
 AC_PROG_CXX
 AC_PROG_CC
 
+AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory])
+
 m4_include([m4_ax_pthread.m4])
 AX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS"
 	   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
