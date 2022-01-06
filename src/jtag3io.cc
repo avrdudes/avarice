@@ -154,7 +154,7 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno)
   uchar tempbuf[MAX_MESSAGE_SIZE_JTAGICE3];
   int rv, l;
 
-  msg = NULL;
+  msg = nullptr;
 
   int amnt;
   rv = timeout_read((void *)&amnt, sizeof amnt, JTAG_RESPONSE_TIMEOUT);
@@ -249,7 +249,7 @@ int jtag3::recv(uchar *&msg)
 	if (r_seqno == 0xffff) {
 	    debugOut("\ngot asynchronous event: 0x%02x, 0x%02x\n",
 		     msg[0], msg[1]);
-	    if (cached_event == NULL)
+	    if (cached_event == nullptr)
 	    {
 	      cached_event = msg;
 	      // do *not* delete[] it here
@@ -330,7 +330,7 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
     for (tries = 0; tries < 10; tries++)
     {
 	if (sendJtagCommand(cmd, 3, name, replydummy, dummy)) {
-	    if (replydummy == NULL)
+	    if (replydummy == nullptr)
 		throw jtag_io_exception();
 	    if (dummy < 3)
 		throw jtag_exception("Unexpected response size in doSimpleJtagCommand");
@@ -591,7 +591,7 @@ void jtag3::deviceAutoConfig()
 
     statusOut("Reported device ID: 0x%0X\n", device_id);
 
-    if (device_name == 0)
+    if (device_name == nullptr)
     {
         while (pDevice->name)
         {
@@ -600,7 +600,7 @@ void jtag3::deviceAutoConfig()
 
             pDevice++;
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id);
             throw jtag_exception();
@@ -617,7 +617,7 @@ void jtag3::deviceAutoConfig()
 
             pDevice++;
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id, false);
             throw jtag_exception();
@@ -655,7 +655,7 @@ void jtag3::initJtagBox()
 {
     statusOut("JTAG config starting.\n");
 
-    if (device_name != 0)
+    if (device_name != nullptr)
     {
         jtag_device_def_type *pDevice = deviceDefinitions;
 
@@ -667,7 +667,7 @@ void jtag3::initJtagBox()
             pDevice++;
         }
 
-        if (pDevice->name != 0)
+        if (pDevice->name != nullptr)
         {
             // If a device name has been specified on the command-line,
             // this overrides the is_xmega setting.

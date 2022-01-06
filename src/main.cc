@@ -78,7 +78,7 @@ static int makeSocket(struct sockaddr_in *name)
     }
 
     protoent = getprotobyname("tcp");
-    if (protoent == NULL)
+    if (protoent == nullptr)
     {
         fprintf(stderr, "tcp protocol unknown (oops?)");
         throw jtag_exception();
@@ -106,7 +106,7 @@ static void initSocketAddress(struct sockaddr_in *name,
     if (inet_aton(hostname, &name->sin_addr) == 0)
     {
 	hostInfo = gethostbyname(hostname);
-	if (hostInfo == NULL)
+	if (hostInfo == nullptr)
 	{
 	    fprintf(stderr, "Unknown host %s", hostname);
 	    throw jtag_exception();
@@ -272,7 +272,7 @@ static void knownParts()
     jtag_device_def_type* dev = deviceDefinitions;
     // Count the device descriptor records.
     size_t n = 0;
-    while (dev->name != NULL)
+    while (dev->name != nullptr)
       n++, dev++;
     // For historical reasons, device definitions are not
     // sorted.  Sort them here.
@@ -348,9 +348,8 @@ int main(int argc, char **argv)
     int sock;
     struct sockaddr_in clientname;
     struct sockaddr_in name;
-    char *inFileName = 0;
-    const char *jtagDeviceName = NULL;
-    char *device_name = 0;
+    char *inFileName = nullptr;
+    const char *jtagDeviceName = nullptr;
     const char *eventlist = "none,run,target_power_on,target_sleep,target_wakeup";
     unsigned long jtagBitrate = 0;
     const char *hostName = "0.0.0.0";	/* INADDR_ANY */
@@ -359,11 +358,11 @@ int main(int argc, char **argv)
     bool program = false;
     bool readFuses = false;
     bool writeFuses = false;
-    char *fuses = NULL;
+    char *fuses = nullptr;
     bool readLockBits = false;
     bool writeLockBits = false;
     bool gdbServerMode = false;
-    char *lockBits = NULL;
+    char *lockBits = nullptr;
     bool detach = false;
     bool capture = false;
     bool verify = false;
@@ -383,11 +382,11 @@ int main(int argc, char **argv)
     statusOut("AVaRICE version %s, %s %s\n\n",
 	      PACKAGE_VERSION, __DATE__, __TIME__);
 
-    device_name = 0;
+    char *device_name = nullptr;
 
     opterr = 0;                 /* disable default error message */
 
-    while (1)
+    while (true)
     {
         int c = getopt_long (argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
                              long_opts, &option_index);
@@ -398,8 +397,10 @@ int main(int argc, char **argv)
             case 'h':
             case '?':
                 usage(progname);
+                [[fallthrough]];
             case 'k':
                 knownParts();
+                [[fallthrough]];
 	    case '1':
 		devicetype = MKI;
 		break;
@@ -568,11 +569,11 @@ int main(int argc, char **argv)
     // command-line.  If the JTAG_DEV environment variable is set, use
     // the name given there.  As the AVR Dragon can only be talked to
     // through USB, default it to USB, but use a generic name else.
-    if (jtagDeviceName == NULL)
+    if (jtagDeviceName == nullptr)
     {
       char *cp = getenv ("JTAG_DEV");
 
-      if (cp != NULL)
+      if (cp != nullptr)
 	jtagDeviceName = cp;
       else if (devicetype == DRAGON || devicetype == JTAG3 || devicetype == EDBG)
 	jtagDeviceName = "usb";
@@ -581,7 +582,7 @@ int main(int argc, char **argv)
     }
 
     if (debugMode)
-      setvbuf(stderr, NULL, _IOLBF, 0);
+      setvbuf(stderr, nullptr, _IOLBF, 0);
 
     int rv = 0;			// return value from main()
 

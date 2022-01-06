@@ -167,7 +167,7 @@ void jtag1::updateBreakpoints()
     // has tons of parameters.
 
     // Find next breakpoint
-    bp = NULL;
+    bp = nullptr;
     if (bpC < numBreakpointsCode)
 	bp = &bpCode[bpC++];
     else if (bpD < numBreakpointsData)
@@ -201,7 +201,7 @@ void jtag1::updateBreakpoints()
 
 
 	// Find next breakpoint
-	bp = NULL;
+	bp = nullptr;
 	if (bpC < numBreakpointsCode)
 	    bp = &bpCode[bpC++];
 	else if (bpD < numBreakpointsData)

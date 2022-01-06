@@ -97,14 +97,14 @@ struct hid_thread_data
 
 static int read_ep, write_ep, event_ep, max_xfer;
 #ifdef HAVE_LIBUSB_2_0
-typedef struct libusb20_device usb_dev_t;
+using usb_dev_t = libusb20_device;
 #else
-typedef usb_dev_handle usb_dev_t;
+using usb_dev_t = usb_dev_handle;
 #endif
 
-static usb_dev_t *udev = NULL;
+static usb_dev_t *udev = nullptr;
 #ifdef HAVE_LIBHIDAPI
-static hid_device *hdev = NULL;
+static hid_device *hdev = nullptr;
 static pthread_t htid;
 #endif
 static int pype[2];
@@ -290,7 +290,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 
     default:
       // should not happen
-      return NULL;
+      return nullptr;
     }
 
   devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
@@ -306,12 +306,12 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
    * right-to-left, so only the least significant nibbles need to be
    * specified.
    */
-  if ((serno = strchr(devnamecopy, ':')) != NULL)
+  if ((serno = strchr(devnamecopy, ':')) != nullptr)
     {
       /* first, drop all colons there if any */
       cp2 = ++serno;
 
-      while ((cp2 = strchr(cp2, ':')) != NULL)
+      while ((cp2 = strchr(cp2, ':')) != nullptr)
 	{
 	  x = strlen(cp2) - 1;
 	  memmove(cp2, cp2 + 1, x);
@@ -322,15 +322,15 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       {
 	  fprintf(stderr, "invalid serial number \"%s\"", serno);
 	  delete [] devnamecopy;
-	  return NULL;
+	  return nullptr;
       }
     }
 
 #ifdef HAVE_LIBUSB_2_0
-  if ((be = libusb20_be_alloc_default()) == NULL)
+  if ((be = libusb20_be_alloc_default()) == nullptr)
     {
       perror("libusb20_be_alloc()");
-      return NULL;
+      return nullptr;
     }
 #else
   usb_init();
@@ -339,11 +339,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   usb_find_devices();
 #endif
 
-  pdev = NULL;
+  pdev = nullptr;
   bool found = false;
 #ifdef HAVE_LIBUSB_2_0
   (void)usb_interface;
-  while ((pdev = libusb20_be_device_foreach(be, pdev)) != NULL)
+  while ((pdev = libusb20_be_device_foreach(be, pdev)) != nullptr)
     {
       struct LIBUSB20_DEVICE_DESC_DECODED *ddp =
       libusb20_dev_get_device_desc(pdev);
@@ -357,7 +357,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 	      fprintf(stderr, "cannot open device \"%s\"",
 		      usb_error(rv));
 	      libusb20_be_free(be);
-	      return NULL;
+	      return nullptr;
 	    }
 
 	  /* yeah, we found something */
@@ -369,11 +369,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 	      fprintf(stderr, "cannot read serial number \"%s\"",
 		      usb_error(rv));
 	      usb20_cleanup(pdev);
-	      return NULL;
+	      return nullptr;
 	    }
 
 	  debugOut("Found JTAG ICE, serno: %s\n", string);
-	  if (serno != NULL)
+	  if (serno != nullptr)
 	    {
 	      /*
 	       * See if the serial number requested by the
@@ -413,11 +413,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 		  {
 		      fprintf(stderr, "cannot read serial number \"%s\"",
 			      usb_strerror());
-		      return NULL;
+		      return nullptr;
 		  }
 
 		  debugOut("Found JTAG ICE, serno: %s\n", string);
-		  if (serno != NULL)
+		  if (serno != nullptr)
 		    {
 		      /*
 		       * See if the serial number requested by the
@@ -448,7 +448,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   {
     printf("did not find any%s USB device \"%s\"\n",
 	   serno? " (matching)": "", jtagDeviceName);
-    return NULL;
+    return nullptr;
   }
 
 #ifdef HAVE_LIBUSB_2_0
@@ -458,7 +458,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     {
       fprintf(stderr, "libusb20_dev_set_config_index: %s\n", usb_error(rv));
       usb20_cleanup(pdev);
-      return NULL;
+      return nullptr;
     }
   /*
    * Two transfers have been requested in libusb20_dev_open() above;
@@ -469,11 +469,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   if (event_ep != 0)
     xfr_evt = libusb20_tr_get_pointer(pdev, 2);
 
-  if (xfr_in == NULL || xfr_out == NULL)
+  if (xfr_in == nullptr || xfr_out == nullptr)
     {
       fprintf(stderr, "libusb20_tr_get_pointer: %s\n", usb_error(rv));
       usb20_cleanup(pdev);
-      return NULL;
+      return nullptr;
     }
 
   /*
@@ -485,7 +485,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     {
       fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
       usb20_cleanup(pdev);
-      return NULL;
+      return nullptr;
     }
   uint32_t max_packet_l;
   if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_out)) < (unsigned)max_xfer)
@@ -498,7 +498,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     {
       fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
       usb20_cleanup(pdev);
-      return NULL;
+      return nullptr;
     }
   if ((max_packet_l = libusb20_tr_get_max_packet_length(xfr_in)) < (unsigned)max_xfer)
     {
@@ -511,15 +511,15 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
     {
       fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
       usb20_cleanup(pdev);
-      return NULL;
+      return nullptr;
     }
 #else
-  if (dev->config == NULL)
+  if (dev->config == nullptr)
   {
       statusOut("USB device has no configuration\n");
     fail:
       usb_close(pdev);
-      return NULL;
+      return nullptr;
   }
   if (usb_set_configuration(pdev, dev->config[0].bConfigurationValue))
   {
@@ -571,7 +571,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
 #else
       usb_close(pdev);
 #endif
-      return NULL;
+      return nullptr;
     }
 
   return pdev;
@@ -602,12 +602,12 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
    * right-to-left, so only the least significant nibbles need to be
    * specified.
    */
-  if ((serno = strchr(devnamecopy, ':')) != NULL)
+  if ((serno = strchr(devnamecopy, ':')) != nullptr)
     {
       /* first, drop all colons there if any */
       cp2 = ++serno;
 
-      while ((cp2 = strchr(cp2, ':')) != NULL)
+      while ((cp2 = strchr(cp2, ':')) != nullptr)
 	{
 	  x = strlen(cp2) - 1;
 	  memmove(cp2, cp2 + 1, x);
@@ -619,13 +619,13 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
       {
 	  fprintf(stderr, "invalid serial number \"%s\"", serno);
 	  delete [] devnamecopy;
-	  return NULL;
+	  return nullptr;
       }
       mbstowcs(wserno, serno, 15);
     }
   delete [] devnamecopy;
 
-  pdev = NULL;
+  pdev = nullptr;
 
   /*
    * Find any Atmel device which is a HID.  Then, look at the product
@@ -637,13 +637,13 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
    */
   struct hid_device_info *list, *walk;
   list = hid_enumerate(USB_VENDOR_ATMEL, 0);
-  if (list == NULL)
-    return NULL;
+  if (list == nullptr)
+    return nullptr;
 
   walk = list;
   while (walk)
     {
-      if (wcsstr(walk->product_string, L"CMSIS-DAP") != NULL)
+      if (wcsstr(walk->product_string, L"CMSIS-DAP") != nullptr)
 	{
 	  debugOut("Found HID PID:VID 0x%04x:0x%04x, serno %ls\n",
 		   walk->vendor_id, walk->product_id,
@@ -667,18 +667,18 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 	}
       walk = walk->next;
     }
-  if (walk == NULL)
+  if (walk == nullptr)
     {
       fprintf(stderr, "No (matching) HID found\n");
       hid_free_enumeration(list);
-      return NULL;
+      return nullptr;
     }
 
   pdev = hid_open_path(walk->path);
   hid_free_enumeration(list);
-  if (pdev == NULL)
+  if (pdev == nullptr)
     // can't happen?
-    return NULL;
+    return nullptr;
 
   hid_set_nonblocking(pdev, 1);
 
@@ -710,7 +710,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
   {
     fprintf(stderr, "openhid(): device not responding to DAP_Info\n");
     hid_close(pdev);
-    return NULL;
+    return nullptr;
   }
   if (probebuf[0] != 0 || probebuf[1] != 2)
   {
@@ -750,7 +750,7 @@ static void *usb_thread(void * data __attribute__((unused)))
   // one message into multiple packets?
   fds[1].events = POLLIN | POLLRDNORM;
 
-  while (1)
+  while (true)
     {
       char buf[MAX_MESSAGE];
       char rbuf[MAX_MESSAGE + sizeof(unsigned int)];
@@ -998,7 +998,7 @@ static void *usb_thread(void * data __attribute__((unused)))
 /* USB writer thread */
 static void *usb_thread_write(void *)
 {
-  while (1)
+  while (true)
     {
       char buf[MAX_MESSAGE];
       int rv;
@@ -1045,7 +1045,7 @@ static void *usb_thread_write(void *)
 /* USB event reader thread (JTAGICE3 only) */
 static void *usb_thread_read(void *)
 {
-  while (1)
+  while (true)
     {
       char buf[MAX_MESSAGE + sizeof(unsigned int)];
       int rv;
@@ -1142,9 +1142,8 @@ static void *usb_thread_event(void *)
        * reassembly and ZLP handling is needed here.
        */
       char buf[USBDEV_MAX_EVT_3 + sizeof(unsigned int)];
-      int rv;
 
-      rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int),
+      int rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int),
 			 USBDEV_MAX_EVT_3, 0);
       if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
       {
@@ -1213,7 +1212,7 @@ static void *hid_thread(void * data)
 
   debugOut("HID thread started\n");
 
-  while (1)
+  while (true)
     {
       // One additional byte is for libhidapi to tell we don't use HID
       // report numbers.  Four bytes are wrapping overhead.
@@ -1413,7 +1412,7 @@ static void
 cleanup_hid()
 {
   hid_close(hdev);
-  hdev = NULL;
+  hdev = nullptr;
 }
 #endif
 
@@ -1439,10 +1438,10 @@ void jtag::openUSB(const char *jtagDeviceName)
 #ifdef HAVE_LIBHIDAPI
       static struct hid_thread_data hdata;
       hdev = openhid(jtagDeviceName, hdata.max_pkt_size = 512);
-      if (hdev == NULL)
+      if (hdev == nullptr)
 	throw jtag_exception("cannot open HID");
 
-      pthread_create(&htid, NULL, hid_thread, &hdata);
+      pthread_create(&htid, nullptr, hid_thread, &hdata);
 #  ifdef __FreeBSD__
       pthread_set_name_np(htid, "HID thread");
 #  endif
@@ -1454,19 +1453,19 @@ void jtag::openUSB(const char *jtagDeviceName)
   else
     {
       udev = opendev(jtagDeviceName, emu_type, usb_interface);
-      if (udev == NULL)
+      if (udev == nullptr)
 	throw jtag_exception("cannot open USB device");
 
 #ifdef HAVE_LIBUSB_2_0
-      pthread_create(&utid, NULL, usb_thread, NULL);
+      pthread_create(&utid, nullptr, usb_thread, nullptr);
 #  ifdef __FreeBSD__
       pthread_set_name_np(utid, "USB thread");
 #  endif
 #else
-      pthread_create(&rtid, NULL, usb_thread_read, NULL);
-      pthread_create(&wtid, NULL, usb_thread_write, NULL);
+      pthread_create(&rtid, nullptr, usb_thread_read, nullptr);
+      pthread_create(&wtid, nullptr, usb_thread_write, nullptr);
       if (event_ep != 0)
-	pthread_create(&etid, NULL, usb_thread_event, NULL);
+	pthread_create(&etid, nullptr, usb_thread_event, nullptr);
 #  ifdef __FreeBSD__
       pthread_set_name_np(rtid, "USB reader thread");
       pthread_set_name_np(wtid, "USB writer thread");

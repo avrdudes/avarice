@@ -150,11 +150,11 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno)
     unsigned int headeridx = 0;
     bool ignorpkt = false;
     int rv;
-    unsigned char c, *buf = NULL, header[8];
+    unsigned char c, *buf = nullptr, header[8];
     unsigned short r_seqno = 0;
     unsigned short checksum = 0;
 
-    msg = NULL;
+    msg = nullptr;
 
     while (state != sDONE) {
 	if (state == sDATA) {
@@ -417,7 +417,7 @@ void jtag2::doSimpleJtagCommand(uchar command)
     for (;;)
     {
 	if (sendJtagCommand(&command, 1, tryCount, replydummy, dummy, false)) {
-	    if (replydummy == NULL)
+	    if (replydummy == nullptr)
 		throw jtag_io_exception();
 	    if (dummy != 1)
 		throw jtag_exception("Unexpected response size in doSimpleJtagCommand");
@@ -682,7 +682,7 @@ void jtag2::deviceAutoConfig()
 	statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
     }
 
-    if (device_name == 0)
+    if (device_name == nullptr)
     {
         while (pDevice->name)
         {
@@ -691,7 +691,7 @@ void jtag2::deviceAutoConfig()
 
             pDevice++;
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id);
             throw jtag_exception();
@@ -708,7 +708,7 @@ void jtag2::deviceAutoConfig()
 
             pDevice++;
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id, false);
             throw jtag_exception();
@@ -746,7 +746,7 @@ void jtag2::initJtagBox()
 {
     statusOut("JTAG config starting.\n");
 
-    if (device_name != 0)
+    if (device_name != nullptr)
     {
         jtag_device_def_type *pDevice = deviceDefinitions;
 
@@ -758,7 +758,7 @@ void jtag2::initJtagBox()
             pDevice++;
         }
 
-        if (pDevice->name != 0)
+        if (pDevice->name != nullptr)
         {
             // If a device name has been specified on the command-line,
             // this overrides the is_xmega setting.

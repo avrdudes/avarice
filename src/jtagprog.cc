@@ -239,7 +239,7 @@ void jtag1::eraseProgramMemory()
 
 void jtag1::eraseProgramPage(unsigned long address)
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar command[] = { 0xa1, 0, 0, 0, JTAG_EOM };
 
     command[1] = address >> 8;
@@ -262,7 +262,7 @@ void jtag1::downloadToTarget(const char* filename, bool program, bool verify)
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.
     struct stat ifstat;
-    const char *target = NULL;
+    const char *target = nullptr;
     const char *default_target = "binary";
     unsigned int page_size;
     bool done = 0;

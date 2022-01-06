@@ -298,7 +298,7 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
     // Basically, we just open the file and copy blocks over to the JTAG
     // box.
     struct stat ifstat;
-    const char *target = NULL;
+    const char *target = nullptr;
     const char *default_target = "binary";
     unsigned int page_size;
     bool done = 0;

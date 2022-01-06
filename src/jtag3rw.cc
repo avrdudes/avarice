@@ -107,8 +107,8 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
     if (needProgmode && !programmingEnabled)
        enableProgramming();
 
-    unsigned char *cachePtr = NULL;
-    unsigned int *cacheBaseAddr = NULL;
+    unsigned char *cachePtr = nullptr;
+    unsigned int *cacheBaseAddr = nullptr;
 
     switch (whichSpace)
     {

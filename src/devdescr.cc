@@ -1934,7 +1934,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 64,	// 256 bytes EEPROM
 	21 * 2,	// 21 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	false,
 	0x07, 0x0000, // fuses
 	0x51, // osccal
@@ -2253,7 +2253,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	4, 128,	// 512 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
 	0x66, // osccal
@@ -2381,7 +2381,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
 	0x66, // osccal
@@ -2509,7 +2509,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	8, 256,	// 2048 bytes EEPROM
 	31 * 4,	// 31 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	false,
 	0x00, 0x0000, // fuses
 	0x66, // osccal
@@ -4909,7 +4909,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 64,	// 2048 bytes EEPROM
 	125 * 4,	// 125 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -4992,7 +4992,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 64,	// 2048 bytes EEPROM
 	125 * 4,	// 125 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5077,7 +5077,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 128,	// 4096 bytes EEPROM
 	122 * 4,	// 122 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5162,7 +5162,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 128,	// 4096 bytes EEPROM
 	122 * 4,	// 122 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5245,7 +5245,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 32, 	// 1024 bytes EEPROM
 	94 * 4, 	// 94 interrupt vectors?
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5328,7 +5328,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 64	,	// 2048 bytes EEPROM
 	122 * 4,	// 122 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5411,7 +5411,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 32,         // 1024 bytes EEPROM
 	91 * 4,         // 91 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -5984,7 +5984,7 @@ jtag_device_def_type deviceDefinitions[] = {
         32, 64, // 2048 bytes EEPROM
         81 * 4,        // 81 interrupt vectors
         DEVFL_MKII_ONLY,
-        NULL,   // registers not yet defined
+        nullptr,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
 	0, // osccal
@@ -6067,7 +6067,7 @@ jtag_device_def_type deviceDefinitions[] = {
         32, 64, // 2048 bytes EEPROM
         54 * 4,        // 54 interrupt vectors
         DEVFL_MKII_ONLY,
-        NULL,   // registers not yet defined
+        nullptr,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
 	0, // osccal
@@ -6150,7 +6150,7 @@ jtag_device_def_type deviceDefinitions[] = {
         32, 64, // 2048 bytes EEPROM
         81 * 4,        // 81 interrupt vectors
         DEVFL_MKII_ONLY,
-        NULL,   // registers not yet defined
+        nullptr,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
 	0, // osccal
@@ -6233,7 +6233,7 @@ jtag_device_def_type deviceDefinitions[] = {
         32, 64, // 2048 bytes EEPROM
         54 * 4,        // 54 interrupt vectors
         DEVFL_MKII_ONLY,
-        NULL,   // registers not yet defined
+        nullptr,   // registers not yet defined
         true,
         0x37, 0x0000, // fuses
 	0, // osccal
@@ -6316,7 +6316,7 @@ jtag_device_def_type deviceDefinitions[] = {
         32, 64, 	// 2048 bytes EEPROM
         122 * 4,       	// 122 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -6399,7 +6399,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 32, 	// 1024 bytes EEPROM
 	40 * 4, 	// 40 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -6482,7 +6482,7 @@ jtag_device_def_type deviceDefinitions[] = {
 	32, 16, 	// ? bytes EEPROM
 	40 * 4, 	// 40 interrupt vectors
 	DEVFL_MKII_ONLY,
-	NULL,	// registers not yet defined
+	nullptr,	// registers not yet defined
 	true,
 	0x37, 0x0000, // fuses
 	0, // osccal
@@ -6559,13 +6559,13 @@ jtag_device_def_type deviceDefinitions[] = {
     },
     // Termination record.
     { 
-	NULL,			// name
+	nullptr,			// name
 	0,			// id
 	0, 0,			// flash
 	0, 0,			// eeprom
 	0,			// interrupt vectors
 	DEVFL_NONE,		// device flags
-	NULL,			// io reg defs
+	nullptr,			// io reg defs
 	false,			// is_xmega
 	0x00, 0x0000,		// fuses
 	0,			// osccal

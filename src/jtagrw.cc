@@ -99,7 +99,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
     {
 	command[1] = whichSpace;
 	if (numBytes > 256)
-	    return NULL;
+	    return nullptr;
 	command[2] = numBytes - 1;
 	encodeAddress(&command[3], addr);
 

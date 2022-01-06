@@ -73,8 +73,8 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
     oldtioValid = is_usb = false;
     device_name = name;
     emu_type = type;
-    programmingEnabled = 0;
-    deviceDef = NULL;
+    programmingEnabled = false;
+    deviceDef = nullptr;
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
       {
 #ifdef HAVE_LIBUSB
@@ -155,7 +155,7 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout)
 	tmout.tv_sec = timeout / 1000000;
 	tmout.tv_usec = timeout % 1000000;
 
-	int selected = select(jtagBox + 1, &readfds, NULL, NULL, &tmout);
+	int selected = select(jtagBox + 1, &readfds, nullptr, nullptr, &tmout);
         /* Even though select() is not supposed to set errno to EAGAIN
            (according to the linux man page), it seems that errno can be set
            to EAGAIN on some cygwin systems. Thus, we need to catch that
@@ -302,7 +302,7 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
     unsigned int page_size = get_page_size(memtype);
     static uchar buf[MAX_IMAGE_SIZE];
     unsigned int i;
-    uchar *response = NULL;
+    uchar *response = nullptr;
     unsigned int addr;
 
     if (! image->has_data)
@@ -422,7 +422,7 @@ void jtag::jtagWriteFuses(char *fuses)
         return;
     }
 
-    if (fuses == 0)
+    if (fuses == nullptr)
     {
         fprintf(stderr, "Error: No fuses string given");
         return;
@@ -490,7 +490,7 @@ static unsigned int countFuses(unsigned int fusemap)
 
 void jtag::jtagReadFuses()
 {
-    uchar *fuseBits = 0;
+    uchar *fuseBits = nullptr;
 
     statusOut("\nReading Fuse Bytes:\n");
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0,
@@ -514,7 +514,7 @@ void jtag::jtagActivateOcdenFuse()
                   "Device has more than 3 fuses: %d, cannot handle\n",
                   nfuses);
 
-    uchar *fuseBits = 0;
+    uchar *fuseBits = nullptr;
     fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
 
     unsigned int fusevect = (fuseBits[2] << 16) |
@@ -580,7 +580,7 @@ void jtag::jtagWriteLockBits(char *lock)
     uchar *readlockBits;
     unsigned int c;
 
-    if (lock == 0)
+    if (lock == nullptr)
     {
         fprintf(stderr, "Error: No lock bit string given");
         return;
@@ -631,7 +631,7 @@ void jtag::jtagWriteLockBits(char *lock)
 
 void jtag::jtagReadLockBits()
 {
-    uchar *lockBits = 0;
+    uchar *lockBits = nullptr;
 
     enableProgramming();
     statusOut("\nReading Lock Bits:\n");

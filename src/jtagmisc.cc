@@ -38,7 +38,7 @@
 
 void jtag1::setJtagParameter(uchar item, uchar newValue)
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar command[] = {'B', 0, 0, JTAG_EOM };
 
     command[1] = item;
@@ -53,7 +53,7 @@ void jtag1::setJtagParameter(uchar item, uchar newValue)
 
 uchar jtag1::getJtagParameter(uchar item)
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar command[] = {'q', 0, JTAG_EOM };
     unsigned char result = 0;
 

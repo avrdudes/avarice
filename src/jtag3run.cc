@@ -160,10 +160,10 @@ void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt)
   int evtsize;
   unsigned short seqno;
 
-  if (cached_event != NULL)
+  if (cached_event != nullptr)
   {
       evtbuf = cached_event;
-      cached_event = NULL;
+      cached_event = nullptr;
   }
   else
   {
@@ -333,7 +333,7 @@ void jtag3::jtagSingleStep()
   expectEvent(bp, gdb);
 }
 
-void jtag3::parseEvents(const char *evtlist)
+void jtag3::parseEvents(const char *)
 {
 #if 0
     memset(nonbreaking_events, 0, sizeof nonbreaking_events);
@@ -392,10 +392,10 @@ bool jtag3::jtagContinue()
 
   xmegaSendBPs();
 
-  if (cached_event != NULL)
+  if (cached_event != nullptr)
   {
       delete [] cached_event;
-      cached_event = NULL;
+      cached_event = nullptr;
   }
 
   doSimpleJtagCommand(CMD3_GO, "go");

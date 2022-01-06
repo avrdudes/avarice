@@ -149,7 +149,7 @@ uchar *jtag1::getJtagResponse(int responseSize)
     {
 	debugOut("Timed Out (partial response)\n");
 	delete [] response;
-	return NULL;
+	return nullptr;
     }
 
     return response;
@@ -170,7 +170,7 @@ uchar *jtag1::doJtagCommand(uchar *command, int  commandSize, int  responseSize)
 	{
 	case send_ok:
 	    response = getJtagResponse(responseSize);
-	    if (response == NULL)
+	    if (response == nullptr)
                 throw jtag_exception();
 	    return response;
 	case send_failed:
@@ -240,7 +240,7 @@ void jtag1::changeBitRate(int newBitRate)
 /** Set the JTAG ICE device descriptor data for specified device type **/
 void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar *command = (uchar *)(&dev->dev_desc1);
 
     response = doJtagCommand(command, sizeof dev->dev_desc1, 1);
@@ -343,7 +343,7 @@ void jtag1::deviceAutoConfig()
     device_id = (device_id & 0x0FFFF000) >> 12;
     statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
     
-    if (device_name == 0)
+    if (device_name == nullptr)
     {
         while (pDevice->name)
         {
@@ -357,7 +357,7 @@ void jtag1::deviceAutoConfig()
             fprintf(stderr, "Device is not supported by JTAG ICE mkI");
             throw jtag_exception();
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id);
             throw jtag_exception();
@@ -379,7 +379,7 @@ void jtag1::deviceAutoConfig()
             fprintf(stderr, "Device is not supported by JTAG ICE mkI");
             throw jtag_exception();
         }
-        if (pDevice->name == 0)
+        if (pDevice->name == nullptr)
         {
             unknownDevice(device_id, false);
             throw jtag_exception();

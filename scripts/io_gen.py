@@ -76,5 +76,5 @@ print('{')
 for addr in sorted(addrs):
     print('    { %-12s, 0x%X, 0x00 },' % ('"%s"' % (register[addr]), addr))
 print('    /* May need to add SREG, SPL, SPH, and eeprom registers. */')
-print('    { 0, 0, 0}')
+print('    { nullptr, 0, 0}')
 print('}')

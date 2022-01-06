@@ -259,7 +259,7 @@ bool jtag2::eventLoop()
 	  else
 	    maxfd = jtagBox;
 
-	  int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
+	  int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
 	  if (numfds < 0)
               throw jtag_exception("GDB/JTAG ICE communications failure");
 

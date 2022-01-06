@@ -89,7 +89,7 @@ gdb_io_reg_def_type atmega16_io_registers[] =
     { "SPL",     0x5D, 0x00 },
     { "SPH",     0x5E, 0x00 },
     { "SREG",    0x5F, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega162_io_registers[] =
@@ -173,7 +173,7 @@ gdb_io_reg_def_type atmega162_io_registers[] =
     { "TCNT3H",  0x89, 0x00 },
     { "TCCR3B",  0x8A, 0x00 },
     { "TCCR3A",  0x8B, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega169_io_registers[] =
@@ -287,7 +287,7 @@ gdb_io_reg_def_type atmega169_io_registers[] =
     { "LCDDR16", 0xFC, 0x00 },
     { "LCDDR17", 0xFD, 0x00 },
     { "LCDDR18", 0xFE, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega32_io_registers[] =
@@ -356,7 +356,7 @@ gdb_io_reg_def_type atmega32_io_registers[] =
     { "SPL",     0x5D, 0x00 },
     { "SPH",     0x5E, 0x00 },
     { "SREG",    0x5F, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega128_io_registers[] =
@@ -466,7 +466,7 @@ gdb_io_reg_def_type atmega128_io_registers[] =
     { "UCSR1A",  0x9B, 0x00 },
     { "UDR1",    0x9C, IO_REG_RSE }, // Reading this clears the UART RXC flag
     { "UCSR1C",  0x9D, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega323_io_registers[] =
@@ -535,7 +535,7 @@ gdb_io_reg_def_type atmega323_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -646,7 +646,7 @@ gdb_io_reg_def_type atmega64_io_registers[] =
     { "UCSR1A", 0x9b, 0x00 },
     { "UDR1", 0x9c, IO_REG_RSE },
     { "UCSR1C", 0x9d, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -803,7 +803,7 @@ gdb_io_reg_def_type at90can128_io_registers[] =
     { "CANSTML", 0xf8, 0x00 },
     { "CANSTMH", 0xf9, 0x00 },
     { "CANMSG", 0xfa, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -907,7 +907,7 @@ gdb_io_reg_def_type atmega164p_io_registers[] =
     { "UBRR1L", 0xcc, 0x00 },
     { "UBRR1H", 0xcd, 0x00 },
     { "UDR1", 0xce, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1011,7 +1011,7 @@ gdb_io_reg_def_type atmega324p_io_registers[] =
     { "UBRR1L", 0xcc, 0x00 },
     { "UBRR1H", 0xcd, 0x00 },
     { "UDR1", 0xce, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1109,7 +1109,7 @@ gdb_io_reg_def_type atmega644_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1205,7 +1205,7 @@ gdb_io_reg_def_type atmega325_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1309,7 +1309,7 @@ gdb_io_reg_def_type atmega3250_io_registers[] =
     { "PINJ", 0xdb, 0x00 },
     { "DDRJ", 0xdc, 0x00 },
     { "PORTJ", 0xdd, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1405,7 +1405,7 @@ gdb_io_reg_def_type atmega645_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1509,7 +1509,7 @@ gdb_io_reg_def_type atmega6450_io_registers[] =
     { "PINJ", 0xdb, 0x00 },
     { "DDRJ", 0xdc, 0x00 },
     { "PORTJ", 0xdd, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1625,7 +1625,7 @@ gdb_io_reg_def_type atmega329_io_registers[] =
     { "LCDDR16", 0xfc, 0x00 },
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1753,7 +1753,7 @@ gdb_io_reg_def_type atmega3290_io_registers[] =
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
     { "LCDDR19", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1869,7 +1869,7 @@ gdb_io_reg_def_type atmega649_io_registers[] =
     { "LCDDR16", 0xfc, 0x00 },
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -1997,7 +1997,7 @@ gdb_io_reg_def_type atmega6490_io_registers[] =
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
     { "LCDDR19", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2187,7 +2187,7 @@ gdb_io_reg_def_type atmega640_io_registers[] =
     { "UBRR3L", 0x134, 0x00 },
     { "UBRR3H", 0x135, 0x00 },
     { "UDR3", 0x136, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2377,7 +2377,7 @@ gdb_io_reg_def_type atmega1280_io_registers[] =
     { "UBRR3L", 0x134, 0x00 },
     { "UBRR3H", 0x135, 0x00 },
     { "UDR3", 0x136, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2542,7 +2542,7 @@ gdb_io_reg_def_type atmega1281_io_registers[] =
     { "OCR5BH", 0x12b, 0x00 },
     { "OCR5CL", 0x12c, 0x00 },
     { "OCR5CH", 0x12d, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2732,7 +2732,7 @@ gdb_io_reg_def_type atmega2560_io_registers[] =
     { "UBRR3L", 0x134, 0x00 },
     { "UBRR3H", 0x135, 0x00 },
     { "UDR3", 0x136, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2897,7 +2897,7 @@ gdb_io_reg_def_type atmega2561_io_registers[] =
     { "OCR5BH", 0x12b, 0x00 },
     { "OCR5CL", 0x12c, 0x00 },
     { "OCR5CH", 0x12d, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -2991,7 +2991,7 @@ gdb_io_reg_def_type atmega48_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3085,7 +3085,7 @@ gdb_io_reg_def_type atmega88_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3179,7 +3179,7 @@ gdb_io_reg_def_type atmega168_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3218,7 +3218,7 @@ gdb_io_reg_def_type attiny13_io_registers[] =
     { "GIMSK", 0x5b, 0x00 },
     { "SPL -- SP", 0x5d, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3280,7 +3280,7 @@ gdb_io_reg_def_type attiny2313_io_registers[] =
     { "OCR0B", 0x5c, 0x00 },
     { "SPL -- SP", 0x5d, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3427,7 +3427,7 @@ gdb_io_reg_def_type at90pwm2_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3574,7 +3574,7 @@ gdb_io_reg_def_type at90pwm3_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3719,7 +3719,7 @@ gdb_io_reg_def_type at90pwm2b_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3864,7 +3864,7 @@ gdb_io_reg_def_type at90pwm3b_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3929,7 +3929,7 @@ gdb_io_reg_def_type attiny24_io_registers[] =
     { "OCR0B", 0x5c, 0x00 },
     { "SPL -- SP", 0x5d, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -3995,7 +3995,7 @@ gdb_io_reg_def_type attiny44_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4061,7 +4061,7 @@ gdb_io_reg_def_type attiny84_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4118,7 +4118,7 @@ gdb_io_reg_def_type attiny25_io_registers[] =
     { "GIMSK", 0x5b, 0x00 },
     { "SPL -- SP", 0x5d, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4176,7 +4176,7 @@ gdb_io_reg_def_type attiny45_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4234,7 +4234,7 @@ gdb_io_reg_def_type attiny85_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4302,7 +4302,7 @@ gdb_io_reg_def_type attiny261_io_registers[] =
     { "GIMSK", 0x5b, 0x00 },
     { "SPL -- SP", 0x5d, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4371,7 +4371,7 @@ gdb_io_reg_def_type attiny461_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4440,7 +4440,7 @@ gdb_io_reg_def_type attiny861_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4575,7 +4575,7 @@ gdb_io_reg_def_type atmega32c1_io_registers[] =
     { "CANSTML", 0xf8, 0x00 },
     { "CANSTMH", 0xf9, 0x00 },
     { "CANMSG", 0xfa, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4739,7 +4739,7 @@ gdb_io_reg_def_type atmega32m1_io_registers[] =
     { "CANSTML", 0xf8, 0x00 },
     { "CANSTMH", 0xf9, 0x00 },
     { "CANMSG", 0xfa, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -4896,7 +4896,7 @@ gdb_io_reg_def_type at90can32_io_registers[] =
     { "CANSTML", 0xf8, 0x00 },
     { "CANSTMH", 0xf9, 0x00 },
     { "CANMSG", 0xfa, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5053,7 +5053,7 @@ gdb_io_reg_def_type at90can64_io_registers[] =
     { "CANSTML", 0xf8, 0x00 },
     { "CANSTMH", 0xf9, 0x00 },
     { "CANMSG", 0xfa, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5198,7 +5198,7 @@ gdb_io_reg_def_type at90pwm216_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5343,7 +5343,7 @@ gdb_io_reg_def_type at90pwm316_io_registers[] =
     { "PFRC2B", 0xfd, 0x00 },
     { "PICR2L", 0xfe, 0x00 },
     { "PICR2H", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5520,7 +5520,7 @@ gdb_io_reg_def_type at90usb1287_io_registers[] =
     { "UPBCHX", 0xf7, 0x00 },
     { "UPINT", 0xf8, 0x00 },
     { "OTGTCON", 0xf9, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5627,7 +5627,7 @@ gdb_io_reg_def_type at90usb162_io_registers[] =
     { "UEINT", 0xf4, 0x00 },
     { "PS2CON", 0xfa, 0x00 },
     { "UPOE", 0xfb, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5777,7 +5777,7 @@ gdb_io_reg_def_type at90usb646_io_registers[] =
     { "UEBCLX", 0xf2, 0x00 },
     { "UEBCHX", 0xf3, 0x00 },
     { "UEINT", 0xf4, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -5953,7 +5953,7 @@ gdb_io_reg_def_type at90usb647_io_registers[] =
     { "UPBCHX", 0xf7, 0x00 },
     { "UPINT", 0xf8, 0x00 },
     { "OTGTCON", 0xf9, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6072,7 +6072,7 @@ gdb_io_reg_def_type atmega1284p_io_registers[] =
     { "UBRR1L", 0xcc, 0x00 },
     { "UBRR1H", 0xcd, 0x00 },
     { "UDR1", 0xce, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6168,7 +6168,7 @@ gdb_io_reg_def_type atmega165_io_registers[] =
     { "UBRRL", 0xc4, 0x00 },
     { "UBRRH", 0xc5, 0x00 },
     { "UDR", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6264,7 +6264,7 @@ gdb_io_reg_def_type atmega165p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6357,7 +6357,7 @@ gdb_io_reg_def_type atmega168p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6443,7 +6443,7 @@ gdb_io_reg_def_type atmega16hva_io_registers[] =
     { "BPHCTR", 0xfc, 0x00 },
     { "BPCR", 0xfd, 0x00 },
     { "BPPLR", 0xfe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6547,7 +6547,7 @@ gdb_io_reg_def_type atmega3250p_io_registers[] =
     { "PINJ", 0xdb, 0x00 },
     { "DDRJ", 0xdc, 0x00 },
     { "PORTJ", 0xdd, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6643,7 +6643,7 @@ gdb_io_reg_def_type atmega325p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6736,7 +6736,7 @@ gdb_io_reg_def_type atmega328p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6864,7 +6864,7 @@ gdb_io_reg_def_type atmega3290p_io_registers[] =
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
     { "LCDDR19", 0xff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -6980,7 +6980,7 @@ gdb_io_reg_def_type atmega329p_io_registers[] =
     { "LCDDR16", 0xfc, 0x00 },
     { "LCDDR17", 0xfd, 0x00 },
     { "LCDDR18", 0xfe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7083,7 +7083,7 @@ gdb_io_reg_def_type atmega32hvb_io_registers[] =
     { "BPHCTR", 0xfc, 0x00 },
     { "BPCR", 0xfd, 0x00 },
     { "BPPLR", 0xfe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7277,7 +7277,7 @@ gdb_io_reg_def_type atmega32u4_io_registers[] =
     { "UPBCHX", 0xf7, 0x00 },
     { "UPINT", 0xf8, 0x00 },
     { "OTGTCON", 0xf9, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7368,7 +7368,7 @@ gdb_io_reg_def_type atmega406_io_registers[] =
     { "CBPTR", 0xf6, 0x00 },
     { "BPCR", 0xf7, 0x00 },
     { "BPPLR", 0xf8, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7460,7 +7460,7 @@ gdb_io_reg_def_type atmega48p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7564,7 +7564,7 @@ gdb_io_reg_def_type atmega644p_io_registers[] =
     { "UBRR1L", 0xcc, 0x00 },
     { "UBRR1H", 0xcd, 0x00 },
     { "UDR1", 0xce, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7657,7 +7657,7 @@ gdb_io_reg_def_type atmega88p_io_registers[] =
     { "UBRR0L", 0xc4, 0x00 },
     { "UBRR0H", 0xc5, 0x00 },
     { "UDR0", 0xc6, IO_REG_RSE },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7748,7 +7748,7 @@ gdb_io_reg_def_type attiny167_io_registers[] =
     { "LINIDR", 0xd0, 0x00 },
     { "LINSEL", 0xd1, 0x00 },
     { "LINDAT", 0xd2, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7806,7 +7806,7 @@ gdb_io_reg_def_type attiny43u_io_registers[] =
     { "SPL", 0x5d, 0x00 },
     { "SPH", 0x5e, 0x00 },
     { "SREG", 0x5f, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7889,7 +7889,7 @@ gdb_io_reg_def_type attiny48_io_registers[] =
     { "TWCR", 0xbc, 0x00 },
     { "TWAMR", 0xbd, 0x00 },
     { "TWIHSR -- TWHSR", 0xbe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -7972,7 +7972,7 @@ gdb_io_reg_def_type attiny88_io_registers[] =
     { "TWCR", 0xbc, 0x00 },
     { "TWAMR", 0xbd, 0x00 },
     { "TWHSR", 0xbe, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 
@@ -8229,7 +8229,7 @@ gdb_io_reg_def_type atmega128rfa1_io_registers[] =
     { "TST_RX_LENGTH", 0x17b, 0x00 },
     { "TRXFBST", 0x180, 0x00 },
     { "TRXFBEND", 0x1ff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };
 
 gdb_io_reg_def_type atmega256rfr2_io_registers[] =
@@ -8521,5 +8521,5 @@ gdb_io_reg_def_type atmega256rfr2_io_registers[] =
     { "TST_SDM", 0x17d, 0x00 },
     { "TRXFBST", 0x180, 0x00 },
     { "TRXFBEND", 0x1ff, 0x00 },
-    { 0, 0, 0 }
+    { nullptr, 0, 0 }
 };

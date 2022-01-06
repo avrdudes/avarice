@@ -40,7 +40,7 @@
 
 unsigned long jtag1::getProgramCounter()
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar command[] = {'2', JTAG_EOM };
     unsigned long result = 0;
 
@@ -65,7 +65,7 @@ unsigned long jtag1::getProgramCounter()
 
 void jtag1::setProgramCounter(unsigned long pc)
 {
-    uchar *response = NULL;
+    uchar *response = nullptr;
     uchar command[] = {'3', 0, 0, 0, JTAG_EOM };
 
     // See decoding in getProgramCounter
@@ -139,7 +139,7 @@ bool jtag1::jtagContinue()
 	FD_SET (jtagBox, &readfds);
 	maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
 
-	int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
+	int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
 	if (numfds < 0)
         {
             fprintf(stderr, "GDB/JTAG ICE communications failure");

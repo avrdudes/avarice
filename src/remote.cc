@@ -80,7 +80,7 @@ static void waitForGdbOutput()
     FD_ZERO (&writefds);
     FD_SET (gdbFileDescriptor, &writefds);
 
-    numfds = select (gdbFileDescriptor + 1, 0, &writefds, 0, 0);
+    numfds = select (gdbFileDescriptor + 1, nullptr, &writefds, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -115,7 +115,7 @@ static void waitForGdbInput()
     FD_ZERO (&readfds);
     FD_SET (gdbFileDescriptor, &readfds);
 
-    numfds = select (gdbFileDescriptor + 1, &readfds, 0, 0, 0);
+    numfds = select (gdbFileDescriptor + 1, &readfds, nullptr, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -462,7 +462,7 @@ static char *getpacket(int &len)
     bool is_escaped;
 
     // scan for the sequence $<data>#<checksum>
-    while(1)
+    while(true)
     {
 	// wait around for the start character, ignore all other characters
 	while((ch = getDebugChar()) != '$')
@@ -961,7 +961,7 @@ void talkToGdb()
                     {
                         count = 0;
 
-                        if ((io_reg_defs[i].name != 0x00)
+                        if ((io_reg_defs[i].name != nullptr)
                             && (io_reg_defs[i].flags != 0x00))
                         {
                             // Register with special flags set
@@ -982,7 +982,7 @@ void talkToGdb()
 
                             for (count = 0; count < j; count++)
                             {
-                                if ((io_reg_defs[i+count].name == 0x00) 
+                                if ((io_reg_defs[i+count].name == nullptr)
                                     || (io_reg_defs[i+count].flags != 0x00)
                                     || (io_reg_defs[i+count].reg_addr != addr))
                                 {
@@ -1246,6 +1246,7 @@ void talkToGdb()
 
     case 'Z':
 	adding = true;
+        [[fallthrough]];
     case 'z':
 	error(1); // assume the worst.
 

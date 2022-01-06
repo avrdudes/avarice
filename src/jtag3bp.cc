@@ -39,9 +39,7 @@
 
 bool jtag3::codeBreakpointAt(unsigned int address)
 {
-    int i;
-
-    i = 0;
+    int i = 0;
     while (!bp[i].last)
       {
 	  if ((bp[i].address == address) && (bp[i].type == CODE) && bp[i].enabled)

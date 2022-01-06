@@ -33,11 +33,9 @@
 #include "pragma.h"
 #include "ioreg.h"
 
-using namespace std;
-
 /* The data in this structure will be sent directorly to the jtagice box. */
 
-typedef struct {
+struct jtag1_device_desc_type {
     unsigned char cmd;                 // The jtag command to prefix the desc.
 
     /* The following arrays are bitmaps where each bit is a flag denoting
@@ -77,7 +75,7 @@ typedef struct {
                                        // extended IO.
 
     unsigned char eom[2];              // JTAG command terminator.
-} jtag1_device_desc_type;
+};
 
 // In appnote AVR067, struct device_descriptor is written with
 // int/long field types.  We cannot use them directly, as they were
@@ -85,7 +83,7 @@ typedef struct {
 // endianess issues.  We thus use arrays of unsigned chars, plus
 // conversion macros.
 
-typedef struct {
+struct jtag2_device_desc_type {
     unsigned char cmd;                 // The jtag command to prefix the desc.
 
     unsigned char ucReadIO[8]; //LSB = IOloc 0, MSB = IOloc63
@@ -133,10 +131,10 @@ typedef struct {
     unsigned char ucEindAddress; // Selects reset type. [EIND address...]
     // new as of early 2005, firmware 4.x
     unsigned char EECRAddress[2]; // EECR IO address
-} jtag2_device_desc_type;
+};
 
 // New Xmega device descriptor, for firmware version 7 and above
-typedef struct {
+struct xmega_device_desc_type {
     unsigned char cmd;			// CMND_SET_XMEGA_PARAMS
     unsigned char whatever[2];		// cannot guess; must be 0x0002
     unsigned char datalen;		// length of the following data, = 47
@@ -155,10 +153,10 @@ typedef struct {
     unsigned char eeprom_page_size;	// EEPROM page size
     unsigned char nvm_base_addr[2];	// IO space base address of NVM controller
     unsigned char mcu_base_addr[2];	// IO space base address of MCU control
-} xmega_device_desc_type;
+};
 
 // JTAGICE3 megaAVR parameter structure
-typedef struct {
+struct jtag3_device_desc_type {
     unsigned char flash_page_size[2];   // in bytes
     unsigned char flash_size[4];        // in bytes
     unsigned char dummy1[4];            // always 0
@@ -188,7 +186,7 @@ typedef struct {
     unsigned char eedr_address;
     unsigned char spmcr_address;
     unsigned char osccal_address;
-} jtag3_device_desc_type;
+};
 
 #define fill_b4(u) \
 { ((u) & 0xffUL), (((u) & 0xff00UL) >> 8), \
@@ -202,7 +200,7 @@ enum dev_flags {
 	DEVFL_MKII_ONLY    = 0x000002, // Device is only supported in JTAG ICE mkII
 };
 
-typedef struct {
+struct jtag_device_def_type {
     const char* name;
     const unsigned int device_id;      // Part Number from JTAG Device 
                                        // Identification Register
@@ -233,7 +231,7 @@ typedef struct {
     xmega_device_desc_type dev_desc3;  // Device descriptor to download for
                                        // Xmega devices in new (7+) firmware
                                        // JTAGICE mkII and AVR Dragon
-} jtag_device_def_type;
+};
 
 extern jtag_device_def_type deviceDefinitions[];
 
@@ -708,11 +706,11 @@ const struct breakpoint2 default_bp =
 };
 
 // Enumerations for target memory type.
-typedef enum {
+enum BFDmemoryType {
     MEM_FLASH = 0,
     MEM_EEPROM = 1,
     MEM_RAM = 2,
-} BFDmemoryType;
+};
 
 extern const char *BFDmemoryTypeString[];
 extern const int BFDmemorySpaceOffset[];
@@ -730,22 +728,22 @@ enum emulator {
 #define MAX_IMAGE_SIZE 1000000
 
 
-typedef struct {
+struct AVRMemoryByte {
     uchar val;
     bool  used;
-} AVRMemoryByte;
+};
 
 
 // Struct that holds the memory image. We read from file using BFD
 // into this struct, then pass the entire struct to the target writer.
-typedef struct {
+struct BFDimage {
     AVRMemoryByte image[MAX_IMAGE_SIZE];
     unsigned int last_address;
     unsigned int first_address;
     bool first_address_ok;
     bool has_data;
     const char *name;
-} BFDimage;
+};
 
 
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
@@ -1026,7 +1024,7 @@ class jtag
 
 };
 
-class jtag_exception: public exception
+class jtag_exception: public std::exception
 {
   protected:
     const char *reason;

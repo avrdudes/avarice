@@ -218,7 +218,7 @@ class jtag3: public jtag
         cached_pc_is_valid = false;
         appsize = 0;
         device_id = 0;
-        cached_event = NULL;
+        cached_event = nullptr;
         is_edbg = edbg;
     };
     virtual ~jtag3();

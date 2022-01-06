@@ -25,7 +25,7 @@
 
 #include "autoconf.h"
 
-typedef unsigned char uchar;
+using uchar = unsigned char;
 
 /** true iff --debug option specified **/
 extern bool debugMode;
