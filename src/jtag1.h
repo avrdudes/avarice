@@ -30,9 +30,9 @@
 #include "jtag.h"
 
 /*
-   There are apparently a total of three hardware breakpoints 
-   (the docs claim four, but documents 2 breakpoints accessible via 
-   non-existent parameters). 
+   There are apparently a total of three hardware breakpoints
+   (the docs claim four, but documents 2 breakpoints accessible via
+   non-existent parameters).
 
    In summary, there is one code-only breakpoint, and 2 breakpoints which
    can be:
@@ -53,29 +53,25 @@
 */
 
 enum {
-  // We distinguish the total possible breakpoints and those for each type
-  // (code or data) - see above
-  MAX_BREAKPOINTS_CODE = 4,
-  MAX_BREAKPOINTS_DATA = 2,
-  MAX_BREAKPOINTS = 4
+    // We distinguish the total possible breakpoints and those for each type
+    // (code or data) - see above
+    MAX_BREAKPOINTS_CODE = 4,
+    MAX_BREAKPOINTS_DATA = 2,
+    MAX_BREAKPOINTS = 4
 };
 
-class jtag1: public jtag
-{
+class jtag1 : public jtag {
     /** Decode 3-byte big-endian address **/
-    static unsigned long decodeAddress(uchar *buf) {
-	return buf[0] << 16 | buf[1] << 8 | buf[2];
-    };
+    static unsigned long decodeAddress(uchar *buf) { return buf[0] << 16 | buf[1] << 8 | buf[2]; };
 
     /** Encode 3-byte big-endian address **/
     static void encodeAddress(uchar *buffer, unsigned long x) {
-	buffer[0] = x >> 16;
-	buffer[1] = x >> 8;
-	buffer[2] = x;
+        buffer[0] = x >> 16;
+        buffer[1] = x >> 8;
+        buffer[2] = x;
     };
 
-    struct breakpoint
-    {
+    struct breakpoint {
         unsigned int address = 0;
         BreakpointType type = BreakpointType::NONE;
     };
@@ -86,8 +82,7 @@ class jtag1: public jtag
     int numBreakpointsData = 0;
 
   public:
-    jtag1(const char *dev, const char *name, bool nsrst = false):
-      jtag(dev, name, nsrst) {};
+    jtag1(const char *dev, const char *name, bool nsrst = false) : jtag(dev, name, nsrst){};
 
     void initJtagBox() override;
     void initJtagOnChipDebugging(unsigned long bitrate) override;
@@ -103,7 +98,7 @@ class jtag1: public jtag
     void disableProgramming() override;
     void eraseProgramMemory() override;
     void eraseProgramPage(unsigned long address) override;
-    void downloadToTarget(const char* filename, bool program, bool verify) override;
+    void downloadToTarget(const char *filename, bool program, bool verify) override;
 
     unsigned long getProgramCounter() override;
     void setProgramCounter(unsigned long pc) override;
@@ -142,19 +137,19 @@ class jtag1: public jtag
     bool checkForEmulator();
 
     /** Send a command to the jtag, with retries, and return the 'responseSize'
-	byte response. Aborts avarice in case of to many failed retries.
+        byte response. Aborts avarice in case of to many failed retries.
 
-	Returns a dynamically allocated buffer containing the reponse (caller
-	must free)
+        Returns a dynamically allocated buffer containing the reponse (caller
+        must free)
     **/
-    std::unique_ptr<uchar[]> doJtagCommand(const uchar *command, int  commandSize, int responseSize);
+    std::unique_ptr<uchar[]> doJtagCommand(const uchar *command, int commandSize, int responseSize);
 
     /** Simplified form of doJtagCommand:
-	Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a
-	'responseSize' byte reponse.
+        Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a
+        'responseSize' byte reponse.
 
-	Return true if responseSize is 0 or if last response byte is
-	JTAG_R_OK
+        Return true if responseSize is 0 or if last response byte is
+        JTAG_R_OK
     **/
     bool doSimpleJtagCommand(uchar cmd, int responseSize);
 

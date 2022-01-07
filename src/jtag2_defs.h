@@ -147,37 +147,37 @@
 #define EVT_TARGET_WAKEUP 0xE9
 
 /* memory types for CMND_{READ,WRITE}_MEMORY */
-#define MTYPE_IO_SHADOW 0x30	/* cached IO registers? */
-#define MTYPE_SRAM 0x20		/* target's SRAM or [ext.] IO registers */
-#define MTYPE_EEPROM 0x22	/* EEPROM, what way? */
-#define MTYPE_EVENT 0x60	/* ICE event memory */
-#define MTYPE_SPM 0xA0		/* flash through LPM/SPM */
-#define MTYPE_FLASH_PAGE 0xB0	/* flash in programming mode */
-#define MTYPE_EEPROM_PAGE 0xB1	/* EEPROM in programming mode */
-#define MTYPE_FUSE_BITS 0xB2	/* fuse bits in programming mode */
-#define MTYPE_LOCK_BITS 0xB3	/* lock bits in programming mode */
-#define MTYPE_SIGN_JTAG 0xB4	/* signature in programming mode */
-#define MTYPE_OSCCAL_BYTE 0xB5	/* osccal cells in programming mode */
-#define MTYPE_CAN 0xB6		/* CAN mailbox */
+#define MTYPE_IO_SHADOW 0x30   /* cached IO registers? */
+#define MTYPE_SRAM 0x20        /* target's SRAM or [ext.] IO registers */
+#define MTYPE_EEPROM 0x22      /* EEPROM, what way? */
+#define MTYPE_EVENT 0x60       /* ICE event memory */
+#define MTYPE_SPM 0xA0         /* flash through LPM/SPM */
+#define MTYPE_FLASH_PAGE 0xB0  /* flash in programming mode */
+#define MTYPE_EEPROM_PAGE 0xB1 /* EEPROM in programming mode */
+#define MTYPE_FUSE_BITS 0xB2   /* fuse bits in programming mode */
+#define MTYPE_LOCK_BITS 0xB3   /* lock bits in programming mode */
+#define MTYPE_SIGN_JTAG 0xB4   /* signature in programming mode */
+#define MTYPE_OSCCAL_BYTE 0xB5 /* osccal cells in programming mode */
+#define MTYPE_CAN 0xB6         /* CAN mailbox */
 
 /* (some) ICE parameters, for CMND_{GET,SET}_PARAMETER */
 #define PAR_HW_VERSION 0x01
 #define PAR_FW_VERSION 0x02
 #define PAR_EMULATOR_MODE 0x03
-# define EMULATOR_MODE_DEBUGWIRE 0x00
-# define EMULATOR_MODE_JTAG 0x01
-# define EMULATOR_MODE_UNKNOWN 0x02
-# define EMULATOR_MODE_SPI 0x03
+#define EMULATOR_MODE_DEBUGWIRE 0x00
+#define EMULATOR_MODE_JTAG 0x01
+#define EMULATOR_MODE_UNKNOWN 0x02
+#define EMULATOR_MODE_SPI 0x03
 #define PAR_IREG 0x04
 #define PAR_BAUD_RATE 0x05
-# define PAR_BAUD_2400 0x01
-# define PAR_BAUD_4800 0x02
-# define PAR_BAUD_9600 0x03
-# define PAR_BAUD_19200 0x04	/* default */
-# define PAR_BAUD_38400 0x05
-# define PAR_BAUD_57600 0x06
-# define PAR_BAUD_115200 0x07
-# define PAR_BAUD_14400 0x08
+#define PAR_BAUD_2400 0x01
+#define PAR_BAUD_4800 0x02
+#define PAR_BAUD_9600 0x03
+#define PAR_BAUD_19200 0x04 /* default */
+#define PAR_BAUD_38400 0x05
+#define PAR_BAUD_57600 0x06
+#define PAR_BAUD_115200 0x07
+#define PAR_BAUD_14400 0x08
 #define PAR_OCD_VTARGET 0x06
 #define PAR_OCD_JTAG_CLK 0x07
 #define PAR_OCD_BREAK_CAUSE 0x08
@@ -199,9 +199,9 @@
 #define PAR_PSB1 0x18
 #define PAR_PROTOCOL_DEBUG_EVENT 0x19
 #define PAR_MCU_STATE 0x1A
-# define STOPPED 0x00
-# define RUNNING 0x01
-# define PROGRAMMING 0x02
+#define STOPPED 0x00
+#define RUNNING 0x01
+#define PROGRAMMING 0x02
 #define PAR_DAISY_CHAIN_INFO 0x1B
 #define PAR_BOOT_ADDRESS 0x1C
 #define PAR_TARGET_SIGNATURE 0x1D
@@ -213,15 +213,14 @@
 #define PAR_INTERCOMMUNICATION_RX_FAILURES 0x43
 #define PAR_CRC_ERRORS 0x44
 #define PAR_POWER_SOURCE 0x45
-# define POWER_EXTERNAL 0x00
-# define POWER_USB 0x01
+#define POWER_EXTERNAL 0x00
+#define POWER_USB 0x01
 #define PAR_CAN_FLAG 0x22
-# define DONT_READ_CAN_MAILBOX 0x00
-# define READ_CAN_MAILBOX 0x01
+#define DONT_READ_CAN_MAILBOX 0x00
+#define READ_CAN_MAILBOX 0x01
 #define PAR_ENABLE_IDR_IN_RUN_MODE 0x23
-# define ACCESS_OSCCAL 0x00
-# define ACCESS_IDR 0x01
+#define ACCESS_OSCCAL 0x00
+#define ACCESS_IDR 0x01
 #define PAR_ALLOW_PAGEPROGRAMMING_IN_SCANCHAIN 0x24
-# define PAGEPROG_NOT_ALLOWED 0x00
-# define PAGEPROG_ALLOWED 0x01
-
+#define PAGEPROG_NOT_ALLOWED 0x00
+#define PAGEPROG_ALLOWED 0x01

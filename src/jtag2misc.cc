@@ -20,15 +20,13 @@
  * $Id$
  */
 
-
 #include <cstdio>
 #include <cstring>
 
 #include "avarice.h"
 #include "jtag2.h"
 
-void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
-{
+void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize) {
     if (valSize > 4)
         throw jtag_exception("Parameter too large in setJtagParameter");
 
@@ -39,19 +37,16 @@ void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
     uchar buf[2 + 4] = {CMND_SET_PARAMETER, item, 0, 0, 0, 0};
     memcpy(buf + 2, newValue, valSize);
 
-    uchar* resp;
-    try
-    {
+    uchar *resp;
+    try {
         int respsize;
         doJtagCommand(buf, valSize + 2, resp, respsize);
-    }
-    catch (jtag_exception& e)
-    {
+    } catch (jtag_exception &e) {
         fprintf(stderr, "set parameter command failed: %s\n", e.what());
         throw;
     }
 
-    delete [] resp;
+    delete[] resp;
 }
 
 /*
@@ -59,24 +54,18 @@ void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
  * that the response still includes the response code at index 0 (to be
  * ignored).
  */
-void jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize)
-{
+void jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize) {
     /*
      * As the maximal parameter length is 4 bytes, we use a fixed-length
      * buffer, as opposed to malloc()ing it.
      */
     const uchar buf[] = {CMND_GET_PARAMETER, item};
-    try
-    {
+    try {
         doJtagCommand(buf, 2, resp, respSize);
-    }
-    catch (jtag_exception& e)
-    {
+    } catch (jtag_exception &e) {
         fprintf(stderr, "get parameter command failed: %s\n", e.what());
         throw;
     }
     if (resp[0] != RSP_PARAMETER || respSize <= 1)
         throw jtag_exception("unexpected response to get paremater command");
 }
-
-

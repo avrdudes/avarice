@@ -22,126 +22,117 @@
  * $Id$
  */
 
-
-#include <cstring>
 #include <cassert>
+#include <cstring>
 
 #include "avarice.h"
 #include "jtag1.h"
 
-
 /** Return the memory space code for the memory space indicated by the
     high-order bits of '*addr'. Also clear these high order bits in '*addr'
 **/
-static uchar memorySpace(unsigned long *addr)
-{
+static uchar memorySpace(unsigned long *addr) {
     int mask;
 
     // We can't just mask the bits off, because 0x10000->0x1ffff are
     // valid code addresses
-    if (*addr & DATA_SPACE_ADDR_OFFSET)
-    {
-	mask = *addr & ADDR_SPACE_MASK;
-	*addr &= ~ADDR_SPACE_MASK;
-    }
-    else
-	mask = 0;
+    if (*addr & DATA_SPACE_ADDR_OFFSET) {
+        mask = *addr & ADDR_SPACE_MASK;
+        *addr &= ~ADDR_SPACE_MASK;
+    } else
+        mask = 0;
 
-    switch (mask)
-    {
-    case  EEPROM_SPACE_ADDR_OFFSET: return ADDR_EEPROM_SPACE;
-    case FUSE_SPACE_ADDR_OFFSET: return ADDR_FUSE_SPACE;
-    case LOCK_SPACE_ADDR_OFFSET: return ADDR_LOCK_SPACE;
-    case SIG_SPACE_ADDR_OFFSET: return ADDR_SIG_SPACE;
-    case BREAKPOINT_SPACE_ADDR_OFFSET: return ADDR_BREAKPOINT_SPACE;
-    case DATA_SPACE_ADDR_OFFSET: return ADDR_DATA_SPACE;
-    default: return 0; // program memory, handled specially
+    switch (mask) {
+    case EEPROM_SPACE_ADDR_OFFSET:
+        return ADDR_EEPROM_SPACE;
+    case FUSE_SPACE_ADDR_OFFSET:
+        return ADDR_FUSE_SPACE;
+    case LOCK_SPACE_ADDR_OFFSET:
+        return ADDR_LOCK_SPACE;
+    case SIG_SPACE_ADDR_OFFSET:
+        return ADDR_SIG_SPACE;
+    case BREAKPOINT_SPACE_ADDR_OFFSET:
+        return ADDR_BREAKPOINT_SPACE;
+    case DATA_SPACE_ADDR_OFFSET:
+        return ADDR_DATA_SPACE;
+    default:
+        return 0; // program memory, handled specially
     }
 }
 
-static void swapBytes(uchar *buffer, unsigned int count)
-{
+static void swapBytes(uchar *buffer, unsigned int count) {
     assert(!(count & 1));
-    for (unsigned int i = 0; i < count; i += 2)
-    {
-	uchar temp = buffer[i];
-	buffer[i] = buffer[i + 1];
-	buffer[i + 1] = temp;
+    for (unsigned int i = 0; i < count; i += 2) {
+        uchar temp = buffer[i];
+        buffer[i] = buffer[i + 1];
+        buffer[i + 1] = temp;
     }
 }
 
-
-uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
-{
-    if (numBytes == 0)
-    {
-	auto response = std::make_unique<uchar[]>(1);
-	response[0] = '\0';
-	return response.release(); // TODO: be compatible with other jtagRead()
+uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
+    if (numBytes == 0) {
+        auto response = std::make_unique<uchar[]>(1);
+        response[0] = '\0';
+        return response.release(); // TODO: be compatible with other jtagRead()
     }
 
     debugOut("jtagRead ");
-    uchar command[] = { 'R', 0, 0, 0, 0, 0, JTAG_EOM };
+    uchar command[] = {'R', 0, 0, 0, 0, 0, JTAG_EOM};
 
     int whichSpace = memorySpace(&addr);
-    if (whichSpace)
-    {
-	command[1] = whichSpace;
-	if (numBytes > 256)
-	    return nullptr;
-	command[2] = numBytes - 1;
-	encodeAddress(&command[3], addr);
+    if (whichSpace) {
+        command[1] = whichSpace;
+        if (numBytes > 256)
+            return nullptr;
+        command[2] = numBytes - 1;
+        encodeAddress(&command[3], addr);
 
-	// Response will be the number of data bytes with an 'A' at the
-	// start and end. As such, the response size will be number of bytes
-	// + 2. Then add an additional byte for the trailing zero (see
-	// protocol document).
+        // Response will be the number of data bytes with an 'A' at the
+        // start and end. As such, the response size will be number of bytes
+        // + 2. Then add an additional byte for the trailing zero (see
+        // protocol document).
 
-	auto response = doJtagCommand(command, sizeof command, numBytes + 2);
-	if (response[numBytes + 1] == JTAG_R_OK)
-	    return response.release(); // TODO: be compatible with other jtagRead()
+        auto response = doJtagCommand(command, sizeof command, numBytes + 2);
+        if (response[numBytes + 1] == JTAG_R_OK)
+            return response.release(); // TODO: be compatible with other jtagRead()
 
-	throw jtag_exception();
-    }
-    else
-    {
-	// Reading program memory
-	whichSpace = programmingEnabled ?
-	    ADDR_PROG_SPACE_PROG_ENABLED : ADDR_PROG_SPACE_PROG_DISABLED;
+        throw jtag_exception();
+    } else {
+        // Reading program memory
+        whichSpace =
+            programmingEnabled ? ADDR_PROG_SPACE_PROG_ENABLED : ADDR_PROG_SPACE_PROG_DISABLED;
 
-	// Program space is 16 bits wide, with word reads
-	int numLocations;
-	if (addr & 1)
-	    numLocations = (numBytes + 2) / 2;
-	else
-	    numLocations = (numBytes + 1) / 2;
-	if (numLocations > 256)
-	    throw jtag_exception();
+        // Program space is 16 bits wide, with word reads
+        int numLocations;
+        if (addr & 1)
+            numLocations = (numBytes + 2) / 2;
+        else
+            numLocations = (numBytes + 1) / 2;
+        if (numLocations > 256)
+            throw jtag_exception();
 
-	command[1] = whichSpace;
-	command[2] = numLocations - 1;
-	encodeAddress(&command[3], addr / 2);
+        command[1] = whichSpace;
+        command[2] = numLocations - 1;
+        encodeAddress(&command[3], addr / 2);
 
-	auto response = doJtagCommand(command, sizeof command, numLocations * 2 + 2);
-	if (response[numLocations * 2 + 1] == JTAG_R_OK)
-	{
-	    // Programming mode and regular mode are byte-swapped...
-	    if (!programmingEnabled)
-		swapBytes(response.get(), numLocations * 2);
+        auto response = doJtagCommand(command, sizeof command, numLocations * 2 + 2);
+        if (response[numLocations * 2 + 1] == JTAG_R_OK) {
+            // Programming mode and regular mode are byte-swapped...
+            if (!programmingEnabled)
+                swapBytes(response.get(), numLocations * 2);
 
-	    if (addr & 1)
-		// we read one byte early. move stuff down.
-		memmove(response.get(), response.get() + 1, numBytes);
+            if (addr & 1)
+                // we read one byte early. move stuff down.
+                memmove(response.get(), response.get() + 1, numBytes);
 
-	    return response.release(); // TODO: be compatible with other jtagRead()
-	}
+            return response.release(); // TODO: be compatible with other jtagRead()
+        }
 
-	throw jtag_exception();
+        throw jtag_exception();
     }
 }
 
-void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
-{
+void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) {
     if (numBytes == 0)
         return;
 
@@ -149,39 +140,35 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     unsigned int numLocations;
     int whichSpace = memorySpace(&addr);
     if (whichSpace)
-	numLocations = numBytes;
-    else
-    {
-	// Writing program memory, which is word (16-bit) addressed
+        numLocations = numBytes;
+    else {
+        // Writing program memory, which is word (16-bit) addressed
 
-	// We don't handle odd lengths or start addresses
-	if ((addr & 1))
-        {
-	    throw jtag_exception("Odd program memory write operation");
+        // We don't handle odd lengths or start addresses
+        if ((addr & 1)) {
+            throw jtag_exception("Odd program memory write operation");
         }
 
         // Odd length: Write one more byte.
-        if ((numBytes & 1))
-        {
-            debugOut ("\nOdd pgm wr length\n");
-            numBytes+=1;
+        if ((numBytes & 1)) {
+            debugOut("\nOdd pgm wr length\n");
+            numBytes += 1;
         }
 
-	addr /= 2;
-	numLocations = numBytes / 2;
+        addr /= 2;
+        numLocations = numBytes / 2;
 
-	if (programmingEnabled)
-	    whichSpace = ADDR_PROG_SPACE_PROG_ENABLED;
-	else
-	{
-	    whichSpace = ADDR_PROG_SPACE_PROG_DISABLED;
-	    swapBytes(buffer, numBytes);
-	}
+        if (programmingEnabled)
+            whichSpace = ADDR_PROG_SPACE_PROG_ENABLED;
+        else {
+            whichSpace = ADDR_PROG_SPACE_PROG_DISABLED;
+            swapBytes(buffer, numBytes);
+        }
     }
 
     // This is the maximum write size
     if (numLocations > 256)
-	throw jtag_exception("Attempt to write more than 256 bytes");
+        throw jtag_exception("Attempt to write more than 256 bytes");
 
     // Writing is a two part process
 
@@ -223,6 +210,5 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
     auto response_part2 = doJtagCommand(txBuffer.get(), numBytes + 3, 1);
     if (!response_part2)
-	throw jtag_exception();
+        throw jtag_exception();
 }
-

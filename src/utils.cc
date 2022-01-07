@@ -18,57 +18,45 @@
  *
  */
 
-#include <cstdio>
 #include <cstdarg>
+#include <cstdio>
 
 #include "avarice.h"
 
 bool debugMode = false;
 
-void vdebugOut(const char *fmt, va_list args)
-{
-    if (debugMode)
-    {
+void vdebugOut(const char *fmt, va_list args) {
+    if (debugMode) {
         (void)vfprintf(stderr, fmt, args);
     }
 }
 
-void debugOut(const char *fmt, ...)
-{
+void debugOut(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vdebugOut(fmt, args);
     va_end(args);
 }
 
-void vstatusOut(const char *fmt, va_list args)
-{
-    vprintf(fmt, args);
-}
+void vstatusOut(const char *fmt, va_list args) { vprintf(fmt, args); }
 
-void statusOut(const char *fmt, ...)
-{
+void statusOut(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vstatusOut(fmt, args);
     va_end(args);
 }
 
-void statusFlush()
-{
-    fflush(stdout);
-}
+void statusFlush() { fflush(stdout); }
 
-void unknownDevice(unsigned int devid, bool generic)
-{
-  fprintf(stderr,
-          "Device ID 0x%04x is not known to AVaRICE.\n"
-          "Please ask for it being added to the code",
-          devid);
-  if (generic)
-      fprintf(stderr,
-              ", or use\n"
-              "-P <device> to override the automatic decision.\n");
-  else
-      fprintf(stderr, ".\n");
+void unknownDevice(unsigned int devid, bool generic) {
+    fprintf(stderr,
+            "Device ID 0x%04x is not known to AVaRICE.\n"
+            "Please ask for it being added to the code",
+            devid);
+    if (generic)
+        fprintf(stderr, ", or use\n"
+                        "-P <device> to override the automatic decision.\n");
+    else
+        fprintf(stderr, ".\n");
 }

@@ -22,202 +22,175 @@
  * $Id$
  */
 
-
 #include <cstdio>
 #include <cstring>
 
 #include "avarice.h"
 #include "jtag2.h"
 
-
 /** Return the memory space code for the memory space indicated by the
     high-order bits of 'addr'. Also clear these high order bits in 'addr'
 **/
-uchar jtag2::memorySpace(unsigned long &addr)
-{
+uchar jtag2::memorySpace(unsigned long &addr) {
     int mask;
 
     // We can't just mask the bits off, because 0x10000->0x1ffff are
     // valid code addresses
-    if (addr & DATA_SPACE_ADDR_OFFSET)
-    {
-	mask = addr & ADDR_SPACE_MASK;
-	addr &= ~ADDR_SPACE_MASK;
-    }
-    else
-	mask = 0;
+    if (addr & DATA_SPACE_ADDR_OFFSET) {
+        mask = addr & ADDR_SPACE_MASK;
+        addr &= ~ADDR_SPACE_MASK;
+    } else
+        mask = 0;
 
-    switch (mask)
-    {
+    switch (mask) {
     case EEPROM_SPACE_ADDR_OFFSET:
-	if (proto != Debugproto::DW && programmingEnabled)
-	    return MTYPE_EEPROM_PAGE;
-	else
-	    return MTYPE_EEPROM;
+        if (proto != Debugproto::DW && programmingEnabled)
+            return MTYPE_EEPROM_PAGE;
+        else
+            return MTYPE_EEPROM;
     case FUSE_SPACE_ADDR_OFFSET:
-	return MTYPE_FUSE_BITS;
+        return MTYPE_FUSE_BITS;
     case LOCK_SPACE_ADDR_OFFSET:
-	return MTYPE_LOCK_BITS;
+        return MTYPE_LOCK_BITS;
     case SIG_SPACE_ADDR_OFFSET:
-	return MTYPE_SIGN_JTAG;
-      // ... return MTYPE_OSCCAL_BYTE;
-      // ... return MTYPE_CAN;
+        return MTYPE_SIGN_JTAG;
+        // ... return MTYPE_OSCCAL_BYTE;
+        // ... return MTYPE_CAN;
     case BREAKPOINT_SPACE_ADDR_OFFSET:
-	return MTYPE_EVENT;
+        return MTYPE_EVENT;
     case REGISTER_SPACE_ADDR_OFFSET:
-	return MTYPE_XMEGA_REG;
+        return MTYPE_XMEGA_REG;
     case DATA_SPACE_ADDR_OFFSET:
-	return MTYPE_SRAM;
+        return MTYPE_SRAM;
     default:
-	if (is_xmega && has_full_xmega_support)
-	    return MTYPE_XMEGA_APP_FLASH;
-	else if (proto == Debugproto::DW || programmingEnabled)
-	    return MTYPE_FLASH_PAGE;
-	else
-	    return MTYPE_SPM;
+        if (is_xmega && has_full_xmega_support)
+            return MTYPE_XMEGA_APP_FLASH;
+        else if (proto == Debugproto::DW || programmingEnabled)
+            return MTYPE_FLASH_PAGE;
+        else
+            return MTYPE_SPM;
     }
 }
 
-uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
-{
+uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes) {
     uchar *response;
     int responseSize;
 
-    if (numBytes == 0)
-    {
-	response = new uchar[1];
-	response[0] = '\0';
-	return response;
+    if (numBytes == 0) {
+        response = new uchar[1];
+        response[0] = '\0';
+        return response;
     }
 
     debugOut("jtagRead ");
     uchar whichSpace = memorySpace(addr);
-    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE &&
-        whichSpace < MTYPE_XMEGA_REG;
+    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE && whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
     unsigned int offset = 0;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)
-       enableProgramming();
+        enableProgramming();
 
     unsigned char *cachePtr = nullptr;
     unsigned int *cacheBaseAddr = nullptr;
 
-    switch (whichSpace)
-    {
-	// Pad to even byte count for flash memory.
-	// Even MTYPE_SPM appears to cause a RSP_FAILED
-	// otherwise.
+    switch (whichSpace) {
+        // Pad to even byte count for flash memory.
+        // Even MTYPE_SPM appears to cause a RSP_FAILED
+        // otherwise.
     case MTYPE_SPM:
         offset = addr & 1;
         addr &= ~1;
-	numBytes = (numBytes + 1) & ~1;
-	break;
+        numBytes = (numBytes + 1) & ~1;
+        break;
 
     case MTYPE_FLASH_PAGE:
     case MTYPE_XMEGA_APP_FLASH:
-	pageSize = deviceDef->flash_page_size;
-	cachePtr = flashCache;
-	cacheBaseAddr = &flashCachePageAddr;
-	break;
+        pageSize = deviceDef->flash_page_size;
+        cachePtr = flashCache;
+        cacheBaseAddr = &flashCachePageAddr;
+        break;
 
     case MTYPE_EEPROM_PAGE:
-	pageSize = deviceDef->eeprom_page_size;
-	cachePtr = eepromCache;
-	cacheBaseAddr = &eepromCachePageAddr;
-	break;
+        pageSize = deviceDef->eeprom_page_size;
+        cachePtr = eepromCache;
+        cacheBaseAddr = &eepromCachePageAddr;
+        break;
     }
 
-    uchar command[10] = { CMND_READ_MEMORY };
+    uchar command[10] = {CMND_READ_MEMORY};
     command[1] = whichSpace;
 
     if (pageSize > 0) {
-	if (pageSize > 256)
-	    pageSize = 256;	// more cannot be handled
-	u32_to_b4(command + 2, pageSize);
-	response = new uchar[numBytes];
+        if (pageSize > 256)
+            pageSize = 256; // more cannot be handled
+        u32_to_b4(command + 2, pageSize);
+        response = new uchar[numBytes];
 
-	unsigned int mask = pageSize - 1;
-	unsigned int pageAddr = addr & ~mask;
-	unsigned int chunksize = numBytes;
-	unsigned int targetOffset = 0;
+        unsigned int mask = pageSize - 1;
+        unsigned int pageAddr = addr & ~mask;
+        unsigned int chunksize = numBytes;
+        unsigned int targetOffset = 0;
 
-	if (addr + chunksize >= pageAddr + pageSize)
-	    // Chunk would cross a page boundary, reduce it
-	    // appropriately.
-	    chunksize -= (addr + numBytes - (pageAddr + pageSize));
-	offset = addr - pageAddr;
+        if (addr + chunksize >= pageAddr + pageSize)
+            // Chunk would cross a page boundary, reduce it
+            // appropriately.
+            chunksize -= (addr + numBytes - (pageAddr + pageSize));
+        offset = addr - pageAddr;
 
-	while (numBytes > 0)
-	{
-	    uchar *resp;
+        while (numBytes > 0) {
+            uchar *resp;
 
-	    if (pageAddr == *cacheBaseAddr)
-	    {
-		// quickly fetch from page cache
-		memcpy(response + targetOffset,
-		       cachePtr + offset,
-		       chunksize);
-	    }
-	    else
-	    {
-		// read from device, cache result, and copy over our part
-		u32_to_b4(command + 6, pageAddr);
-                try
-                {
+            if (pageAddr == *cacheBaseAddr) {
+                // quickly fetch from page cache
+                memcpy(response + targetOffset, cachePtr + offset, chunksize);
+            } else {
+                // read from device, cache result, and copy over our part
+                u32_to_b4(command + 6, pageAddr);
+                try {
                     doJtagCommand(command, sizeof command, resp, responseSize, true);
-                }
-                catch (jtag_exception& e)
-                {
-                    fprintf(stderr, "Failed to read target memory space: %s\n",
-                            e.what());
-                    delete [] response;
+                } catch (jtag_exception &e) {
+                    fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
+                    delete[] response;
                     throw;
                 }
-		memcpy(cachePtr, resp + 1, pageSize);
-		*cacheBaseAddr = pageAddr;
-		memcpy(response + targetOffset,
-		       cachePtr + offset,
-		       chunksize);
-		delete [] resp;
-	    }
+                memcpy(cachePtr, resp + 1, pageSize);
+                *cacheBaseAddr = pageAddr;
+                memcpy(response + targetOffset, cachePtr + offset, chunksize);
+                delete[] resp;
+            }
 
-	    numBytes -= chunksize;
-	    targetOffset += chunksize;
+            numBytes -= chunksize;
+            targetOffset += chunksize;
 
-	    chunksize = numBytes > pageSize? pageSize: numBytes;
-	    pageAddr += pageSize;
-	}
-    } else {
-	u32_to_b4(command + 2, numBytes);
-	u32_to_b4(command + 6, addr);
-
-	try
-        {
-            doJtagCommand(command, sizeof command, response, responseSize, true);
+            chunksize = numBytes > pageSize ? pageSize : numBytes;
+            pageAddr += pageSize;
         }
-        catch (jtag_exception& e)
-        {
-            fprintf(stderr, "Failed to read target memory space: %s\n",
-                    e.what());
+    } else {
+        u32_to_b4(command + 2, numBytes);
+        u32_to_b4(command + 6, addr);
+
+        try {
+            doJtagCommand(command, sizeof command, response, responseSize, true);
+        } catch (jtag_exception &e) {
+            fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
             throw;
         }
-	if (offset > 0)
-	    memmove(response, response + 1 + offset, responseSize - 1 - offset);
-	else
-	    memmove(response, response + 1, responseSize - 1);
+        if (offset > 0)
+            memmove(response, response + 1 + offset, responseSize - 1 - offset);
+        else
+            memmove(response, response + 1, responseSize - 1);
     }
 
     if (needProgmode && !wasProgmode)
-       disableProgramming();
+        disableProgramming();
 
     return response;
 }
 
-void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
-{
+void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) {
     if (numBytes == 0)
-	return;
+        return;
 
     debugOut("jtagWrite ");
     uchar whichSpace = memorySpace(addr);
@@ -228,78 +201,67 @@ void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // command.  If so, chip erase the device, and switch over to
     // programming mode to speed up things (drastically).
 
-    if (proto != Debugproto::DW &&
-	whichSpace == MTYPE_SPM &&
-	addr == 0 &&
-	numBytes > 4)
-    {
-	debugOut("Detected GDB \"load\" command, erasing flash.\n");
-	//whichSpace = MTYPE_FLASH_PAGE; // this will turn on progmode
-	eraseProgramMemory();
+    if (proto != Debugproto::DW && whichSpace == MTYPE_SPM && addr == 0 && numBytes > 4) {
+        debugOut("Detected GDB \"load\" command, erasing flash.\n");
+        // whichSpace = MTYPE_FLASH_PAGE; // this will turn on progmode
+        eraseProgramMemory();
     }
 
-    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE &&
-        whichSpace < MTYPE_XMEGA_REG;
+    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE && whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)
-       enableProgramming();
+        enableProgramming();
 
-    switch (whichSpace)
-    {
+    switch (whichSpace) {
     case MTYPE_FLASH_PAGE:
     case MTYPE_XMEGA_APP_FLASH:
-	pageSize = deviceDef->flash_page_size;
-	break;
+        pageSize = deviceDef->flash_page_size;
+        break;
 
     case MTYPE_EEPROM_PAGE:
-	pageSize = deviceDef->eeprom_page_size;
-	break;
+        pageSize = deviceDef->eeprom_page_size;
+        break;
     }
     unsigned int chunksize = numBytes;
     if (pageSize > 0) {
-	unsigned int mask = pageSize - 1;
-	addr &= ~mask;
-	if (numBytes != pageSize)
-	    throw ("jtagWrite(): numByte does not match page size");
-	if (pageSize > 256) {
-	    chunksize = 256; // that's all the JTAGICEmkII can handle at a time
-	}
+        unsigned int mask = pageSize - 1;
+        addr &= ~mask;
+        if (numBytes != pageSize)
+            throw("jtagWrite(): numByte does not match page size");
+        if (pageSize > 256) {
+            chunksize = 256; // that's all the JTAGICEmkII can handle at a time
+        }
     }
-    uchar *command = new uchar [10 + chunksize];
+    uchar *command = new uchar[10 + chunksize];
     command[0] = CMND_WRITE_MEMORY;
     command[1] = whichSpace;
     uchar *bp = buffer;
 
-    do
-    {
-	u32_to_b4(command + 2, chunksize);
-	u32_to_b4(command + 6, addr);
-	memcpy(command + 10, bp, chunksize);
+    do {
+        u32_to_b4(command + 2, chunksize);
+        u32_to_b4(command + 6, addr);
+        memcpy(command + 10, bp, chunksize);
 
-	uchar *response;
-	int responseSize;
+        uchar *response;
+        int responseSize;
 
-	try
-	{
-	    doJtagCommand(command, 10 + chunksize, response, responseSize);
-	}
-	catch (jtag_exception& e)
-	{
-	    fprintf(stderr, "Failed to write target memory space: %s\n",
-		    e.what());
-	    throw;
-	}
+        try {
+            doJtagCommand(command, 10 + chunksize, response, responseSize);
+        } catch (jtag_exception &e) {
+            fprintf(stderr, "Failed to write target memory space: %s\n", e.what());
+            throw;
+        }
 
-	delete [] response;
+        delete[] response;
 
-	addr += chunksize;
-	numBytes -= chunksize;
-	bp += chunksize;
+        addr += chunksize;
+        numBytes -= chunksize;
+        bp += chunksize;
     } while (numBytes != 0);
 
-    delete [] command;
+    delete[] command;
 
     if (needProgmode && !wasProgmode)
-       disableProgramming();
+        disableProgramming();
 }

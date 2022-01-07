@@ -22,22 +22,19 @@
  * $Id$
  */
 
-
 #include "avarice.h"
 #include "jtag1.h"
 
-void jtag1::setJtagParameter(uchar item, uchar newValue)
-{
-    const uchar command[] = {'B', item, newValue, JTAG_EOM };
+void jtag1::setJtagParameter(uchar item, uchar newValue) {
+    const uchar command[] = {'B', item, newValue, JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), 1);
     if (response[0] != JTAG_R_OK)
         throw jtag_exception("Unknown parameter");
 }
 
-uchar jtag1::getJtagParameter(uchar item)
-{
-    const uchar command[] = {'q', item, JTAG_EOM };
+uchar jtag1::getJtagParameter(uchar item) {
+    const uchar command[] = {'q', item, JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), 2);
     if (response[1] != JTAG_R_OK)
@@ -45,5 +42,3 @@ uchar jtag1::getJtagParameter(uchar item)
 
     return response[0];
 }
-
-

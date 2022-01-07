@@ -25,8 +25,7 @@
 
 #include "jtag.h"
 
-enum jtag3consts
-{
+enum jtag3consts {
     SCOPE_INFO = 0x00,
     SCOPE_GENERAL = 0x01,
     SCOPE_AVR_ISP = 0x11,
@@ -36,22 +35,22 @@ enum jtag3consts
     CMD3_GET_INFO = 0x00,
 
     /* byte after GET_INFO is always 0, next is: */
-    CMD3_INFO_NAME = 0x80,      /* JTAGICE3 */
-    CMD3_INFO_SERIAL = 0x81,    /* J3xxxxxxxxxx */
+    CMD3_INFO_NAME = 0x80,   /* JTAGICE3 */
+    CMD3_INFO_SERIAL = 0x81, /* J3xxxxxxxxxx */
 
     /* Generic scope */
     CMD3_SET_PARAMETER = 0x01,
     CMD3_GET_PARAMETER = 0x02,
     CMD3_SIGN_ON = 0x10,
-    CMD3_SIGN_OFF = 0x11,       /* takes one parameter? */
+    CMD3_SIGN_OFF = 0x11, /* takes one parameter? */
 
     /* AVR ISP scope: no commands of its own */
 
     /* AVR scope */
-    //CMD3_SET_PARAMETER = 0x01,
-    //CMD3_GET_PARAMETER = 0x02,
-    //CMD3_SIGN_ON = 0x10, /* an additional signon/-off pair */
-    //CMD3_SIGN_OFF = 0x11,
+    // CMD3_SET_PARAMETER = 0x01,
+    // CMD3_GET_PARAMETER = 0x02,
+    // CMD3_SIGN_ON = 0x10, /* an additional signon/-off pair */
+    // CMD3_SIGN_OFF = 0x11,
     CMD3_DEVICE_ID = 0x12,
     CMD3_START_DEBUG = 0x13,
     CMD3_STOP_DEBUG = 0x14,
@@ -70,7 +69,7 @@ enum jtag3consts
     CMD3_WRITE_PC = 0x36,
     CMD3_SET_BP = 0x40,
     CMD3_CLEAR_BP = 0x41,
-    CMD3_SET_BP_XMEGA = 0x42,   /* very similar to mkII CMND_SET_BREAK_XMEGA */
+    CMD3_SET_BP_XMEGA = 0x42, /* very similar to mkII CMND_SET_BREAK_XMEGA */
     CMD3_SET_SOFT_BP = 0x43,
     CMD3_CLEAR_SOFT_BP = 0x44,
     CMD3_CLEANUP = 0x45,
@@ -95,10 +94,10 @@ enum jtag3consts
     RSP3_FAIL_NOT_UNDERSTOOD = 0x91,
 
     /* ICE events */
-    EVT3_BREAK = 0x40,          /* AVR scope */
-    EVT3_IDR = 0x41,            /* AVR scope */
-    EVT3_SLEEP = 0x11,          /* General scope, also wakeup */
-    EVT3_POWER = 0x10,          /* General scope */
+    EVT3_BREAK = 0x40, /* AVR scope */
+    EVT3_IDR = 0x41,   /* AVR scope */
+    EVT3_SLEEP = 0x11, /* General scope, also wakeup */
+    EVT3_POWER = 0x10, /* General scope */
 
     /* memory types */
     /* not defined here, identical to generic definitions in jtag.h */
@@ -121,22 +120,22 @@ enum jtag3consts
      * precedes each parameter address.  There are distinct parameter
      * sets for generic and AVR scope.
      */
-    PARM3_HW_VER = 0x00,        /* section 0, generic scope, 1 byte */
-    PARM3_FW_MAJOR = 0x01,      /* section 0, generic scope, 1 byte */
-    PARM3_FW_MINOR = 0x02,      /* section 0, generic scope, 1 byte */
-    PARM3_FW_RELEASE = 0x03,    /* section 0, generic scope, 1 byte;
-                                 * always asked for by Atmel Studio,
-                                 * but never displayed there */
-    PARM3_VTARGET = 0x00,       /* section 1, generic scope, 2 bytes,
-                                 * in millivolts */
-    PARM3_DEVICEDESC = 0x00,    /* section 2, memory etc. configuration,
-                                 * 31 bytes for tiny/mega AVR, 47 bytes
-                                 * for Xmega; is also used in command
-                                 * 0x36 in JTAGICEmkII, starting with
-                                 * firmware 7.x */
+    PARM3_HW_VER = 0x00,     /* section 0, generic scope, 1 byte */
+    PARM3_FW_MAJOR = 0x01,   /* section 0, generic scope, 1 byte */
+    PARM3_FW_MINOR = 0x02,   /* section 0, generic scope, 1 byte */
+    PARM3_FW_RELEASE = 0x03, /* section 0, generic scope, 1 byte;
+                              * always asked for by Atmel Studio,
+                              * but never displayed there */
+    PARM3_VTARGET = 0x00,    /* section 1, generic scope, 2 bytes,
+                              * in millivolts */
+    PARM3_DEVICEDESC = 0x00, /* section 2, memory etc. configuration,
+                              * 31 bytes for tiny/mega AVR, 47 bytes
+                              * for Xmega; is also used in command
+                              * 0x36 in JTAGICEmkII, starting with
+                              * firmware 7.x */
 
-    PARM3_ARCH = 0x00,       /* section 0, AVR scope, 1 byte */
-    PARM3_ARCH_TINY = 1,     /* also small megaAVR with ISP/DW only */
+    PARM3_ARCH = 0x00,   /* section 0, AVR scope, 1 byte */
+    PARM3_ARCH_TINY = 1, /* also small megaAVR with ISP/DW only */
     PARM3_ARCH_MEGA = 2,
     PARM3_ARCH_XMEGA = 3,
 
@@ -150,17 +149,16 @@ enum jtag3consts
     PARM3_CONN_DW = 5,
     PARM3_CONN_PDI = 6,
 
-    PARM3_JTAGCHAIN = 0x01,     /* JTAG chain info, AVR scope (units
-                                 * before/after, bits before/after),
-                                 * 4 bytes */
+    PARM3_JTAGCHAIN = 0x01, /* JTAG chain info, AVR scope (units
+                             * before/after, bits before/after),
+                             * 4 bytes */
 
-    PARM3_CLK_MEGA_PROG = 0x20, /* section 1, AVR scope, 2 bytes (kHz) */
+    PARM3_CLK_MEGA_PROG = 0x20,  /* section 1, AVR scope, 2 bytes (kHz) */
     PARM3_CLK_MEGA_DEBUG = 0x21, /* section 1, AVR scope, 2 bytes (kHz) */
     PARM3_CLK_XMEGA_JTAG = 0x30, /* section 1, AVR scope, 2 bytes (kHz) */
-    PARM3_CLK_XMEGA_PDI = 0x31, /* section 1, AVR scope, 2 bytes (kHz) */
+    PARM3_CLK_XMEGA_PDI = 0x31,  /* section 1, AVR scope, 2 bytes (kHz) */
 
     PARM3_TIMERS_RUNNING = 0x00, /* section 3, AVR scope, 1 byte */
-
 
     /* Xmega erase memory types, for CMND_XMEGA_ERASE */
     XMEGA_ERASE_CHIP = 0x00,
@@ -172,13 +170,10 @@ enum jtag3consts
     XMEGA_ERASE_EEPROM_PAGE = 0x06,
     XMEGA_ERASE_USERSIG = 0x07,
 
-
     MAX_MESSAGE_SIZE_JTAGICE3 = 512,
 };
 
-
-class jtag3: public jtag
-{
+class jtag3 : public jtag {
   private:
     unsigned short command_sequence = 0;
     bool signedIn = false;
@@ -198,12 +193,9 @@ class jtag3: public jtag
     unsigned char *cached_event = nullptr;
 
   public:
-    jtag3(const char *dev, const char *name, Debugproto prot = Debugproto::JTAG,
-	  bool nsrst = false,
-          bool xmega = false,
-          bool edbg = false):
-        jtag(dev, name, nsrst, edbg? Emulator::EDBG: Emulator::JTAGICE3),
-	proto(prot) {
+    jtag3(const char *dev, const char *name, Debugproto prot = Debugproto::JTAG, bool nsrst = false,
+          bool xmega = false, bool edbg = false)
+        : jtag(dev, name, nsrst, edbg ? Emulator::EDBG : Emulator::JTAGICE3), proto(prot) {
         is_xmega = xmega;
     };
     ~jtag3() override;
@@ -220,7 +212,7 @@ class jtag3: public jtag
     void disableProgramming() override;
     void eraseProgramMemory() override;
     void eraseProgramPage(unsigned long address) override;
-    void downloadToTarget(const char* filename, bool program, bool verify) override;
+    void downloadToTarget(const char *filename, bool program, bool verify) override;
 
     unsigned long getProgramCounter() override;
     void setProgramCounter(unsigned long pc) override;
@@ -233,10 +225,10 @@ class jtag3: public jtag
     uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
     void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) override;
     unsigned int statusAreaAddress() const override {
-        return (is_xmega? 0x3D: 0x5D) + DATA_SPACE_ADDR_OFFSET;
+        return (is_xmega ? 0x3D : 0x5D) + DATA_SPACE_ADDR_OFFSET;
     };
     unsigned int cpuRegisterAreaAddress() const override {
-        return is_xmega? REGISTER_SPACE_ADDR_OFFSET: DATA_SPACE_ADDR_OFFSET;
+        return is_xmega ? REGISTER_SPACE_ADDR_OFFSET : DATA_SPACE_ADDR_OFFSET;
     }
 
   private:
@@ -251,48 +243,43 @@ class jtag3: public jtag
     int recvFrame(unsigned char *&msg, unsigned short &seqno);
     int recv(unsigned char *&msg);
 
-    bool sendJtagCommand(const uchar *command, int commandSize,
-                         const char *name,
-			 uchar *&msg, int &msgsize);
+    bool sendJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&msg,
+                         int &msgsize);
 
     /** Send a command to the jtag, and return the
-	'responseSize' byte &response, response size in
-	&responseSize.
+        'responseSize' byte &response, response size in
+        &responseSize.
 
-	If a negative response arrived, throw an exception.
+        If a negative response arrived, throw an exception.
 
-	Caller must delete [] the response.
+        Caller must delete [] the response.
     **/
-    void doJtagCommand(const uchar *command, int  commandSize,
-                       const char *name,
-		       uchar *&response, int &responseSize);
+    void doJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&response,
+                       int &responseSize);
 
     /** Simplified form of doJtagCommand:
-	Send 1-byte command 'cmd' to JTAG ICE, expecting a
-	response that consists only of the status byte which must be
-	RSP_OK.
+        Send 1-byte command 'cmd' to JTAG ICE, expecting a
+        response that consists only of the status byte which must be
+        RSP_OK.
     **/
-    void doSimpleJtagCommand(uchar cmd, const char *name,
-                             uchar scope = SCOPE_AVR);
+    void doSimpleJtagCommand(uchar cmd, const char *name, uchar scope = SCOPE_AVR);
 
     // Miscellaneous
     // -------------
 
     /** Set JTAG ICE parameter 'item' to 'newValue' **/
-    void setJtagParameter(uchar scope, uchar section, uchar item,
-                          uchar *newValue, int valSize);
+    void setJtagParameter(uchar scope, uchar section, uchar item, uchar *newValue, int valSize);
 
     /** Return value of JTAG ICE parameter 'item'; caller must delete
         [] resp
     **/
-    void getJtagParameter(uchar scope, uchar section, uchar item, int length,
-                          uchar *&resp);
+    void getJtagParameter(uchar scope, uchar section, uchar item, int length, uchar *&resp);
 
     uchar memorySpace(unsigned long &addr);
 
     /** Wait until either the ICE or GDB issued an event.  As this is
-	the heart of jtagContinue for the mkII, it returns true when a
-	breakpoint was reached, and false for GDB input.
+        the heart of jtagContinue for the mkII, it returns true when a
+        breakpoint was reached, and false for GDB input.
      **/
     bool eventLoop();
 
@@ -305,10 +292,9 @@ class jtag3: public jtag
     void xmegaSendBPs();
 };
 
-class jtag3_io_exception: public jtag_io_exception
-{
+class jtag3_io_exception : public jtag_io_exception {
   public:
-    jtag3_io_exception(): jtag_io_exception(0) {}
+    jtag3_io_exception() : jtag_io_exception(0) {}
     explicit jtag3_io_exception(unsigned int code);
 
     unsigned int get_response() { return response_code; }

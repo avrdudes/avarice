@@ -20,7 +20,6 @@
  * $Id$
  */
 
-
 #include <cstdio>
 #include <sys/time.h>
 
@@ -28,219 +27,181 @@
 #include "jtag3.h"
 #include "remote.h"
 
-unsigned long jtag3::getProgramCounter()
-{
-  if (cached_pc_is_valid)
-    return cached_pc;
+unsigned long jtag3::getProgramCounter() {
+    if (cached_pc_is_valid)
+        return cached_pc;
 
-  uchar *resp;
-  int respsize;
-  uchar cmd[] = { SCOPE_AVR, CMD3_READ_PC, 0 };
-  int cnt = 0;
+    uchar *resp;
+    int respsize;
+    uchar cmd[] = {SCOPE_AVR, CMD3_READ_PC, 0};
+    int cnt = 0;
 
-  again:
-  try
-    {
-      doJtagCommand(cmd, sizeof cmd, "read PC", resp, respsize);
-    }
-  catch (jtag_io_exception& e)
-    {
-      cnt++;
-      if (e.get_response() == RSP3_FAIL_WRONG_MODE &&
-          cnt < 2)
-      {
-          interruptProgram();
-          goto again;
-      }
-      fprintf(stderr, "cannot read program counter: %s\n",
-	      e.what());
-      throw;
-    }
-  catch (jtag_exception& e)
-    {
-      fprintf(stderr, "cannot read program counter: %s\n",
-	      e.what());
-      throw;
+again:
+    try {
+        doJtagCommand(cmd, sizeof cmd, "read PC", resp, respsize);
+    } catch (jtag_io_exception &e) {
+        cnt++;
+        if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {
+            interruptProgram();
+            goto again;
+        }
+        fprintf(stderr, "cannot read program counter: %s\n", e.what());
+        throw;
+    } catch (jtag_exception &e) {
+        fprintf(stderr, "cannot read program counter: %s\n", e.what());
+        throw;
     }
 
-  unsigned long result = b4_to_u32(resp + 3);
-  delete [] resp;
+    unsigned long result = b4_to_u32(resp + 3);
+    delete[] resp;
 
-  // The JTAG box sees program memory as 16-bit wide locations. GDB
-  // sees bytes. As such, double the PC value.
-  result *= 2;
+    // The JTAG box sees program memory as 16-bit wide locations. GDB
+    // sees bytes. As such, double the PC value.
+    result *= 2;
 
-  cached_pc_is_valid = true;
-  return cached_pc = result;
+    cached_pc_is_valid = true;
+    return cached_pc = result;
 }
 
-void jtag3::setProgramCounter(unsigned long pc)
-{
-  uchar *resp;
-  int respsize;
-  uchar cmd[7] = { SCOPE_AVR, CMD3_WRITE_PC };
+void jtag3::setProgramCounter(unsigned long pc) {
+    uchar *resp;
+    int respsize;
+    uchar cmd[7] = {SCOPE_AVR, CMD3_WRITE_PC};
 
-  u32_to_b4(cmd + 3, pc / 2);
+    u32_to_b4(cmd + 3, pc / 2);
 
-  try
-    {
-      doJtagCommand(cmd, sizeof cmd, "write PC", resp, respsize);
-    }
-  catch (jtag_exception& e)
-    {
-      fprintf(stderr, "cannot write program counter: %s\n",
-	      e.what());
-      throw;
+    try {
+        doJtagCommand(cmd, sizeof cmd, "write PC", resp, respsize);
+    } catch (jtag_exception &e) {
+        fprintf(stderr, "cannot write program counter: %s\n", e.what());
+        throw;
     }
 
-  delete [] resp;
+    delete[] resp;
 
-  cached_pc_is_valid = false;
+    cached_pc_is_valid = false;
 }
 
-void jtag3::resetProgram(bool)
-{
-  uchar cmd[] = { SCOPE_AVR, CMD3_RESET, 0, 0x01 };
-  uchar *resp;
-  int respsize;
+void jtag3::resetProgram(bool) {
+    uchar cmd[] = {SCOPE_AVR, CMD3_RESET, 0, 0x01};
+    uchar *resp;
+    int respsize;
 
-  doJtagCommand(cmd, sizeof cmd, "reset", resp, respsize);
-  delete [] resp;
+    doJtagCommand(cmd, sizeof cmd, "reset", resp, respsize);
+    delete[] resp;
 
-  /* Await the BREAK event that is posted by the ICE. */
-  bool bp, gdb;
-  expectEvent(bp, gdb);
+    /* Await the BREAK event that is posted by the ICE. */
+    bool bp, gdb;
+    expectEvent(bp, gdb);
 
-  /* The PC value in the event returned after a RESET is the
-   * PC where the reset actually hit, so ignore it. */
-  cached_pc_is_valid = false;
+    /* The PC value in the event returned after a RESET is the
+     * PC where the reset actually hit, so ignore it. */
+    cached_pc_is_valid = false;
 }
 
-void jtag3::interruptProgram()
-{
-  uchar cmd[] = { SCOPE_AVR, CMD3_STOP, 0, 0x01 };
-  uchar *resp;
-  int respsize;
+void jtag3::interruptProgram() {
+    uchar cmd[] = {SCOPE_AVR, CMD3_STOP, 0, 0x01};
+    uchar *resp;
+    int respsize;
 
-  doJtagCommand(cmd, sizeof cmd, "stop", resp, respsize);
-  delete [] resp;
+    doJtagCommand(cmd, sizeof cmd, "stop", resp, respsize);
+    delete[] resp;
 
-  bool bp, gdb;
-  expectEvent(bp, gdb);
+    bool bp, gdb;
+    expectEvent(bp, gdb);
 }
 
-void jtag3::resumeProgram()
-{
-  xmegaSendBPs();
+void jtag3::resumeProgram() {
+    xmegaSendBPs();
 
-  doSimpleJtagCommand(CMD3_CLEANUP, "cleanup");
+    doSimpleJtagCommand(CMD3_CLEANUP, "cleanup");
 
-  doSimpleJtagCommand(CMD3_GO, "go");
+    doSimpleJtagCommand(CMD3_GO, "go");
 
-  cached_pc_is_valid = false;
+    cached_pc_is_valid = false;
 }
 
-void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt)
-{
-  uchar *evtbuf;
-  int evtsize;
-  unsigned short seqno;
+void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
+    uchar *evtbuf;
+    int evtsize;
+    unsigned short seqno;
 
-  if (cached_event != nullptr)
-  {
-      evtbuf = cached_event;
-      cached_event = nullptr;
-  }
-  else
-  {
-      evtsize = recvFrame(evtbuf, seqno);
-      if (evtsize > 0) {
-          // XXX if not event, should push frame back into queue...
-          // We really need a queue of received frames.
-          if (seqno != 0xffff)
-          {
-              debugOut("Expected event packet, got other response");
-              return;
-          }
-      }
-      else
-      {
-          debugOut("Timed out waiting for an event");
-          return;
-      }
-  }
+    if (cached_event != nullptr) {
+        evtbuf = cached_event;
+        cached_event = nullptr;
+    } else {
+        evtsize = recvFrame(evtbuf, seqno);
+        if (evtsize > 0) {
+            // XXX if not event, should push frame back into queue...
+            // We really need a queue of received frames.
+            if (seqno != 0xffff) {
+                debugOut("Expected event packet, got other response");
+                return;
+            }
+        } else {
+            debugOut("Timed out waiting for an event");
+            return;
+        }
+    }
 
-  breakpoint = gdbInterrupt = false;
+    breakpoint = gdbInterrupt = false;
 
-  switch ((evtbuf[0] << 8) | evtbuf[1])
-  {
-      // Program stopped at some kind of breakpoint.
-      // On Xmega, byte 7 denotes the reason:
-      //   0x01 soft BP
-      //   0x10 hard BP (byte 8 contains BP #, or 3 for data BP)
-      //   0x20, 0x21 "run to address" or single-step
-      //   0x40 reset, leave progmode etc.
-      // On megaAVR, byte 6 , byte 7 are likely the "break status
-      // register" (MSB, LSB), see here:
-      // http://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/s2009/jgs33_rrw32/Final%20Paper/index.html
-      // The bits do not fully match that description but to
-      // a good degree.
-      case (SCOPE_AVR << 8) | EVT3_BREAK:
-          if ((!is_xmega && evtbuf[7] != 0) ||
-              (is_xmega && evtbuf[7] != 0x40))
-          {
-              // program breakpoint
-              cached_pc = 2 * b4_to_u32(evtbuf + 2);
-              cached_pc_is_valid = true;
-              breakpoint = true;
-              debugOut("caching PC: 0x%04x\n", cached_pc);
-          }
-          else
-          {
-              debugOut("ignoring break event\n");
-          }
-          break;
+    switch ((evtbuf[0] << 8) | evtbuf[1]) {
+    // Program stopped at some kind of breakpoint.
+    // On Xmega, byte 7 denotes the reason:
+    //   0x01 soft BP
+    //   0x10 hard BP (byte 8 contains BP #, or 3 for data BP)
+    //   0x20, 0x21 "run to address" or single-step
+    //   0x40 reset, leave progmode etc.
+    // On megaAVR, byte 6 , byte 7 are likely the "break status
+    // register" (MSB, LSB), see here:
+    // http://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/s2009/jgs33_rrw32/Final%20Paper/index.html
+    // The bits do not fully match that description but to
+    // a good degree.
+    case (SCOPE_AVR << 8) | EVT3_BREAK:
+        if ((!is_xmega && evtbuf[7] != 0) || (is_xmega && evtbuf[7] != 0x40)) {
+            // program breakpoint
+            cached_pc = 2 * b4_to_u32(evtbuf + 2);
+            cached_pc_is_valid = true;
+            breakpoint = true;
+            debugOut("caching PC: 0x%04x\n", cached_pc);
+        } else {
+            debugOut("ignoring break event\n");
+        }
+        break;
 
-      case (SCOPE_AVR << 8) | EVT3_IDR:
-          statusOut("IDR dirty: 0x%02x\n", evtbuf[3]);
-          break;
+    case (SCOPE_AVR << 8) | EVT3_IDR:
+        statusOut("IDR dirty: 0x%02x\n", evtbuf[3]);
+        break;
 
-      case (SCOPE_GENERAL << 8) | EVT3_POWER:
-          if (evtbuf[3] == 0)
-          {
-              gdbInterrupt = true;
-              statusOut("\nTarget power turned off\n");
-          }
-          else
-          {
-              statusOut("\nTarget power returned\n");
-          }
-          break;
+    case (SCOPE_GENERAL << 8) | EVT3_POWER:
+        if (evtbuf[3] == 0) {
+            gdbInterrupt = true;
+            statusOut("\nTarget power turned off\n");
+        } else {
+            statusOut("\nTarget power returned\n");
+        }
+        break;
 
-      case (SCOPE_GENERAL << 8) | EVT3_SLEEP:
-          if (evtbuf[3] == 0)
-          {
-              //gdbInterrupt = true;
-              statusOut("\nTarget went to sleep\n");
-          }
-          else
-          {
-              //gdbInterrupt = true;
-              statusOut("\nTarget went out of sleep\n");
-          }
-          break;
+    case (SCOPE_GENERAL << 8) | EVT3_SLEEP:
+        if (evtbuf[3] == 0) {
+            // gdbInterrupt = true;
+            statusOut("\nTarget went to sleep\n");
+        } else {
+            // gdbInterrupt = true;
+            statusOut("\nTarget went out of sleep\n");
+        }
+        break;
 
-      default:
-          gdbInterrupt = true;
-          statusOut("\nUnhandled JTAGICE3 event: 0x%02x, 0x%02x\n",
-                    evtbuf[0], evtbuf[1]);
-  }
+    default:
+        gdbInterrupt = true;
+        statusOut("\nUnhandled JTAGICE3 event: 0x%02x, 0x%02x\n", evtbuf[0], evtbuf[1]);
+    }
 
-  delete [] evtbuf;
+    delete[] evtbuf;
 }
 
-bool jtag3::eventLoop()
-{
+bool jtag3::eventLoop() {
     int maxfd;
     fd_set readfds;
     bool breakpoint = false, gdbInterrupt = false;
@@ -248,79 +209,68 @@ bool jtag3::eventLoop()
     // Now that we are "going", wait for either a response from the JTAG
     // box or a nudge from GDB.
 
-    for (;;)
-      {
-	  debugOut("Waiting for input.\n");
+    for (;;) {
+        debugOut("Waiting for input.\n");
 
-	  // Check for input from JTAG ICE (breakpoint, sleep, info, power)
-	  // or gdb (user break)
-	  FD_ZERO (&readfds);
-	  if (gdbFileDescriptor != -1)
-	    FD_SET (gdbFileDescriptor, &readfds);
-	  FD_SET (jtagBox, &readfds);
-	  if (gdbFileDescriptor != -1)
-	    maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
-	  else
-	    maxfd = jtagBox;
+        // Check for input from JTAG ICE (breakpoint, sleep, info, power)
+        // or gdb (user break)
+        FD_ZERO(&readfds);
+        if (gdbFileDescriptor != -1)
+            FD_SET(gdbFileDescriptor, &readfds);
+        FD_SET(jtagBox, &readfds);
+        if (gdbFileDescriptor != -1)
+            maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+        else
+            maxfd = jtagBox;
 
-	  int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
-	  if (numfds < 0)
-              throw jtag_exception("GDB/JTAG ICE communications failure");
+        int numfds = select(maxfd + 1, &readfds, 0, 0, 0);
+        if (numfds < 0)
+            throw jtag_exception("GDB/JTAG ICE communications failure");
 
-	  if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds))
-	    {
-		int c = getDebugChar();
-		if (c == 3) // interrupt
-		  {
-		      debugOut("interrupted by GDB\n");
-		      gdbInterrupt = true;
-		  }
-		else
-		    debugOut("Unexpected GDB input `%02x'\n", c);
-	    }
+        if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds)) {
+            int c = getDebugChar();
+            if (c == 3) // interrupt
+            {
+                debugOut("interrupted by GDB\n");
+                gdbInterrupt = true;
+            } else
+                debugOut("Unexpected GDB input `%02x'\n", c);
+        }
 
-	  if (FD_ISSET(jtagBox, &readfds))
-	    {
-	      expectEvent(breakpoint, gdbInterrupt);
-	    }
+        if (FD_ISSET(jtagBox, &readfds)) {
+            expectEvent(breakpoint, gdbInterrupt);
+        }
 
-	  // We give priority to user interrupts
-	  if (gdbInterrupt)
-	      return false;
-	  if (breakpoint)
-	      return true;
-      }
+        // We give priority to user interrupts
+        if (gdbInterrupt)
+            return false;
+        if (breakpoint)
+            return true;
+    }
 }
 
+void jtag3::jtagSingleStep() {
+    uchar cmd[] = {SCOPE_AVR, CMD3_STEP, 0, 0x01, 0x01};
+    uchar *resp;
+    int respsize;
 
-void jtag3::jtagSingleStep()
-{
-  uchar cmd[] = { SCOPE_AVR, CMD3_STEP,
-		  0, 0x01, 0x01 };
-  uchar *resp;
-  int respsize;
+    xmegaSendBPs();
 
-  xmegaSendBPs();
+    cached_pc_is_valid = false;
 
-  cached_pc_is_valid = false;
-
-  try
-    {
-      doJtagCommand(cmd, sizeof cmd, "single-step", resp, respsize);
+    try {
+        doJtagCommand(cmd, sizeof cmd, "single-step", resp, respsize);
+    } catch (jtag_io_exception &e) {
+        if (e.get_response() != RSP3_FAIL_WRONG_MODE)
+            throw;
     }
-  catch (jtag_io_exception& e)
-    {
-      if (e.get_response() != RSP3_FAIL_WRONG_MODE)
-	throw;
-    }
-  delete [] resp;
+    delete[] resp;
 
-  bool bp, gdb;
-  expectEvent(bp, gdb);
+    bool bp, gdb;
+    expectEvent(bp, gdb);
 }
 
-void jtag3::parseEvents(const char *)
-{
+void jtag3::parseEvents(const char *) {
 #if 0
     memset(nonbreaking_events, 0, sizeof nonbreaking_events);
 
@@ -372,20 +322,17 @@ void jtag3::parseEvents(const char *)
 #endif
 }
 
-bool jtag3::jtagContinue()
-{
-  updateBreakpoints(); // download new bp configuration
+bool jtag3::jtagContinue() {
+    updateBreakpoints(); // download new bp configuration
 
-  xmegaSendBPs();
+    xmegaSendBPs();
 
-  if (cached_event != nullptr)
-  {
-      delete [] cached_event;
-      cached_event = nullptr;
-  }
+    if (cached_event != nullptr) {
+        delete[] cached_event;
+        cached_event = nullptr;
+    }
 
-  doSimpleJtagCommand(CMD3_GO, "go");
+    doSimpleJtagCommand(CMD3_GO, "go");
 
-  return eventLoop();
+    return eventLoop();
 }
-

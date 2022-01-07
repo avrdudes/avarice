@@ -21,35 +21,26 @@
  * $Id$
  */
 
-
 #include "avarice.h"
 #include "jtag3.h"
 
-
-void jtag3::enableProgramming()
-{
-    if (proto != Debugproto::DW)
-    {
-	programmingEnabled = true;
-	doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
+void jtag3::enableProgramming() {
+    if (proto != Debugproto::DW) {
+        programmingEnabled = true;
+        doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
     }
 }
 
-
-void jtag3::disableProgramming()
-{
-    if (proto != Debugproto::DW)
-    {
-	programmingEnabled = false;
-	doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
+void jtag3::disableProgramming() {
+    if (proto != Debugproto::DW) {
+        programmingEnabled = false;
+        doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
     }
 }
-
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag3::eraseProgramMemory()
-{
+void jtag3::eraseProgramMemory() {
     if (proto == Debugproto::DW)
         // debugWIRE auto-erases when programming
         return;
@@ -66,11 +57,10 @@ void jtag3::eraseProgramMemory()
 
     doJtagCommand(buf, 8, "chip erase", resp, respsize);
 
-    delete [] resp;
+    delete[] resp;
 }
 
-void jtag3::eraseProgramPage(unsigned long address)
-{
+void jtag3::eraseProgramPage(unsigned long address) {
     uchar *resp;
     int respsize;
     uchar buf[8];
@@ -78,27 +68,22 @@ void jtag3::eraseProgramPage(unsigned long address)
     buf[0] = SCOPE_AVR;
     buf[1] = CMD3_ERASE_MEMORY;
     buf[2] = 0;
-    if (is_xmega && address >= appsize)
-    {
+    if (is_xmega && address >= appsize) {
         buf[3] = XMEGA_ERASE_BOOT_PAGE;
         address -= appsize;
-    }
-    else
-    {
+    } else {
         buf[3] = XMEGA_ERASE_APP_PAGE;
     }
     u32_to_b4(buf + 4, address);
 
     doJtagCommand(buf, 8, "page erase", resp, respsize);
 
-    delete [] resp;
+    delete[] resp;
 }
 
-
-void jtag3::downloadToTarget(const char* filename __attribute__((unused)),
+void jtag3::downloadToTarget(const char *filename __attribute__((unused)),
                              bool program __attribute__((unused)),
-                             bool verify __attribute__((unused)))
-{
+                             bool verify __attribute__((unused))) {
     statusOut("\nDownload not done.\n");
     throw jtag_exception("Target programming not implemented for JTAGICE3");
 }
