@@ -22,24 +22,13 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <math.h>
-
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
 
 
 void jtag3::enableProgramming()
 {
-    if (proto != PROTO_DW)
+    if (proto != Debugproto::DW)
     {
 	programmingEnabled = true;
 	doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
@@ -49,7 +38,7 @@ void jtag3::enableProgramming()
 
 void jtag3::disableProgramming()
 {
-    if (proto != PROTO_DW)
+    if (proto != Debugproto::DW)
     {
 	programmingEnabled = false;
 	doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
@@ -61,7 +50,7 @@ void jtag3::disableProgramming()
 // (unless the save-eeprom fuse is set).
 void jtag3::eraseProgramMemory()
 {
-    if (proto == PROTO_DW)
+    if (proto == Debugproto::DW)
         // debugWIRE auto-erases when programming
         return;
 

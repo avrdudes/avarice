@@ -94,12 +94,9 @@ void jtag2::setProgramCounter(unsigned long pc)
     cached_pc_is_valid = false;
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-void jtag2::resetProgram(bool possible_nSRST_ignored)
+void jtag2::resetProgram(bool)
 {
-    if (proto == PROTO_DW) {
+    if (proto == Debugproto::DW) {
 	/* The JTAG ICE mkII and Dragon do not respond correctly to
 	 * the CMND_RESET command while in debugWire mode. */
 	interruptProgram();
@@ -117,8 +114,6 @@ void jtag2::resetProgram(bool possible_nSRST_ignored)
 	expectEvent(bp, gdb);
     }
 }
-
-PRAGMA_DIAG_POP
 
 void jtag2::interruptProgram()
 {

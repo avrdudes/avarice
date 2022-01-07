@@ -23,17 +23,9 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag1.h"
 
 bool jtag1::codeBreakpointAt(unsigned int address)
@@ -50,10 +42,7 @@ void jtag1::deleteAllBreakpoints()
     numBreakpointsData = numBreakpointsCode = 0;
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-bool jtag1::addBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned int)
 {
     breakpoint *bp;
 
@@ -65,7 +54,7 @@ bool jtag1::addBreakpoint(unsigned int address, bpType type, unsigned int length
 
     // There's a spare breakpoint, is there one of the appropriate type 
     // available?
-    if (type == CODE)
+    if (type == BreakpointType::CODE)
     {
 	if (numBreakpointsCode == MAX_BREAKPOINTS_CODE)
 	{
@@ -98,14 +87,14 @@ bool jtag1::addBreakpoint(unsigned int address, bpType type, unsigned int length
 }
 
 
-bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag1::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int)
 {
     breakpoint *bp;
     int *numBp;
 
     debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
 
-    if (type == CODE)
+    if (type == BreakpointType::CODE)
     {
 	bp = bpCode;
 	numBp = &numBreakpointsCode;
@@ -133,7 +122,6 @@ bool jtag1::deleteBreakpoint(unsigned int address, bpType type, unsigned int len
     debugOut("FAILED\n");
     return false;
 }
-PRAGMA_DIAG_POP
 
 void jtag1::updateBreakpoints()
 {
@@ -182,19 +170,19 @@ void jtag1::updateBreakpoints()
 	bpMode |= 0x20; // turn on this breakpoint
 	switch (bp->type)
 	{
-	case READ_DATA:
+	case BreakpointType::READ_DATA:
 	    bpMode |= 0x00;
 	    break;
-	case WRITE_DATA:
+	case BreakpointType::WRITE_DATA:
 	    bpMode |= 0x04;
 	    break;
-	case ACCESS_DATA:
+	case BreakpointType::ACCESS_DATA:
 	    bpMode |= 0x08;
 	    break;
-	case CODE:
+	case BreakpointType::CODE:
 	    bpMode |= 0x0c;
 	    break;
-        case NONE:
+        case BreakpointType::NONE:
         default:
             break;
 	}
@@ -217,19 +205,19 @@ void jtag1::updateBreakpoints()
 	    bpMode |= 0x10; // turn on this breakpoint
 	    switch (bp->type)
 	    {
-	    case READ_DATA:
+	    case BreakpointType::READ_DATA:
 		bpMode |= 0x00;
 		break;
-	    case WRITE_DATA:
+	    case BreakpointType::WRITE_DATA:
 		bpMode |= 0x01;
 		break;
-	    case ACCESS_DATA:
+	    case BreakpointType::ACCESS_DATA:
 		bpMode |= 0x02;
 		break;
-	    case CODE:
+	    case BreakpointType::CODE:
 		bpMode |= 0x03;
 		break;
-	    case NONE:
+	    case BreakpointType::NONE:
 	    default:
 		break;
 	    }

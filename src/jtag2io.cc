@@ -23,21 +23,11 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
+#include <cstdio>
+#include <cstring>
 
 #include "avarice.h"
 #include "crc16.h"
-#include "jtag.h"
 #include "jtag2.h"
 #include "jtag2_defs.h"
 
@@ -109,7 +99,7 @@ jtag2::~jtag2()
  * Send one frame.  Adds the required preamble and CRC, and ensures
  * the frame could be written correctly.
  */
-void jtag2::sendFrame(uchar *command, int commandSize)
+void jtag2::sendFrame(const uchar *command, int commandSize)
 {
     unsigned char *buf = new unsigned char[commandSize + 10];
 
@@ -326,7 +316,7 @@ int jtag2::recv(uchar *&msg)
     returned in &msgsize.
 **/
 
-bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
+bool jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries,
 			    uchar *&msg, int &msgsize, bool verify)
 {
     if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
@@ -363,7 +353,7 @@ bool jtag2::sendJtagCommand(uchar *command, int commandSize, int &tries,
 }
 
 
-void jtag2::doJtagCommand(uchar *command, int  commandSize,
+void jtag2::doJtagCommand(const uchar *command, int  commandSize,
 			  uchar *&response, int  &responseSize,
 			  bool retryOnTimeout)
 {
@@ -462,16 +452,16 @@ void jtag2::changeBitRate(int newBitRate)
 }
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
-void jtag2::setDeviceDescriptor(jtag_device_def_type *dev)
+void jtag2::setDeviceDescriptor(const jtag_device_def_type &dev)
 {
     uchar *response;
     uchar *command;
     int respSize;
 
     if (is_xmega && has_full_xmega_support)
-	command = (uchar *)&dev->dev_desc3;
+	command = (uchar *)&dev.dev_desc3;
     else
-	command = (uchar *)&dev->dev_desc2;
+	command = (uchar *)&dev.dev_desc2;
 
     try
     {
@@ -525,7 +515,7 @@ bool jtag2::synchroniseAt(int bitrate)
 		     (unsigned)signonmsg[9]);
 
 	    // The AVR Dragon always uses the full device descriptor.
-	    if (emu_type == EMULATOR_JTAGICE)
+	    if (emu_type == Emulator::JTAGICE)
 	    {
 		unsigned short fwver = ((unsigned)signonmsg[8] << 8) | (unsigned)signonmsg[7];
 
@@ -579,7 +569,7 @@ void jtag2::startJtagLink()
 
 	    signedIn = true;
 
-	    if (proto == PROTO_JTAG && apply_nSRST) {
+	    if (proto == Debugproto::JTAG && apply_nSRST) {
 		val = 0x01;
 		setJtagParameter(PAR_EXTERNAL_RESET, &val, 1);
 	    }
@@ -587,7 +577,7 @@ void jtag2::startJtagLink()
 	    const char *protoName = "unknown";
 	    switch (proto)
 	    {
-		case PROTO_JTAG:
+            case Debugproto::JTAG:
 		    if (is_xmega)
 			val = EMULATOR_MODE_JTAG_XMEGA;
 		    else
@@ -595,13 +585,13 @@ void jtag2::startJtagLink()
 		    protoName = "JTAG";
 		    break;
 
-		case PROTO_DW:
+            case Debugproto::DW:
 		    val = EMULATOR_MODE_DEBUGWIRE;
 		    protoName = "debugWIRE";
                     softbp_only = true;
 		    break;
 
-		case PROTO_PDI:
+            case Debugproto::PDI:
 		    val = EMULATOR_MODE_PDI;
 		    protoName = "PDI";
 		    break;
@@ -637,7 +627,7 @@ void jtag2::deviceAutoConfig()
     unsigned int device_id;
     uchar *resp;
     int respSize;
-    jtag_device_def_type *pDevice = deviceDefinitions;
+    const jtag_device_def_type *pDevice = deviceDefinitions;
 
     // Auto config
     debugOut("Automatic device detection: ");
@@ -646,7 +636,7 @@ void jtag2::deviceAutoConfig()
     configDaisyChain();
 
     /* Read in the JTAG device ID to determine device */
-    if (proto == PROTO_DW)
+    if (proto == Debugproto::DW)
     {
 	getJtagParameter(PAR_TARGET_SIGNATURE, resp, respSize);
 	if (respSize < 3)
@@ -656,7 +646,7 @@ void jtag2::deviceAutoConfig()
 
 	statusOut("Reported debugWire device ID: 0x%0X\n", device_id);
     }
-    else if (proto == PROTO_PDI)
+    else if (proto == Debugproto::PDI)
     {
 	resp = jtagRead(SIG_SPACE_ADDR_OFFSET, 3);
 	device_id = resp[2] | (resp[1] << 8);
@@ -738,7 +728,7 @@ void jtag2::deviceAutoConfig()
 
     deviceDef = pDevice;
 
-    setDeviceDescriptor(pDevice);
+    setDeviceDescriptor(*pDevice);
 }
 
 
@@ -784,7 +774,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
 {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
-    if (proto == PROTO_JTAG)
+    if (proto == Debugproto::JTAG)
     {
       uchar br;
       if (bitrate >= 6400000)
@@ -815,7 +805,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate)
     jtagActivateOcdenFuse();
     disableProgramming();
 
-    resetProgram();
+    resetProgram(false);
     uchar timers = 0;		// stopped
     if (!is_xmega)
         setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);

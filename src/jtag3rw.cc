@@ -21,20 +21,11 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
-#include "remote.h"
 
 
 /** Return the memory space code for the memory space indicated by the
@@ -57,7 +48,7 @@ uchar jtag3::memorySpace(unsigned long &addr)
     switch (mask)
     {
     case EEPROM_SPACE_ADDR_OFFSET:
-	if (proto != PROTO_DW && programmingEnabled)
+	if (proto != Debugproto::DW && programmingEnabled)
 	    return MTYPE_EEPROM_PAGE;
 	else
 	    return MTYPE_EEPROM;
@@ -78,7 +69,7 @@ uchar jtag3::memorySpace(unsigned long &addr)
     default:
 	if (is_xmega)
 	    return MTYPE_XMEGA_APP_FLASH;
-	else if (proto == PROTO_DW || programmingEnabled)
+	else if (proto == Debugproto::DW || programmingEnabled)
 	    return MTYPE_FLASH_PAGE;
 	else
 	    return MTYPE_SPM;
@@ -251,7 +242,7 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // command.  If so, chip erase the device, and switch over to
     // programming mode to speed up things (drastically).
 
-    if (proto != PROTO_DW &&
+    if (proto != Debugproto::DW &&
 	whichSpace == MTYPE_SPM &&
 	addr == 0 &&
 	numBytes > 4)

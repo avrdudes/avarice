@@ -98,7 +98,6 @@ AC_SUBST(LIBHIDAPI, $LIBHIDAPI)
 
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h])
 
 AC_CHECK_HEADERS([bfd.h], , [ac_found_bfd_h=no])

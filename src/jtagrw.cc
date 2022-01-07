@@ -23,20 +23,11 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag1.h"
-#include "remote.h"
 
 
 /** Return the memory space code for the memory space indicated by the
@@ -82,19 +73,17 @@ static void swapBytes(uchar *buffer, unsigned int count)
 
 uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 {
-    uchar *response;
-    int whichSpace = 0;
-    uchar command[] = { 'R', 0, 0, 0, 0, 0, JTAG_EOM }; 
-
     if (numBytes == 0)
     {
-	response = new uchar[1];
+	auto response = std::make_unique<uchar[]>(1);
 	response[0] = '\0';
-	return response;
+	return response.release(); // TODO: be compatible with other jtagRead()
     }
 
     debugOut("jtagRead ");
-    whichSpace = memorySpace(&addr);
+    uchar command[] = { 'R', 0, 0, 0, 0, 0, JTAG_EOM };
+
+    int whichSpace = memorySpace(&addr);
     if (whichSpace)
     {
 	command[1] = whichSpace;
@@ -108,18 +97,14 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 	// + 2. Then add an additional byte for the trailing zero (see
 	// protocol document).
 
-	response = doJtagCommand(command, sizeof command, numBytes + 2);
-
+	auto response = doJtagCommand(command, sizeof command, numBytes + 2);
 	if (response[numBytes + 1] == JTAG_R_OK)
-	    return response;
-
-	delete [] response;
+	    return response.release(); // TODO: be compatible with other jtagRead()
 
 	throw jtag_exception();
     }
     else
     {
-
 	// Reading program memory
 	whichSpace = programmingEnabled ?
 	    ADDR_PROG_SPACE_PROG_ENABLED : ADDR_PROG_SPACE_PROG_DISABLED;
@@ -137,22 +122,19 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 	command[2] = numLocations - 1;
 	encodeAddress(&command[3], addr / 2);
 
-	response = doJtagCommand(command, sizeof command, numLocations * 2 + 2);
-
+	auto response = doJtagCommand(command, sizeof command, numLocations * 2 + 2);
 	if (response[numLocations * 2 + 1] == JTAG_R_OK)
 	{
 	    // Programming mode and regular mode are byte-swapped...
 	    if (!programmingEnabled)
-		swapBytes(response, numLocations * 2);
+		swapBytes(response.get(), numLocations * 2);
 
 	    if (addr & 1)
 		// we read one byte early. move stuff down.
-		memmove(response, response + 1, numBytes);
+		memmove(response.get(), response.get() + 1, numBytes);
 
-	    return response;
+	    return response.release(); // TODO: be compatible with other jtagRead()
 	}
-
-	delete [] response;
 
 	throw jtag_exception();
     }
@@ -160,17 +142,12 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes)
 
 void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 {
-    uchar *response;
-    int whichSpace = 0;
-    unsigned int numLocations;
-    uchar command[] = { 'W', 0, 0, 0, 0, 0, JTAG_EOM }; 
-
     if (numBytes == 0)
-	return;
+        return;
 
     debugOut("jtagWrite ");
-    whichSpace = memorySpace(&addr);
-
+    unsigned int numLocations;
+    int whichSpace = memorySpace(&addr);
     if (whichSpace)
 	numLocations = numBytes;
     else
@@ -209,14 +186,16 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // Writing is a two part process
 
     // Part 1: send the address
-    command[1] = whichSpace;
-    command[2] = numLocations - 1;
-    encodeAddress(&command[3], addr);
+    {
+        uchar command[] = {
+            'W',     static_cast<uchar>(whichSpace), static_cast<uchar>(numLocations - 1), 0, 0, 0,
+            JTAG_EOM};
+        encodeAddress(&command[3], addr);
 
-    response = doJtagCommand(command, sizeof command, 0);
-    if (!response)
-	throw jtag_exception();
-    delete [] response;
+        auto response_part1 = doJtagCommand(command, sizeof command, 0);
+        if (!response_part1)
+            throw jtag_exception();
+    }
 
     // Part 2: send the data in the following form:
     // h [data byte]...[data byte] __
@@ -234,7 +213,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // to program space are for code download, it is simpler at this
     // stage to simply pass the data straight through. This may need to
     // change in the future.
-    uchar *txBuffer = new uchar[numBytes + 3]; // allow for header and trailer
+    auto txBuffer = std::make_unique<uchar[]>(numBytes + 3); // allow for header and trailer
     txBuffer[0] = 'h';
 
     memcpy(&txBuffer[1], buffer, numBytes);
@@ -242,11 +221,8 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     txBuffer[numBytes + 1] = ' ';
     txBuffer[numBytes + 2] = ' ';
 
-    response = doJtagCommand(txBuffer, numBytes + 3, 1);
-    delete [] txBuffer;
-
-    if (!response)
+    auto response_part2 = doJtagCommand(txBuffer.get(), numBytes + 3, 1);
+    if (!response_part2)
 	throw jtag_exception();
-    delete [] response;
 }
 

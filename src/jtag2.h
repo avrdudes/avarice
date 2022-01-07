@@ -29,119 +29,77 @@
 class jtag2: public jtag
 {
   private:
-    unsigned short command_sequence;
-    int devdescrlen;
-    bool signedIn;
-    bool debug_active;
-    enum debugproto proto;
+    unsigned short command_sequence = 0;
+    int devdescrlen = sizeof(jtag2_device_desc_type);
+    bool signedIn = false;
+    bool debug_active = false;
+    Debugproto proto;
     bool has_full_xmega_support;       // Firmware revision of JTAGICE mkII or AVR Dragon
                                        // allows for full Xmega support (>= 7.x)
     unsigned long cached_pc;
-    bool cached_pc_is_valid;
+    bool cached_pc_is_valid = false;
 
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
-    unsigned int flashCachePageAddr;
+    unsigned int flashCachePageAddr = (unsigned int)-1;
     unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
-    unsigned int eepromCachePageAddr;
+    unsigned int eepromCachePageAddr = (unsigned short)-1;
 
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    jtag2(const char *dev, char *name, enum debugproto prot = PROTO_JTAG,
+    jtag2(const char *dev, const char *name, Debugproto prot = Debugproto::JTAG,
 	  bool is_dragon = false, bool nsrst = false,
           bool xmega = false):
-      jtag(dev, name, is_dragon? EMULATOR_DRAGON: EMULATOR_JTAGICE) {
-	signedIn = debug_active = false;
-	command_sequence = 0;
-	devdescrlen = sizeof(jtag2_device_desc_type);
-	proto = prot;
-	apply_nSRST = nsrst;
+      jtag(dev, name, nsrst, is_dragon? Emulator::DRAGON: Emulator::JTAGICE),
+	proto(prot) {
         is_xmega = xmega;
-	xmega_n_bps = 0;
-	flashCachePageAddr = (unsigned int)-1;
-	eepromCachePageAddr = (unsigned short)-1;
-
-	for (int j = 0; j < MAX_TOTAL_BREAKPOINTS2; j++)
-	  bp[j] = default_bp;
-        cached_pc_is_valid = false;
     };
-    virtual ~jtag2();
+    ~jtag2() override;
 
-    virtual void initJtagBox();
-    virtual void initJtagOnChipDebugging(unsigned long bitrate);
+    void initJtagBox() override;
+    void initJtagOnChipDebugging(unsigned long bitrate) override;
 
-    virtual void deleteAllBreakpoints();
-    virtual void updateBreakpoints();
-    virtual bool codeBreakpointAt(unsigned int address);
-    virtual void parseEvents(const char *);
+    void deleteAllBreakpoints() override;
+    void updateBreakpoints() override;
+    bool codeBreakpointAt(unsigned int address) override;
+    void parseEvents(const char *) override;
 
-    virtual void enableProgramming();
-    virtual void disableProgramming();
-    virtual void eraseProgramMemory();
-    virtual void eraseProgramPage(unsigned long address);
-    virtual void downloadToTarget(const char* filename, bool program, bool verify);
+    void enableProgramming() override;
+    void disableProgramming() override;
+    void eraseProgramMemory() override;
+    void eraseProgramPage(unsigned long address) override;
+    void downloadToTarget(const char* filename, bool program, bool verify) override;
 
-    virtual unsigned long getProgramCounter();
-    virtual void setProgramCounter(unsigned long pc);
-    virtual void resetProgram(bool ignored = false);
-    virtual void interruptProgram();
-    virtual void resumeProgram();
-    virtual void jtagSingleStep();
-    virtual bool jtagContinue();
+    unsigned long getProgramCounter() override;
+    void setProgramCounter(unsigned long pc) override;
+    void resetProgram(bool possible_nSRST) override;
+    void interruptProgram() override;
+    void resumeProgram() override;
+    void jtagSingleStep() override;
+    bool jtagContinue() override;
 
-    virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
-    virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
-    virtual unsigned int statusAreaAddress() const {
+    uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
+    void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) override;
+    unsigned int statusAreaAddress() const override {
         return (is_xmega? 0x3D: 0x5D) + DATA_SPACE_ADDR_OFFSET;
     };
-    virtual unsigned int cpuRegisterAreaAddress() const {
+    unsigned int cpuRegisterAreaAddress() const override {
         return is_xmega? REGISTER_SPACE_ADDR_OFFSET: DATA_SPACE_ADDR_OFFSET;
     }
 
   private:
-    virtual void changeBitRate(int newBitRate);
-    virtual void setDeviceDescriptor(jtag_device_def_type *dev);
-    virtual bool synchroniseAt(int bitrate);
-    virtual void startJtagLink();
-    virtual void deviceAutoConfig();
+    void changeBitRate(int newBitRate) override;
+    void setDeviceDescriptor(const jtag_device_def_type &dev) override;
+    bool synchroniseAt(int bitrate) override;
+    void startJtagLink() override;
+    void deviceAutoConfig() override;
     virtual void configDaisyChain();
 
-    void sendFrame(uchar *command, int commandSize);
+    void sendFrame(const uchar *command, int commandSize);
     int recvFrame(unsigned char *&msg, unsigned short &seqno);
     int recv(unsigned char *&msg);
 
-    unsigned long b4_to_u32(unsigned char *b) {
-      unsigned long l;
-      l = (unsigned)b[0];
-      l += (unsigned)b[1] << 8;
-      l += (unsigned)(unsigned)b[2] << 16;
-      l += (unsigned)b[3] << 24;
-
-      return l;
-    };
-
-    void u32_to_b4(unsigned char *b, unsigned long l) {
-      b[0] = l & 0xff;
-      b[1] = (l >> 8) & 0xff;
-      b[2] = (l >> 16) & 0xff;
-      b[3] = (l >> 24) & 0xff;
-    };
-
-    unsigned short b2_to_u16(unsigned char *b) {
-      unsigned short l;
-      l = (unsigned)b[0];
-      l += (unsigned)b[1] << 8;
-
-      return l;
-    };
-
-    void u16_to_b2(unsigned char *b, unsigned short l) {
-      b[0] = l & 0xff;
-      b[1] = (l >> 8) & 0xff;
-    };
-
-
-    bool sendJtagCommand(uchar *command, int commandSize, int &tries,
+    bool sendJtagCommand(const uchar *command, int commandSize, int &tries,
 			 uchar *&msg, int &msgsize, bool verify = true);
 
     /** Send a command to the jtag, with retries, and return the
@@ -154,7 +112,7 @@ class jtag2: public jtag
 
 	Caller must delete [] the response.
     **/
-    void doJtagCommand(uchar *command, int  commandSize,
+    void doJtagCommand(const uchar *command, int  commandSize,
 		       uchar *&response, int &responseSize,
 		       bool retryOnTimeout = true);
 
@@ -177,10 +135,6 @@ class jtag2: public jtag
     void getJtagParameter(uchar item, uchar *&resp, int &respSize);
 
     uchar memorySpace(unsigned long &addr);
-
-    /** debugWire version of the breakpoint updater.
-     **/
-    void updateBreakpintsDW();
 
     /** Wait until either the ICE or GDB issued an event.  As this is
 	the heart of jtagContinue for the mkII, it returns true when a

@@ -21,17 +21,10 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
 
 void jtag3::setJtagParameter(uchar scope, uchar section, uchar item,

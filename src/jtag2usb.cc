@@ -26,21 +26,14 @@
 
 #ifdef HAVE_LIBUSB
 
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
+#include <cstring>
+#include <cerrno>
 
 #ifdef HAVE_LIBUSB_2_0
 #  include <libusb20.h>
@@ -249,7 +242,7 @@ static void usb20_cleanup(usb_dev_t *d)
  * Walk down all USB devices, and see whether we can find our emulator
  * device.
  */
-static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
+static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type,
 			  int &usb_interface)
 {
   char string[256];
@@ -262,9 +255,8 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
   uint16_t pid;
   size_t x;
 
-  switch (emu_type)
-    {
-    case EMULATOR_JTAGICE:
+  switch (emu_type) {
+  case Emulator::JTAGICE:
       pid = USB_DEVICE_JTAGICEMKII;
       read_ep = USBDEV_BULK_EP_READ_MKII;
       write_ep = USBDEV_BULK_EP_WRITE_MKII;
@@ -272,7 +264,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       max_xfer = USBDEV_MAX_XFER_MKII;
       break;
 
-    case EMULATOR_DRAGON:
+  case Emulator::DRAGON:
       pid = USB_DEVICE_AVRDRAGON;
       read_ep = USBDEV_BULK_EP_READ_MKII;
       write_ep = USBDEV_BULK_EP_WRITE_MKII;
@@ -280,7 +272,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       max_xfer = USBDEV_MAX_XFER_MKII;
       break;
 
-    case EMULATOR_JTAGICE3:
+  case Emulator::JTAGICE3:
       pid = USB_DEVICE_JTAGICE3;
       read_ep = USBDEV_BULK_EP_READ_3;
       write_ep = USBDEV_BULK_EP_WRITE_3;
@@ -288,10 +280,10 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
       max_xfer = USBDEV_MAX_XFER_3;
       break;
 
-    default:
+  default:
       // should not happen
       return nullptr;
-    }
+  }
 
   devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
   memcpy(devnamecopy, jtagDeviceName, x);
@@ -583,13 +575,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, emulator emu_type,
  */
 static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_size)
 {
-  hid_device *pdev;
-  char *devnamecopy, *serno, *cp2;
   size_t x;
   wchar_t wserno[15];
   size_t serlen = 0;
 
-  devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
+  char* devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
   memcpy(devnamecopy, jtagDeviceName, x);
 
   /*
@@ -602,10 +592,11 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
    * right-to-left, so only the least significant nibbles need to be
    * specified.
    */
-  if ((serno = strchr(devnamecopy, ':')) != nullptr)
+  char *serno = strchr(devnamecopy, ':');
+  if (serno != nullptr)
     {
       /* first, drop all colons there if any */
-      cp2 = ++serno;
+      char* cp2 = ++serno;
 
       while ((cp2 = strchr(cp2, ':')) != nullptr)
 	{
@@ -624,8 +615,6 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
       mbstowcs(wserno, serno, 15);
     }
   delete [] devnamecopy;
-
-  pdev = nullptr;
 
   /*
    * Find any Atmel device which is a HID.  Then, look at the product
@@ -674,7 +663,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
       return nullptr;
     }
 
-  pdev = hid_open_path(walk->path);
+  hid_device *pdev = hid_open_path(walk->path);
   hid_free_enumeration(list);
   if (pdev == nullptr)
     // can't happen?
@@ -1001,9 +990,8 @@ static void *usb_thread_write(void *)
   while (true)
     {
       char buf[MAX_MESSAGE];
-      int rv;
-
-      if ((rv = read(pype[0], buf, MAX_MESSAGE)) > 0)
+      int rv = read(pype[0], buf, MAX_MESSAGE);
+      if (rv > 0)
         {
 	  int offset = 0;
 
@@ -1048,9 +1036,7 @@ static void *usb_thread_read(void *)
   while (true)
     {
       char buf[MAX_MESSAGE + sizeof(unsigned int)];
-      int rv;
-
-      rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int),
+      int rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int),
 			 max_xfer, 0);
       if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT)
       {
@@ -1217,14 +1203,13 @@ static void *hid_thread(void * data)
       // One additional byte is for libhidapi to tell we don't use HID
       // report numbers.  Four bytes are wrapping overhead.
       unsigned char buf[MAX_MESSAGE + 5];
-      int rv;
 
       // Poll for data from main thread.
       // Wait for at most 50 ms, so we can regularly
       // ping for events even if no upstream activity
       // is present.
       fds[0].revents = 0;
-      rv = poll(fds, 1, 50);
+      int rv = poll(fds, 1, 50);
       if (rv < 0)
 	{
 	  if (errno != EINTR)
@@ -1408,16 +1393,14 @@ static void *hid_thread(void * data)
     }
 }
 
-static void
-cleanup_hid()
+static void cleanup_hid()
 {
   hid_close(hdev);
   hdev = nullptr;
 }
 #endif
 
-static void
-cleanup_usb()
+static void cleanup_usb()
 {
 #ifdef HAVE_LIBUSB_2_0
   usb20_cleanup(udev);
@@ -1433,7 +1416,7 @@ void jtag::openUSB(const char *jtagDeviceName)
   if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) < 0)
       throw jtag_exception("cannot create pipe");
 
-  if (emu_type == EMULATOR_EDBG)
+  if (emu_type == Emulator::EDBG)
     {
 #ifdef HAVE_LIBHIDAPI
       static struct hid_thread_data hdata;

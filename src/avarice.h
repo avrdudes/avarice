@@ -21,7 +21,7 @@
 #ifndef INCLUDE_AVARICE_H
 #define INCLUDE_AVARICE_H
 
-#include <stdarg.h>
+#include <cstdarg>
 
 #include "autoconf.h"
 

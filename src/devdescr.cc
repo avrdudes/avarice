@@ -23,11 +23,8 @@
  * $Id$
  */
 
-#include <stdlib.h>
-
-#include "avarice.h"
+#include "pragma.h"
 #include "jtag.h"
-#include "jtag1.h"
 
 /* Device descriptor magic from Atmel's documents. Let's hope it's more
    accurate than the rest of that text... */

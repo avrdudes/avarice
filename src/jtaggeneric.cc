@@ -23,30 +23,27 @@
  * $Id$
  */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <sys/time.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+#include <cstring>
+#include <cerrno>
 
 #include "avarice.h"
 #include "jtag.h"
 
-const char *BFDmemoryTypeString[] = {
-    "FLASH",
-    "EEPROM",
-    "RAM",
-};
-
-const int BFDmemorySpaceOffset[] = {
-    FLASH_SPACE_ADDR_OFFSET,
-    EEPROM_SPACE_ADDR_OFFSET,
-    DATA_SPACE_ADDR_OFFSET,
+static int BFDmemorySpaceOffset(BFDmemoryType memtype) {
+    switch(memtype) {
+    case BFDmemoryType::FLASH:
+        return FLASH_SPACE_ADDR_OFFSET;
+    case BFDmemoryType::EEPROM:
+        return EEPROM_SPACE_ADDR_OFFSET;
+    case BFDmemoryType::RAM:
+    default: // safe default?
+        return DATA_SPACE_ADDR_OFFSET;
+    }
 };
 
 /*
@@ -59,22 +56,9 @@ void jtag::restoreSerialPort()
       tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-jtag::jtag()
+jtag::jtag(const char *jtagDeviceName, const char *name, bool nsrst, Emulator type)
+    :emu_type(type), apply_nSRST(nsrst), device_name(name)
 {
-  jtagBox = 0;
-  softbp_only = is_xmega = oldtioValid = is_usb = false;
-}
-
-jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
-{
-    struct termios newtio;
-
-    jtagBox = 0;
-    oldtioValid = is_usb = false;
-    device_name = name;
-    emu_type = type;
-    programmingEnabled = false;
-    deviceDef = nullptr;
     if (strncmp(jtagDeviceName, "usb", 3) == 0)
       {
 #ifdef HAVE_LIBUSB
@@ -86,6 +70,7 @@ jtag::jtag(const char *jtagDeviceName, char *name, emulator type)
       }
     else
       {
+        struct termios newtio;
 	// Open modem device for reading and writing and not as controlling
 	// tty because we don't want to get killed if linenoise sends
 	// CTRL-C.
@@ -266,7 +251,7 @@ static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
         //    not program (is 0xff after erase).
         if (image->image[idx].used)
         {
-            if (!((memtype == MEM_FLASH) &&
+            if (!((memtype == BFDmemoryType::FLASH) &&
                   (image->image[idx].val == 0xff)))
             {
                 emptyPage = false;
@@ -278,32 +263,24 @@ static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
 }
 
 
-unsigned int jtag::get_page_size(BFDmemoryType memtype)
+unsigned int jtag::get_page_size(BFDmemoryType memtype) const
 {
-    unsigned int page_size;
     switch( memtype ) {
-    case MEM_FLASH:
-        page_size = deviceDef->flash_page_size;
-        break;
-    case MEM_EEPROM:
-        page_size = deviceDef->eeprom_page_size;
-        break;
+    case BFDmemoryType::FLASH:
+        return deviceDef->flash_page_size;
+    case BFDmemoryType::EEPROM:
+        return deviceDef->eeprom_page_size;
     default:
-        page_size = 1;
-        break;
+        return 1;
     }
-    return page_size;
 }
 
 
 void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                              bool program, bool verify)
 {
-    unsigned int page_size = get_page_size(memtype);
-    static uchar buf[MAX_IMAGE_SIZE];
-    unsigned int i;
+    const auto page_size = get_page_size(memtype);
     uchar *response = nullptr;
-    unsigned int addr;
 
     if (! image->has_data)
     {
@@ -311,11 +288,10 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
         return;
     }
 
-
     if (program)
     {
         // First address must start on page boundary.
-        addr = page_addr(image->first_address, memtype);
+        unsigned int addr = page_addr(image->first_address, memtype);
 
         statusOut("Downloading %s image to target.", image->name);
         statusFlush();
@@ -328,13 +304,14 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
                 debugOut("Writing page at addr 0x%.4lx size 0x%lx\n",
                          addr, page_size);
 
+                static uchar buf[MAX_IMAGE_SIZE];
                 // Create raw data buffer
-                for (i=0; i<page_size; i++)
+                for (unsigned int i=0; i<page_size; i++)
                     buf[i] = image->image[i+addr].val;
 
                 try
                 {
-                    jtagWrite(BFDmemorySpaceOffset[memtype] + addr,
+                    jtagWrite(BFDmemorySpaceOffset(memtype) + addr,
                               page_size,
                               buf);
                 }
@@ -360,7 +337,7 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
         bool is_verified = true;
 
         // First address must start on page boundary.
-        addr = page_addr(image->first_address, memtype);
+        unsigned int addr = page_addr(image->first_address, memtype);
 
         statusOut("\nVerifying %s", image->name);
         statusFlush();
@@ -371,11 +348,11 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype,
             debugOut("Verifying page at addr 0x%.4lx size 0x%lx\n",
                      addr, page_size);
 
-            response = jtagRead(BFDmemorySpaceOffset[memtype] + addr,
+            response = jtagRead(BFDmemorySpaceOffset(memtype) + addr,
                                 page_size);
 
             // Verify buffer, but only addresses in use.
-            for (i=0; i < page_size; i++)
+            for (unsigned int i=0; i < page_size; i++)
             {
                 unsigned int c = i + addr;
                 if (image->image[c].used )
@@ -631,11 +608,9 @@ void jtag::jtagWriteLockBits(char *lock)
 
 void jtag::jtagReadLockBits()
 {
-    uchar *lockBits = nullptr;
-
     enableProgramming();
     statusOut("\nReading Lock Bits:\n");
-    lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+    uchar *lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
     disableProgramming();
 
     jtagDisplayLockBits(lockBits);
@@ -658,17 +633,14 @@ void jtag::jtagDisplayLockBits(uchar *lockBits)
     statusOut("    Bit 0 [ LB1      ] -> %d\n", (lockBits[0] >> 0) & 1);
 }
 
-bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int length)
 {
-    int bp_i;
-
     debugOut("BP ADD type: %d  addr: 0x%x ", type, address);
-
 
     // Perhaps we have already set this breakpoint, and it is just
     // marked as disabled In that case we don't need to make a new
     // one, just flag this one as enabled again
-    bp_i = 0;
+    int bp_i = 0;
     while (!bp[bp_i].last)
       {
 	  if ((bp[bp_i].address == address) && (bp[bp_i].type == type))
@@ -711,7 +683,7 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 	      bp[bp_i + 1].last = true;
 	      bp[bp_i + 1].enabled = false;
 	      bp[bp_i + 1].address = 0;
-	      bp[bp_i + 1].type = NONE;
+	      bp[bp_i + 1].type = BreakpointType::NONE;
 	  }
 
         // bp_i now has the new breakpoint we are going to use.
@@ -723,9 +695,9 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
         // Is it a range breakpoint?
         // Range breakpoint needs to be aligned, and the length must
         // be representable as a bitmask.
-        if ((length > 1) && ((type == READ_DATA) ||
-                             (type == WRITE_DATA) ||
-                             (type == ACCESS_DATA)))
+        if ((length > 1) && ((type == BreakpointType::READ_DATA) ||
+                             (type == BreakpointType::WRITE_DATA) ||
+                             (type == BreakpointType::ACCESS_DATA)))
 	  {
 	      int bitno = ffs((int)length);
 	      unsigned int mask = 1 << (bitno - 1);
@@ -748,7 +720,7 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 
 	      // add the breakpoint as a data mask.. only thing is we
 	      // need to find it afterwards
-	      if (!addBreakpoint(mask, DATA_MASK, 1))
+	      if (!addBreakpoint(mask, BreakpointType::DATA_MASK, 1))
                 {
 		    debugOut("FAILED\n");
 		    bp[bp_i].last = true;
@@ -760,7 +732,7 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
 	      unsigned int j;
 	      for(j = 0; !bp[j].last; j++)
                 {
-		    if ((bp[j].type == DATA_MASK) && (bp[bp_i].address == mask))
+		    if ((bp[j].type == BreakpointType::DATA_MASK) && (bp[bp_i].address == mask))
 			break;
                 }
 
@@ -803,16 +775,11 @@ bool jtag::addBreakpoint(unsigned int address, bpType type, unsigned int length)
     return true;
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-bool jtag::deleteBreakpoint(unsigned int address, bpType type, unsigned int length)
+bool jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int)
 {
-    int bp_i;
-
     debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
 
-    bp_i = 0;
+    int bp_i = 0;
     while (!bp[bp_i].last)
       {
 	  if ((bp[bp_i].address == address) && (bp[bp_i].type == type))
@@ -847,8 +814,6 @@ bool jtag::deleteBreakpoint(unsigned int address, bpType type, unsigned int leng
     return true;
 }
 
-PRAGMA_DIAG_POP
-
 /*
  * This routine is where all the logic of what breakpoints go into the
  * ICE and what don't happens. When called it assumes all the "toadd"
@@ -870,7 +835,6 @@ bool jtag::layoutBreakpoints()
     // array element, it's meaningless...  FIXME: Slot 4 is set to
     // 'false', doesn't seem to work?
     bool remaining_bps[MAX_BREAKPOINTS2 + 2] = {false, true, true, true, false, false};
-    int bp_i;
     uchar bpnum;
     bool softwarebps = true;
     bool hadroom = true;
@@ -896,7 +860,7 @@ bool jtag::layoutBreakpoints()
 	  remaining_bps[BREAKPOINT2_XMEGA_UNAVAIL] = false;
       }
 
-    bp_i = 0;
+    int bp_i = 0;
     while (!bp[bp_i].last)
       {
 	  // check we have an enabled "stable" breakpoint that's not
@@ -913,7 +877,7 @@ bool jtag::layoutBreakpoints()
     for (bp_i = 0; !bp[bp_i].last; bp_i++)
       {
 	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
-	      bp[bp_i].type == DATA_MASK)
+	      bp[bp_i].type == BreakpointType::DATA_MASK)
 	    {
 		// Check if we have the mask slot available
 		if (!remaining_bps[BREAKPOINT2_DATA_MASK])
@@ -933,9 +897,9 @@ bool jtag::layoutBreakpoints()
 
         // Find the next data breakpoint that needs somewhere to live
 	  if (bp[bp_i].enabled && bp[bp_i].toadd &&
-	      ((bp[bp_i].type == READ_DATA) ||
-	       (bp[bp_i].type == WRITE_DATA) ||
-	       (bp[bp_i].type == ACCESS_DATA)))
+	      ((bp[bp_i].type == BreakpointType::READ_DATA) ||
+	       (bp[bp_i].type == BreakpointType::WRITE_DATA) ||
+	       (bp[bp_i].type == BreakpointType::ACCESS_DATA)))
 	    {
 		// Check if we have one of both slots available
 		if (!remaining_bps[BREAKPOINT2_DATA_MASK] &&
@@ -993,7 +957,7 @@ bool jtag::layoutBreakpoints()
             }
 
 	  // Find the next breakpoint that needs somewhere to live
-	  if (bp[bp_i].enabled && bp[bp_i].toadd && (bp[bp_i].type == CODE))
+	  if (bp[bp_i].enabled && bp[bp_i].toadd && (bp[bp_i].type == BreakpointType::CODE))
             {
 		if (bpnum == 0xFF)
 		  {

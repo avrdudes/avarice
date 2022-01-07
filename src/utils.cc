@@ -18,14 +18,10 @@
  *
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdarg>
 
 #include "avarice.h"
-#include "remote.h"
 
 bool debugMode = false;
 

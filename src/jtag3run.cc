@@ -21,19 +21,10 @@
  */
 
 
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
+#include <cstdio>
 #include <sys/time.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
 #include "remote.h"
 
@@ -107,10 +98,7 @@ void jtag3::setProgramCounter(unsigned long pc)
   cached_pc_is_valid = false;
 }
 
-PRAGMA_DIAG_PUSH
-PRAGMA_DIAG_IGNORED("-Wunused-parameter")
-
-void jtag3::resetProgram(bool possible_nSRST_ignored)
+void jtag3::resetProgram(bool)
 {
   uchar cmd[] = { SCOPE_AVR, CMD3_RESET, 0, 0x01 };
   uchar *resp;
@@ -127,8 +115,6 @@ void jtag3::resetProgram(bool possible_nSRST_ignored)
    * PC where the reset actually hit, so ignore it. */
   cached_pc_is_valid = false;
 }
-
-PRAGMA_DIAG_POP
 
 void jtag3::interruptProgram()
 {

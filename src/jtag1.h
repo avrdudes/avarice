@@ -25,9 +25,9 @@
 #ifndef JTAG1_H
 #define JTAG1_H
 
-#include "jtag.h"
+#include <memory>
 
-enum SendResult { send_failed, send_ok, mcu_data };
+#include "jtag.h"
 
 /*
    There are apparently a total of three hardware breakpoints 
@@ -60,80 +60,85 @@ enum {
   MAX_BREAKPOINTS = 4
 };
 
-struct breakpoint
-{
-    unsigned int address;
-    bpType type;
-};
-
 class jtag1: public jtag
 {
     /** Decode 3-byte big-endian address **/
-    unsigned long decodeAddress(uchar *buf) {
+    static unsigned long decodeAddress(uchar *buf) {
 	return buf[0] << 16 | buf[1] << 8 | buf[2];
     };
 
     /** Encode 3-byte big-endian address **/
-    void encodeAddress(uchar *buffer, unsigned long x) {
+    static void encodeAddress(uchar *buffer, unsigned long x) {
 	buffer[0] = x >> 16;
 	buffer[1] = x >> 8;
 	buffer[2] = x;
     };
 
-    breakpoint bpCode[MAX_BREAKPOINTS_CODE], bpData[MAX_BREAKPOINTS_DATA];
-    int numBreakpointsCode, numBreakpointsData;
-
-  public:
-    jtag1(const char *dev, char *name, bool nsrst = false):
-      jtag(dev, name) {
-	apply_nSRST = nsrst;
+    struct breakpoint
+    {
+        unsigned int address = 0;
+        BreakpointType type = BreakpointType::NONE;
     };
 
-    virtual void initJtagBox();
-    virtual void initJtagOnChipDebugging(unsigned long bitrate);
+    breakpoint bpCode[MAX_BREAKPOINTS_CODE];
+    breakpoint bpData[MAX_BREAKPOINTS_DATA];
+    int numBreakpointsCode = 0;
+    int numBreakpointsData = 0;
 
-    virtual void deleteAllBreakpoints();
-    virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
-    virtual void updateBreakpoints();
-    virtual bool codeBreakpointAt(unsigned int address);
-    virtual void parseEvents(const char *);
+  public:
+    jtag1(const char *dev, const char *name, bool nsrst = false):
+      jtag(dev, name, nsrst) {};
 
-    virtual void enableProgramming();
-    virtual void disableProgramming();
-    virtual void eraseProgramMemory();
-    virtual void eraseProgramPage(unsigned long address);
-    virtual void downloadToTarget(const char* filename, bool program, bool verify);
+    void initJtagBox() override;
+    void initJtagOnChipDebugging(unsigned long bitrate) override;
 
-    virtual unsigned long getProgramCounter();
-    virtual void setProgramCounter(unsigned long pc);
-    virtual void resetProgram(bool possible_nSRST);
-    virtual void interruptProgram();
-    virtual void resumeProgram();
-    virtual void jtagSingleStep();
-    virtual bool jtagContinue();
+    void deleteAllBreakpoints() override;
+    bool deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int length) override;
+    bool addBreakpoint(unsigned int address, BreakpointType type, unsigned int length) override;
+    void updateBreakpoints() override;
+    bool codeBreakpointAt(unsigned int address) override;
+    void parseEvents(const char *) override;
 
-    virtual uchar *jtagRead(unsigned long addr, unsigned int numBytes);
-    virtual void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]);
-    virtual unsigned int statusAreaAddress() const {
+    void enableProgramming() override;
+    void disableProgramming() override;
+    void eraseProgramMemory() override;
+    void eraseProgramPage(unsigned long address) override;
+    void downloadToTarget(const char* filename, bool program, bool verify) override;
+
+    unsigned long getProgramCounter() override;
+    void setProgramCounter(unsigned long pc) override;
+    void resetProgram(bool possible_nSRST) override;
+    void interruptProgram() override;
+    void resumeProgram() override;
+    void jtagSingleStep() override;
+    bool jtagContinue() override;
+
+    uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
+
+    void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) override;
+
+    unsigned int statusAreaAddress() const override {
         /* no Xmega handling in JTAG ICE mkI */
         return 0x5D + DATA_SPACE_ADDR_OFFSET;
     };
-    virtual unsigned int cpuRegisterAreaAddress() const {
+    unsigned int cpuRegisterAreaAddress() const override {
         /* no Xmega handling in JTAG ICE mkI */
         return DATA_SPACE_ADDR_OFFSET;
     }
 
   private:
-    virtual void changeBitRate(int newBitRate);
-    virtual void setDeviceDescriptor(jtag_device_def_type *dev);
-    virtual bool synchroniseAt(int bitrate);
-    virtual void startJtagLink();
-    virtual void deviceAutoConfig();
+    void changeBitRate(int newBitRate) override;
+    void setDeviceDescriptor(const jtag_device_def_type &dev) override;
+    bool synchroniseAt(int bitrate) override;
+    void startJtagLink() override;
+    void deviceAutoConfig() override;
     virtual void configDaisyChain();
 
-    uchar *getJtagResponse(int responseSize);
-    SendResult sendJtagCommand(uchar *command, int commandSize, int *tries);
+    std::unique_ptr<uchar[]> getJtagResponse(int responseSize);
+
+    enum SendResult { send_failed, send_ok, mcu_data };
+
+    SendResult sendJtagCommand(const uchar *command, int commandSize, int &tries);
     bool checkForEmulator();
 
     /** Send a command to the jtag, with retries, and return the 'responseSize'
@@ -142,7 +147,7 @@ class jtag1: public jtag
 	Returns a dynamically allocated buffer containing the reponse (caller
 	must free)
     **/
-    uchar *doJtagCommand(uchar *command, int  commandSize, int responseSize);
+    std::unique_ptr<uchar[]> doJtagCommand(const uchar *command, int  commandSize, int responseSize);
 
     /** Simplified form of doJtagCommand:
 	Send 1-byte command 'cmd' to JTAG ICE, with retries, expecting a
@@ -161,7 +166,6 @@ class jtag1: public jtag
 
     /** Return value of JTAG ICE parameter 'item' **/
     uchar getJtagParameter(uchar item);
-
 };
 
 #endif

@@ -30,8 +30,8 @@
 
 #include <exception>
 
-#include "pragma.h"
 #include "ioreg.h"
+#include "avarice.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
 
@@ -647,14 +647,13 @@ enum {
  * XXX This is not done yet.
  */
 
-enum bpType
-{
+enum class BreakpointType {
     NONE,           // disabled.
     CODE,           // normal code space breakpoint.
     WRITE_DATA,     // write data space breakpoint (ie "watch").
     READ_DATA,      // read data space breakpoint (ie "watch").
     ACCESS_DATA,    // read/write data space breakpoint (ie "watch").
-    DATA_MASK,      // mask for data space breakpoint.
+    DATA_MASK      // mask for data space breakpoint.
 };
 
 enum {
@@ -671,61 +670,45 @@ enum {
   MAX_TOTAL_BREAKPOINTS2 = 255
 };
 
-struct breakpoint2
-{
+struct Breakpoint2 {
     // High-level information on breakpoint
-    unsigned int address;
-    unsigned int mask_pointer;
-    bpType type;
-    bool enabled;
+    unsigned int address = 0;
+    unsigned int mask_pointer = 0;
+    BreakpointType type = BreakpointType::NONE;
+    bool enabled = false;
 
     // Used to flag end of list
-    bool last;
+    bool last = true;
 
     // Low-level information on breakpoint
-    bool icestatus; // Status of breakpoint in ICE itself: 'true'
+    bool icestatus = false; // Status of breakpoint in ICE itself: 'true'
                     // when is enabled in ACTUAL device
-    bool toremove;  // Delete this guy in ICE
-    bool toadd;     // Add this guy in ICE
-    uchar bpnum;    // ICE's breakpoint number (0x00 for software)
-    bool has_mask;  // data watchpoint has a mask associated
-};
-
-const struct breakpoint2 default_bp =
-{
-    0,				/* address */
-    0,				/* mask_pointer */
-    NONE,			/* type */
-    false,			/* enabled */
-    true,			/* last */
-    false,			/* icestatus */
-    false,			/* toremove */
-    false,			/* toadd */
-    0,				/* bpnum*/
-    false,			/* has_mask */
+    bool toremove = false;  // Delete this guy in ICE
+    bool toadd = false;     // Add this guy in ICE
+    uchar bpnum = 0;    // ICE's breakpoint number (0x00 for software)
+    bool has_mask = false;  // data watchpoint has a mask associated
 };
 
 // Enumerations for target memory type.
-enum BFDmemoryType {
-    MEM_FLASH = 0,
-    MEM_EEPROM = 1,
-    MEM_RAM = 2,
+enum class BFDmemoryType {
+    FLASH,
+    EEPROM,
+    RAM
 };
 
 extern const char *BFDmemoryTypeString[];
-extern const int BFDmemorySpaceOffset[];
 
-enum emulator {
-  EMULATOR_JTAGICE,
-  EMULATOR_DRAGON,
-  EMULATOR_JTAGICE3,
-  EMULATOR_EDBG
+enum class Emulator {
+  JTAGICE,
+  DRAGON,
+  JTAGICE3,
+  EDBG
 };
 
 
 // Allocate 1 meg for image buffer. This is where the file data is
 // stored before writing occurs.
-#define MAX_IMAGE_SIZE 1000000
+constexpr auto MAX_IMAGE_SIZE = 1000000u;
 
 
 struct AVRMemoryByte {
@@ -749,8 +732,8 @@ struct BFDimage {
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
 #define JTAG_EOM 0x20, 0x20
 
-enum debugproto {
-    PROTO_JTAG, PROTO_DW, PROTO_PDI,
+enum class Debugproto {
+    JTAG, DW, PDI
 };
 
 class jtag
@@ -758,43 +741,43 @@ class jtag
   protected:
   // The initial serial port parameters. We restore them on exit.
   struct termios oldtio;
-  bool oldtioValid;
+  bool oldtioValid = false;
 
   // The file descriptor used while talking to the JTAG ICE
-  int jtagBox;
+  int jtagBox = 0;
 
   // For the mkII device, is the box attached via USB?
-  bool is_usb;
+  bool is_usb = false;
 
   // The type of our emulator: JTAG ICE, or AVR Dragon.
-  emulator emu_type;
+  Emulator emu_type = Emulator::JTAGICE;
 
   // Whether nSRST is to be applied when connecting (override JTD bit).
-  bool apply_nSRST;
+  bool apply_nSRST = false;
 
   // Total breakpoints including software
-  breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2];
+  Breakpoint2 bp[MAX_TOTAL_BREAKPOINTS2] = {};
 
   // Xmega hard breakpoing break handling
-  unsigned int xmega_n_bps;
+  unsigned int xmega_n_bps = 0;
   unsigned long xmega_bps[2];
 
   // This device or connection cannot handle hard BPs
-  bool softbp_only;
+  bool softbp_only = false;
 
   // Target device is an ATxmega one
-  bool is_xmega;
+  bool is_xmega = false;
 
   public:
   // Whether we are in "programming mode" (changes how program memory
   // is written, apparently)
-  bool programmingEnabled;
+  bool programmingEnabled = false;
 
   // Name of the device controlled by the JTAG ICE
-  char *device_name;
+  const char *device_name = nullptr;
 
   // Pointer to device definition
-  jtag_device_def_type *deviceDef;
+  const jtag_device_def_type *deviceDef = {};
 
   // Daisy chain info
   struct {
@@ -812,7 +795,7 @@ class jtag
   void restoreSerialPort();
 
   virtual void changeBitRate(int newBitRate) = 0;
-  virtual void setDeviceDescriptor(jtag_device_def_type *dev) = 0;
+  virtual void setDeviceDescriptor(const jtag_device_def_type &dev) = 0;
   virtual bool synchroniseAt(int bitrate) = 0;
   virtual void startJtagLink() = 0;
   virtual void deviceAutoConfig() = 0;
@@ -825,11 +808,11 @@ class jtag
     return (unsigned int)(addr & (~(page_size - 1)));
   };
 
-  unsigned int get_page_size(BFDmemoryType memtype);
+  unsigned int get_page_size(BFDmemoryType memtype) const;
 
   public:
-  jtag();
-  jtag(const char *dev, char *name, emulator type = EMULATOR_JTAGICE);
+  jtag() = default;
+  jtag(const char *dev, const char *name, bool nsrst, Emulator type = Emulator::JTAGICE);
   virtual ~jtag();
 
   // Basic JTAG I/O
@@ -870,10 +853,10 @@ class jtag
   virtual void deleteAllBreakpoints() = 0;
 
   /** Delete breakpoint at the specified address. */
-  virtual bool deleteBreakpoint(unsigned int address, bpType type, unsigned int length);
+  virtual bool deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int length);
 
   /** Add a code breakpoint at the specified address. */
-  virtual bool addBreakpoint(unsigned int address, bpType type, unsigned int length);
+  virtual bool addBreakpoint(unsigned int address, BreakpointType type, unsigned int length);
 
   bool layoutBreakpoints();
 
@@ -1021,50 +1004,62 @@ class jtag
 
   **/
   virtual unsigned int cpuRegisterAreaAddress() const = 0;
-
 };
 
-class jtag_exception: public std::exception
-{
+extern class jtag *theJtagICE;
+
+class jtag_exception : public std::exception {
   protected:
     const char *reason;
+
   public:
-    jtag_exception()
-    {
-        reason =  "JTAG exception";
-    }
-    jtag_exception(const char *r)
-    {
-        reason = r;
-    }
-    virtual const char * what() const throw()
-    {
-        return reason;
-    }
+    jtag_exception() { reason = "JTAG exception"; }
+    explicit jtag_exception(const char *r) { reason = r; }
+    [[nodiscard]] const char *what() const noexcept override { return reason; }
 };
 
-class jtag_timeout_exception: public jtag_exception
-{
+class jtag_timeout_exception : public jtag_exception {
   public:
-    jtag_timeout_exception(): jtag_exception("JTAG ICE timeout exception") {}
+    jtag_timeout_exception() : jtag_exception("JTAG ICE timeout exception") {}
 };
 
-class jtag_io_exception: public jtag_exception
-{
+class jtag_io_exception : public jtag_exception {
   protected:
     unsigned int response_code;
 
   public:
-    jtag_io_exception(): jtag_exception("Unknown JTAG response exception")
-    {
-        response_code = 0;
-    }
-    jtag_io_exception(unsigned int code);
+    jtag_io_exception() : jtag_exception("Unknown JTAG response exception") { response_code = 0; }
+    explicit jtag_io_exception(unsigned int code);
 
-    unsigned int get_response() { return response_code; }
+    [[nodiscard]] unsigned int get_response() const { return response_code; }
 };
 
+static inline unsigned long b4_to_u32(const unsigned char *b) {
+    unsigned long l;
+    l = (unsigned)b[0];
+    l += (unsigned)b[1] << 8;
+    l += (unsigned)(unsigned)b[2] << 16;
+    l += (unsigned)b[3] << 24;
+    return l;
+};
 
-extern class jtag *theJtagICE;
+static inline void u32_to_b4(unsigned char *b, unsigned long l) {
+    b[0] = l & 0xff;
+    b[1] = (l >> 8) & 0xff;
+    b[2] = (l >> 16) & 0xff;
+    b[3] = (l >> 24) & 0xff;
+};
+
+static inline unsigned short b2_to_u16(const unsigned char *b) {
+    unsigned short l;
+    l = (unsigned)b[0];
+    l += (unsigned)b[1] << 8;
+    return l;
+};
+
+static inline void u16_to_b2(unsigned char *b, unsigned short l) {
+    b[0] = l & 0xff;
+    b[1] = (l >> 8) & 0xff;
+};
 
 #endif

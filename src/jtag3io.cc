@@ -21,20 +21,10 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
+#include <cstdio>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
 
 jtag3_io_exception::jtag3_io_exception(unsigned int code)
@@ -117,7 +107,7 @@ jtag3::~jtag3()
  * Send one frame.  Adds the required preamble and CRC, and ensures
  * the frame could be written correctly.
  */
-void jtag3::sendFrame(uchar *command, int commandSize)
+void jtag3::sendFrame(const uchar *command, int commandSize)
 {
     unsigned char *buf = new unsigned char[commandSize + 4];
 
@@ -274,7 +264,7 @@ int jtag3::recv(uchar *&msg)
     returned in &msgsize.
 **/
 
-bool jtag3::sendJtagCommand(uchar *command, int commandSize,
+bool jtag3::sendJtagCommand(const uchar *command, int commandSize,
                             const char *name,
 			    uchar *&msg, int &msgsize)
 {
@@ -303,7 +293,7 @@ bool jtag3::sendJtagCommand(uchar *command, int commandSize,
 }
 
 
-void jtag3::doJtagCommand(uchar *command, int  commandSize,
+void jtag3::doJtagCommand(const uchar *command, int  commandSize,
                           const char *name,
                           uchar *&response, int &responseSize)
 {
@@ -320,14 +310,13 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
 {
     int dummy;
     uchar *replydummy, cmd[3];
-    int tries;
 
     cmd[0] = scope;
     cmd[1] = command;
     cmd[2] = 0;
 
     // Send command until we get an OK response
-    for (tries = 0; tries < 10; tries++)
+    for (int tries = 0; tries < 10; tries++)
     {
 	if (sendJtagCommand(cmd, 3, name, replydummy, dummy)) {
 	    if (replydummy == nullptr)
@@ -348,27 +337,27 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope)
     throw jtag_exception("doSimpleJtagCommand(): too many failures");
 }
 
-void jtag3::changeBitRate(int newBitRate __attribute__((unused)))
+void jtag3::changeBitRate(int)
 {
   throw;
 }
 
-bool jtag3::synchroniseAt(int bitrate __attribute__((unused)))
+bool jtag3::synchroniseAt(int)
 {
   throw;
 }
 
-void jtag3::setDeviceDescriptor(jtag_device_def_type *dev)
+void jtag3::setDeviceDescriptor(const jtag_device_def_type &dev)
 {
   uchar *param, paramsize;
   jtag3_device_desc_type d3;
 
   if (is_xmega)
   {
-    param = (uchar *)&dev->dev_desc3 + 4;
-    paramsize = sizeof dev->dev_desc3 - 4;
+    param = (uchar *)&dev.dev_desc3 + 4;
+    paramsize = sizeof dev.dev_desc3 - 4;
 
-    appsize = b4_to_u32(dev->dev_desc3.app_size);
+    appsize = b4_to_u32(dev.dev_desc3.app_size);
   }
   else
   {
@@ -378,27 +367,27 @@ void jtag3::setDeviceDescriptor(jtag_device_def_type *dev)
 
     // Copy over all the data that can be derived from the existing
     // JTAG ICE mkII device descriptor.
-    memcpy(d3.flash_page_size, dev->dev_desc2.uiFlashPageSize, 2);
-    memcpy(d3.flash_size, dev->dev_desc2.ulFlashSize, 4);
-    memcpy(d3.boot_address, dev->dev_desc2.ulBootAddress, 4);
-    memcpy(d3.sram_offset, dev->dev_desc2.uiSramStartAddr, 2);
+    memcpy(d3.flash_page_size, dev.dev_desc2.uiFlashPageSize, 2);
+    memcpy(d3.flash_size, dev.dev_desc2.ulFlashSize, 4);
+    memcpy(d3.boot_address, dev.dev_desc2.ulBootAddress, 4);
+    memcpy(d3.sram_offset, dev.dev_desc2.uiSramStartAddr, 2);
 
-    unsigned int eesize = dev->eeprom_page_size * dev->eeprom_page_count;
+    unsigned int eesize = dev.eeprom_page_size * dev.eeprom_page_count;
     d3.eeprom_size[0] = eesize & 0xff;
     d3.eeprom_size[1] = (eesize >> 8) & 0xff;
-    d3.eeprom_page_size = dev->eeprom_page_size;
+    d3.eeprom_page_size = dev.eeprom_page_size;
     d3.always_one = 1;
-    d3.allow_full_page_bitstream = dev->dev_desc2.ucAllowFullPageBitstream;
-    d3.idr_address = dev->dev_desc2.ucIDRAddress;
-    d3.eearh_address = dev->dev_desc2.EECRAddress[0] + 3;
-    d3.eearl_address = dev->dev_desc2.EECRAddress[0] + 2;
-    d3.eecr_address = dev->dev_desc2.EECRAddress[0];
-    d3.eedr_address = dev->dev_desc2.EECRAddress[0] + 1;
-    d3.spmcr_address = dev->dev_desc2.ucSPMCRAddress;
+    d3.allow_full_page_bitstream = dev.dev_desc2.ucAllowFullPageBitstream;
+    d3.idr_address = dev.dev_desc2.ucIDRAddress;
+    d3.eearh_address = dev.dev_desc2.EECRAddress[0] + 3;
+    d3.eearl_address = dev.dev_desc2.EECRAddress[0] + 2;
+    d3.eecr_address = dev.dev_desc2.EECRAddress[0];
+    d3.eedr_address = dev.dev_desc2.EECRAddress[0] + 1;
+    d3.spmcr_address = dev.dev_desc2.ucSPMCRAddress;
 
     // These data have to be recorded separately.
-    d3.osccal_address = dev->osccal - 0x20;
-    d3.ocd_revision = dev->ocdrev;
+    d3.osccal_address = dev.osccal - 0x20;
+    d3.ocd_revision = dev.ocdrev;
   }
 
   try
@@ -454,7 +443,7 @@ void jtag3::startJtagLink()
 
   if (is_xmega)
     paramdata[0] = PARM3_ARCH_XMEGA;
-  else if (proto == PROTO_DW)
+  else if (proto == Debugproto::DW)
     paramdata[0] = PARM3_ARCH_TINY;
   else
     paramdata[0] = PARM3_ARCH_MEGA;
@@ -465,28 +454,28 @@ void jtag3::startJtagLink()
 
   switch (proto)
   {
-    case PROTO_JTAG:
+  case Debugproto::JTAG:
       paramdata[0] = PARM3_CONN_JTAG;
       break;
 
-    case PROTO_DW:
+  case Debugproto::DW:
       paramdata[0] = PARM3_CONN_DW;
       softbp_only = true;
       break;
 
-    case PROTO_PDI:
+  case Debugproto::PDI:
       paramdata[0] = PARM3_CONN_PDI;
       break;
   }
   setJtagParameter(SCOPE_AVR, 1, PARM3_CONNECTION, paramdata, 1);
 
-  if (proto == PROTO_JTAG)
+  if (proto == Debugproto::JTAG)
     configDaisyChain();
 
   cmd[0] = SCOPE_AVR;
   cmd[1] = CMD3_SIGN_ON;
   cmd[2] = 0;
-  cmd[3] = proto == PROTO_JTAG && apply_nSRST;
+  cmd[3] = proto == Debugproto::JTAG && apply_nSRST;
 
   doJtagCommand(cmd, 4, "AVR sign-on", resp, respsize);
 
@@ -495,7 +484,7 @@ void jtag3::startJtagLink()
     unsigned int did = resp[3] | (resp[4] << 8) | (resp[5] << 16) | resp[6] << 24;
     delete [] resp;
 
-    if (proto == PROTO_JTAG)
+    if (proto == Debugproto::JTAG)
     {
       debugOut("AVR sign-on responded with device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n",
 	       did,
@@ -581,7 +570,7 @@ void jtag3::deviceAutoConfig()
 
 	  u32_to_b4(desc.dev_desc3.nvm_data_offset, 0x1000000);
 	  u16_to_b2(desc.dev_desc3.mcu_base_addr, 0x90);
-	  setDeviceDescriptor(&desc);
+	  setDeviceDescriptor(desc);
 	}
 
       resp = jtagRead(SIG_SPACE_ADDR_OFFSET, 3);
@@ -647,7 +636,7 @@ void jtag3::deviceAutoConfig()
 
     deviceDef = pDevice;
 
-    setDeviceDescriptor(pDevice);
+    setDeviceDescriptor(*pDevice);
 }
 
 
@@ -708,14 +697,14 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     value[1] = (bitrate >> 8) & 0xff;
 
     uchar param = 0;
-    if (proto == PROTO_JTAG)
+    if (proto == Debugproto::JTAG)
     {
       if (is_xmega)
 	param = PARM3_CLK_XMEGA_JTAG;
       else
 	param = PARM3_CLK_MEGA_DEBUG;
     }
-    else if (proto == PROTO_PDI)
+    else if (proto == Debugproto::PDI)
     {
       // trying to set the PDI clock doesn't work here
       // param = PARM3_CLK_XMEGA_PDI;
@@ -731,9 +720,9 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     uchar timers = 0;		// stopped
     setJtagParameter(SCOPE_AVR, 3, PARM3_TIMERS_RUNNING, &timers, 1);
 
-    if (proto == PROTO_DW || is_xmega)
+    if (proto == Debugproto::DW || is_xmega)
     {
-        uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
+        const uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
         uchar *resp;
         int respsize;
 
@@ -745,12 +734,12 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     // resetProgram() runs into an error code 0x32.  Just retry it once.
     try
       {
-	resetProgram();
+	resetProgram(false);
       }
     catch (jtag_exception &e)
       {
 	debugOut("retrying reset ...\n");
-	resetProgram();
+	resetProgram(false);
       }
 
     cached_pc_is_valid = false;

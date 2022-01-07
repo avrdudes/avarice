@@ -21,43 +21,33 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag2.h"
 
 void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
 {
-    int respsize;
+    if (valSize > 4)
+        throw jtag_exception("Parameter too large in setJtagParameter");
+
     /*
      * As the maximal parameter length is 4 bytes, we use a fixed-length
      * buffer, as opposed to malloc()ing it.
      */
-    unsigned char buf[2 + 4], *resp;
-
-    if (valSize > 4)
-        throw jtag_exception("Parameter too large in setJtagParameter");
-
-    buf[0] = CMND_SET_PARAMETER;
-    buf[1] = item;
+    uchar buf[2 + 4] = {CMND_SET_PARAMETER, item, 0, 0, 0, 0};
     memcpy(buf + 2, newValue, valSize);
 
+    uchar* resp;
     try
     {
+        int respsize;
         doJtagCommand(buf, valSize + 2, resp, respsize);
     }
     catch (jtag_exception& e)
     {
-        fprintf(stderr, "set parameter command failed: %s\n",
-                e.what());
+        fprintf(stderr, "set parameter command failed: %s\n", e.what());
         throw;
     }
 
@@ -69,25 +59,20 @@ void jtag2::setJtagParameter(uchar item, uchar *newValue, int valSize)
  * that the response still includes the response code at index 0 (to be
  * ignored).
  */
-void jtag2::getJtagParameter(uchar item, uchar *&resp, int &respSize)
+void jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize)
 {
     /*
      * As the maximal parameter length is 4 bytes, we use a fixed-length
      * buffer, as opposed to malloc()ing it.
      */
-    unsigned char buf[2];
-
-    buf[0] = CMND_GET_PARAMETER;
-    buf[1] = item;
-
+    const uchar buf[] = {CMND_GET_PARAMETER, item};
     try
     {
         doJtagCommand(buf, 2, resp, respSize);
     }
     catch (jtag_exception& e)
     {
-        fprintf(stderr, "get parameter command failed: %s\n",
-                e.what());
+        fprintf(stderr, "get parameter command failed: %s\n", e.what());
         throw;
     }
     if (resp[0] != RSP_PARAMETER || respSize <= 1)

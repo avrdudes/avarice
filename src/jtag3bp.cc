@@ -24,17 +24,9 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
+#include <cstdio>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag3.h"
 
 bool jtag3::codeBreakpointAt(unsigned int address)
@@ -42,7 +34,7 @@ bool jtag3::codeBreakpointAt(unsigned int address)
     int i = 0;
     while (!bp[i].last)
       {
-	  if ((bp[i].address == address) && (bp[i].type == CODE) && bp[i].enabled)
+	  if ((bp[i].address == address) && (bp[i].type == BreakpointType::CODE) && bp[i].enabled)
 	      return true;
 
 	  i++;
@@ -68,12 +60,10 @@ void jtag3::deleteAllBreakpoints()
 
 void jtag3::updateBreakpoints()
 {
-  int bp_i;
-
   layoutBreakpoints();
 
   // Delete all the breakpoints that were flagged first
-  bp_i = 0;
+  int bp_i = 0;
   while (!bp[bp_i].last)
   {
     if (bp[bp_i].toremove)
@@ -82,7 +72,7 @@ void jtag3::updateBreakpoints()
 	       bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
 
       if (is_xmega &&
-	  bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
+	  bp[bp_i].type == BreakpointType::CODE && bp[bp_i].bpnum != 0x00)
       {
 	// no action needed on this one, has been auto-removed
       }
@@ -143,7 +133,7 @@ void jtag3::updateBreakpoints()
 	       bp[bp_i].bpnum, bp[bp_i].type, bp[bp_i].address);
 
       if (is_xmega &&
-	  bp[bp_i].type == CODE && bp[bp_i].bpnum != 0x00)
+	  bp[bp_i].type == BreakpointType::CODE && bp[bp_i].bpnum != 0x00)
       {
 	if (xmega_n_bps >= 2)
 	  throw jtag_exception("Too many hard BPs for Xmega");
@@ -170,8 +160,8 @@ void jtag3::updateBreakpoints()
 
 	  // JTAGICE3 handles all BP addresses (including CODE) as
 	  // byte addresses
-	  if (bp[bp_i].type == DATA_MASK ||
-	      bp[bp_i].type == CODE)
+	  if (bp[bp_i].type == BreakpointType::DATA_MASK ||
+	      bp[bp_i].type == BreakpointType::CODE)
 	      u32_to_b4(cmd + 5, bp[bp_i].address);
 	  else
 	      u32_to_b4(cmd + 5, bp[bp_i].address & ~ADDR_SPACE_MASK);
@@ -180,23 +170,23 @@ void jtag3::updateBreakpoints()
 	  // cmd[3] is the BP type (program memory, data, data mask)
 	  switch (bp[bp_i].type)
 	  {
-	    case READ_DATA:
+	    case BreakpointType::READ_DATA:
 	      cmd[9] = 0x00;
 	      cmd[3] = 0x02;
 	      break;
-	    case WRITE_DATA:
+	    case BreakpointType::WRITE_DATA:
 	      cmd[9] = 0x01;
 	      cmd[3] = 0x02;
 	      break;
-	    case ACCESS_DATA:
+	    case BreakpointType::ACCESS_DATA:
 	      cmd[9] = 0x02;
 	      cmd[3] = 0x02;
 	      break;
-	    case DATA_MASK:
+	    case BreakpointType::DATA_MASK:
 	      cmd[9] = 0x00;
 	      cmd[3] = 0x03;
 	      break;
-	    case CODE:
+	    case BreakpointType::CODE:
 	      cmd[9] = 0x03;
 	      cmd[3] = 0x01;
 	      break;

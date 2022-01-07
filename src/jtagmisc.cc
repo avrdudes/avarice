@@ -23,50 +23,27 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag1.h"
 
 void jtag1::setJtagParameter(uchar item, uchar newValue)
 {
-    uchar *response = nullptr;
-    uchar command[] = {'B', 0, 0, JTAG_EOM };
+    const uchar command[] = {'B', item, newValue, JTAG_EOM };
 
-    command[1] = item;
-    command[2] = newValue;
-
-    response = doJtagCommand(command, sizeof(command), 1);
+    auto response = doJtagCommand(command, sizeof(command), 1);
     if (response[0] != JTAG_R_OK)
         throw jtag_exception("Unknown parameter");
-
-    delete [] response;
 }
 
 uchar jtag1::getJtagParameter(uchar item)
 {
-    uchar *response = nullptr;
-    uchar command[] = {'q', 0, JTAG_EOM };
-    unsigned char result = 0;
+    const uchar command[] = {'q', item, JTAG_EOM };
 
-    command[1] = item;
-    response = doJtagCommand(command, sizeof(command), 2);
+    auto response = doJtagCommand(command, sizeof(command), 2);
     if (response[1] != JTAG_R_OK)
         throw jtag_exception("Unknown parameter");
 
-    result = response[0];
-
-    delete [] response;
-
-    return result;
+    return response[0];
 }
 
 

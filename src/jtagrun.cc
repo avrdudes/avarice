@@ -23,34 +23,25 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
+#include <cstdio>
 #include <sys/time.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag1.h"
 #include "remote.h"
 
 unsigned long jtag1::getProgramCounter()
 {
-    uchar *response = nullptr;
-    uchar command[] = {'2', JTAG_EOM };
+    const uchar command[] = {'2', JTAG_EOM };
     unsigned long result = 0;
 
-    response = doJtagCommand(command, sizeof(command), 4);
+    auto response = doJtagCommand(command, sizeof(command), 4);
 
     if (response[3] != JTAG_R_OK)
 	result = PC_INVALID;
     else
     {
-	result = decodeAddress(response);
+	result = decodeAddress(response.get());
 
 	result--; // returned value is PC + 1 as far as GDB is concerned
 
@@ -59,24 +50,19 @@ unsigned long jtag1::getProgramCounter()
 	result *= 2;
     }
 
-    delete [] response;
     return result;
 }
 
 void jtag1::setProgramCounter(unsigned long pc)
 {
-    uchar *response = nullptr;
     uchar command[] = {'3', 0, 0, 0, JTAG_EOM };
 
     // See decoding in getProgramCounter
     encodeAddress(&command[1], pc / 2 + 1);
 
-    response = doJtagCommand(command, sizeof(command), 1);
-
+    auto response = doJtagCommand(command, sizeof(command), 1);
     if (response[0] != JTAG_R_OK)
         throw jtag_exception();
-
-    delete [] response;
 }
 
 void jtag1::resetProgram(bool possible_nSRST)
@@ -124,9 +110,9 @@ bool jtag1::jtagContinue()
 
     for (;;)
     {
-	int maxfd;
 	fd_set readfds;
-	bool breakpoint = false, gdbInterrupt = false;
+	bool breakpoint = false;
+        bool gdbInterrupt = false;
 
 	// Now that we are "going", wait for either a response from the JTAG
 	// box or a nudge from GDB.
@@ -137,7 +123,7 @@ bool jtag1::jtagContinue()
 	FD_ZERO (&readfds);
 	FD_SET (gdbFileDescriptor, &readfds);
 	FD_SET (jtagBox, &readfds);
-	maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+	const int maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
 
 	int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
 	if (numfds < 0)
@@ -180,26 +166,27 @@ bool jtag1::jtagContinue()
 	while (timeout_read(&response, 1, 1) == 1)
 	{
 	    uchar buf[2];
-	    int count;
 
 	    debugOut("JTAG box sent %c", response);
 	    switch (response)
 	    {
-	    case JTAG_R_BREAK:
-		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
-		if (count < 2)
-		    throw jtag_exception();
-		breakpoint = true;
-		debugOut(": Break Status Register = 0x%02x%02x\n",
-			 buf[0], buf[1]);
-		break;
-	    case JTAG_R_INFO: case JTAG_R_SLEEP:
-		// we could do something here, esp. for info
-		count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
-		if (count < 2)
-		    throw jtag_exception();
-		debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
-		break;
+	    case JTAG_R_BREAK: {
+                const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
+                if (count < 2)
+                    throw jtag_exception();
+                breakpoint = true;
+                debugOut(": Break Status Register = 0x%02x%02x\n", buf[0], buf[1]);
+                break;
+            }
+	    case JTAG_R_INFO:
+            case JTAG_R_SLEEP: {
+                // we could do something here, esp. for info
+                const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
+                if (count < 2)
+                    throw jtag_exception();
+                debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
+                break;
+            }
 	    case JTAG_R_POWER:
 		// apparently no args?
                 debugOut("\n");

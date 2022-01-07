@@ -22,16 +22,14 @@
  * $Id$
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <termios.h>
+#include <cstring>
 #include <sys/time.h>
 #include <unistd.h>
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
 #include <fcntl.h>
-#include <signal.h>
+#include <csignal>
 
 #include "avarice.h"
 #include "remote.h"
@@ -74,13 +72,12 @@ void setGdbFile(int fd)
 
 static void waitForGdbOutput()
 {
-    int numfds;
     fd_set writefds;
 
     FD_ZERO (&writefds);
     FD_SET (gdbFileDescriptor, &writefds);
 
-    numfds = select (gdbFileDescriptor + 1, nullptr, &writefds, nullptr, nullptr);
+    int numfds = select (gdbFileDescriptor + 1, nullptr, &writefds, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -92,7 +89,7 @@ static void putDebugChar(char c)
     // But that shouldn't happen
     for (;;)
     {
-	int ret = write(gdbFileDescriptor, &c, 1);
+	const int ret = write(gdbFileDescriptor, &c, 1);
 
 	if (ret == 1)
 	    return;
@@ -109,13 +106,12 @@ static void putDebugChar(char c)
 
 static void waitForGdbInput()
 {
-    int numfds;
     fd_set readfds;
 
     FD_ZERO (&readfds);
     FD_SET (gdbFileDescriptor, &readfds);
 
-    numfds = select (gdbFileDescriptor + 1, &readfds, nullptr, nullptr, nullptr);
+    int numfds = select (gdbFileDescriptor + 1, &readfds, nullptr, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -150,9 +146,8 @@ int getDebugChar()
 int checkForDebugChar()
 {
     uchar c = 0;
-    int result;
 
-    result = read(gdbFileDescriptor, &c, 1);
+    const int result = read(gdbFileDescriptor, &c, 1);
 
     if (result < 0 && errno == EAGAIN)
 	return -1;
@@ -205,12 +200,11 @@ static int hex(unsigned char ch)
 static int hexToInt(char **ptr, int *intValue, int nMax = 0)
 {
     int numChars = 0;
-    int hexValue;
 
     *intValue = 0;
     while (**ptr)
     {
-	hexValue = hex(**ptr);
+	const int hexValue = hex(**ptr);
 	if(hexValue >= 0)
 	{
 	    *intValue = (*intValue << 4) | hexValue;
@@ -310,11 +304,10 @@ void gdbOut(const char *fmt, ...)
 
 static void reportStatusExtended(int sigval)
 {
-    uchar *jtagBuffer;
     unsigned int pc = theJtagICE->getProgramCounter();
 
     // Read in SPL SPH SREG
-    jtagBuffer = theJtagICE->jtagRead(theJtagICE->statusAreaAddress(), 0x03);
+    uchar* jtagBuffer = theJtagICE->jtagRead(theJtagICE->statusAreaAddress(), 0x03);
 
     if (jtagBuffer)
     {
@@ -330,7 +323,7 @@ static void reportStatusExtended(int sigval)
                   (pc >> 16) & 0xff, (pc >> 24) & 0xff);
 
         delete [] jtagBuffer;
-        jtagBuffer = 0;
+        jtagBuffer = nullptr;
     }
     else
     {
@@ -355,7 +348,7 @@ static void reportStatus(int sigval)
 }
 
 // little-endian word read
-unsigned int readLWord(unsigned int address)
+static unsigned int readLWord(unsigned int address)
 {
     unsigned char *mem = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
 
@@ -368,7 +361,7 @@ unsigned int readLWord(unsigned int address)
 }
 
 // big-endian word read
-unsigned int readBWord(unsigned int address)
+static unsigned int readBWord(unsigned int address)
 {
     unsigned char *mem = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET + address, 2);
 
@@ -380,12 +373,12 @@ unsigned int readBWord(unsigned int address)
     return val;
 }
 
-unsigned int readSP()
+static unsigned int readSP()
 {
     return readLWord(0x5d);
 }
 
-bool handleInterrupt()
+static bool handleInterrupt()
 {
     bool result;
 
@@ -408,12 +401,12 @@ bool handleInterrupt()
 	    // thus leaving is a free hw breakpoint. But if for some reason it
 	    // the add fails, interrupt the program at the interrupt handler
 	    // entry point
-	    if (!theJtagICE->addBreakpoint(retPC, CODE, 0))
+	    if (!theJtagICE->addBreakpoint(retPC, BreakpointType::CODE, 0))
 		return false;
 	}
 	result = theJtagICE->jtagContinue();
 	if (needBP)
-	    theJtagICE->deleteBreakpoint(retPC, CODE, 0);
+	    theJtagICE->deleteBreakpoint(retPC, BreakpointType::CODE, 0);
 
 	if (!result || !needBP) // user interrupt or hit user BP at retPC
 	    break;
@@ -591,9 +584,9 @@ static void error(int n)
 static void replyString(const char *s)
 {
     unsigned int i = 0;
-    char c, *ptr;
+    char c;
 
-    ptr = remcomOutBuffer;
+    char* ptr = remcomOutBuffer;
     while ((c = *s++) != 0 && i < BUFMAX - 1)
     {
         ptr = byteToHex((int)c, ptr);
@@ -689,18 +682,14 @@ void talkToGdb()
 {
     int addr;
     int length, plen;
-    int i;
-    unsigned int newPC;
     int regno;
-    char *ptr;
     bool adding = false;
     bool dontSendReply = false;
-    char cmd;
     static char last_cmd = 0;
     static unsigned char *flashbuf;
     static int maxaddr;
 
-    ptr = getpacket(plen);
+    char* ptr = getpacket(plen);
 
     if (debugMode)
       {
@@ -712,7 +701,7 @@ void talkToGdb()
     // default empty response
     remcomOutBuffer[0] = 0;
 
-    cmd = *ptr++;
+    char cmd = *ptr++;
     switch (cmd)
     {
     default:	// Unknown code.  Return an empty reply message.
@@ -740,7 +729,6 @@ void talkToGdb()
 
     case 'M':
     {
-	uchar *jtagBuffer;
         int lead = 0;
         static bool last_orphan_pending = false;
         static uchar last_orphan = 0xff;
@@ -777,7 +765,7 @@ void talkToGdb()
 
             last_orphan_pending = false;
 
-	    jtagBuffer = new uchar[length];
+            uchar *jtagBuffer = new uchar[length];
 	    hex2mem(ptr, jtagBuffer+lead, length);
             if (lead)
                 jtagBuffer[0] = last_orphan;
@@ -802,15 +790,10 @@ void talkToGdb()
             }
             ok();
 	    delete [] jtagBuffer;
-
 	}
-
 	break;
     }
     case 'm':	// mAA..AA,LLLL  Read LLLL bytes at address AA..AA
-    {
-	uchar *jtagBuffer;
-
 	if((hexToInt(&ptr, &addr)) &&
 	   (*(ptr++) == ',') &&
 	   (hexToInt(&ptr, &length)))
@@ -818,7 +801,7 @@ void talkToGdb()
 	    debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
 	    try
 	    {
-		jtagBuffer = theJtagICE->jtagRead(addr, length);
+		uchar* jtagBuffer = theJtagICE->jtagRead(addr, length);
 		mem2hex(jtagBuffer, remcomOutBuffer, length);
 		delete [] jtagBuffer;
 	    }
@@ -828,7 +811,6 @@ void talkToGdb()
 	    }
 	}
 	break;
-    }
     case '?':
         // Report status. We don't actually know, so always report breakpoint
 	reportStatus(SIGTRAP);
@@ -836,7 +818,6 @@ void talkToGdb()
 
     case 'g':   // return the value of the CPU registers
     {
-	uchar *jtagBuffer;
         uchar regBuffer[40];
 
         memset(regBuffer, 0, sizeof(regBuffer));
@@ -847,15 +828,14 @@ void talkToGdb()
 	// SREG is at 0x5F
 	debugOut("\nGDB: (Registers)Read %d bytes from 0x%X\n",
 		  0x20, theJtagICE->cpuRegisterAreaAddress());
-	jtagBuffer = theJtagICE->jtagRead(theJtagICE->cpuRegisterAreaAddress(), 0x20);
-
+	uchar* jtagBuffer = theJtagICE->jtagRead(theJtagICE->cpuRegisterAreaAddress(), 0x20);
 	if (jtagBuffer)
 	{
             // Put GPRs into the first 32 locations
             memcpy(regBuffer, jtagBuffer, 0x20);
 
             delete [] jtagBuffer;
-            jtagBuffer = 0;
+            jtagBuffer = nullptr;
         }
         else
         {
@@ -882,7 +862,7 @@ void talkToGdb()
             regBuffer[0x22] = jtagBuffer[0x01];
 
             delete [] jtagBuffer;
-            jtagBuffer = 0;
+            jtagBuffer = nullptr;
         }
         else
         {
@@ -891,7 +871,7 @@ void talkToGdb()
         }
 
         // PC
-        newPC = theJtagICE->getProgramCounter();
+        const auto newPC = theJtagICE->getProgramCounter();
         regBuffer[35] = (unsigned char)(newPC & 0xff);
         regBuffer[36] = (unsigned char)((newPC & 0xff00) >> 8);
         regBuffer[37] = (unsigned char)((newPC & 0xff0000) >> 16);
@@ -908,8 +888,6 @@ void talkToGdb()
 
     case 'q':   // general query
     {
-        uchar* jtagBuffer;
-
         length = strlen("Ravr.io_reg");
         if ( strncmp(ptr, "Ravr.io_reg", length) == 0 )
         {
@@ -994,7 +972,7 @@ void talkToGdb()
                             if (count)
                             {
                                 // Read consecutive address io_registers
-                                jtagBuffer = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET +
+                                uchar* jtagBuffer = theJtagICE->jtagRead(DATA_SPACE_ADDR_OFFSET +
                                                       io_reg_defs[i].reg_addr,
                                                       count);
 								
@@ -1047,11 +1025,10 @@ void talkToGdb()
         else if (length > 5 && strncmp(ptr, "Rcmd,", 4) == 0)
         {
             char cmdbuf[MONMAX];
-            int i;
             ptr += 5;
             length -= 5;
             memset(cmdbuf, 0, sizeof cmdbuf);
-            for (i = 0; i < MONMAX && length >= 0; i++)
+            for (int i = 0; i < MONMAX && length >= 0; i++)
             {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);
@@ -1247,61 +1224,51 @@ void talkToGdb()
     case 'Z':
 	adding = true;
         [[fallthrough]];
-    case 'z':
-	error(1); // assume the worst.
+    case 'z': {
+        error(1); // assume the worst.
 
-	// Add a Breakpoint. note: length specifier is ignored for now.
-	if (hexToInt(&ptr, &i) && *ptr++ == ',' &&
-	    hexToInt(&ptr, &addr) && *ptr++ == ',' &&
-	    hexToInt(&ptr, &length))
-	{
-	    bpType mode = NONE;
+        int bp_type;
+        // Add a Breakpoint. note: length specifier is ignored for now.
+        if (hexToInt(&ptr, &bp_type) && (*ptr++ == ',') && hexToInt(&ptr, &addr) && (*ptr++ == ',') &&
+            hexToInt(&ptr, &length)) {
+            BreakpointType mode = BreakpointType::NONE;
 
-	    switch(i)
-	    {
-	    case 0:
-	    case 1:
-		mode = CODE;
-		break;
-	    case 2:
-		mode = WRITE_DATA;
-		break;
-	    case 3:
-		mode = READ_DATA;
-		break;
-	    case 4:
-		mode = ACCESS_DATA;
-		break;
-	    default:
-		debugOut("Unknown breakpoint type from GDB.\n");
+            switch (bp_type) {
+            case 0:
+            case 1:
+                mode = BreakpointType::CODE;
+                break;
+            case 2:
+                mode = BreakpointType::WRITE_DATA;
+                break;
+            case 3:
+                mode = BreakpointType::READ_DATA;
+                break;
+            case 4:
+                mode = BreakpointType::ACCESS_DATA;
+                break;
+            default:
+                debugOut("Unknown breakpoint type from GDB.\n");
                 throw jtag_exception();
-	    }
+            }
 
-	    if (adding)
-	    {
-		try
-                {
+            if (adding) {
+                try {
                     theJtagICE->addBreakpoint(addr, mode, length);
-                }
-                catch (jtag_exception&)
-                {
+                } catch (jtag_exception &) {
                     break;
                 }
-	    }
-	    else
-	    {
-		try
-                {
+            } else {
+                try {
                     theJtagICE->deleteBreakpoint(addr, mode, length);
-                }
-                catch (jtag_exception&)
-                {
+                } catch (jtag_exception &) {
                     break;
                 }
-	    }
+            }
             ok();
-	}
-	break;
+        }
+        break;
+    }
 
     }	// switch
 

@@ -27,15 +27,7 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
 
 #if ENABLE_TARGET_PROGRAMMING
 #  include "autoconf.h"
@@ -43,7 +35,6 @@
 #endif
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag2.h"
 
 #if ENABLE_TARGET_PROGRAMMING
@@ -126,14 +117,14 @@ static unsigned int get_section_addr(asection *section, BFDmemoryType memtype)
         if (section->lma < DATA_SPACE_ADDR_OFFSET) // < 0x80...
             sectmemtype = MEM_FLASH;
         else if (section->lma < EEPROM_SPACE_ADDR_OFFSET) // < 0x81...
-            sectmemtype = MEM_RAM;
+            sectmemtype = RAM;
         else if (section->lma < FUSE_SPACE_ADDR_OFFSET) // < 0x82...
-            sectmemtype = MEM_EEPROM;
+            sectmemtype = EEPROM;
         else			// e.g. .fuses
 	    return 0xffffff;
 
 	if (memtype == sectmemtype) {
-            if (sectmemtype == MEM_FLASH) {
+            if (sectmemtype == FLASH) {
                 /* Don't mask the lma or you will not be able to handle more
                    than 64K of flash. */
                 return (section->lma);
@@ -205,7 +196,7 @@ static void jtag_create_image(bfd *file, asection *section,
 
 void jtag2::enableProgramming()
 {
-    if (proto != PROTO_DW)
+    if (proto != Debugproto::DW)
     {
 	programmingEnabled = true;
 	doSimpleJtagCommand(CMND_ENTER_PROGMODE);
@@ -215,7 +206,7 @@ void jtag2::enableProgramming()
 
 void jtag2::disableProgramming()
 {
-    if (proto != PROTO_DW)
+    if (proto != Debugproto::DW)
     {
 	programmingEnabled = false;
 	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
@@ -227,7 +218,7 @@ void jtag2::disableProgramming()
 // (unless the save-eeprom fuse is set).
 void jtag2::eraseProgramMemory()
 {
-    if (proto == PROTO_DW)
+    if (proto == Debugproto::DW)
         // debugWIRE auto-erases when programming
         return;
 
@@ -310,8 +301,8 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
     initImage(&flashimg);
     initImage(&eepromimg);
 
-    flashimg.name = BFDmemoryTypeString[MEM_FLASH];
-    eepromimg.name = BFDmemoryTypeString[MEM_EEPROM];
+    flashimg.name = BFDmemoryTypeString[FLASH];
+    eepromimg.name = BFDmemoryTypeString[EEPROM];
 
     if (stat(filename, &ifstat) < 0)
         throw jtag_exception("Can't stat() image file");
@@ -352,25 +343,25 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
     // Configure for JTAG download/programming
 
     // Set the flash page and eeprom page sizes (These are device dependent)
-    page_size = get_page_size(MEM_FLASH);
+    page_size = get_page_size(FLASH);
 
     debugOut("Flash page size: 0x%0x\nEEPROM page size: 0x%0x\n",
-             page_size, get_page_size(MEM_EEPROM));
+             page_size, get_page_size(EEPROM));
 
 #if notneeded // already addressed by setting the device descriptor
     setJtagParameter(JTAG_P_FLASH_PAGESIZE_LOW, page_size & 0xff);
     setJtagParameter(JTAG_P_FLASH_PAGESIZE_HIGH, page_size >> 8);
 
     setJtagParameter(JTAG_P_EEPROM_PAGESIZE,
-                     get_page_size(MEM_EEPROM));
+                     get_page_size(EEPROM));
 #endif
 
     // Create RAM image by reading all sections in file
     p = file->sections;
     while (p)
     {
-        jtag_create_image(file, p, &flashimg, MEM_FLASH);
-        jtag_create_image(file, p, &eepromimg, MEM_EEPROM);
+        jtag_create_image(file, p, &flashimg, FLASH);
+        jtag_create_image(file, p, &eepromimg, EEPROM);
         p = p->next;
     }
 
@@ -378,9 +369,9 @@ void jtag2::downloadToTarget(const char* filename, bool program, bool verify)
 
     // Write the complete FLASH/EEPROM images to the device.
     if (flashimg.has_data)
-        jtag_flash_image(&flashimg, MEM_FLASH, program, verify);
+        jtag_flash_image(&flashimg, FLASH, program, verify);
     if (eepromimg.has_data)
-        jtag_flash_image(&eepromimg, MEM_EEPROM, program, verify);
+        jtag_flash_image(&eepromimg, EEPROM, program, verify);
 
     disableProgramming();
 

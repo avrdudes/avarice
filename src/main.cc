@@ -25,20 +25,18 @@
  */
 
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <termios.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <fcntl.h>
 
 #include "avarice.h"
 #include "remote.h"
@@ -259,8 +257,8 @@ static void usage(const char *progname)
 
 static int comparenames(const void *a, const void *b)
 {
-    const jtag_device_def_type *ja = (const jtag_device_def_type *)a;
-    const jtag_device_def_type *jb = (const jtag_device_def_type *)b;
+    auto *ja = static_cast<const jtag_device_def_type *>(a);
+    auto *jb = static_cast<const jtag_device_def_type *>(b);
 
     return strcmp(ja->name, jb->name);
 }
@@ -269,7 +267,7 @@ static void knownParts()
 {
     fprintf(stderr, "List of known AVR devices:\n\n");
 
-    jtag_device_def_type* dev = deviceDefinitions;
+    const jtag_device_def_type* dev = deviceDefinitions;
     // Count the device descriptor records.
     size_t n = 0;
     while (dev->name != nullptr)
@@ -372,7 +370,7 @@ int main(int argc, char **argv)
     enum {
 	MKI, MKII, DRAGON, JTAG3, EDBG
     } devicetype = MKI;		// default to mkI devicetype
-    enum debugproto proto = PROTO_JTAG;
+    Debugproto proto = Debugproto::JTAG;
     int  option_index;
     unsigned int units_before = 0;
     unsigned int units_after = 0;
@@ -482,7 +480,7 @@ int main(int argc, char **argv)
                 verify = true;
                 break;
             case 'w':
-		proto = PROTO_DW;
+		proto = Debugproto::DW;
 		break;
             case 'W':
                 fuses = optarg;
@@ -493,7 +491,7 @@ int main(int argc, char **argv)
                 break;
             case 'X':
                 is_xmega = true;
-		proto = PROTO_PDI;
+		proto = Debugproto::PDI;
                 break;
             default:
                 fprintf (stderr, "getop() did something screwey");
@@ -557,7 +555,7 @@ int main(int argc, char **argv)
         usage (progname);
     }
 
-    if (jtagBitrate == 0 && (proto == PROTO_JTAG))
+    if (jtagBitrate == 0 && (proto == Debugproto::JTAG))
     {
         fprintf (stdout,
                  "Defaulting JTAG bitrate to 250 kHz.\n\n");
@@ -624,7 +622,7 @@ int main(int argc, char **argv)
 
         if (erase)
         {
-            if (proto == PROTO_DW)
+            if (proto == Debugproto::DW)
             {
                 statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
             }
@@ -743,7 +741,7 @@ int main(int argc, char **argv)
             }
 
             // Connection request on original socket.
-            socklen_t size = (socklen_t)sizeof(clientname);
+            auto size = static_cast<socklen_t>(sizeof(clientname));
             int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
             if (gfd < 0)
                 throw jtag_exception();

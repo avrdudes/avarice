@@ -23,19 +23,12 @@
  */
 
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+#include <cstring>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag1.h"
 
 /** Send a command to the jtag, and check result.
@@ -47,12 +40,12 @@
     JTAG_R_RESP_OK returns true, otherwise returns false.
 **/
  
-SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
+jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, int &tries)
 {
-    if ((*tries)++ >= MAX_JTAG_COMM_ATTEMPS)
+    if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
         throw jtag_exception("JTAG communication failed");
 
-    debugOut("\ncommand[%c, %d]: ", command[0], *tries);
+    debugOut("\ncommand[%c, %d]: ", command[0], tries);
 
     for (int i = 0; i < commandSize; i++)
 	debugOut("%.2X ", command[i]);
@@ -64,10 +57,7 @@ SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
         throw jtag_exception();
 
     int count = safewrite(command, commandSize);
-    if (count < 0)
-        throw jtag_exception();
-    else if (count != commandSize)
-        // this shouldn't happen
+    if ((count < 0) || (count != commandSize))
         throw jtag_exception();
 
     // And wait for all characters to go to the JTAG box.... can't hurt!
@@ -122,19 +112,15 @@ SendResult jtag1::sendJtagCommand(uchar *command, int commandSize, int *tries)
     Returns a dynamically allocated buffer containing the reponse (caller
     must free) otherwise
 **/
-uchar *jtag1::getJtagResponse(int responseSize)
+std::unique_ptr<uchar[]> jtag1::getJtagResponse(int responseSize)
 {
-    uchar *response;
-    int numCharsRead;
-
     // Increase by 1 because of the zero termination.
     //
     // note: IT IS THE CALLERS RESPONSIBILITY TO delete() THIS.
-    response = new uchar[responseSize + 1];
+    auto response = std::make_unique<uchar[]>(responseSize + 1);
     response[responseSize] = '\0';
 
-    numCharsRead = timeout_read(response, responseSize,
-                                JTAG_RESPONSE_TIMEOUT);
+    const int numCharsRead = timeout_read(response.get(), responseSize, JTAG_RESPONSE_TIMEOUT);
     if (numCharsRead < 0)
         throw jtag_exception();
 
@@ -148,64 +134,57 @@ uchar *jtag1::getJtagResponse(int responseSize)
     if (numCharsRead < responseSize) // timeout problem
     {
 	debugOut("Timed Out (partial response)\n");
-	delete [] response;
-	return nullptr;
+	response.reset();
     }
 
     return response;
 }
 
-uchar *jtag1::doJtagCommand(uchar *command, int  commandSize, int  responseSize)
+std::unique_ptr<uchar[]> jtag1::doJtagCommand(const uchar *command, int  commandSize, int  responseSize)
 {
     int tryCount = 0;
 
     // Send command until we get RESP_OK
     for (;;)
     {
-	uchar *response;
-	static uchar sync[] = { ' ' };
-	static uchar stop[] = { 'S', JTAG_EOM };
-
-	switch (sendJtagCommand(command, commandSize, &tryCount))
+	switch (sendJtagCommand(command, commandSize, tryCount))
 	{
-	case send_ok:
-	    response = getJtagResponse(responseSize);
-	    if (response == nullptr)
+	case send_ok: {
+            auto response = getJtagResponse(responseSize);
+            if (!response)
                 throw jtag_exception();
-	    return response;
-	case send_failed:
-	    // We're out of sync. Attempt to resync.
-	    while (sendJtagCommand(sync, sizeof sync, &tryCount) != send_ok) 
-		;
-	    break;
-	default:
-	    /* "IDR dirty", aka I/O debug register dirty, aka we got some
-	       data from the target processor. This seems to be
-	       indefinitely repeated if we don't do anything.  Asking for
-	       the sign on seems to shut it up, so we do that.  (another
-	       option is to do a 'forced stop' ('F' command), but that is a
-	       bit more intrusive --- it should be ok, as we currently only
-	       send commands to stopped targets, but...) */
-	    if (sendJtagCommand(stop, sizeof stop, &tryCount) == send_ok)
-		getJtagResponse(8);
-	    break;
+            return response;
+        }
+	case send_failed: {
+            // We're out of sync. Attempt to resync.
+            const uchar sync[] = { ' ' };
+            while (sendJtagCommand(sync, sizeof sync, tryCount) != send_ok)
+                ;
+            break;
+        }
+	default: {
+            /* "IDR dirty", aka I/O debug register dirty, aka we got some
+               data from the target processor. This seems to be
+               indefinitely repeated if we don't do anything.  Asking for
+               the sign on seems to shut it up, so we do that.  (another
+               option is to do a 'forced stop' ('F' command), but that is a
+               bit more intrusive --- it should be ok, as we currently only
+               send commands to stopped targets, but...) */
+            const uchar stop[] = { 'S', JTAG_EOM };
+            if (sendJtagCommand(stop, sizeof stop, tryCount) == send_ok)
+                getJtagResponse(8);
+            break;
+        }
 	}
     }
-
 }
 
 bool jtag1::doSimpleJtagCommand(unsigned char cmd, int responseSize)
 {
-    uchar *response;
-    uchar command[] = { cmd, JTAG_EOM };
-    bool result;
+    const uchar command[] = { cmd, JTAG_EOM };
 
-    response = doJtagCommand(command, sizeof command, responseSize);
-    result = responseSize == 0 || response[responseSize - 1] == JTAG_R_OK;
-    
-    delete [] response;
-
-    return result;
+    auto response = doJtagCommand(command, sizeof command, responseSize);
+    return responseSize == 0 || (response[responseSize - 1] == JTAG_R_OK);
 }
 
 
@@ -238,36 +217,27 @@ void jtag1::changeBitRate(int newBitRate)
 }
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
-void jtag1::setDeviceDescriptor(jtag_device_def_type *dev)
+void jtag1::setDeviceDescriptor(const jtag_device_def_type &dev)
 {
-    uchar *response = nullptr;
-    uchar *command = (uchar *)(&dev->dev_desc1);
+    const auto *command = reinterpret_cast<const uchar *>(&dev.dev_desc1);
 
-    response = doJtagCommand(command, sizeof dev->dev_desc1, 1);
+    auto response = doJtagCommand(command, sizeof dev.dev_desc1, 1);
     if (response[0] != JTAG_R_OK)
         throw jtag_exception ("JTAG ICE: Failed to set device description");
-
-    delete [] response;
 }
 
 /** Check for emulator using the 'S' command *without* retries
     (used at startup to check sync only) **/
 bool jtag1::checkForEmulator()
 {
-    uchar *response;
-    uchar command[] = { 'S', JTAG_EOM };
-    bool result;
+    const uchar command[] = { 'S', JTAG_EOM };
     int tries = 0;
 
-    if (!sendJtagCommand(command, sizeof command, &tries))
+    if (!sendJtagCommand(command, sizeof command, tries))
       return false;
 
-    response = getJtagResponse(8);
-    result = response && !strcmp((char *)response, "AVRNOCDA");
-    
-    delete [] response;
-
-    return result;
+    auto response = getJtagResponse(8);
+    return response && !strcmp((char *)response.get(), "AVRNOCDA");
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
@@ -277,14 +247,16 @@ bool jtag1::synchroniseAt(int bitrate)
 
     changeLocalBitRate(bitrate);
 
+    // 'S  ' works if this is the first string sent after power up.
+    // But if another char is sent, the JTAG seems to go in to some
+    // internal mode. 'SE  ' takes it out of there, apparently (sometimes
+    // 'E  ' is enough, but not always...)
+    const uchar command[] = { 'S', 'E', JTAG_EOM };
+
     int tries = 0;
     while (tries < MAX_JTAG_SYNC_ATTEMPS)
     {
-	// 'S  ' works if this is the first string sent after power up.
-	// But if another char is sent, the JTAG seems to go in to some 
-	// internal mode. 'SE  ' takes it out of there, apparently (sometimes
-	// 'E  ' is enough, but not always...)
-	sendJtagCommand((uchar *)"SE  ", 4, &tries);
+	sendJtagCommand(command, sizeof(command), tries);
 	usleep(2 * JTAG_COMM_TIMEOUT); // let rest of response come before we ignore it
 	if (tcflush(jtagBox, TCIFLUSH) < 0)
             throw jtag_exception();
@@ -297,11 +269,10 @@ bool jtag1::synchroniseAt(int bitrate)
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
 void jtag1::startJtagLink()
 {
-    static int bitrates[] =
-    { 115200, 19200, 57600, 38400, 9600 };
+    constexpr int bitrates[] = { 115200, 19200, 57600, 38400, 9600 };
 
-    for (unsigned int i = 0; i < sizeof bitrates / sizeof *bitrates; i++)
-	if (synchroniseAt(bitrates[i]))
+    for ( const auto bitrate : bitrates )
+	if (synchroniseAt(bitrate))
 	    return;
 
     throw jtag_exception("Failed to synchronise with the JTAG ICE (is it connected and powered?)");
@@ -316,9 +287,6 @@ void jtag1::startJtagLink()
 */
 void jtag1::deviceAutoConfig()
 {
-    unsigned int device_id;
-    jtag_device_def_type *pDevice = deviceDefinitions;
-
     // Auto config
     debugOut("Automatic device detection: ");
 
@@ -326,7 +294,7 @@ void jtag1::deviceAutoConfig()
     configDaisyChain();
 
     /* Read in the JTAG device ID to determine device */
-    device_id = getJtagParameter(JTAG_P_JTAGID_BYTE0);
+    unsigned int device_id = getJtagParameter(JTAG_P_JTAGID_BYTE0);
     /* Reading the first byte resumes the program (weird, no?) */
     interruptProgram();
     device_id += (getJtagParameter(JTAG_P_JTAGID_BYTE1) <<  8) +
@@ -342,7 +310,8 @@ void jtag1::deviceAutoConfig()
    
     device_id = (device_id & 0x0FFFF000) >> 12;
     statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
-    
+
+    const jtag_device_def_type *pDevice = deviceDefinitions;
     if (device_name == nullptr)
     {
         while (pDevice->name)
@@ -409,7 +378,7 @@ void jtag1::deviceAutoConfig()
 
     deviceDef = pDevice;
 
-    setDeviceDescriptor(pDevice);
+    setDeviceDescriptor(*pDevice);
 }
 
 
@@ -420,10 +389,10 @@ void jtag1::initJtagBox()
     startJtagLink();
     changeBitRate(115200);
 
-    uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
+    const uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
     statusOut("Hardware Version: 0x%02x\n", hw_ver);
 
-    uchar sw_ver = getJtagParameter(JTAG_P_SW_VERSION);
+    const uchar sw_ver = getJtagParameter(JTAG_P_SW_VERSION);
     statusOut("Software Version: 0x%02x\n", sw_ver);
 
     interruptProgram();
