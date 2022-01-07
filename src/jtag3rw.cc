@@ -147,7 +147,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
                 // read from device, cache result, and copy over our part
                 u32_to_b4(cmd + 4, pageAddr);
                 try {
-                    doJtagCommand(cmd, sizeof cmd, "read memory", resp, responsesize);
+                    doJtagCommand(cmd, sizeof(cmd), "read memory", resp, responsesize);
                 } catch (jtag_exception &e) {
                     fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
                     delete[] response;
@@ -172,7 +172,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
         int cnt = 0;
     again:
         try {
-            doJtagCommand(cmd, sizeof cmd, "read memory", response, responsesize);
+            doJtagCommand(cmd, sizeof(cmd), "read memory", response, responsesize);
         } catch (jtag_io_exception &e) {
             cnt++;
             if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {

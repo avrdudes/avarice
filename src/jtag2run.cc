@@ -287,7 +287,7 @@ void jtag2::jtagSingleStep() {
 }
 
 void jtag2::parseEvents(const char *evtlist) {
-    memset(nonbreaking_events, 0, sizeof nonbreaking_events);
+    memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
     const struct {
         uchar num;
@@ -335,7 +335,7 @@ void jtag2::parseEvents(const char *evtlist) {
         uchar evtval = 0;
 
         // Now, cp1 points to the name to parse, of length l
-        for (unsigned int i = 0; i < sizeof evttable / sizeof evttable[0]; i++) {
+        for (unsigned int i = 0; i < sizeof(evttable) / sizeof(evttable[0]); i++) {
             if (strncmp(evttable[i].name, cp1, l) == 0) {
                 evtval = evttable[i].num;
                 break;

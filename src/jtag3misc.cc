@@ -27,8 +27,7 @@
 #include "jtag3.h"
 
 void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, uchar *newValue, int valSize) {
-    uchar buf[6 + valSize], *resp;
-
+    uchar buf[6 + valSize]; // FIXME: variable length arrays not supported in C++
     buf[0] = scope;
     buf[1] = CMD3_SET_PARAMETER;
     buf[2] = 0;
@@ -37,8 +36,8 @@ void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, uchar *newV
     buf[5] = valSize;
     memcpy(buf + 6, newValue, valSize);
 
+    uchar *resp;
     int respsize;
-
     try {
         doJtagCommand(buf, valSize + 6, "set parameter", resp, respsize);
     } catch (jtag_exception &e) {
@@ -54,16 +53,9 @@ void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, uchar *newV
  * that the actual response data returned starts at offset 2.
  */
 void jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length, uchar *&resp) {
-    unsigned char buf[6];
+    const uchar buf[6] = {scope, CMD3_GET_PARAMETER, 0, section, item, static_cast<uchar>(length)};
+
     int respsize;
-
-    buf[0] = scope;
-    buf[1] = CMD3_GET_PARAMETER;
-    buf[2] = 0;
-    buf[3] = section;
-    buf[4] = item;
-    buf[5] = length;
-
     try {
         doJtagCommand(buf, 6, "get parameter", resp, respsize);
     } catch (jtag_exception &e) {

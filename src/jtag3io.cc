@@ -64,7 +64,7 @@ jtag3_io_exception::jtag3_io_exception(unsigned int code) {
         break;
 
     default:
-        snprintf(buffer, sizeof buffer, "Unknown response code 0x%0x", code);
+        snprintf(buffer, sizeof(buffer), "Unknown response code 0x%0x", code);
         reason = buffer;
     }
 }
@@ -137,7 +137,7 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     msg = nullptr;
 
     int amnt;
-    rv = timeout_read((void *)&amnt, sizeof amnt, JTAG_RESPONSE_TIMEOUT);
+    rv = timeout_read((void *)&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
     if (rv == 0) {
         /* timeout */
         debugOut("read() timed out\n");
@@ -310,13 +310,13 @@ void jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
 
     if (is_xmega) {
         param = (uchar *)&dev.dev_desc3 + 4;
-        paramsize = sizeof dev.dev_desc3 - 4;
+        paramsize = sizeof(dev.dev_desc3) - 4;
 
         appsize = b4_to_u32(dev.dev_desc3.app_size);
     } else {
         param = (uchar *)&d3;
-        paramsize = sizeof d3;
-        memset(&d3, 0, sizeof d3);
+        paramsize = sizeof(d3);
+        memset(&d3, 0, sizeof(d3));
 
         // Copy over all the data that can be derived from the existing
         // JTAG ICE mkII device descriptor.
@@ -444,9 +444,9 @@ void jtag3::startJtagLink() {
         delete[] resp;
 
         /* Read in the JTAG device ID to determine device */
-        uchar cmd[] = {SCOPE_AVR, CMD3_DEVICE_ID, 0};
+        const uchar cmd[] = {SCOPE_AVR, CMD3_DEVICE_ID, 0};
         try {
-            doJtagCommand(cmd, sizeof cmd, "device ID", resp, respsize);
+            doJtagCommand(cmd, sizeof(cmd), "device ID", resp, respsize);
 
             unsigned int did = resp[3] | (resp[4] << 8) | (resp[5] << 16) | resp[6] << 24;
             delete[] resp;
@@ -625,7 +625,7 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
         uchar *resp;
         int respsize;
 
-        doJtagCommand(cmd, sizeof cmd, "start debugging", resp, respsize);
+        doJtagCommand(cmd, sizeof(cmd), "start debugging", resp, respsize);
         delete[] resp;
     }
 

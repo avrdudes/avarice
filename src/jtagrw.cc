@@ -92,7 +92,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
         // + 2. Then add an additional byte for the trailing zero (see
         // protocol document).
 
-        auto response = doJtagCommand(command, sizeof command, numBytes + 2);
+        auto response = doJtagCommand(command, sizeof(command), numBytes + 2);
         if (response[numBytes + 1] == JTAG_R_OK)
             return response.release(); // TODO: be compatible with other jtagRead()
 
@@ -115,7 +115,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
         command[2] = numLocations - 1;
         encodeAddress(&command[3], addr / 2);
 
-        auto response = doJtagCommand(command, sizeof command, numLocations * 2 + 2);
+        auto response = doJtagCommand(command, sizeof(command), numLocations * 2 + 2);
         if (response[numLocations * 2 + 1] == JTAG_R_OK) {
             // Programming mode and regular mode are byte-swapped...
             if (!programmingEnabled)
@@ -179,7 +179,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
             JTAG_EOM};
         encodeAddress(&command[3], addr);
 
-        auto response_part1 = doJtagCommand(command, sizeof command, 0);
+        auto response_part1 = doJtagCommand(command, sizeof(command), 0);
         if (!response_part1)
             throw jtag_exception();
     }

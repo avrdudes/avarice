@@ -148,7 +148,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes) {
                 // read from device, cache result, and copy over our part
                 u32_to_b4(command + 6, pageAddr);
                 try {
-                    doJtagCommand(command, sizeof command, resp, responseSize, true);
+                    doJtagCommand(command, sizeof(command), resp, responseSize, true);
                 } catch (jtag_exception &e) {
                     fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
                     delete[] response;
@@ -171,7 +171,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes) {
         u32_to_b4(command + 6, addr);
 
         try {
-            doJtagCommand(command, sizeof command, response, responseSize, true);
+            doJtagCommand(command, sizeof(command), response, responseSize, true);
         } catch (jtag_exception &e) {
             fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
             throw;

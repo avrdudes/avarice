@@ -81,7 +81,7 @@ jtag_io_exception::jtag_io_exception(unsigned int code) {
         reason = "SET N PARAMETERS";
         break;
     default:
-        snprintf(buffer, sizeof buffer, "Unknown response code 0x%0x", code);
+        snprintf(buffer, sizeof(buffer), "Unknown response code 0x%0x", code);
         reason = buffer;
     }
 }
@@ -539,7 +539,7 @@ bool jtag2::synchroniseAt(int bitrate) {
 void jtag2::startJtagLink() {
     static int bitrates[] = {19200, 115200, 57600, 38400, 9600};
 
-    for (unsigned int i = 0; i < sizeof bitrates / sizeof *bitrates; i++)
+    for (unsigned int i = 0; i < sizeof(bitrates) / sizeof(*bitrates); i++)
         if (synchroniseAt(bitrates[i])) {
             uchar val;
 

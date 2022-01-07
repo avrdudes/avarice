@@ -106,13 +106,12 @@ static void initSocketAddress(struct sockaddr_in *name, const char *hostname,
 
 static unsigned long parseJtagBitrate(const char *val) {
     char *endptr, c;
-    unsigned long v;
 
     if (*val == '\0') {
         fprintf(stderr, "invalid number in JTAG bit rate");
         throw jtag_exception();
     }
-    v = strtoul(val, &endptr, 10);
+    unsigned long v = strtoul(val, &endptr, 10);
     if (*endptr == '\0')
         return v;
     while (isspace((unsigned char)(c = *endptr)))
@@ -164,12 +163,6 @@ static void usage(const char *progname) {
                     "                                JTAG ICE mkII and AVR Dragon only.\n"
                     "                                Default is "
                     "\"none,run,target_power_on,target_sleep,target_wakeup\"\n");
-#if ENABLE_TARGET_PROGRAMMING
-    fprintf(stderr, "  -f, --file <filename>       Specify a file for use with the --program and\n"
-                    "                                --verify options. If --file is passed and\n"
-                    "                                neither --program or --verify are given then\n"
-                    "                                --program is implied.\n");
-#endif // ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
             "  -g, --dragon                Connect to an AVR Dragon rather than a JTAG ICE.\n"
             "                                This implies --mkII, but might be required in\n"
@@ -185,20 +178,9 @@ static void usage(const char *progname) {
     fprintf(stderr, "  -l, --read-lockbits         Read lock bits.\n");
     fprintf(stderr, "  -P, --part <name>           Target device name (e.g."
                     " atmega16)\n\n");
-#if ENABLE_TARGET_PROGRAMMING
-    fprintf(stderr,
-            "  -p, --program               Program the target.\n"
-            "                                Binary filename must be specified with --file\n"
-            "                                option.\n");
-#endif // ENABLE_TARGET_PROGRAMMING
     fprintf(stderr, "  -r, --read-fuses            Read fuses bytes.\n");
     fprintf(stderr, "  -R, --reset-srst            External reset through nSRST signal.\n");
     fprintf(stderr, "  -V, --version               Print version information.\n");
-#if ENABLE_TARGET_PROGRAMMING
-    fprintf(stderr,
-            "  -v, --verify                Verify program in device against file specified\n"
-            "                                with --file option.\n");
-#endif // ENABLE_TARGET_PROGRAMMING
     fprintf(stderr, "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
                     "                                using debugWire protocol rather than JTAG.\n");
     fprintf(stderr, "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
@@ -562,48 +544,19 @@ int main(int argc, char **argv) {
         if (gdbServerMode && (!capture))
             theJtagICE->initJtagOnChipDebugging(jtagBitrate);
 
-        if (inFileName != (char *)0) {
-#if ENABLE_TARGET_PROGRAMMING
-            if ((program == false) && (verify == false)) {
-                /* If --file is given and neither --program or --verify, then we
-                   program, but not verify so as to be backward compatible with
-                   the old meaning of --file from before the addition of --program
-                   and --verify. */
-
-                program = true;
-            }
-
-            if ((erase == false) && (program == true)) {
-                statusOut("WARNING: The default behaviour has changed.\n"
-                          "Programming no longer erases by default. If you want to"
-                          " erase and program\nin a single step, use the --erase "
-                          "in addition to --program. The reason for\nthis change "
-                          "is to allow programming multiple sections (e.g. "
-                          "application and\nbootloader) in multiple passes.\n\n");
-            }
-
-            theJtagICE->downloadToTarget(inFileName, program, verify);
-            theJtagICE->resetProgram(false);
-#else  // !ENABLE_TARGET_PROGRAMMING
+        if (inFileName != (char *)nullptr) {
             statusOut("\n\n"
                       "AVaRICE has not been configured for target programming\n"
                       "through the --program option.  Target programming in\n"
                       "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
             rv = 1;
-#endif // ENABLE_TARGET_PROGRAMMING
         } else {
             if ((program) || (verify)) {
-#if ENABLE_TARGET_PROGRAMMING
-                fprintf(stderr, "\nERROR: Filename not specified."
-                                " Use the --file option.\n");
-                throw jtag_exception();
-#else  // !ENABLE_TARGET_PROGRAMMING
                 statusOut("\n\n"
                           "AVaRICE has not been configured for target programming\n"
                           "through the --program option.  Target programming in\n"
                           "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
                 rv = 1;
-#endif // ENABLE_TARGET_PROGRAMMING
             }
         }
 

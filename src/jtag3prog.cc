@@ -80,10 +80,3 @@ void jtag3::eraseProgramPage(unsigned long address) {
 
     delete[] resp;
 }
-
-void jtag3::downloadToTarget(const char *filename __attribute__((unused)),
-                             bool program __attribute__((unused)),
-                             bool verify __attribute__((unused))) {
-    statusOut("\nDownload not done.\n");
-    throw jtag_exception("Target programming not implemented for JTAGICE3");
-}

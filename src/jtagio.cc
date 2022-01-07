@@ -149,7 +149,7 @@ std::unique_ptr<uchar[]> jtag1::doJtagCommand(const uchar *command, int commandS
         case send_failed: {
             // We're out of sync. Attempt to resync.
             const uchar sync[] = {' '};
-            while (sendJtagCommand(sync, sizeof sync, tryCount) != send_ok)
+            while (sendJtagCommand(sync, sizeof(sync), tryCount) != send_ok)
                 ;
             break;
         }
@@ -162,7 +162,7 @@ std::unique_ptr<uchar[]> jtag1::doJtagCommand(const uchar *command, int commandS
                bit more intrusive --- it should be ok, as we currently only
                send commands to stopped targets, but...) */
             const uchar stop[] = {'S', JTAG_EOM};
-            if (sendJtagCommand(stop, sizeof stop, tryCount) == send_ok)
+            if (sendJtagCommand(stop, sizeof(stop), tryCount) == send_ok)
                 getJtagResponse(8);
             break;
         }
@@ -173,7 +173,7 @@ std::unique_ptr<uchar[]> jtag1::doJtagCommand(const uchar *command, int commandS
 bool jtag1::doSimpleJtagCommand(unsigned char cmd, int responseSize) {
     const uchar command[] = {cmd, JTAG_EOM};
 
-    auto response = doJtagCommand(command, sizeof command, responseSize);
+    auto response = doJtagCommand(command, sizeof(command), responseSize);
     return responseSize == 0 || (response[responseSize - 1] == JTAG_R_OK);
 }
 
@@ -208,7 +208,7 @@ void jtag1::changeBitRate(int newBitRate) {
 void jtag1::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const auto *command = reinterpret_cast<const uchar *>(&dev.dev_desc1);
 
-    auto response = doJtagCommand(command, sizeof dev.dev_desc1, 1);
+    auto response = doJtagCommand(command, sizeof(dev.dev_desc1), 1);
     if (response[0] != JTAG_R_OK)
         throw jtag_exception("JTAG ICE: Failed to set device description");
 }
@@ -219,7 +219,7 @@ bool jtag1::checkForEmulator() {
     const uchar command[] = {'S', JTAG_EOM};
     int tries = 0;
 
-    if (!sendJtagCommand(command, sizeof command, tries))
+    if (!sendJtagCommand(command, sizeof(command), tries))
         return false;
 
     auto response = getJtagResponse(8);

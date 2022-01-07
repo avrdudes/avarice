@@ -33,12 +33,12 @@ unsigned long jtag3::getProgramCounter() {
 
     uchar *resp;
     int respsize;
-    uchar cmd[] = {SCOPE_AVR, CMD3_READ_PC, 0};
+    const uchar cmd[] = {SCOPE_AVR, CMD3_READ_PC, 0};
     int cnt = 0;
 
 again:
     try {
-        doJtagCommand(cmd, sizeof cmd, "read PC", resp, respsize);
+        doJtagCommand(cmd, sizeof(cmd), "read PC", resp, respsize);
     } catch (jtag_io_exception &e) {
         cnt++;
         if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {
@@ -71,7 +71,7 @@ void jtag3::setProgramCounter(unsigned long pc) {
     u32_to_b4(cmd + 3, pc / 2);
 
     try {
-        doJtagCommand(cmd, sizeof cmd, "write PC", resp, respsize);
+        doJtagCommand(cmd, sizeof(cmd), "write PC", resp, respsize);
     } catch (jtag_exception &e) {
         fprintf(stderr, "cannot write program counter: %s\n", e.what());
         throw;
@@ -87,7 +87,7 @@ void jtag3::resetProgram(bool) {
     uchar *resp;
     int respsize;
 
-    doJtagCommand(cmd, sizeof cmd, "reset", resp, respsize);
+    doJtagCommand(cmd, sizeof(cmd), "reset", resp, respsize);
     delete[] resp;
 
     /* Await the BREAK event that is posted by the ICE. */
@@ -104,7 +104,7 @@ void jtag3::interruptProgram() {
     uchar *resp;
     int respsize;
 
-    doJtagCommand(cmd, sizeof cmd, "stop", resp, respsize);
+    doJtagCommand(cmd, sizeof(cmd), "stop", resp, respsize);
     delete[] resp;
 
     bool bp, gdb;
@@ -259,7 +259,7 @@ void jtag3::jtagSingleStep() {
     cached_pc_is_valid = false;
 
     try {
-        doJtagCommand(cmd, sizeof cmd, "single-step", resp, respsize);
+        doJtagCommand(cmd, sizeof(cmd), "single-step", resp, respsize);
     } catch (jtag_io_exception &e) {
         if (e.get_response() != RSP3_FAIL_WRONG_MODE)
             throw;
@@ -272,7 +272,7 @@ void jtag3::jtagSingleStep() {
 
 void jtag3::parseEvents(const char *) {
 #if 0
-    memset(nonbreaking_events, 0, sizeof nonbreaking_events);
+    memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
     const struct
     {
@@ -299,7 +299,7 @@ void jtag3::parseEvents(const char *) {
         uchar evtval = 0;
 
         // Now, cp1 points to the name to parse, of length l
-        for (unsigned int i = 0; i < sizeof evttable / sizeof evttable[0]; i++)
+        for (unsigned int i = 0; i < sizeof(evttable) / sizeof(evttable[0]); i++)
         {
             if (strncmp(evttable[i].name, cp1, l) == 0)
             {

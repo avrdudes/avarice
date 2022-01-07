@@ -212,7 +212,6 @@ class jtag3 : public jtag {
     void disableProgramming() override;
     void eraseProgramMemory() override;
     void eraseProgramPage(unsigned long address) override;
-    void downloadToTarget(const char *filename, bool program, bool verify) override;
 
     unsigned long getProgramCounter() override;
     void setProgramCounter(unsigned long pc) override;

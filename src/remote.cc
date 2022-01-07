@@ -888,7 +888,7 @@ void talkToGdb() {
             char cmdbuf[MONMAX];
             ptr += 5;
             length -= 5;
-            memset(cmdbuf, 0, sizeof cmdbuf);
+            memset(cmdbuf, 0, sizeof(cmdbuf));
             for (int i = 0; i < MONMAX && length >= 0; i++) {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);

@@ -856,9 +856,6 @@ class jtag {
 
     virtual void eraseProgramPage(unsigned long address) = 0;
 
-    /** Download an image contained in the specified file. */
-    virtual void downloadToTarget(const char *filename, bool program, bool verify) = 0;
-
     // Running, single stepping, etc
     // -----------------------------
 
