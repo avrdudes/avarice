@@ -30,9 +30,7 @@
 #include "jtag2.h"
 
 bool jtag2::codeBreakpointAt(unsigned int address) {
-    int i;
-
-    i = 0;
+    int i = 0;
     while (!bp[i].last) {
         if ((bp[i].address == address) && (bp[i].type == BreakpointType::CODE) && bp[i].enabled)
             return true;
@@ -120,12 +118,10 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length) {
 #endif // notyet
 
 void jtag2::updateBreakpoints() {
-    int bp_i;
-
     layoutBreakpoints();
 
     // Delete all the breakpoints that were flagged first
-    bp_i = 0;
+    int bp_i = 0;
     while (!bp[bp_i].last) {
         uchar cmd[6] = {CMND_CLR_BREAK};
 

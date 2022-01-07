@@ -22,19 +22,12 @@
  * $Id$
  */
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
+#include <cctype>
+#include <cstdio>
+#include <cstring>
 #include <sys/time.h>
-#include <termios.h>
-#include <unistd.h>
 
 #include "avarice.h"
-#include "jtag.h"
 #include "jtag2.h"
 #include "remote.h"
 
@@ -44,7 +37,7 @@ unsigned long jtag2::getProgramCounter() {
 
     uchar *response;
     int responseSize;
-    uchar command[] = {CMND_READ_PC};
+    const uchar command[] = {CMND_READ_PC};
 
     try {
         doJtagCommand(command, sizeof(command), response, responseSize, true);
@@ -90,7 +83,7 @@ void jtag2::resetProgram(bool) {
         interruptProgram();
         setProgramCounter(0);
     } else {
-        uchar cmd[2] = {CMND_RESET, 0x01};
+        const uchar cmd[2] = {CMND_RESET, 0x01};
         uchar *resp;
         int respSize;
 
@@ -104,7 +97,7 @@ void jtag2::resetProgram(bool) {
 }
 
 void jtag2::interruptProgram() {
-    uchar cmd[2] = {CMND_FORCED_STOP, 0x01};
+    const uchar cmd[2] = {CMND_FORCED_STOP, 0x01};
     uchar *resp;
     int respSize;
 
@@ -125,10 +118,9 @@ void jtag2::resumeProgram() {
 
 void jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     uchar *evtbuf;
-    int evtSize;
     unsigned short seqno;
 
-    evtSize = recvFrame(evtbuf, seqno);
+    int evtSize = recvFrame(evtbuf, seqno);
     if (evtSize >= 0) {
         // XXX if not event, should push frame back into queue...
         // We really need a queue of received frames.
@@ -260,7 +252,7 @@ bool jtag2::eventLoop() {
 }
 
 void jtag2::jtagSingleStep() {
-    uchar cmd[3] = {CMND_SINGLE_STEP, 0x01, 0x01};
+    const uchar cmd[] = {CMND_SINGLE_STEP, 0x01, 0x01};
     uchar *resp;
     int respSize, i = 2;
 
@@ -270,7 +262,7 @@ void jtag2::jtagSingleStep() {
 
     do {
         try {
-            doJtagCommand(cmd, 3, resp, respSize);
+            doJtagCommand(cmd, sizeof(cmd), resp, respSize);
         } catch (jtag_io_exception &e) {
             if (e.get_response() != RSP_ILLEGAL_MCU_STATE)
                 throw;
@@ -289,7 +281,7 @@ void jtag2::jtagSingleStep() {
 void jtag2::parseEvents(const char *evtlist) {
     memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
-    const struct {
+    constexpr struct {
         uchar num;
         const char *name;
     } evttable[] = {
@@ -323,8 +315,8 @@ void jtag2::parseEvents(const char *evtlist) {
     };
 
     // parse the given comma-separated string
-    const char *cp1, *cp2;
-    cp1 = evtlist;
+    const char *cp2;
+    const char *cp1 = evtlist;
     while (*cp1 != '\0') {
         while (isspace(*cp1) || *cp1 == ',')
             cp1++;
@@ -335,9 +327,9 @@ void jtag2::parseEvents(const char *evtlist) {
         uchar evtval = 0;
 
         // Now, cp1 points to the name to parse, of length l
-        for (unsigned int i = 0; i < sizeof(evttable) / sizeof(evttable[0]); i++) {
-            if (strncmp(evttable[i].name, cp1, l) == 0) {
-                evtval = evttable[i].num;
+        for (const auto& evt : evttable) {
+            if (strncmp(evt.name, cp1, l) == 0) {
+                evtval = evt.num;
                 break;
             }
         }

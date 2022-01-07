@@ -188,11 +188,6 @@ struct jtag3_device_desc_type {
     unsigned char osccal_address;
 };
 
-#define fill_b4(u)                                                                                 \
-    { ((u)&0xffUL), (((u)&0xff00UL) >> 8), (((u)&0xff0000UL) >> 16), (((u)&0xff000000UL) >> 24) }
-#define fill_b2(u)                                                                                 \
-    { ((u)&0xff), (((u)&0xff00) >> 8) }
-
 enum dev_flags {
     DEVFL_NONE = 0x000000,
     DEVFL_NO_SOFTBP = 0x000001, // Device cannot use software BPs (no BREAK insn)

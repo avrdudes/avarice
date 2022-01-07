@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <string_view>
 
 #include "avarice.h"
 #include "jtag.h"
@@ -207,8 +208,7 @@ static char *mem2hex(uchar *mem, char *buf, int count) {
     for (int i = 0; i < count; i++)
         buf = byteToHex(*mem++, buf);
     *buf = 0;
-
-    return (buf);
+    return buf;
 }
 
 /** Convert the hex array pointed to by buf into binary to be placed in mem.
@@ -223,8 +223,7 @@ static uchar *hex2mem(char *buf, uchar *mem, int count) {
         ch = ch + hex(*buf++);
         *mem++ = ch;
     }
-
-    return (mem);
+    return mem;
 }
 
 static void putpacket(char *buffer);
@@ -486,20 +485,18 @@ static char *getpacket(int &len) {
 
 /** Send packet 'buffer' to gdb. Adds $, # and checksum wrappers. **/
 static void putpacket(char *buffer) {
-    unsigned char checksum;
-    int count;
     char ch;
 
     //  $<packet info>#<checksum>.
     do {
         putDebugChar('$');
-        checksum = 0;
-        count = 0;
+        uchar checksum = 0;
+        int count = 0;
 
         while ((ch = buffer[count])) {
             putDebugChar(ch);
             checksum += ch;
-            count += 1;
+            ++count;
         }
         putDebugChar('#');
         putDebugChar(hexchars[checksum >> 4]);
@@ -519,38 +516,34 @@ static void error(int n) {
     *ptr = '\0';
 }
 
-// put "s" into remcomOutBuffer, obeying the packet size limit
-static void replyString(const char *s) {
-    unsigned int i = 0;
-    char c;
-
-    char *ptr = remcomOutBuffer;
-    while ((c = *s++) != 0 && i < BUFMAX - 1) {
-        ptr = byteToHex((int)c, ptr);
-        i += 2;
-    }
-    *ptr = '\0';
-}
-
 /** reply to a "monitor" command */
-static bool monitor(const char *cmd) {
-    unsigned int ln = strlen(cmd);
-    if (strncmp(cmd, "help", ln) == 0 || strcmp(cmd, "?") == 0) {
+static bool monitor(const std::string_view cmd) {
+
+    // put "s" into remcomOutBuffer, obeying the packet size limit
+    auto replyString = [](const char *s) {
+        unsigned int i = 0;
+        char c;
+
+        char *ptr = remcomOutBuffer;
+        while ((c = *s++) != 0 && i < BUFMAX - 1) {
+            ptr = byteToHex((int)c, ptr);
+            i += 2;
+        }
+        *ptr = '\0';
+    };
+
+    if ((cmd == "help") || (cmd == "?")) {
         replyString("AVaRICE commands:\n"
                     "help, ?:   get help\n"
                     "version:   ask AVaRICE version\n"
                     "reset:     reset target\n");
         return true;
-    }
-
-    if (strncmp(cmd, "version", ln) == 0) {
+    } else if (cmd == "version") {
         char reply[80];
         sprintf(reply, "AVaRICE version %s, %s %s\n", PACKAGE_VERSION, __DATE__, __TIME__);
         replyString(reply);
         return true;
-    }
-
-    if (strncmp(cmd, "reset", ln) == 0) {
+    } else if (cmd == "reset") {
         try {
             theJtagICE->resetProgram(false);
             replyString("Resetting MCU...\n");
@@ -560,9 +553,9 @@ static bool monitor(const char *cmd) {
             replyString(reply);
         }
         return true;
+    } else {
+        return false;
     }
-
-    return false;
 }
 
 static void repStatus(bool breaktime) {
@@ -597,15 +590,12 @@ static char *makeSafeString(const char *s, int inLength) {
 }
 
 void talkToGdb() {
-    int addr;
-    int length, plen;
-    int regno;
-    bool adding = false;
     bool dontSendReply = false;
     static char last_cmd = 0;
     static unsigned char *flashbuf;
     static int maxaddr;
 
+    int plen;
     char *ptr = getpacket(plen);
 
     if (debugMode) {
@@ -617,7 +607,7 @@ void talkToGdb() {
     // default empty response
     remcomOutBuffer[0] = 0;
 
-    char cmd = *ptr++;
+    const char cmd = *ptr++;
     switch (cmd) {
     default: // Unknown code.  Return an empty reply message.
         break;
@@ -648,6 +638,8 @@ void talkToGdb() {
         // TRY TO READ '%x,%x:'.  IF SUCCEED, SET PTR = 0
 
         error(1); // default is error
+        int length;
+        int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length)) &&
             (*(ptr++) == ':') && (length > 0)) {
             debugOut("\nGDB: Write %d bytes to 0x%X\n", length, addr);
@@ -669,7 +661,7 @@ void talkToGdb() {
 
             last_orphan_pending = false;
 
-            uchar *jtagBuffer = new uchar[length];
+            auto *jtagBuffer = new uchar[length];
             hex2mem(ptr, jtagBuffer + lead, length);
             if (lead)
                 jtagBuffer[0] = last_orphan;
@@ -693,7 +685,9 @@ void talkToGdb() {
         }
         break;
     }
-    case 'm': // mAA..AA,LLLL  Read LLLL bytes at address AA..AA
+    case 'm': { // mAA..AA,LLLL  Read LLLL bytes at address AA..AA
+        int length;
+        int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length))) {
             debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
             try {
@@ -705,6 +699,7 @@ void talkToGdb() {
             }
         }
         break;
+    }
     case '?':
         // Report status. We don't actually know, so always report breakpoint
         reportStatus(SIGTRAP);
@@ -776,16 +771,14 @@ void talkToGdb() {
 
     case 'q': // general query
     {
-        length = strlen("Ravr.io_reg");
-        if (strncmp(ptr, "Ravr.io_reg", length) == 0) {
+        if (strncmp(ptr, "Ravr.io_reg", strlen("Ravr.io_reg")) == 0) {
             int i, j, regcount;
-            gdb_io_reg_def_type *io_reg_defs;
 
             debugOut("\nGDB: (io registers) Read %d bytes from 0x%X\n", 0x40, 0x20);
 
             /* If there is an io_reg_defs for this device then respond */
 
-            io_reg_defs = theJtagICE->deviceDef->io_reg_defs;
+            gdb_io_reg_def_type *io_reg_defs = theJtagICE->deviceDef->io_reg_defs;
             if (io_reg_defs) {
                 // count the number of defined registers
                 regcount = 0;
@@ -793,7 +786,7 @@ void talkToGdb() {
                     regcount++;
                 }
 
-                ptr += length;
+                ptr += strlen("Ravr.io_reg");
                 if (*ptr == '\0') {
                     sprintf(remcomOutBuffer, "%02x", regcount);
                 } else if (*ptr == ':') {
@@ -802,7 +795,6 @@ void talkToGdb() {
                     i = 0;
                     j = 0;
                     int count;
-                    unsigned int addr;
 
                     // Find the first register
                     ptr++;
@@ -828,7 +820,7 @@ void talkToGdb() {
                         } else {
                             // Get the address of the first io_register to be
                             // read
-                            addr = io_reg_defs[i].reg_addr;
+                            unsigned int addr = io_reg_defs[i].reg_addr;
 
                             // Count the number of consecutive address,
                             // no-side effects, valid registers
@@ -884,12 +876,12 @@ void talkToGdb() {
                     theJtagICE->deviceDef->flash_page_size *
                         theJtagICE->deviceDef->flash_page_count,
                     theJtagICE->deviceDef->flash_page_size);
-        } else if (length > 5 && strncmp(ptr, "Rcmd,", 4) == 0) {
+        } else if (strncmp(ptr, "Rcmd,", 4) == 0) {
             char cmdbuf[MONMAX];
-            ptr += 5;
-            length -= 5;
             memset(cmdbuf, 0, sizeof(cmdbuf));
-            for (int i = 0; i < MONMAX && length >= 0; i++) {
+            ptr += 5;
+            int length = strlen(ptr);
+            for (int i = 0; i < MONMAX && length; i++) {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);
                 cmdbuf[i] = (char)c;
@@ -907,6 +899,7 @@ void talkToGdb() {
 
     case 'P':     // set the value of a single CPU register - return OK
         error(1); // error by default
+        int regno;
         if (hexToInt(&ptr, &regno) && *ptr++ == '=') {
             uchar reg[4];
 
@@ -944,6 +937,7 @@ void talkToGdb() {
 
     case 's': // sAA..AA    Step one instruction from AA..AA(optional)
         // try to read optional parameter, pc unchanged if no parm
+        int addr;
         if (hexToInt(&ptr, &addr)) {
             try {
                 theJtagICE->setProgramCounter(addr);
@@ -1045,12 +1039,11 @@ void talkToGdb() {
         break;
 
     case 'Z':
-        adding = true;
-        [[fallthrough]];
     case 'z': {
         error(1); // assume the worst.
 
         int bp_type;
+        int length;
         // Add a Breakpoint. note: length specifier is ignored for now.
         if (hexToInt(&ptr, &bp_type) && (*ptr++ == ',') && hexToInt(&ptr, &addr) &&
             (*ptr++ == ',') && hexToInt(&ptr, &length)) {
@@ -1075,7 +1068,7 @@ void talkToGdb() {
                 throw jtag_exception();
             }
 
-            if (adding) {
+            if (cmd == 'Z') { // Adding
                 try {
                     theJtagICE->addBreakpoint(addr, mode, length);
                 } catch (jtag_exception &) {

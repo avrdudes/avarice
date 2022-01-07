@@ -450,15 +450,11 @@ void jtag2::changeBitRate(int newBitRate) {
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
 void jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
+    const uchar *command = (is_xmega && has_full_xmega_support)
+        ?(uchar *)&dev.dev_desc3:(uchar *)&dev.dev_desc2;
+
     uchar *response;
-    uchar *command;
     int respSize;
-
-    if (is_xmega && has_full_xmega_support)
-        command = (uchar *)&dev.dev_desc3;
-    else
-        command = (uchar *)&dev.dev_desc2;
-
     try {
         doJtagCommand(command, devdescrlen, response, respSize);
     } catch (jtag_exception &e) {
@@ -537,10 +533,10 @@ bool jtag2::synchroniseAt(int bitrate) {
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
 void jtag2::startJtagLink() {
-    static int bitrates[] = {19200, 115200, 57600, 38400, 9600};
+    constexpr int bitrates[] = {19200, 115200, 57600, 38400, 9600};
 
-    for (unsigned int i = 0; i < sizeof(bitrates) / sizeof(*bitrates); i++)
-        if (synchroniseAt(bitrates[i])) {
+    for (const auto bitrate : bitrates) {
+        if (synchroniseAt(bitrate)) {
             uchar val;
 
             signedIn = true;
@@ -581,6 +577,7 @@ void jtag2::startJtagLink() {
 
             return;
         }
+    }
 
     throw jtag_exception("Failed to synchronise with the JTAG ICE (is it connected and powered?)");
 }

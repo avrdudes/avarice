@@ -26,6 +26,11 @@
 #include "pragma.h"
 #include "jtag.h"
 
+#define fill_b4(u)                                                                                 \
+    { ((u)&0xffUL), (((u)&0xff00UL) >> 8), (((u)&0xff0000UL) >> 16), (((u)&0xff000000UL) >> 24) }
+#define fill_b2(u)                                                                                 \
+    { ((u)&0xff), (((u)&0xff00) >> 8) }
+
 /* Device descriptor magic from Atmel's documents. Let's hope it's more
    accurate than the rest of that text... */
 
