@@ -48,13 +48,13 @@ avarice_SOURCES =	\
 	jtag3prog.cc	\
 	jtag3run.cc	\
 	jtag3rw.cc	\
-	jtagbp.cc	\
+	jtag1bp.cc	\
 	jtaggeneric.cc	\
-	jtagio.cc	\
-	jtagmisc.cc	\
-	jtagprog.cc	\
-	jtagrun.cc	\
-	jtagrw.cc	\
+	jtag1io.cc	\
+	jtag1misc.cc	\
+	jtag1prog.cc	\
+	jtag1run.cc	\
+	jtag1rw.cc	\
 	main.cc		\
 	pragma.h	\
 	remote.cc	\

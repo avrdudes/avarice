@@ -99,21 +99,16 @@ jtag3::~jtag3() {
  * the frame could be written correctly.
  */
 void jtag3::sendFrame(const uchar *command, int commandSize) {
-    auto *buf = new unsigned char[commandSize + 4];
-
+    auto buf = std::make_unique<uchar[]>(commandSize + 4);
     buf[0] = TOKEN;
     buf[1] = 0;
-    u16_to_b2(buf + 2, command_sequence);
-    memcpy(buf + 4, command, commandSize);
-
+    u16_to_b2(buf.get() + 2, command_sequence);
+    memcpy(buf.get() + 4, command, commandSize);
     for (int i = 0; i < commandSize + 4; i++)
         debugOut("%.2X ", buf[i]);
     debugOut("\n");
 
-    int count = safewrite(buf, commandSize + 4);
-
-    delete[] buf;
-
+    int count = safewrite(buf.get(), commandSize + 4);
     if (count < 0)
         throw jtag_exception();
     else if (count != commandSize + 4)
@@ -183,7 +178,6 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     } else if (rv == 0) {
         /* timeout */
         debugOut("read() timed out\n");
-
         return 0;
     } else {
         /* error */

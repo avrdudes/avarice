@@ -25,8 +25,6 @@
 #ifndef JTAG1_H
 #define JTAG1_H
 
-#include <memory>
-
 #include "jtag.h"
 
 /*

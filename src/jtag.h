@@ -30,6 +30,7 @@
 
 #include <exception>
 #include <string_view>
+#include <memory>
 
 #include "avarice.h"
 #include "ioreg.h"
