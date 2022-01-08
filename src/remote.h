@@ -30,7 +30,7 @@ void setGdbFile(int fd);
 
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
-int getDebugChar();
+unsigned char getDebugChar();
 
 /** printf 'fmt, ...' to gdb **/
 void gdbOut(const char *fmt, ...);

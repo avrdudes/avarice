@@ -115,7 +115,7 @@ bool jtag1::jtagContinue() {
         }
 
         if (FD_ISSET(gdbFileDescriptor, &readfds)) {
-            int c = getDebugChar();
+            const auto c = getDebugChar();
             if (c == 3) // interrupt
             {
                 debugOut("interrupted by GDB\n");

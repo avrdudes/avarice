@@ -229,7 +229,7 @@ bool jtag2::eventLoop() {
             throw jtag_exception("GDB/JTAG ICE communications failure");
 
         if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds)) {
-            int c = getDebugChar();
+            const auto c = getDebugChar();
             if (c == 3) // interrupt
             {
                 debugOut("interrupted by GDB\n");

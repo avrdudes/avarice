@@ -681,32 +681,7 @@ struct Breakpoint2 {
     bool has_mask = false;  // data watchpoint has a mask associated
 };
 
-// Enumerations for target memory type.
-enum class BFDmemoryType { FLASH, EEPROM, RAM };
-
-extern const char *BFDmemoryTypeString[];
-
 enum class Emulator { JTAGICE, DRAGON, JTAGICE3, EDBG };
-
-// Allocate 1 meg for image buffer. This is where the file data is
-// stored before writing occurs.
-constexpr auto MAX_IMAGE_SIZE = 1000000u;
-
-struct AVRMemoryByte {
-    uchar val;
-    bool used;
-};
-
-// Struct that holds the memory image. We read from file using BFD
-// into this struct, then pass the entire struct to the target writer.
-struct BFDimage {
-    AVRMemoryByte image[MAX_IMAGE_SIZE];
-    unsigned int last_address;
-    unsigned int first_address;
-    bool first_address_ok;
-    bool has_data;
-    const char *name;
-};
 
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
 #define JTAG_EOM 0x20, 0x20
@@ -775,14 +750,6 @@ class jtag {
     virtual bool synchroniseAt(int bitrate) = 0;
     virtual void startJtagLink() = 0;
     virtual void deviceAutoConfig() = 0;
-    void jtag_flash_image(BFDimage *image, BFDmemoryType memtype, bool program, bool verify);
-    // Return page address of
-    unsigned int page_addr(unsigned int addr, BFDmemoryType memtype) {
-        unsigned int page_size = get_page_size(memtype);
-        return (unsigned int)(addr & (~(page_size - 1)));
-    };
-
-    unsigned int get_page_size(BFDmemoryType memtype) const;
 
   public:
     jtag() = default;
@@ -939,7 +906,7 @@ class jtag {
       The input parameter is a string from command-line, as produced by
       printf("%x", 0xaa);
     **/
-    void jtagWriteLockBits(char *lock);
+    void jtagWriteLockBits(const char *lock);
 
     /** Read the lock bits from the target and display them.
      **/

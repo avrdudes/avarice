@@ -26,24 +26,13 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
+#include <unistd.h>
+
 #include <fcntl.h>
 #include <sys/time.h>
 #include <termios.h>
-#include <unistd.h>
 
 #include "jtag.h"
-
-static int BFDmemorySpaceOffset(BFDmemoryType memtype) {
-    switch (memtype) {
-    case BFDmemoryType::FLASH:
-        return FLASH_SPACE_ADDR_OFFSET;
-    case BFDmemoryType::EEPROM:
-        return EEPROM_SPACE_ADDR_OFFSET;
-    case BFDmemoryType::RAM:
-    default: // safe default?
-        return DATA_SPACE_ADDR_OFFSET;
-    }
-};
 
 /*
  * Generic functions applicable to both, the mkI and mkII ICE.
@@ -64,7 +53,6 @@ jtag::jtag(const char *jtagDeviceName, const char *name, bool nsrst, Emulator ty
         throw "avarice has not been compiled with libusb support\n";
 #endif
     } else {
-        struct termios newtio;
         // Open modem device for reading and writing and not as controlling
         // tty because we don't want to get killed if linenoise sends
         // CTRL-C.
@@ -79,6 +67,7 @@ jtag::jtag(const char *jtagDeviceName, const char *name, bool nsrst, Emulator ty
             throw jtag_exception();
         oldtioValid = true;
 
+        struct termios newtio;
         memset(&newtio, 0, sizeof(newtio));
         newtio.c_cflag = CS8 | CLOCAL | CREAD;
 
@@ -214,128 +203,6 @@ void jtag::changeLocalBitRate(int newBitRate) const {
         throw jtag_exception();
 }
 
-static bool pageIsEmpty(BFDimage *image, unsigned int addr, unsigned int size,
-                        BFDmemoryType memtype) {
-    bool emptyPage = true;
-
-    // Check if page is used
-    for (unsigned int idx = addr; idx < addr + size; idx++) {
-        if (idx >= image->last_address)
-            break;
-
-        // 1. If this address existed in input file, mark as ! empty.
-        // 2. If we are programming FLASH, and contents == 0xff, we need
-        //    not program (is 0xff after erase).
-        if (image->image[idx].used) {
-            if (!((memtype == BFDmemoryType::FLASH) && (image->image[idx].val == 0xff))) {
-                emptyPage = false;
-                break;
-            }
-        }
-    }
-    return emptyPage;
-}
-
-unsigned int jtag::get_page_size(BFDmemoryType memtype) const {
-    switch (memtype) {
-    case BFDmemoryType::FLASH:
-        return deviceDef->flash_page_size;
-    case BFDmemoryType::EEPROM:
-        return deviceDef->eeprom_page_size;
-    default:
-        return 1;
-    }
-}
-
-void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype, bool program, bool verify) {
-    const auto page_size = get_page_size(memtype);
-    uchar *response = nullptr;
-
-    if (!image->has_data) {
-        fprintf(stderr, "File contains no data.\n");
-        return;
-    }
-
-    if (program) {
-        // First address must start on page boundary.
-        unsigned int addr = page_addr(image->first_address, memtype);
-
-        statusOut("Downloading %s image to target.", image->name);
-        statusFlush();
-
-        while (addr < image->last_address) {
-            if (!pageIsEmpty(image, addr, page_size, memtype)) {
-                // Must also convert address to gcc-hacked addr for jtagWrite
-                debugOut("Writing page at addr 0x%.4lx size 0x%lx\n", addr, page_size);
-
-                static uchar buf[MAX_IMAGE_SIZE];
-                // Create raw data buffer
-                for (unsigned int i = 0; i < page_size; i++)
-                    buf[i] = image->image[i + addr].val;
-
-                try {
-                    jtagWrite(BFDmemorySpaceOffset(memtype) + addr, page_size, buf);
-                } catch (jtag_exception &e) {
-                    fprintf(stderr, "Error writing to target: %s\n", e.what());
-                }
-            }
-
-            addr += page_size;
-
-            statusOut(".");
-            statusFlush();
-        }
-
-        statusOut("\n");
-        statusFlush();
-    }
-
-    if (verify) {
-        bool is_verified = true;
-
-        // First address must start on page boundary.
-        unsigned int addr = page_addr(image->first_address, memtype);
-
-        statusOut("\nVerifying %s", image->name);
-        statusFlush();
-
-        while (addr < image->last_address) {
-            // Must also convert address to gcc-hacked addr for jtagWrite
-            debugOut("Verifying page at addr 0x%.4lx size 0x%lx\n", addr, page_size);
-
-            response = jtagRead(BFDmemorySpaceOffset(memtype) + addr, page_size);
-
-            // Verify buffer, but only addresses in use.
-            for (unsigned int i = 0; i < page_size; i++) {
-                unsigned int c = i + addr;
-                if (image->image[c].used) {
-                    if (image->image[c].val != response[i]) {
-                        statusOut("\nError verifying target addr %.4x. "
-                                  "Expect [0x%02x] Got [0x%02x]",
-                                  c, image->image[c].val, response[i]);
-                        statusFlush();
-                        is_verified = false;
-                    }
-                }
-            }
-
-            addr += page_size;
-
-            statusOut(".");
-            statusFlush();
-        }
-        delete[] response;
-
-        statusOut("\n");
-        statusFlush();
-
-        if (!is_verified) {
-            fprintf(stderr, "\nVerification failed!\n");
-            throw jtag_exception();
-        }
-    }
-}
-
 void jtag::jtagWriteFuses(char *fuses) {
     if (deviceDef->fusemap > 0x07) {
         fprintf(stderr, "Fuse byte writing not supported on this device.\n");
@@ -389,10 +256,8 @@ static unsigned int countFuses(unsigned int fusemap) {
 }
 
 void jtag::jtagReadFuses() {
-    uchar *fuseBits = nullptr;
-
     statusOut("\nReading Fuse Bytes:\n");
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, countFuses(deviceDef->fusemap));
+    uchar *fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, countFuses(deviceDef->fusemap));
 
     jtagDisplayFuses(fuseBits);
 
@@ -410,8 +275,7 @@ void jtag::jtagActivateOcdenFuse() {
                   "Device has more than 3 fuses: %d, cannot handle\n",
                   nfuses);
 
-    uchar *fuseBits = nullptr;
-    fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
+    uchar *fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
 
     unsigned int fusevect = (fuseBits[2] << 16) | (fuseBits[1] << 8) | fuseBits[0];
 
@@ -451,13 +315,8 @@ void jtag::jtagDisplayFuses(const uchar *fuseBits) const {
     }
 }
 
-void jtag::jtagWriteLockBits(char *lock) {
-    int temp[1];
-    uchar lockBits[1];
-    uchar *readlockBits;
-    unsigned int c;
-
-    if (lock == nullptr) {
+void jtag::jtagWriteLockBits(const char *lock) {
+    if (!lock) {
         fprintf(stderr, "Error: No lock bit string given");
         return;
     }
@@ -468,13 +327,14 @@ void jtag::jtagWriteLockBits(char *lock) {
     }
 
     // Convert lockbits to hex value
-    c = sscanf(lock, "%02x", temp);
+    int temp[1];
+    const auto c = sscanf(lock, "%02x", temp);
     if (c != 1) {
         fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
         return;
     }
 
-    lockBits[0] = (uchar)temp[0];
+    uchar lockBits[1] = {(uchar)temp[0]};
 
     statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
 
@@ -486,7 +346,7 @@ void jtag::jtagWriteLockBits(char *lock) {
         fprintf(stderr, "Error writing lockbits: %s\n", e.what());
     }
 
-    readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
+    uchar *readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
 
     disableProgramming();
 

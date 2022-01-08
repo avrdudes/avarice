@@ -114,7 +114,7 @@ static void waitForGdbInput() {
 
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
-int getDebugChar() {
+unsigned char getDebugChar() {
     uchar c = 0;
     ssize_t result;
 
@@ -133,7 +133,7 @@ int getDebugChar() {
         throw jtag_exception("gdb exited");
     }
 
-    return (int)c;
+    return c;
 }
 
 int checkForDebugChar() {
@@ -157,7 +157,7 @@ int checkForDebugChar() {
     return (int)c;
 }
 
-static const unsigned char hexchars[] = "0123456789abcdef";
+static const char hexchars[] = "0123456789abcdef";
 
 static char *byteToHex(uchar x, char *buf) {
     *buf++ = hexchars[x >> 4];
@@ -404,7 +404,7 @@ static char *getpacket(int &len) {
     unsigned char checksum;
     unsigned char xmitcsum;
     int count;
-    char ch;
+    uchar ch;
     bool is_escaped;
 
     // scan for the sequence $<data>#<checksum>
@@ -905,8 +905,7 @@ void talkToGdb() {
                     ok();
                 } else if (regno == PC) {
                     hex2mem(ptr, reg, 4);
-                    theJtagICE->setProgramCounter(reg[0] | reg[1] << 8 | reg[2] << 16 |
-                                                  reg[3] << 24);
+                    theJtagICE->setProgramCounter(b4_to_u32(reg));
                     ok();
                 }
             } catch (jtag_exception &e) {
@@ -985,7 +984,7 @@ void talkToGdb() {
 
     case 'v': {
         static unsigned char *flashbuf;
-        static int maxaddr;
+        static unsigned int maxaddr;
         if (strncmp(ptr, "FlashErase:", 11) == 0) {
             ptr += 11;
             int offset, length;
@@ -1008,7 +1007,7 @@ void talkToGdb() {
             int offset;
             hexToInt(&ptr, &offset);
             ++ptr; // past ":"
-            const int amount = plen - 1 - (ptr - optr);
+            const unsigned int amount = plen - 1 - (ptr - optr);
             statusOut("buffering data, %d bytes @ 0x%x\n", amount, offset);
             if (offset + amount > maxaddr)
                 maxaddr = offset + amount;
@@ -1016,8 +1015,8 @@ void talkToGdb() {
             ok();
         } else if (strncmp(ptr, "FlashDone", 9) == 0) {
             statusOut("committing to flash\n");
-            const int pagesize = theJtagICE->deviceDef->flash_page_size;
-            for (int offset = 0; offset < maxaddr; offset += pagesize) {
+            const auto pagesize = theJtagICE->deviceDef->flash_page_size;
+            for (unsigned int offset = 0; offset < maxaddr; offset += pagesize) {
                 theJtagICE->jtagWrite(offset, pagesize, flashbuf + offset);
             }
             theJtagICE->disableProgramming();
