@@ -151,6 +151,7 @@
 #define EVT_TARGET_POWER_ON 0xE4
 #define EVT_TARGET_SLEEP 0xE8
 #define EVT_TARGET_WAKEUP 0xE9
+#define EVT_MAX 0xFF
 
 /* memory types for CMND_{READ,WRITE}_MEMORY */
 #define MTYPE_IO_SHADOW 0x30   /* cached IO registers? */
@@ -251,9 +252,8 @@ class jtag2 : public jtag {
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    jtag2(const char *dev, const char *name, Debugproto prot = Debugproto::JTAG,
-          bool is_dragon = false, bool nsrst = false, bool xmega = false)
-        : jtag(dev, name, nsrst, is_dragon ? Emulator::DRAGON : Emulator::JTAGICE), proto(prot) {
+    jtag2(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
+        : jtag(emul, dev, name, nsrst), proto(prot) {
         is_xmega = xmega;
     };
     ~jtag2() override;

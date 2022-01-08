@@ -193,9 +193,8 @@ class jtag3 : public jtag {
     unsigned char *cached_event = nullptr;
 
   public:
-    jtag3(const char *dev, const char *name, Debugproto prot = Debugproto::JTAG, bool nsrst = false,
-          bool xmega = false, bool edbg = false)
-        : jtag(dev, name, nsrst, edbg ? Emulator::EDBG : Emulator::JTAGICE3), proto(prot) {
+    jtag3(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
+        : jtag(emul, dev, name, nsrst), proto(prot) {
         is_xmega = xmega;
     };
     ~jtag3() override;

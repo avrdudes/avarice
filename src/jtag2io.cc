@@ -493,7 +493,7 @@ bool jtag2::synchroniseAt(int bitrate) {
             debugOut("  hardware version:              %u\n", (unsigned)signonmsg[9]);
 
             // The AVR Dragon always uses the full device descriptor.
-            if (emu_type == Emulator::JTAGICE) {
+            if (emu_type == Emulator::JTAGICE2) {
                 unsigned short fwver = ((unsigned)signonmsg[8] << 8) | (unsigned)signonmsg[7];
 
                 // Check the S_MCU firmware version to know which format
@@ -588,7 +588,6 @@ void jtag2::startJtagLink() {
 
 */
 void jtag2::deviceAutoConfig() {
-    unsigned int device_id;
     uchar *resp;
     int respSize;
 
@@ -598,6 +597,7 @@ void jtag2::deviceAutoConfig() {
     /* Set daisy chain information */
     configDaisyChain();
 
+    unsigned int device_id;
     /* Read in the JTAG device ID to determine device */
     if (proto == Debugproto::DW) {
         getJtagParameter(PAR_TARGET_SIGNATURE, resp, respSize);

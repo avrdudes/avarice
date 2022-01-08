@@ -244,7 +244,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type, int &us
     size_t x;
 
     switch (emu_type) {
-    case Emulator::JTAGICE:
+    case Emulator::JTAGICE2:
         pid = USB_DEVICE_JTAGICEMKII;
         read_ep = USBDEV_BULK_EP_READ_MKII;
         write_ep = USBDEV_BULK_EP_WRITE_MKII;

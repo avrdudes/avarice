@@ -43,8 +43,8 @@ void jtag::restoreSerialPort() {
         tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-jtag::jtag(const char *jtagDeviceName, const char *name, bool nsrst, Emulator type)
-    : emu_type(type), apply_nSRST(nsrst), device_name(name) {
+jtag::jtag(Emulator emul, const char *jtagDeviceName, const char *name, bool nsrst)
+    : emu_type(emul), apply_nSRST(nsrst), device_name(name) {
     if (strncmp(jtagDeviceName, "usb", 3) == 0) {
 #ifdef HAVE_LIBUSB
         is_usb = true;

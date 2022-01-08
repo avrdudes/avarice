@@ -219,7 +219,7 @@ static struct option long_opts[] = {
     {"write-fuses", 1, nullptr, 'W'},   {"xmega", 0, nullptr, 'x'},
     {"pdi", 0, nullptr, 'X'},           {nullptr, 0, nullptr, 0}};
 
-jtag *theJtagICE;
+std::unique_ptr<jtag> theJtagICE;
 
 int main(int argc, char **argv) {
     int sock;
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
     bool apply_nsrst = false;
     bool is_xmega = false;
     char *progname = argv[0];
-    enum { MKI, MKII, DRAGON, JTAG3, EDBG } devicetype = MKI; // default to mkI devicetype
+    Emulator devicetype = Emulator::JTAGICE; // default to mkI devicetype
     Debugproto proto = Debugproto::JTAG;
     int option_index;
     unsigned int units_before = 0;
@@ -275,16 +275,19 @@ int main(int argc, char **argv) {
             knownParts();
             [[fallthrough]];
         case '1':
-            devicetype = MKI;
+            devicetype = Emulator::JTAGICE;
             break;
         case '2':
-            devicetype = MKII;
+            devicetype = Emulator::JTAGICE2;
             break;
         case '3':
-            devicetype = JTAG3;
+            devicetype = Emulator::JTAGICE3;
             break;
         case '4':
-            devicetype = EDBG;
+            devicetype = Emulator::EDBG;
+            break;
+        case 'g':
+            devicetype = Emulator::DRAGON;
             break;
         case 'B':
             jtagBitrate = parseJtagBitrate(optarg);
@@ -319,9 +322,6 @@ int main(int argc, char **argv) {
             break;
         case 'f':
             inFileName = optarg;
-            break;
-        case 'g':
-            devicetype = DRAGON;
             break;
         case 'I':
             ignoreInterrupts = true;
@@ -443,7 +443,8 @@ int main(int argc, char **argv) {
 
         if (cp != nullptr)
             jtagDeviceName = cp;
-        else if (devicetype == DRAGON || devicetype == JTAG3 || devicetype == EDBG)
+        else if (devicetype == Emulator::DRAGON || devicetype == Emulator::JTAGICE3 ||
+                 devicetype == Emulator::EDBG || devicetype == Emulator::JTAGICE2)
             jtagDeviceName = "usb";
         else
             jtagDeviceName = "/dev/avrjtag";
@@ -457,22 +458,21 @@ int main(int argc, char **argv) {
     try {
         // And say hello to the JTAG box
         switch (devicetype) {
-        case MKI:
-            theJtagICE = new jtag1(jtagDeviceName, device_name, apply_nsrst);
+        case Emulator::JTAGICE:
+            theJtagICE =
+                std::make_unique<jtag1>(devicetype, jtagDeviceName, device_name, apply_nsrst);
             break;
 
-        case MKII:
-        case DRAGON:
-            theJtagICE = new jtag2(jtagDeviceName, device_name, proto, devicetype == DRAGON,
-                                   apply_nsrst, is_xmega);
+        case Emulator::JTAGICE2:
+        case Emulator::DRAGON:
+            theJtagICE = std::make_unique<jtag2>(devicetype, jtagDeviceName, device_name, proto,
+                                                 apply_nsrst, is_xmega);
             break;
 
-        case JTAG3:
-            theJtagICE = new jtag3(jtagDeviceName, device_name, proto, apply_nsrst, is_xmega);
-            break;
-
-        case EDBG:
-            theJtagICE = new jtag3(jtagDeviceName, device_name, proto, apply_nsrst, is_xmega, true);
+        case Emulator::JTAGICE3:
+        case Emulator::EDBG:
+            theJtagICE = std::make_unique<jtag3>(devicetype, jtagDeviceName, device_name, proto,
+                                                 apply_nsrst, is_xmega);
             break;
         }
 
@@ -587,8 +587,6 @@ int main(int argc, char **argv) {
         // correctly, as this says "good-bye" to the JTAG ICE mkII
         rv = 1;
     }
-
-    delete theJtagICE;
 
     return rv;
 }

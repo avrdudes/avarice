@@ -424,37 +424,6 @@ enum {
     CMND_WRITE_PC = 0x06,
     CMND_XMEGA_ERASE = 0x34,
 
-    // ICE events
-    EVT_BREAK = 0xE0,
-    EVT_DEBUG = 0xE6,
-    EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT = 0xE2,
-    EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF = 0xED,
-    EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT = 0xF9,
-    EVT_ERROR_PHY_OPT_RECEIVED_BREAK = 0xFA,
-    EVT_ERROR_PHY_RECEIVED_BREAK = 0xF8,
-    EVT_ERROR_PHY_RECEIVE_TIMEOUT = 0xF7,
-    EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT = 0xE3,
-    EVT_ERROR_PHY_SYNC_OUT_OF_RANGE = 0xF5,
-    EVT_ERROR_PHY_SYNC_TIMEOUT = 0xF0,
-    EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD = 0xF4,
-    EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT = 0xF6,
-    EVT_RESULT_PHY_NO_ACTIVITY = 0xFB,
-    EVT_EXT_RESET = 0xE7,
-    EVT_ICE_POWER_ERROR_STATE = 0xEA,
-    EVT_ICE_POWER_OK = 0xEB,
-    EVT_IDR_DIRTY = 0xEC,
-    EVT_NONE = 0xEF,
-    EVT_PDSB_BREAK = 0xF2,
-    EVT_PDSMB_BREAK = 0xF3,
-    EVT_PROGRAM_BREAK = 0xF1,
-    EVT_RUN = 0xE1,
-    EVT_TARGET_POWER_OFF = 0xE5,
-    EVT_TARGET_POWER_ON = 0xE4,
-    EVT_TARGET_SLEEP = 0xE8,
-    EVT_TARGET_WAKEUP = 0xE9,
-    // trailer
-    EVT_MAX = 0xFF,
-
     // memory types for CMND_{READ,WRITE}_MEMORY
     MTYPE_IO_SHADOW = 0x30,        // cached IO registers?
     MTYPE_SRAM = 0x20,             // target's SRAM or [ext.] IO registers
@@ -648,7 +617,7 @@ struct Breakpoint2 {
     bool has_mask = false;  // data watchpoint has a mask associated
 };
 
-enum class Emulator { JTAGICE, DRAGON, JTAGICE3, EDBG };
+enum class Emulator { JTAGICE, JTAGICE2, DRAGON, JTAGICE3, EDBG };
 
 // The Sync_CRC/EOP message terminator (no real CRC in sight...)
 #define JTAG_EOM 0x20, 0x20
@@ -668,7 +637,7 @@ class jtag {
     bool is_usb = false;
 
     // The type of our emulator: JTAG ICE, or AVR Dragon.
-    Emulator emu_type = Emulator::JTAGICE;
+    Emulator emu_type;
 
     // Whether nSRST is to be applied when connecting (override JTD bit).
     bool apply_nSRST = false;
@@ -719,8 +688,7 @@ class jtag {
     virtual void deviceAutoConfig() = 0;
 
   public:
-    jtag() = default;
-    jtag(const char *dev, const char *name, bool nsrst, Emulator type = Emulator::JTAGICE);
+    jtag(Emulator emul, const char *dev, const char *name, bool nsrst);
     virtual ~jtag();
 
     // Basic JTAG I/O
@@ -903,7 +871,7 @@ class jtag {
     virtual unsigned int cpuRegisterAreaAddress() const = 0;
 };
 
-extern class jtag *theJtagICE;
+extern std::unique_ptr<jtag> theJtagICE;
 
 class jtag_exception : public std::exception {
   protected:
