@@ -760,9 +760,9 @@ class jtag {
 
   protected:
     void openUSB(const char *jtagDeviceName);
-    void resetUSB();
-    int safewrite(const void *b, int count);
-    void changeLocalBitRate(int newBitRate);
+    static void resetUSB();
+    int safewrite(const void *b, int count) const;
+    void changeLocalBitRate(int newBitRate) const;
     void restoreSerialPort();
 
     virtual void changeBitRate(int newBitRate) = 0;
@@ -923,7 +923,7 @@ class jtag {
 
       Shows extended, high and low fuse byte.
     */
-    void jtagDisplayFuses(uchar *fuseBits);
+    void jtagDisplayFuses(const uchar *fuseBits) const;
 
     /** Activate OCDEN.
      */
@@ -944,7 +944,7 @@ class jtag {
 
       Shows raw value and individual bits.
     **/
-    void jtagDisplayLockBits(uchar *lockBits);
+    static void jtagDisplayLockBits(uchar *lockBits);
 
     /** Return read address for CPU status area.
 
@@ -993,8 +993,7 @@ class jtag_io_exception : public jtag_exception {
 };
 
 static inline unsigned long b4_to_u32(const unsigned char *b) {
-    unsigned long l;
-    l = (unsigned)b[0];
+    unsigned long l = (unsigned)b[0];
     l += (unsigned)b[1] << 8;
     l += (unsigned)(unsigned)b[2] << 16;
     l += (unsigned)b[3] << 24;
@@ -1009,8 +1008,7 @@ static inline void u32_to_b4(unsigned char *b, unsigned long l) {
 };
 
 static inline unsigned short b2_to_u16(const unsigned char *b) {
-    unsigned short l;
-    l = (unsigned)b[0];
+    unsigned short l = (unsigned)b[0];
     l += (unsigned)b[1] << 8;
     return l;
 };

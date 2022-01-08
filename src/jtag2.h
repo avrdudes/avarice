@@ -122,7 +122,7 @@ class jtag2 : public jtag {
     // -------------
 
     /** Set JTAG ICE parameter 'item' to 'newValue' **/
-    void setJtagParameter(uchar item, uchar *newValue, int valSize);
+    void setJtagParameter(uchar item, const uchar *newValue, int valSize);
 
     /** Return value of JTAG ICE parameter 'item'; caller must delete
         [] resp

@@ -116,7 +116,6 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
     }
 
     uchar cmd[12];
-
     cmd[0] = SCOPE_AVR;
     cmd[1] = CMD3_READ_MEMORY;
     cmd[2] = 0;
@@ -174,7 +173,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
         try {
             doJtagCommand(cmd, sizeof(cmd), "read memory", response, responsesize);
         } catch (jtag_io_exception &e) {
-            cnt++;
+            ++cnt;
             if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {
                 interruptProgram();
                 goto again;
@@ -202,7 +201,7 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
         return;
 
     debugOut("jtagWrite ");
-    uchar whichSpace = memorySpace(addr);
+    const auto whichSpace = memorySpace(addr);
 
     // Hack to detect the start of a GDB "load" command.  Iff this
     // address is tied to flash ROM, and it is address 0, and the size
@@ -216,29 +215,29 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
         eraseProgramMemory();
     }
 
-    bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE && whichSpace < MTYPE_XMEGA_REG;
-    unsigned int pageSize = 0;
+    const bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE && whichSpace < MTYPE_XMEGA_REG;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)
         enableProgramming();
 
+    unsigned int pageSize = 0;
     switch (whichSpace) {
     case MTYPE_FLASH_PAGE:
         pageSize = deviceDef->flash_page_size;
         break;
-
     case MTYPE_EEPROM_PAGE:
         pageSize = deviceDef->eeprom_page_size;
         break;
     }
+
     if (pageSize > 0) {
         unsigned int mask = pageSize - 1;
         addr &= ~mask;
         if (numBytes != pageSize)
             throw("jtagWrite(): numByte does not match page size");
     }
-    uchar cmd[14 + numBytes];
 
+    uchar cmd[14 + numBytes];
     cmd[0] = SCOPE_AVR;
     cmd[1] = CMD3_WRITE_MEMORY;
     cmd[2] = 0;
@@ -255,7 +254,6 @@ void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
     uchar *response;
     int responsesize;
-
     try {
         doJtagCommand(cmd, 14 + numBytes, "write memory", response, responsesize);
     } catch (jtag_exception &e) {

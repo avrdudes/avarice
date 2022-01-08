@@ -233,7 +233,7 @@ void jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
             chunksize = 256; // that's all the JTAGICEmkII can handle at a time
         }
     }
-    uchar *command = new uchar[10 + chunksize];
+    auto *command = new uchar[10 + chunksize];
     command[0] = CMND_WRITE_MEMORY;
     command[1] = whichSpace;
     uchar *bp = buffer;

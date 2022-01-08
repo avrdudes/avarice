@@ -234,16 +234,21 @@ static void knownParts() {
 
 static struct option long_opts[] = {
     /* name,                 has_arg, flag,   val */
-    {"mkI", 0, 0, '1'},           {"mkII", 0, 0, '2'},          {"jtag3", 0, 0, '3'},
-    {"edbg", 0, 0, '4'},          {"jtag-bitrate", 1, 0, 'B'},  {"capture", 0, 0, 'C'},
-    {"daisy-chain", 1, 0, 'c'},   {"detach", 0, 0, 'D'},        {"debug", 0, 0, 'd'},
-    {"erase", 0, 0, 'e'},         {"event", 1, 0, 'E'},         {"file", 1, 0, 'f'},
-    {"dragon", 0, 0, 'g'},        {"help", 0, 0, 'h'},          {"ignore-intr", 0, 0, 'I'},
-    {"jtag", 1, 0, 'j'},          {"known-devices", 0, 0, 'k'}, {"write-lockbits", 1, 0, 'L'},
-    {"read-lockbits", 0, 0, 'l'}, {"part", 1, 0, 'P'},          {"program", 0, 0, 'p'},
-    {"reset-srst", 0, 0, 'R'},    {"read-fuses", 0, 0, 'r'},    {"version", 0, 0, 'V'},
-    {"verify", 0, 0, 'v'},        {"debugwire", 0, 0, 'w'},     {"write-fuses", 1, 0, 'W'},
-    {"xmega", 0, 0, 'x'},         {"pdi", 0, 0, 'X'},           {0, 0, 0, 0}};
+    {"mkI", 0, nullptr, '1'},           {"mkII", 0, nullptr, '2'},
+    {"jtag3", 0, nullptr, '3'},         {"edbg", 0, nullptr, '4'},
+    {"jtag-bitrate", 1, nullptr, 'B'},  {"capture", 0, nullptr, 'C'},
+    {"daisy-chain", 1, nullptr, 'c'},   {"detach", 0, nullptr, 'D'},
+    {"debug", 0, nullptr, 'd'},         {"erase", 0, nullptr, 'e'},
+    {"event", 1, nullptr, 'E'},         {"file", 1, nullptr, 'f'},
+    {"dragon", 0, nullptr, 'g'},        {"help", 0, nullptr, 'h'},
+    {"ignore-intr", 0, nullptr, 'I'},   {"jtag", 1, nullptr, 'j'},
+    {"known-devices", 0, nullptr, 'k'}, {"write-lockbits", 1, nullptr, 'L'},
+    {"read-lockbits", 0, nullptr, 'l'}, {"part", 1, nullptr, 'P'},
+    {"program", 0, nullptr, 'p'},       {"reset-srst", 0, nullptr, 'R'},
+    {"read-fuses", 0, nullptr, 'r'},    {"version", 0, nullptr, 'V'},
+    {"verify", 0, nullptr, 'v'},        {"debugwire", 0, nullptr, 'w'},
+    {"write-fuses", 1, nullptr, 'W'},   {"xmega", 0, nullptr, 'x'},
+    {"pdi", 0, nullptr, 'X'},           {nullptr, 0, nullptr, 0}};
 
 jtag *theJtagICE;
 

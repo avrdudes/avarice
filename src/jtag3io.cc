@@ -100,7 +100,7 @@ jtag3::~jtag3() {
  * the frame could be written correctly.
  */
 void jtag3::sendFrame(const uchar *command, int commandSize) {
-    unsigned char *buf = new unsigned char[commandSize + 4];
+    auto *buf = new unsigned char[commandSize + 4];
 
     buf[0] = TOKEN;
     buf[1] = 0;
@@ -131,13 +131,10 @@ void jtag3::sendFrame(const uchar *command, int commandSize) {
  * Caller must eventually free the buffer.
  */
 int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
-    uchar tempbuf[MAX_MESSAGE_SIZE_JTAGICE3];
-    int rv, l;
-
     msg = nullptr;
 
     int amnt;
-    rv = timeout_read((void *)&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
+    int rv = timeout_read((void *)&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
     if (rv == 0) {
         /* timeout */
         debugOut("read() timed out\n");
@@ -153,6 +150,7 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         return 0;
     }
 
+    uchar tempbuf[MAX_MESSAGE_SIZE_JTAGICE3];
     rv = timeout_read(tempbuf, amnt, JTAG3_PIPE_TIMEOUT);
     if (rv > 0) {
         bool istoken = tempbuf[0] == TOKEN_EVT3;
@@ -160,7 +158,7 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             tempbuf[0] = TOKEN;
 
         debugOut("read: ");
-        for (l = 0; l < rv; l++) {
+        for (int l = 0; l < rv; l++) {
             debugOut(" %02x", tempbuf[l]);
         }
         debugOut("\n");

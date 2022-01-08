@@ -149,7 +149,7 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
     return count;
 }
 
-int jtag::safewrite(const void *b, int count) {
+int jtag::safewrite(const void *b, int count) const {
     char *buffer = (char *)b;
     int actual = 0;
     int flags = fcntl(jtagBox, F_GETFL);
@@ -175,7 +175,7 @@ int jtag::safewrite(const void *b, int count) {
 
 /** Change bitrate of PC's serial port as specified by BIT_RATE_xxx in
     'newBitRate' **/
-void jtag::changeLocalBitRate(int newBitRate) {
+void jtag::changeLocalBitRate(int newBitRate) const {
     if (is_usb)
         return;
 
@@ -338,11 +338,6 @@ void jtag::jtag_flash_image(BFDimage *image, BFDmemoryType memtype, bool program
 }
 
 void jtag::jtagWriteFuses(char *fuses) {
-    int temp[3];
-    uchar fuseBits[3];
-    uchar *readfuseBits;
-    unsigned int c;
-
     if (deviceDef->fusemap > 0x07) {
         fprintf(stderr, "Fuse byte writing not supported on this device.\n");
         return;
@@ -354,31 +349,26 @@ void jtag::jtagWriteFuses(char *fuses) {
     }
 
     // Convert fuses to hex values (this avoids endianess issues)
-    c = sscanf(fuses, "%02x%02x%02x", temp + 2, temp + 1, temp);
+    int temp[3];
+    const auto c = sscanf(fuses, "%02x%02x%02x", temp + 2, temp + 1, temp);
     if (c != 3) {
         fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
         return;
     }
 
-    fuseBits[0] = (uchar)temp[0];
-    fuseBits[1] = (uchar)temp[1];
-    fuseBits[2] = (uchar)temp[2];
-
     statusOut("\nWriting Fuse Bytes:\n");
+    uchar fuseBits[3] = {(uchar)temp[0], (uchar)temp[1], (uchar)temp[2]};
     jtagDisplayFuses(fuseBits);
-
     try {
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits);
     } catch (jtag_exception &e) {
         fprintf(stderr, "Error writing fuses: %s\n", e.what());
     }
 
-    readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
-
+    const uchar *readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
     if (memcmp(fuseBits, readfuseBits, 3) != 0) {
         fprintf(stderr, "Error verifying written fuses");
     }
-
     delete[] readfuseBits;
 }
 
@@ -445,7 +435,7 @@ void jtag::jtagActivateOcdenFuse() {
     delete[] fuseBits;
 }
 
-void jtag::jtagDisplayFuses(uchar *fuseBits) {
+void jtag::jtagDisplayFuses(const uchar *fuseBits) const {
     if (deviceDef->fusemap <= 0x07) {
         // tinyAVR/megaAVR: low/high/[extended] fuse
         const char *fusenames[3] = {"       Low", "      High", "  Extended"};

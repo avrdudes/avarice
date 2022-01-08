@@ -62,7 +62,7 @@ enum {
 
 class jtag1 : public jtag {
     /** Decode 3-byte big-endian address **/
-    static unsigned long decodeAddress(uchar *buf) { return buf[0] << 16 | buf[1] << 8 | buf[2]; };
+    static unsigned long decodeAddress(const uchar *buf) { return buf[0] << 16 | buf[1] << 8 | buf[2]; };
 
     /** Encode 3-byte big-endian address **/
     static void encodeAddress(uchar *buffer, unsigned long x) {

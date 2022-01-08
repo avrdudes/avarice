@@ -110,7 +110,6 @@ bool jtag1::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned
 void jtag1::updateBreakpoints() {
     unsigned char bpMode = 0x00;
     int bpC = 0, bpD = 0;
-    breakpoint *bp;
 
     debugOut("updateBreakpoints\n");
 
@@ -136,7 +135,7 @@ void jtag1::updateBreakpoints() {
     // has tons of parameters.
 
     // Find next breakpoint
-    bp = nullptr;
+    breakpoint *bp = nullptr;
     if (bpC < numBreakpointsCode)
         bp = &bpCode[bpC++];
     else if (bpD < numBreakpointsData)

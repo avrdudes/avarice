@@ -105,7 +105,7 @@ jtag2::~jtag2() {
  * the frame could be written correctly.
  */
 void jtag2::sendFrame(const uchar *command, int commandSize) {
-    unsigned char *buf = new unsigned char[commandSize + 10];
+    auto *buf = new unsigned char[commandSize + 10];
 
     buf[0] = MESSAGE_START;
     u16_to_b2(buf + 1, command_sequence);
@@ -750,14 +750,9 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
 }
 
 void jtag2::configDaisyChain() {
-    unsigned char buf[4];
-
-    if ((dchain.units_before > 0) || (dchain.units_after > 0) || (dchain.bits_before > 0) ||
-        (dchain.bits_after > 0)) {
-        buf[0] = dchain.units_before;
-        buf[1] = dchain.units_after;
-        buf[2] = dchain.bits_before;
-        buf[3] = dchain.bits_after;
-        setJtagParameter(PAR_DAISY_CHAIN_INFO, buf, 4);
+    if (dchain.units_before || dchain.units_after || dchain.bits_before || dchain.bits_after) {
+        const unsigned char buf[4] = {dchain.units_before, dchain.units_after, dchain.bits_before,
+                                      dchain.bits_after};
+        setJtagParameter(PAR_DAISY_CHAIN_INFO, buf, sizeof(buf));
     }
 }

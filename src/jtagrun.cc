@@ -145,11 +145,10 @@ bool jtag1::jtagContinue() {
         // systems don't seem to honor the O_NONBLOCK flag on file
         // descriptors.
         while (timeout_read(&response, 1, 1) == 1) {
-            uchar buf[2];
-
             debugOut("JTAG box sent %c", response);
             switch (response) {
             case JTAG_R_BREAK: {
+                uchar buf[2];
                 const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
                 if (count < 2)
                     throw jtag_exception();
@@ -159,6 +158,7 @@ bool jtag1::jtagContinue() {
             }
             case JTAG_R_INFO:
             case JTAG_R_SLEEP: {
+                uchar buf[2];
                 // we could do something here, esp. for info
                 const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
                 if (count < 2)

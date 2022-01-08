@@ -103,12 +103,8 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
             programmingEnabled ? ADDR_PROG_SPACE_PROG_ENABLED : ADDR_PROG_SPACE_PROG_DISABLED;
 
         // Program space is 16 bits wide, with word reads
-        int numLocations;
-        if (addr & 1)
-            numLocations = (numBytes + 2) / 2;
-        else
-            numLocations = (numBytes + 1) / 2;
-        if (numLocations > 256)
+        const auto numLocations = (addr & 1)?(numBytes + 2) / 2:(numBytes + 1) / 2;
+        if (numLocations > (UINT8_MAX+1))
             throw jtag_exception();
 
         command[1] = whichSpace;
@@ -167,7 +163,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     }
 
     // This is the maximum write size
-    if (numLocations > 256)
+    if (numLocations > (UINT8_MAX+1))
         throw jtag_exception("Attempt to write more than 256 bytes");
 
     // Writing is a two part process
@@ -202,9 +198,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // change in the future.
     auto txBuffer = std::make_unique<uchar[]>(numBytes + 3); // allow for header and trailer
     txBuffer[0] = 'h';
-
     memcpy(&txBuffer[1], buffer, numBytes);
-
     txBuffer[numBytes + 1] = ' ';
     txBuffer[numBytes + 2] = ' ';
 

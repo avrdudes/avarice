@@ -1087,7 +1087,7 @@ static void *hid_thread(void *data) {
         }
         if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
             // fd is closed
-            pthread_exit((void *)0);
+            pthread_exit((void *)nullptr);
 
         if (fds[0].revents != 0) {
             // something is in the pipe there, presumably a command

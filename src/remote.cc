@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <string_view>
+#include <string>
 
 #include "avarice.h"
 #include "jtag.h"
@@ -85,7 +86,7 @@ static void putDebugChar(char c) {
     // This loop busy waits when it cannot write to gdb.
     // But that shouldn't happen
     for (;;) {
-        const int ret = write(gdbFileDescriptor, &c, 1);
+        const auto ret = write(gdbFileDescriptor, &c, 1);
 
         if (ret == 1)
             return;
@@ -115,7 +116,7 @@ static void waitForGdbInput() {
     exit cleanly if EOF detected on gdbFileDescriptor. **/
 int getDebugChar() {
     uchar c = 0;
-    int result;
+    ssize_t result;
 
     do {
         waitForGdbInput();
@@ -138,7 +139,7 @@ int getDebugChar() {
 int checkForDebugChar() {
     uchar c = 0;
 
-    const int result = read(gdbFileDescriptor, &c, 1);
+    const auto result = read(gdbFileDescriptor, &c, 1);
 
     if (result < 0 && errno == EAGAIN)
         return -1;
@@ -161,7 +162,6 @@ static const unsigned char hexchars[] = "0123456789abcdef";
 static char *byteToHex(uchar x, char *buf) {
     *buf++ = hexchars[x >> 4];
     *buf++ = hexchars[x & 0xf];
-
     return buf;
 }
 
@@ -215,18 +215,15 @@ static char *mem2hex(uchar *mem, char *buf, int count) {
     Return a pointer to the character AFTER the last byte written.
 **/
 static uchar *hex2mem(char *buf, uchar *mem, int count) {
-    int i;
-    unsigned char ch;
-
-    for (i = 0; i < count; i++) {
-        ch = hex(*buf++) << 4;
-        ch = ch + hex(*buf++);
+    for (int i = 0; i < count; i++) {
+        unsigned char ch = hex(*buf++) << 4;
+        ch += hex(*buf++);
         *mem++ = ch;
     }
     return mem;
 }
 
-static void putpacket(char *buffer);
+static void putpacket(const char *buffer);
 
 void vgdbOut(const char *fmt, va_list args) {
     // We protect against reentry because putpacket could try and report
@@ -484,7 +481,7 @@ static char *getpacket(int &len) {
 }
 
 /** Send packet 'buffer' to gdb. Adds $, # and checksum wrappers. **/
-static void putpacket(char *buffer) {
+static void putpacket(const char *buffer) {
     char ch;
 
     //  $<packet info>#<checksum>.
@@ -570,38 +567,32 @@ static void repStatus(bool breaktime) {
     }
 }
 
-static char *makeSafeString(const char *s, int inLength) {
-    int l = 4 * inLength + 1;
-    char *r = new char[l];
-    char c;
-
-    int i = 0;
+static std::string makeSafeString(const char *s, int inLength) {
+    std::string r;
     int j = 0;
     while (j++ < inLength) {
-        c = *s++;
+        const char c = *s++;
         if (isprint(c)) {
-            r[i++] = c;
+            r += c;
         } else {
-            i += sprintf(r + i, "\\x%02x", (unsigned)c & 0xff);
+            char tmp_hex_buf[5]; // "\xFF"
+            sprintf(tmp_hex_buf, "\\x%02x", (unsigned)c & 0xff);
+            r += tmp_hex_buf;
         }
     }
-    r[i] = '\0';
     return r;
 }
 
 void talkToGdb() {
     bool dontSendReply = false;
     static char last_cmd = 0;
-    static unsigned char *flashbuf;
-    static int maxaddr;
 
     int plen;
     char *ptr = getpacket(plen);
 
     if (debugMode) {
-        char *s = makeSafeString(ptr, plen);
-        debugOut("GDB: <%s>\n", s);
-        delete[] s;
+        const auto s = makeSafeString(ptr, plen);
+        debugOut("GDB: <%s>\n", s.c_str());
     }
 
     // default empty response
@@ -609,9 +600,6 @@ void talkToGdb() {
 
     const char cmd = *ptr++;
     switch (cmd) {
-    default: // Unknown code.  Return an empty reply message.
-        break;
-
     case 'k': // kill the program
         dontSendReply = true;
         break;
@@ -667,7 +655,7 @@ void talkToGdb() {
                 jtagBuffer[0] = last_orphan;
 
             if ((addr < DATA_SPACE_ADDR_OFFSET) && (length & 1)) {
-                // An odd length means we will have an orphan this round but
+                // An odd length means we will have%02x an orphan this round but
                 // only if we are writing to PROG space.
                 last_orphan_pending = true;
                 last_orphan = jtagBuffer[length];
@@ -708,7 +696,6 @@ void talkToGdb() {
     case 'g': // return the value of the CPU registers
     {
         uchar regBuffer[40];
-
         memset(regBuffer, 0, sizeof(regBuffer));
 
         // Read the registers directly from memory
@@ -851,7 +838,7 @@ void talkToGdb() {
                                     }
 
                                     delete[] jtagBuffer;
-                                    jtagBuffer = 0;
+                                    jtagBuffer = nullptr;
                                 }
                             }
                         }
@@ -959,7 +946,6 @@ void talkToGdb() {
            current address. */
 
         int sig;
-
         if (hexToInt(&ptr, &sig)) {
             if (sig == SIGHUP) {
                 try {
@@ -997,12 +983,14 @@ void talkToGdb() {
         ok();
         break;
 
-    case 'v':
+    case 'v': {
+        static unsigned char *flashbuf;
+        static int maxaddr;
         if (strncmp(ptr, "FlashErase:", 11) == 0) {
             ptr += 11;
             int offset, length;
             hexToInt(&ptr, &offset);
-            ptr++;
+            ++ptr;
             hexToInt(&ptr, &length);
             statusOut("erasing %d bytes @ 0x%0x\n", length, offset);
             theJtagICE->enableProgramming();
@@ -1019,8 +1007,8 @@ void talkToGdb() {
             ptr += 11;
             int offset;
             hexToInt(&ptr, &offset);
-            ptr++; // past ":"
-            int amount = plen - 1 - (ptr - optr);
+            ++ptr; // past ":"
+            const int amount = plen - 1 - (ptr - optr);
             statusOut("buffering data, %d bytes @ 0x%x\n", amount, offset);
             if (offset + amount > maxaddr)
                 maxaddr = offset + amount;
@@ -1028,7 +1016,7 @@ void talkToGdb() {
             ok();
         } else if (strncmp(ptr, "FlashDone", 9) == 0) {
             statusOut("committing to flash\n");
-            int pagesize = theJtagICE->deviceDef->flash_page_size;
+            const int pagesize = theJtagICE->deviceDef->flash_page_size;
             for (int offset = 0; offset < maxaddr; offset += pagesize) {
                 theJtagICE->jtagWrite(offset, pagesize, flashbuf + offset);
             }
@@ -1037,6 +1025,7 @@ void talkToGdb() {
             ok();
         }
         break;
+    }
 
     case 'Z':
     case 'z': {
@@ -1047,8 +1036,8 @@ void talkToGdb() {
         // Add a Breakpoint. note: length specifier is ignored for now.
         if (hexToInt(&ptr, &bp_type) && (*ptr++ == ',') && hexToInt(&ptr, &addr) &&
             (*ptr++ == ',') && hexToInt(&ptr, &length)) {
-            BreakpointType mode = BreakpointType::NONE;
 
+            BreakpointType mode = BreakpointType::NONE;
             switch (bp_type) {
             case 0:
             case 1:
@@ -1068,24 +1057,21 @@ void talkToGdb() {
                 throw jtag_exception();
             }
 
-            if (cmd == 'Z') { // Adding
-                try {
+            try {
+                if (cmd == 'Z') { // Adding
                     theJtagICE->addBreakpoint(addr, mode, length);
-                } catch (jtag_exception &) {
-                    break;
-                }
-            } else {
-                try {
+                } else {
                     theJtagICE->deleteBreakpoint(addr, mode, length);
-                } catch (jtag_exception &) {
-                    break;
                 }
+            } catch (jtag_exception &) {
+                break;
             }
             ok();
         }
         break;
     }
-
+    default: // Unknown code.  Return an empty reply message.
+        break;
     } // switch
 
     last_cmd = cmd;

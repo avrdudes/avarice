@@ -37,13 +37,11 @@ bool jtag2::codeBreakpointAt(unsigned int address) {
 
         i++;
     }
-
     return false;
 }
 
 void jtag2::deleteAllBreakpoints() {
     int i = 0;
-
     while (!bp[i].last) {
         if (bp[i].enabled && bp[i].icestatus)
             bp[i].toremove = true;
