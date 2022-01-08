@@ -244,8 +244,7 @@ bool jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *n
     }
     debugOut("\n");
 
-    unsigned char c = msg[1];
-
+    const auto c = msg[1];
     if (c >= RSP3_OK && c < RSP3_FAILED)
         return true;
 

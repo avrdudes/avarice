@@ -59,6 +59,19 @@ enum {
 };
 
 class jtag1 : public jtag {
+  public:
+    // Responses from JTAG ICE
+    enum class Resp : uchar {
+        OK = 'A',
+        BREAK = 'B',
+        INFO = 'G',
+        FAILED = 'F',
+        SYNC_ERROR = 'E',
+        SLEEP = 'H',
+        POWER = 'I',
+    };
+
+  private:
     /** Decode 3-byte big-endian address **/
     static unsigned long decodeAddress(const uchar *buf) { return buf[0] << 16 | buf[1] << 8 | buf[2]; };
 

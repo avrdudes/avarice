@@ -92,7 +92,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
         // protocol document).
 
         auto response = doJtagCommand(command, sizeof(command), numBytes + 2);
-        if (response[numBytes + 1] == JTAG_R_OK)
+        if (Resp{response[numBytes + 1]} == Resp::OK)
             return response.release(); // TODO: be compatible with other jtagRead()
 
         throw jtag_exception();
@@ -111,7 +111,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
         encodeAddress(&command[3], addr / 2);
 
         auto response = doJtagCommand(command, sizeof(command), numLocations * 2 + 2);
-        if (response[numLocations * 2 + 1] == JTAG_R_OK) {
+        if (Resp{response[numLocations * 2 + 1]} == Resp::OK) {
             // Programming mode and regular mode are byte-swapped...
             if (!programmingEnabled)
                 swapBytes(response.get(), numLocations * 2);

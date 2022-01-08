@@ -27,7 +27,6 @@
 
 #include "crc16.h"
 #include "jtag2.h"
-#include "jtag2_defs.h"
 
 jtag_io_exception::jtag_io_exception(unsigned int code) {
     static char buffer[50];

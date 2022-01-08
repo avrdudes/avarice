@@ -28,7 +28,7 @@ void jtag1::setJtagParameter(uchar item, uchar newValue) {
     const uchar command[] = {'B', item, newValue, JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), 1);
-    if (response[0] != JTAG_R_OK)
+    if (Resp{response[0]} != Resp::OK)
         throw jtag_exception("Unknown parameter");
 }
 
@@ -36,7 +36,7 @@ uchar jtag1::getJtagParameter(uchar item) {
     const uchar command[] = {'q', item, JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), 2);
-    if (response[1] != JTAG_R_OK)
+    if (Resp{response[1]} != Resp::OK)
         throw jtag_exception("Unknown parameter");
 
     return response[0];

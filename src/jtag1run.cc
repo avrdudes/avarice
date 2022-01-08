@@ -34,7 +34,7 @@ unsigned long jtag1::getProgramCounter() {
 
     auto response = doJtagCommand(command, sizeof(command), 4);
 
-    if (response[3] != JTAG_R_OK)
+    if (Resp{response[3]} != Resp::OK)
         result = PC_INVALID;
     else {
         result = decodeAddress(response.get());
@@ -56,7 +56,7 @@ void jtag1::setProgramCounter(unsigned long pc) {
     encodeAddress(&command[1], pc / 2 + 1);
 
     auto response = doJtagCommand(command, sizeof(command), 1);
-    if (response[0] != JTAG_R_OK)
+    if (Resp{response[0]} != Resp::OK)
         throw jtag_exception();
 }
 
@@ -138,7 +138,7 @@ bool jtag1::jtagContinue() {
         // power "event" -- whatever that is (ignored), or a byte of
         // info sent by the program (currently ignored, could be used
         // for something...)
-        uchar response;
+        Resp response;
 
         // This read shouldn't need to be a timeout_read(), but some cygwin
         // systems don't seem to honor the O_NONBLOCK flag on file
@@ -146,7 +146,7 @@ bool jtag1::jtagContinue() {
         while (timeout_read(&response, 1, 1) == 1) {
             debugOut("JTAG box sent %c", response);
             switch (response) {
-            case JTAG_R_BREAK: {
+            case Resp::BREAK: {
                 uchar buf[2];
                 const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
                 if (count < 2)
@@ -155,8 +155,8 @@ bool jtag1::jtagContinue() {
                 debugOut(": Break Status Register = 0x%02x%02x\n", buf[0], buf[1]);
                 break;
             }
-            case JTAG_R_INFO:
-            case JTAG_R_SLEEP: {
+            case Resp::INFO:
+            case Resp::SLEEP: {
                 uchar buf[2];
                 // we could do something here, esp. for info
                 const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
@@ -165,7 +165,7 @@ bool jtag1::jtagContinue() {
                 debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
                 break;
             }
-            case JTAG_R_POWER:
+            case Resp::POWER:
                 // apparently no args?
                 debugOut("\n");
                 break;

@@ -24,17 +24,17 @@
 #include "jtag3.h"
 
 void jtag3::enableProgramming() {
-    if (proto != Debugproto::DW) {
-        programmingEnabled = true;
-        doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
-    }
+    if (proto == Debugproto::DW)  return;
+
+    programmingEnabled = true;
+    doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
 }
 
 void jtag3::disableProgramming() {
-    if (proto != Debugproto::DW) {
-        programmingEnabled = false;
-        doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
-    }
+    if (proto == Debugproto::DW) return;
+
+    programmingEnabled = false;
+    doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
 }
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
@@ -44,26 +44,19 @@ void jtag3::eraseProgramMemory() {
         // debugWIRE auto-erases when programming
         return;
 
+    const uchar buf[8] = {SCOPE_AVR, CMD3_ERASE_MEMORY, 0, XMEGA_ERASE_CHIP,
+                          0, 0, 0, 0}; /* page address */
+
     uchar *resp;
     int respsize;
-    uchar buf[8];
 
-    buf[0] = SCOPE_AVR;
-    buf[1] = CMD3_ERASE_MEMORY;
-    buf[2] = 0;
-    buf[3] = XMEGA_ERASE_CHIP;
-    buf[4] = buf[5] = buf[6] = buf[7] = 0; /* page address */
-
-    doJtagCommand(buf, 8, "chip erase", resp, respsize);
+    doJtagCommand(buf, sizeof(buf), "chip erase", resp, respsize);
 
     delete[] resp;
 }
 
 void jtag3::eraseProgramPage(unsigned long address) {
-    uchar *resp;
-    int respsize;
     uchar buf[8];
-
     buf[0] = SCOPE_AVR;
     buf[1] = CMD3_ERASE_MEMORY;
     buf[2] = 0;
@@ -75,7 +68,10 @@ void jtag3::eraseProgramPage(unsigned long address) {
     }
     u32_to_b4(buf + 4, address);
 
-    doJtagCommand(buf, 8, "page erase", resp, respsize);
+    uchar *resp;
+    int respsize;
+
+    doJtagCommand(buf, sizeof(buf), "page erase", resp, respsize);
 
     delete[] resp;
 }

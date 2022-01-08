@@ -24,7 +24,6 @@
 
 #include <cstdio>
 #include <cstring>
-#include <termios.h>
 #include <unistd.h>
 
 #include "jtag1.h"
@@ -42,7 +41,7 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
     if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
         throw jtag_exception("JTAG communication failed");
 
-    debugOut("\ncommand[%c, %d]: ", command[0], tries);
+    debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
 
     for (int i = 0; i < commandSize; i++)
         debugOut("%.2X ", command[i]);
@@ -64,7 +63,7 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
     // We should get JTAG_R_OK, but we might get JTAG_R_INFO too (we just
     // ignore it)
     for (;;) {
-        uchar ok;
+        Resp ok;
         count = timeout_read(&ok, 1, JTAG_RESPONSE_TIMEOUT);
         if (count < 0)
             throw jtag_exception();
@@ -76,9 +75,9 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
         }
 
         switch (ok) {
-        case JTAG_R_OK:
+        case Resp::OK:
             return send_ok;
-        case JTAG_R_INFO:
+        case Resp::INFO: {
             unsigned char infobuf[2];
 
             /* An info ("IDR dirty") response. Ignore it. */
@@ -88,11 +87,11 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
                 debugOut("%.2X ", infobuf[i]);
             }
             debugOut("\n");
-            if (count != 2 || infobuf[1] != JTAG_R_OK)
+            if (count != 2 || Resp{infobuf[1]} != Resp::OK)
                 return send_failed;
             else
                 return (SendResult)(mcu_data + infobuf[0]);
-            break;
+        }
         default:
             debugOut("Out of sync, reponse was `%02x'\n", ok);
             return send_failed;
@@ -173,7 +172,7 @@ bool jtag1::doSimpleJtagCommand(unsigned char cmd, int responseSize) {
     const uchar command[] = {cmd, JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), responseSize);
-    return responseSize == 0 || (response[responseSize - 1] == JTAG_R_OK);
+    return responseSize == 0 || (Resp{response[responseSize - 1]} == Resp::OK);
 }
 
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
@@ -208,7 +207,7 @@ void jtag1::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const auto *command = reinterpret_cast<const uchar *>(&dev.dev_desc1);
 
     auto response = doJtagCommand(command, sizeof(dev.dev_desc1), 1);
-    if (response[0] != JTAG_R_OK)
+    if (Resp{response[0]} != Resp::OK)
         throw jtag_exception("JTAG ICE: Failed to set device description");
 }
 

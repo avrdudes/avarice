@@ -59,7 +59,7 @@ void jtag1::eraseProgramPage(unsigned long address) {
                              JTAG_EOM};
 
     auto response = doJtagCommand(command, sizeof(command), 1);
-    if (response[0] != JTAG_R_OK) {
+    if (Resp{response[0]} != Resp::OK) {
         fprintf(stderr, "Page erase failed\n");
         throw jtag_exception();
     }

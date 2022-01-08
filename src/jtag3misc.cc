@@ -25,7 +25,7 @@
 
 #include "jtag3.h"
 
-void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, uchar *newValue, int valSize) {
+void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar *newValue, int valSize) {
     uchar buf[6 + valSize]; // FIXME: variable length arrays not supported in C++
     buf[0] = scope;
     buf[1] = CMD3_SET_PARAMETER;
