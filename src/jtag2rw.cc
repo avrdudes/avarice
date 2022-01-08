@@ -25,7 +25,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include "avarice.h"
 #include "jtag2.h"
 
 /** Return the memory space code for the memory space indicated by the

@@ -23,7 +23,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include "avarice.h"
 #include "jtag2.h"
 
 void jtag2::setJtagParameter(uchar item, const uchar *newValue, int valSize) {

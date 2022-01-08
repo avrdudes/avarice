@@ -25,7 +25,6 @@
 #include <cassert>
 #include <cstring>
 
-#include "avarice.h"
 #include "jtag1.h"
 
 /** Return the memory space code for the memory space indicated by the

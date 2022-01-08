@@ -27,7 +27,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "avarice.h"
 #include "jtag1.h"
 
 /** Send a command to the jtag, and check result.
@@ -288,61 +287,15 @@ void jtag1::deviceAutoConfig() {
              (device_id & 0x00000FFE) >> 1);
 
     device_id = (device_id & 0x0FFFF000) >> 12;
-    statusOut("Reported JTAG device ID: 0x%0X\n", device_id);
 
-    const jtag_device_def_type *pDevice = deviceDefinitions;
-    if (device_name == nullptr) {
-        while (pDevice->name) {
-            if (pDevice->device_id == device_id)
-                break;
-
-            pDevice++;
-        }
-        if ((pDevice->device_flags & DEVFL_MKII_ONLY) != 0) {
-            fprintf(stderr, "Device is not supported by JTAG ICE mkI");
-            throw jtag_exception();
-        }
-        if (pDevice->name == nullptr) {
-            unknownDevice(device_id);
-            throw jtag_exception();
-        }
-    } else {
-        debugOut("Looking for device: %s\n", device_name);
-
-        while (pDevice->name) {
-            if (strcasecmp(pDevice->name, device_name) == 0)
-                break;
-
-            pDevice++;
-        }
-        if ((pDevice->device_flags & DEVFL_MKII_ONLY) != 0) {
-            fprintf(stderr, "Device is not supported by JTAG ICE mkI");
-            throw jtag_exception();
-        }
-        if (pDevice->name == nullptr) {
-            unknownDevice(device_id, false);
-            throw jtag_exception();
-        }
+    const auto& pDevice = FindDeviceDefinition(device_id, device_name);
+    if ((pDevice.device_flags & DEVFL_MKII_ONLY) != 0) {
+        fprintf(stderr, "Device is not supported by JTAG ICE mkI");
+        throw jtag_exception();
     }
-
-    if (device_name) {
-        if (device_id != pDevice->device_id) {
-            statusOut("Configured for device ID: 0x%0X %s -- FORCED with %s\n", pDevice->device_id,
-                      pDevice->name, device_name);
-        } else {
-            statusOut("Configured for device ID: 0x%0X %s -- Matched with "
-                      "%s\n",
-                      pDevice->device_id, pDevice->name, device_name);
-        }
-    } else {
-        statusOut("Configured for device ID: 0x%0X %s\n", pDevice->device_id, pDevice->name);
-    }
-
-    device_name = (char *)pDevice->name;
-
-    deviceDef = pDevice;
-
-    setDeviceDescriptor(*pDevice);
+    device_name = pDevice.name;
+    deviceDef = &pDevice;
+    setDeviceDescriptor(pDevice);
 }
 
 void jtag1::initJtagBox() {

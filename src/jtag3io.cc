@@ -23,7 +23,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include "avarice.h"
 #include "jtag3.h"
 
 jtag3_io_exception::jtag3_io_exception(unsigned int code) {
@@ -470,7 +469,6 @@ void jtag3::startJtagLink() {
 */
 void jtag3::deviceAutoConfig() {
     uchar *resp;
-    jtag_device_def_type *pDevice = deviceDefinitions;
 
     // Auto config
     debugOut("Automatic device detection: ");
@@ -504,72 +502,20 @@ void jtag3::deviceAutoConfig() {
         delete[] resp;
     }
 
-    statusOut("Reported device ID: 0x%0X\n", device_id);
-
-    if (device_name == nullptr) {
-        while (pDevice->name) {
-            if (pDevice->device_id == device_id)
-                break;
-
-            pDevice++;
-        }
-        if (pDevice->name == nullptr) {
-            unknownDevice(device_id);
-            throw jtag_exception();
-        }
-    } else {
-        debugOut("Looking for device: %s\n", device_name);
-
-        while (pDevice->name) {
-            if (strcasecmp(pDevice->name, device_name) == 0)
-                break;
-
-            pDevice++;
-        }
-        if (pDevice->name == nullptr) {
-            unknownDevice(device_id, false);
-            throw jtag_exception();
-        }
-    }
-
-    if (device_name) {
-        if (device_id != pDevice->device_id) {
-            statusOut("Configured for device ID: 0x%0X %s -- FORCED with %s\n", pDevice->device_id,
-                      pDevice->name, device_name);
-        } else {
-            statusOut("Configured for device ID: 0x%0X %s -- Matched with "
-                      "%s\n",
-                      pDevice->device_id, pDevice->name, device_name);
-        }
-    } else {
-        statusOut("Configured for device ID: 0x%0X %s\n", pDevice->device_id, pDevice->name);
-    }
-
-    device_name = (char *)pDevice->name;
-
-    deviceDef = pDevice;
-
-    setDeviceDescriptor(*pDevice);
+    const auto &pDevice = FindDeviceDefinition(device_id, device_name);
+    device_name = pDevice.name;
+    deviceDef = &pDevice;
+    setDeviceDescriptor(pDevice);
 }
 
 void jtag3::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
-    if (device_name != nullptr) {
-        jtag_device_def_type *pDevice = deviceDefinitions;
-
-        while (pDevice->name) {
-            if (strcasecmp(pDevice->name, device_name) == 0)
-                break;
-
-            pDevice++;
-        }
-
-        if (pDevice->name != nullptr) {
-            // If a device name has been specified on the command-line,
-            // this overrides the is_xmega setting.
-            is_xmega = pDevice->is_xmega;
-        }
+    if (device_name) {
+        const auto &pDevice = FindDeviceDefinition(0, device_name);
+        // If a device name has been specified on the command-line,
+        // this overrides the is_xmega setting.
+        is_xmega = pDevice.is_xmega;
     }
 
     try {

@@ -29,6 +29,7 @@
 #include <termios.h>
 
 #include <exception>
+#include <string_view>
 
 #include "avarice.h"
 #include "ioreg.h"
@@ -227,7 +228,10 @@ struct jtag_device_def_type {
                                       // JTAGICE mkII and AVR Dragon
 };
 
-extern jtag_device_def_type deviceDefinitions[];
+// Find device in our database giving priority to 'id', if given
+const jtag_device_def_type &FindDeviceDefinition(unsigned int id, const char* name);
+
+void DumpAllDeviceDefinitions();
 
 // various enums
 enum {

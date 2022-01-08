@@ -31,7 +31,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "avarice.h"
 #include "jtag.h"
 
 static int BFDmemorySpaceOffset(BFDmemoryType memtype) {

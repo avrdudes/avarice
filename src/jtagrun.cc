@@ -25,7 +25,6 @@
 #include <cstdio>
 #include <sys/time.h>
 
-#include "avarice.h"
 #include "jtag1.h"
 #include "remote.h"
 

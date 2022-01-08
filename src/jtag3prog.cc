@@ -21,7 +21,6 @@
  * $Id$
  */
 
-#include "avarice.h"
 #include "jtag3.h"
 
 void jtag3::enableProgramming() {

@@ -195,40 +195,9 @@ static void usage(const char *progname) {
     exit(0);
 }
 
-static int comparenames(const void *a, const void *b) {
-    auto *ja = static_cast<const jtag_device_def_type *>(a);
-    auto *jb = static_cast<const jtag_device_def_type *>(b);
-
-    return strcmp(ja->name, jb->name);
-}
-
 static void knownParts() {
     fprintf(stderr, "List of known AVR devices:\n\n");
-
-    const jtag_device_def_type *dev = deviceDefinitions;
-    // Count the device descriptor records.
-    size_t n = 0;
-    while (dev->name != nullptr)
-        n++, dev++;
-    // For historical reasons, device definitions are not
-    // sorted.  Sort them here.
-    qsort(deviceDefinitions, n, sizeof(jtag_device_def_type), comparenames);
-    fprintf(stderr, "%-15s  %10s  %8s  %8s\n", "Device Name", "Device ID", "Flash", "EEPROM");
-    fprintf(stderr, "%-15s  %10s  %8s  %8s\n", "---------------", "---------", "-------",
-            "-------");
-    dev = deviceDefinitions;
-    while (n-- != 0) {
-        unsigned eesize = dev->eeprom_page_size * dev->eeprom_page_count;
-
-        if (eesize != 0 && eesize < 1024)
-            fprintf(stderr, "%-15s      0x%04X  %4d KiB  %4.1f KiB\n", dev->name, dev->device_id,
-                    dev->flash_page_size * dev->flash_page_count / 1024, eesize / 1024.0);
-        else
-            fprintf(stderr, "%-15s      0x%04X  %4d KiB  %4d KiB\n", dev->name, dev->device_id,
-                    dev->flash_page_size * dev->flash_page_count / 1024, eesize / 1024);
-        dev++;
-    }
-
+    DumpAllDeviceDefinitions();
     exit(1);
 }
 

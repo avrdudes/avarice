@@ -25,7 +25,6 @@
 
 #include <cstdio>
 
-#include "avarice.h"
 #include "jtag3.h"
 
 bool jtag3::codeBreakpointAt(unsigned int address) {

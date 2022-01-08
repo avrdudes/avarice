@@ -23,7 +23,6 @@
 #include <cstdio>
 #include <sys/time.h>
 
-#include "avarice.h"
 #include "jtag3.h"
 #include "remote.h"
 

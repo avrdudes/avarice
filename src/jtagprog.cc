@@ -27,7 +27,6 @@
 
 #include <cstdio>
 
-#include "avarice.h"
 #include "jtag1.h"
 
 void jtag1::enableProgramming() {

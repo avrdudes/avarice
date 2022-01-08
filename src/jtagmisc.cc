@@ -22,7 +22,6 @@
  * $Id$
  */
 
-#include "avarice.h"
 #include "jtag1.h"
 
 void jtag1::setJtagParameter(uchar item, uchar newValue) {

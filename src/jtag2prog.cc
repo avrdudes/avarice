@@ -28,7 +28,6 @@
 
 #include <cstdio>
 
-#include "avarice.h"
 #include "jtag2.h"
 
 void jtag2::enableProgramming() {
