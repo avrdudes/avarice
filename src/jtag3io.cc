@@ -68,7 +68,7 @@ jtag3_io_exception::jtag3_io_exception(unsigned int code) {
     }
 }
 
-jtag3::~jtag3() {
+Jtag3::~Jtag3() {
     // Terminate connection to JTAG box.
     if (signedIn) {
         if (debug_active) {
@@ -98,7 +98,7 @@ jtag3::~jtag3() {
  * Send one frame.  Adds the required preamble and CRC, and ensures
  * the frame could be written correctly.
  */
-void jtag3::sendFrame(const uchar *command, int commandSize) {
+void Jtag3::sendFrame(const uchar *command, int commandSize) {
     auto buf = std::make_unique<uchar[]>(commandSize + 4);
     buf[0] = TOKEN;
     buf[1] = 0;
@@ -124,7 +124,7 @@ void jtag3::sendFrame(const uchar *command, int commandSize) {
  *
  * Caller must eventually free the buffer.
  */
-int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
+int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     msg = nullptr;
 
     int amnt;
@@ -190,7 +190,7 @@ int jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
  * Try receiving frames, until we get the reply we are expecting.
  * Caller must delete[] the msg after processing it.
  */
-int jtag3::recv(uchar *&msg) {
+int Jtag3::recv(uchar *&msg) {
     unsigned short r_seqno;
     int rv;
 
@@ -228,7 +228,7 @@ int jtag3::recv(uchar *&msg) {
     returned in &msgsize.
 **/
 
-bool jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&msg,
+bool Jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&msg,
                             int &msgsize) {
     debugOut("\ncommand \"%s\" [0x%02x, 0x%02x]\n", name, command[0], command[1]);
 
@@ -251,7 +251,7 @@ bool jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *n
     return false;
 }
 
-void jtag3::doJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&response,
+void Jtag3::doJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&response,
                           int &responseSize) {
     if (sendJtagCommand(command, commandSize, name, response, responseSize))
         return;
@@ -262,7 +262,7 @@ void jtag3::doJtagCommand(const uchar *command, int commandSize, const char *nam
         throw jtag3_io_exception(response[3]);
 }
 
-void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
+void Jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
     int dummy;
     uchar *replydummy, cmd[3];
 
@@ -290,11 +290,11 @@ void jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
     throw jtag_exception("doSimpleJtagCommand(): too many failures");
 }
 
-void jtag3::changeBitRate(int) { throw; }
+void Jtag3::changeBitRate(int) { throw; }
 
-bool jtag3::synchroniseAt(int) { throw; }
+bool Jtag3::synchroniseAt(int) { throw; }
 
-void jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
+void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     uchar *param, paramsize;
     jtag3_device_desc_type d3;
 
@@ -341,7 +341,7 @@ void jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     }
 }
 
-void jtag3::startJtagLink() {
+void Jtag3::startJtagLink() {
     doSimpleJtagCommand(CMD3_SIGN_ON, "sign-on", SCOPE_GENERAL);
 
     signedIn = true;
@@ -460,7 +460,7 @@ void jtag3::startJtagLink() {
  May be overridden by command line parameter.
 
 */
-void jtag3::deviceAutoConfig() {
+void Jtag3::deviceAutoConfig() {
     uchar *resp;
 
     // Auto config
@@ -501,7 +501,7 @@ void jtag3::deviceAutoConfig() {
     setDeviceDescriptor(pDevice);
 }
 
-void jtag3::initJtagBox() {
+void Jtag3::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
     if (device_name) {
@@ -528,7 +528,7 @@ void jtag3::initJtagBox() {
     }
 }
 
-void jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
+void Jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
     bitrate /= 1000; // JTAGICE3 always uses kHz
@@ -578,7 +578,7 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
     cached_pc_is_valid = false;
 }
 
-void jtag3::configDaisyChain() {
+void Jtag3::configDaisyChain() {
     unsigned char buf[4];
 
     if ((dchain.units_before > 0) || (dchain.units_after > 0) || (dchain.bits_before > 0) ||

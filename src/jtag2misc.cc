@@ -25,7 +25,7 @@
 
 #include "jtag2.h"
 
-void jtag2::setJtagParameter(uchar item, const uchar *newValue, int valSize) {
+void Jtag2::setJtagParameter(uchar item, const uchar *newValue, int valSize) {
     if (valSize > 4)
         throw jtag_exception("Parameter too large in setJtagParameter");
 
@@ -53,7 +53,7 @@ void jtag2::setJtagParameter(uchar item, const uchar *newValue, int valSize) {
  * that the response still includes the response code at index 0 (to be
  * ignored).
  */
-void jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize) {
+void Jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize) {
     /*
      * As the maximal parameter length is 4 bytes, we use a fixed-length
      * buffer, as opposed to malloc()ing it.

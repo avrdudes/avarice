@@ -624,7 +624,7 @@ enum class Emulator { JTAGICE, JTAGICE2, DRAGON, JTAGICE3, EDBG };
 
 enum class Debugproto { JTAG, DW, PDI };
 
-class jtag {
+class Jtag {
   protected:
     // The initial serial port parameters. We restore them on exit.
     struct termios oldtio;
@@ -688,8 +688,8 @@ class jtag {
     virtual void deviceAutoConfig() = 0;
 
   public:
-    jtag(Emulator emul, const char *dev, const char *name, bool nsrst);
-    virtual ~jtag();
+    Jtag(Emulator emul, const char *dev, const char *name, bool nsrst);
+    virtual ~Jtag();
 
     // Basic JTAG I/O
     // -------------
@@ -871,7 +871,7 @@ class jtag {
     virtual unsigned int cpuRegisterAreaAddress() const = 0;
 };
 
-extern std::unique_ptr<jtag> theJtagICE;
+extern std::unique_ptr<Jtag> theJtagICE;
 
 class jtag_exception : public std::exception {
   protected:

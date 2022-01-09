@@ -232,7 +232,7 @@
 #define PAGEPROG_NOT_ALLOWED 0x00
 #define PAGEPROG_ALLOWED 0x01
 
-class jtag2 : public jtag {
+class Jtag2 : public Jtag {
   private:
     unsigned short command_sequence = 0;
     int devdescrlen = sizeof(jtag2_device_desc_type);
@@ -252,11 +252,11 @@ class jtag2 : public jtag {
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    jtag2(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
-        : jtag(emul, dev, name, nsrst), proto(prot) {
+    Jtag2(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
+        : Jtag(emul, dev, name, nsrst), proto(prot) {
         is_xmega = xmega;
     };
-    ~jtag2() override;
+    ~Jtag2() override;
 
     void initJtagBox() override;
     void initJtagOnChipDebugging(unsigned long bitrate) override;

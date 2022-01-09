@@ -38,12 +38,12 @@
  * Generic functions applicable to both, the mkI and mkII ICE.
  */
 
-void jtag::restoreSerialPort() {
+void Jtag::restoreSerialPort() {
     if (!is_usb && jtagBox >= 0 && oldtioValid)
         tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-jtag::jtag(Emulator emul, const char *jtagDeviceName, const char *name, bool nsrst)
+Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const char *name, bool nsrst)
     : emu_type(emul), apply_nSRST(nsrst), device_name(name) {
     if (strncmp(jtagDeviceName, "usb", 3) == 0) {
 #ifdef HAVE_LIBUSB
@@ -99,9 +99,9 @@ jtag::jtag(Emulator emul, const char *jtagDeviceName, const char *name, bool nsr
 }
 
 // NB: the destructor is virtual; class jtag2 extends it
-jtag::~jtag() { restoreSerialPort(); }
+Jtag::~Jtag() { restoreSerialPort(); }
 
-int jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
+int Jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
     char *buffer = (char *)buf;
     size_t actual = 0;
 
@@ -137,7 +137,7 @@ int jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
     return count;
 }
 
-int jtag::safewrite(const void *b, int count) const {
+int Jtag::safewrite(const void *b, int count) const {
     char *buffer = (char *)b;
     int actual = 0;
     int flags = fcntl(jtagBox, F_GETFL);
@@ -163,7 +163,7 @@ int jtag::safewrite(const void *b, int count) const {
 
 /** Change bitrate of PC's serial port as specified by BIT_RATE_xxx in
     'newBitRate' **/
-void jtag::changeLocalBitRate(int newBitRate) const {
+void Jtag::changeLocalBitRate(int newBitRate) const {
     if (is_usb)
         return;
 
@@ -203,7 +203,7 @@ void jtag::changeLocalBitRate(int newBitRate) const {
         throw jtag_exception();
 }
 
-void jtag::jtagWriteFuses(char *fuses) {
+void Jtag::jtagWriteFuses(char *fuses) {
     if (deviceDef->fusemap > 0x07) {
         fprintf(stderr, "Fuse byte writing not supported on this device.\n");
         return;
@@ -255,7 +255,7 @@ static unsigned int countFuses(unsigned int fusemap) {
     return nfuses;
 }
 
-void jtag::jtagReadFuses() {
+void Jtag::jtagReadFuses() {
     statusOut("\nReading Fuse Bytes:\n");
     uchar *fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, countFuses(deviceDef->fusemap));
 
@@ -264,7 +264,7 @@ void jtag::jtagReadFuses() {
     delete[] fuseBits;
 }
 
-void jtag::jtagActivateOcdenFuse() {
+void Jtag::jtagActivateOcdenFuse() {
     if (deviceDef->ocden_fuse == 0)
         return; // device without an OCDEN fuse
 
@@ -298,7 +298,7 @@ void jtag::jtagActivateOcdenFuse() {
     delete[] fuseBits;
 }
 
-void jtag::jtagDisplayFuses(const uchar *fuseBits) const {
+void Jtag::jtagDisplayFuses(const uchar *fuseBits) const {
     if (deviceDef->fusemap <= 0x07) {
         // tinyAVR/megaAVR: low/high/[extended] fuse
         const char *fusenames[3] = {"       Low", "      High", "  Extended"};
@@ -315,7 +315,7 @@ void jtag::jtagDisplayFuses(const uchar *fuseBits) const {
     }
 }
 
-void jtag::jtagWriteLockBits(const char *lock) {
+void Jtag::jtagWriteLockBits(const char *lock) {
     if (!lock) {
         fprintf(stderr, "Error: No lock bit string given");
         return;
@@ -357,7 +357,7 @@ void jtag::jtagWriteLockBits(const char *lock) {
     delete[] readlockBits;
 }
 
-void jtag::jtagReadLockBits() {
+void Jtag::jtagReadLockBits() {
     enableProgramming();
     statusOut("\nReading Lock Bits:\n");
     uchar *lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
@@ -368,7 +368,7 @@ void jtag::jtagReadLockBits() {
     delete[] lockBits;
 }
 
-void jtag::jtagDisplayLockBits(uchar *lockBits) {
+void Jtag::jtagDisplayLockBits(uchar *lockBits) {
     statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
 
     statusOut("    Bit 7 [ Reserved ] -> %d\n", (lockBits[0] >> 7) & 1);
@@ -381,7 +381,7 @@ void jtag::jtagDisplayLockBits(uchar *lockBits) {
     statusOut("    Bit 0 [ LB1      ] -> %d\n", (lockBits[0] >> 0) & 1);
 }
 
-bool jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int length) {
+bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int length) {
     debugOut("BP ADD type: %d  addr: 0x%x ", type, address);
 
     // Perhaps we have already set this breakpoint, and it is just
@@ -505,7 +505,7 @@ bool jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
     return true;
 }
 
-bool jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int) {
+bool Jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int) {
     debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
 
     int bp_i = 0;
@@ -550,7 +550,7 @@ bool jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned 
  * should go in hardware, vs. which breakpoints are more fixed and
  * should just be done in code would be handy
  */
-bool jtag::layoutBreakpoints() {
+bool Jtag::layoutBreakpoints() {
     // remaining_bps is an array showing which breakpoints are still
     // available, starting at 0x00 Note 0x00 is software breakpoint
     // and will always be available in theory so just ignore the first

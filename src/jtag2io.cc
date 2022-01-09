@@ -84,7 +84,7 @@ jtag_io_exception::jtag_io_exception(unsigned int code) {
     }
 }
 
-jtag2::~jtag2() {
+Jtag2::~Jtag2() {
     // Terminate connection to JTAG box.
     if (signedIn) {
         try {
@@ -102,7 +102,7 @@ jtag2::~jtag2() {
  * Send one frame.  Adds the required preamble and CRC, and ensures
  * the frame could be written correctly.
  */
-void jtag2::sendFrame(const uchar *command, int commandSize) {
+void Jtag2::sendFrame(const uchar *command, int commandSize) {
     auto *buf = new unsigned char[commandSize + 10];
 
     buf[0] = MESSAGE_START;
@@ -132,7 +132,7 @@ void jtag2::sendFrame(const uchar *command, int commandSize) {
  *
  * Caller must eventually free the buffer.
  */
-int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
+int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     enum states {
         sSTART,
         sSEQNUM1,
@@ -277,7 +277,7 @@ int jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
  * Try receiving frames, until we get the reply we are expecting.
  * Caller must delete[] the msg after processing it.
  */
-int jtag2::recv(uchar *&msg) {
+int Jtag2::recv(uchar *&msg) {
     unsigned short r_seqno;
     int rv;
 
@@ -323,7 +323,7 @@ int jtag2::recv(uchar *&msg) {
     returned in &msgsize.
 **/
 
-bool jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, uchar *&msg,
+bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, uchar *&msg,
                             int &msgsize, bool verify) {
     if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
         throw jtag_exception("JTAG communication failed");
@@ -357,7 +357,7 @@ bool jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
     return false;
 }
 
-void jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&response,
+void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&response,
                           int &responseSize, bool retryOnTimeout) {
     int sizeseen = 0;
     uchar code = 0;
@@ -396,7 +396,7 @@ void jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&respons
         throw jtag_timeout_exception();
 }
 
-void jtag2::doSimpleJtagCommand(uchar command) {
+void Jtag2::doSimpleJtagCommand(uchar command) {
     int tryCount = 0, dummy;
     uchar *replydummy;
 
@@ -416,7 +416,7 @@ void jtag2::doSimpleJtagCommand(uchar command) {
 }
 
 /** Set PC and JTAG ICE bitrate to BIT_RATE_xxx specified by 'newBitRate' **/
-void jtag2::changeBitRate(int newBitRate) {
+void Jtag2::changeBitRate(int newBitRate) {
     // Don't try to change the speed of an USB connection.
     // For the AVR Dragon, that would even result in the parameter
     // change below being rejected.
@@ -447,7 +447,7 @@ void jtag2::changeBitRate(int newBitRate) {
 }
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
-void jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
+void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const uchar *command = (is_xmega && has_full_xmega_support)
         ?(uchar *)&dev.dev_desc3:(uchar *)&dev.dev_desc2;
 
@@ -462,7 +462,7 @@ void jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
-bool jtag2::synchroniseAt(int bitrate) {
+bool Jtag2::synchroniseAt(int bitrate) {
     debugOut("Attempting synchronisation at bitrate %d\n", bitrate);
 
     changeLocalBitRate(bitrate);
@@ -530,7 +530,7 @@ bool jtag2::synchroniseAt(int bitrate) {
 }
 
 /** Attempt to synchronise with JTAG ICE at all possible bit rates **/
-void jtag2::startJtagLink() {
+void Jtag2::startJtagLink() {
     constexpr int bitrates[] = {19200, 115200, 57600, 38400, 9600};
 
     for (const auto bitrate : bitrates) {
@@ -587,7 +587,7 @@ void jtag2::startJtagLink() {
  May be overridden by command line parameter.
 
 */
-void jtag2::deviceAutoConfig() {
+void Jtag2::deviceAutoConfig() {
     uchar *resp;
     int respSize;
 
@@ -629,7 +629,7 @@ void jtag2::deviceAutoConfig() {
     setDeviceDescriptor(pDevice);
 }
 
-void jtag2::initJtagBox() {
+void Jtag2::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
     if (device_name) {
@@ -652,7 +652,7 @@ void jtag2::initJtagBox() {
     statusOut("JTAG config complete.\n");
 }
 
-void jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
+void Jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
     if (proto == Debugproto::JTAG) {
@@ -691,7 +691,7 @@ void jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
         setJtagParameter(PAR_TIMERS_RUNNING, &timers, 1);
 }
 
-void jtag2::configDaisyChain() {
+void Jtag2::configDaisyChain() {
     if (dchain.units_before || dchain.units_after || dchain.bits_before || dchain.bits_after) {
         const unsigned char buf[4] = {dchain.units_before, dchain.units_after, dchain.bits_before,
                                       dchain.bits_after};

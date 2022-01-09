@@ -27,7 +27,7 @@
 
 #include "jtag3.h"
 
-bool jtag3::codeBreakpointAt(unsigned int address) {
+bool Jtag3::codeBreakpointAt(unsigned int address) {
     int i = 0;
     while (!bp[i].last) {
         if ((bp[i].address == address) && (bp[i].type == BreakpointType::CODE) && bp[i].enabled)
@@ -39,7 +39,7 @@ bool jtag3::codeBreakpointAt(unsigned int address) {
     return false;
 }
 
-void jtag3::deleteAllBreakpoints() {
+void Jtag3::deleteAllBreakpoints() {
     int i = 0;
 
     while (!bp[i].last) {
@@ -51,7 +51,7 @@ void jtag3::deleteAllBreakpoints() {
     }
 }
 
-void jtag3::updateBreakpoints() {
+void Jtag3::updateBreakpoints() {
     layoutBreakpoints();
 
     // Delete all the breakpoints that were flagged first
@@ -194,7 +194,7 @@ void jtag3::updateBreakpoints() {
     }
 }
 
-void jtag3::xmegaSendBPs() {
+void Jtag3::xmegaSendBPs() {
     if (!is_xmega)
         return;
 

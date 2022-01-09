@@ -219,7 +219,7 @@ static struct option long_opts[] = {
     {"write-fuses", 1, nullptr, 'W'},   {"xmega", 0, nullptr, 'x'},
     {"pdi", 0, nullptr, 'X'},           {nullptr, 0, nullptr, 0}};
 
-std::unique_ptr<jtag> theJtagICE;
+std::unique_ptr<Jtag> theJtagICE;
 
 int main(int argc, char **argv) {
     int sock;
@@ -465,13 +465,13 @@ int main(int argc, char **argv) {
 
         case Emulator::JTAGICE2:
         case Emulator::DRAGON:
-            theJtagICE = std::make_unique<jtag2>(devicetype, jtagDeviceName, device_name, proto,
+            theJtagICE = std::make_unique<Jtag2>(devicetype, jtagDeviceName, device_name, proto,
                                                  apply_nsrst, is_xmega);
             break;
 
         case Emulator::JTAGICE3:
         case Emulator::EDBG:
-            theJtagICE = std::make_unique<jtag3>(devicetype, jtagDeviceName, device_name, proto,
+            theJtagICE = std::make_unique<Jtag3>(devicetype, jtagDeviceName, device_name, proto,
                                                  apply_nsrst, is_xmega);
             break;
         }

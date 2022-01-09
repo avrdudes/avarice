@@ -26,7 +26,7 @@
 #include "jtag3.h"
 #include "remote.h"
 
-unsigned long jtag3::getProgramCounter() {
+unsigned long Jtag3::getProgramCounter() {
     if (cached_pc_is_valid)
         return cached_pc;
 
@@ -62,7 +62,7 @@ again:
     return cached_pc = result;
 }
 
-void jtag3::setProgramCounter(unsigned long pc) {
+void Jtag3::setProgramCounter(unsigned long pc) {
     uchar *resp;
     int respsize;
     uchar cmd[7] = {SCOPE_AVR, CMD3_WRITE_PC};
@@ -81,7 +81,7 @@ void jtag3::setProgramCounter(unsigned long pc) {
     cached_pc_is_valid = false;
 }
 
-void jtag3::resetProgram(bool) {
+void Jtag3::resetProgram(bool) {
     uchar cmd[] = {SCOPE_AVR, CMD3_RESET, 0, 0x01};
     uchar *resp;
     int respsize;
@@ -98,7 +98,7 @@ void jtag3::resetProgram(bool) {
     cached_pc_is_valid = false;
 }
 
-void jtag3::interruptProgram() {
+void Jtag3::interruptProgram() {
     uchar cmd[] = {SCOPE_AVR, CMD3_STOP, 0, 0x01};
     uchar *resp;
     int respsize;
@@ -110,7 +110,7 @@ void jtag3::interruptProgram() {
     expectEvent(bp, gdb);
 }
 
-void jtag3::resumeProgram() {
+void Jtag3::resumeProgram() {
     xmegaSendBPs();
 
     doSimpleJtagCommand(CMD3_CLEANUP, "cleanup");
@@ -120,7 +120,7 @@ void jtag3::resumeProgram() {
     cached_pc_is_valid = false;
 }
 
-void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
+void Jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     uchar *evtbuf;
     int evtsize;
     unsigned short seqno;
@@ -200,7 +200,7 @@ void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     delete[] evtbuf;
 }
 
-bool jtag3::eventLoop() {
+bool Jtag3::eventLoop() {
     int maxfd;
     fd_set readfds;
     bool breakpoint = false, gdbInterrupt = false;
@@ -248,7 +248,7 @@ bool jtag3::eventLoop() {
     }
 }
 
-void jtag3::jtagSingleStep() {
+void Jtag3::jtagSingleStep() {
     uchar cmd[] = {SCOPE_AVR, CMD3_STEP, 0, 0x01, 0x01};
     uchar *resp;
     int respsize;
@@ -269,7 +269,7 @@ void jtag3::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-void jtag3::parseEvents(const char *) {
+void Jtag3::parseEvents(const char *) {
 #if 0
     memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
@@ -321,7 +321,7 @@ void jtag3::parseEvents(const char *) {
 #endif
 }
 
-bool jtag3::jtagContinue() {
+bool Jtag3::jtagContinue() {
     updateBreakpoints(); // download new bp configuration
 
     xmegaSendBPs();

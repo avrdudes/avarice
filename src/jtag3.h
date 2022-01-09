@@ -173,7 +173,7 @@ enum jtag3consts {
     MAX_MESSAGE_SIZE_JTAGICE3 = 512,
 };
 
-class jtag3 : public jtag {
+class Jtag3 : public Jtag {
   private:
     unsigned short command_sequence = 0;
     bool signedIn = false;
@@ -193,11 +193,11 @@ class jtag3 : public jtag {
     unsigned char *cached_event = nullptr;
 
   public:
-    jtag3(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
-        : jtag(emul, dev, name, nsrst), proto(prot) {
+    Jtag3(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
+        : Jtag(emul, dev, name, nsrst), proto(prot) {
         is_xmega = xmega;
     };
-    ~jtag3() override;
+    ~Jtag3() override;
 
     void initJtagBox() override;
     void initJtagOnChipDebugging(unsigned long bitrate) override;

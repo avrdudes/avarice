@@ -28,7 +28,7 @@
 /** Return the memory space code for the memory space indicated by the
     high-order bits of 'addr'. Also clear these high order bits in 'addr'
 **/
-uchar jtag3::memorySpace(unsigned long &addr) {
+uchar Jtag3::memorySpace(unsigned long &addr) {
     int mask;
 
     // We can't just mask the bits off, because 0x10000->0x1ffff are
@@ -69,7 +69,7 @@ uchar jtag3::memorySpace(unsigned long &addr) {
     }
 }
 
-uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
+uchar *Jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
     uchar *response;
     int responsesize;
 
@@ -195,7 +195,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
     return response;
 }
 
-void jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) {
+void Jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) {
     if (numBytes == 0)
         return;
 

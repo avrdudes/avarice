@@ -23,14 +23,14 @@
 
 #include "jtag3.h"
 
-void jtag3::enableProgramming() {
+void Jtag3::enableProgramming() {
     if (proto == Debugproto::DW)  return;
 
     programmingEnabled = true;
     doSimpleJtagCommand(CMD3_ENTER_PROGMODE, "enter progmode");
 }
 
-void jtag3::disableProgramming() {
+void Jtag3::disableProgramming() {
     if (proto == Debugproto::DW) return;
 
     programmingEnabled = false;
@@ -39,7 +39,7 @@ void jtag3::disableProgramming() {
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag3::eraseProgramMemory() {
+void Jtag3::eraseProgramMemory() {
     if (proto == Debugproto::DW)
         // debugWIRE auto-erases when programming
         return;
@@ -55,7 +55,7 @@ void jtag3::eraseProgramMemory() {
     delete[] resp;
 }
 
-void jtag3::eraseProgramPage(unsigned long address) {
+void Jtag3::eraseProgramPage(unsigned long address) {
     uchar buf[8];
     buf[0] = SCOPE_AVR;
     buf[1] = CMD3_ERASE_MEMORY;

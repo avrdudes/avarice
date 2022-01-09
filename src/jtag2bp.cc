@@ -28,7 +28,7 @@
 
 #include "jtag2.h"
 
-bool jtag2::codeBreakpointAt(unsigned int address) {
+bool Jtag2::codeBreakpointAt(unsigned int address) {
     int i = 0;
     while (!bp[i].last) {
         if ((bp[i].address == address) && (bp[i].type == BreakpointType::CODE) && bp[i].enabled)
@@ -39,7 +39,7 @@ bool jtag2::codeBreakpointAt(unsigned int address) {
     return false;
 }
 
-void jtag2::deleteAllBreakpoints() {
+void Jtag2::deleteAllBreakpoints() {
     int i = 0;
     while (!bp[i].last) {
         if (bp[i].enabled && bp[i].icestatus)
@@ -114,7 +114,7 @@ bool jtag2::BreakpointRoom(bpType type, unsigned int length) {
 }
 #endif // notyet
 
-void jtag2::updateBreakpoints() {
+void Jtag2::updateBreakpoints() {
     layoutBreakpoints();
 
     // Delete all the breakpoints that were flagged first
@@ -237,7 +237,7 @@ void jtag2::updateBreakpoints() {
     }
 }
 
-void jtag2::xmegaSendBPs() {
+void Jtag2::xmegaSendBPs() {
     if (!(is_xmega && has_full_xmega_support))
         return;
 

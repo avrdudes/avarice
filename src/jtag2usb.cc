@@ -1008,7 +1008,7 @@ static void *usb_thread_event(void *) {
 }
 #endif
 
-void jtag::resetUSB() {
+void Jtag::resetUSB() {
 #ifndef HAVE_LIBUSB_2_0
     if (udev) {
         usb_resetep(udev, read_ep);
@@ -1205,7 +1205,7 @@ static void cleanup_usb() {
 #endif
 }
 
-void jtag::openUSB(const char *jtagDeviceName) {
+void Jtag::openUSB(const char *jtagDeviceName) {
     if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pype) < 0)
         throw jtag_exception("cannot create pipe");
 

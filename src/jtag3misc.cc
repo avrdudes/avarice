@@ -25,7 +25,7 @@
 
 #include "jtag3.h"
 
-void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar *newValue, int valSize) {
+void Jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar *newValue, int valSize) {
     uchar buf[6 + valSize]; // FIXME: variable length arrays not supported in C++
     buf[0] = scope;
     buf[1] = CMD3_SET_PARAMETER;
@@ -51,7 +51,7 @@ void jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar
  * Get a JTAG ICE parameter.  Caller must delete [] the response.  Note
  * that the actual response data returned starts at offset 2.
  */
-void jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length, uchar *&resp) {
+void Jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length, uchar *&resp) {
     const uchar buf[6] = {scope, CMD3_GET_PARAMETER, 0, section, item, static_cast<uchar>(length)};
 
     int respsize;

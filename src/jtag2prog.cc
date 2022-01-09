@@ -30,14 +30,14 @@
 
 #include "jtag2.h"
 
-void jtag2::enableProgramming() {
+void Jtag2::enableProgramming() {
     if (proto != Debugproto::DW) {
         programmingEnabled = true;
         doSimpleJtagCommand(CMND_ENTER_PROGMODE);
     }
 }
 
-void jtag2::disableProgramming() {
+void Jtag2::disableProgramming() {
     if (proto != Debugproto::DW) {
         programmingEnabled = false;
         doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
@@ -46,7 +46,7 @@ void jtag2::disableProgramming() {
 
 // This is really a chip-erase which erases flash, lock-bits and eeprom
 // (unless the save-eeprom fuse is set).
-void jtag2::eraseProgramMemory() {
+void Jtag2::eraseProgramMemory() {
     if (proto == Debugproto::DW)
         // debugWIRE auto-erases when programming
         return;
@@ -71,7 +71,7 @@ void jtag2::eraseProgramMemory() {
     }
 }
 
-void jtag2::eraseProgramPage(unsigned long address) {
+void Jtag2::eraseProgramPage(unsigned long address) {
     const uchar command[5] = {CMND_ERASEPAGE_SPM,
     static_cast<uchar>((address & 0xff000000) >> 24),
     static_cast<uchar>((address & 0xff0000) >> 16),

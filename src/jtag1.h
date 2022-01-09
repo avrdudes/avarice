@@ -58,7 +58,7 @@ enum {
     MAX_BREAKPOINTS = 4
 };
 
-class jtag1 : public jtag {
+class jtag1 : public Jtag {
   public:
     // Responses from JTAG ICE
     enum class Resp : uchar {
@@ -93,7 +93,7 @@ class jtag1 : public jtag {
     int numBreakpointsData = 0;
 
   public:
-    jtag1(Emulator emul, const char *dev, const char *name, bool nsrst) : jtag(emul, dev, name, nsrst){};
+    jtag1(Emulator emul, const char *dev, const char *name, bool nsrst) : Jtag(emul, dev, name, nsrst){};
 
     void initJtagBox() override;
     void initJtagOnChipDebugging(unsigned long bitrate) override;

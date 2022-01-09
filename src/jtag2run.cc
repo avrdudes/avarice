@@ -30,7 +30,7 @@
 #include "jtag2.h"
 #include "remote.h"
 
-unsigned long jtag2::getProgramCounter() {
+unsigned long Jtag2::getProgramCounter() {
     if (cached_pc_is_valid)
         return cached_pc;
 
@@ -56,7 +56,7 @@ unsigned long jtag2::getProgramCounter() {
     return cached_pc = result;
 }
 
-void jtag2::setProgramCounter(unsigned long pc) {
+void Jtag2::setProgramCounter(unsigned long pc) {
     uchar *response;
     int responseSize;
     uchar command[5] = {CMND_WRITE_PC};
@@ -75,7 +75,7 @@ void jtag2::setProgramCounter(unsigned long pc) {
     cached_pc_is_valid = false;
 }
 
-void jtag2::resetProgram(bool) {
+void Jtag2::resetProgram(bool) {
     if (proto == Debugproto::DW) {
         /* The JTAG ICE mkII and Dragon do not respond correctly to
          * the CMND_RESET command while in debugWire mode. */
@@ -95,7 +95,7 @@ void jtag2::resetProgram(bool) {
     }
 }
 
-void jtag2::interruptProgram() {
+void Jtag2::interruptProgram() {
     const uchar cmd[2] = {CMND_FORCED_STOP, 0x01};
     uchar *resp;
     int respSize;
@@ -107,7 +107,7 @@ void jtag2::interruptProgram() {
     expectEvent(bp, gdb);
 }
 
-void jtag2::resumeProgram() {
+void Jtag2::resumeProgram() {
     xmegaSendBPs();
 
     doSimpleJtagCommand(CMND_GO);
@@ -115,7 +115,7 @@ void jtag2::resumeProgram() {
     cached_pc_is_valid = false;
 }
 
-void jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
+void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     uchar *evtbuf;
     unsigned short seqno;
 
@@ -202,7 +202,7 @@ void jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     }
 }
 
-bool jtag2::eventLoop() {
+bool Jtag2::eventLoop() {
     int maxfd;
     fd_set readfds;
     bool breakpoint = false, gdbInterrupt = false;
@@ -250,7 +250,7 @@ bool jtag2::eventLoop() {
     }
 }
 
-void jtag2::jtagSingleStep() {
+void Jtag2::jtagSingleStep() {
     const uchar cmd[] = {CMND_SINGLE_STEP, 0x01, 0x01};
     uchar *resp;
     int respSize, i = 2;
@@ -277,7 +277,7 @@ void jtag2::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-void jtag2::parseEvents(const char *evtlist) {
+void Jtag2::parseEvents(const char *evtlist) {
     memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
     constexpr struct {
@@ -342,7 +342,7 @@ void jtag2::parseEvents(const char *evtlist) {
     }
 }
 
-bool jtag2::jtagContinue() {
+bool Jtag2::jtagContinue() {
     updateBreakpoints(); // download new bp configuration
 
     xmegaSendBPs();
