@@ -25,6 +25,7 @@
 
 #include "jtag.h"
 #include "pragma.h"
+#include "ioreg.h"
 
 #include <algorithm>
 #include <cstring>
@@ -6345,18 +6346,18 @@ const jtag_device_def_type &FindDeviceDefinition(const unsigned int id, const ch
     const jtag_device_def_type *found_id = nullptr;
     if (id) {
         statusOut("Reported device ID: 0x%0X\n", id);
-        found_id = std::find_if(std::begin(deviceDefinitions), std::end(deviceDefinitions),
+        found_id = std::find_if(std::cbegin(deviceDefinitions), std::cend(deviceDefinitions),
                                 [&](const auto &dev) { return dev.device_id == id; });
-        if( found_id == std::end(deviceDefinitions) )
+        if( found_id == std::cend(deviceDefinitions) )
             found_id = nullptr;
     }
 
     const jtag_device_def_type *found_name = nullptr;
     if (name) {
         debugOut("Looking for device: %s\n", name);
-        found_name = std::find_if(std::begin(deviceDefinitions), std::end(deviceDefinitions),
+        found_name = std::find_if(std::cbegin(deviceDefinitions), std::cend(deviceDefinitions),
                                   [&](const auto &dev) { return strcasecmp(dev.name, name) == 0; });
-        if( found_name == std::end(deviceDefinitions) )
+        if( found_name == std::cend(deviceDefinitions) )
             found_name = nullptr;
     }
 

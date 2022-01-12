@@ -23,7 +23,11 @@
 
 #include "ioreg.h"
 
-gdb_io_reg_def_type atmega16_io_registers[] =
+namespace {
+constexpr unsigned char IO_REG_RSE = 0x01; // IO register has read side effect
+}
+
+const gdb_io_reg_def_type atmega16_io_registers[] =
 {
     { "TWBR",    0x20, 0x00 },
     { "TWSR",    0x21, 0x00 },
@@ -92,7 +96,7 @@ gdb_io_reg_def_type atmega16_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega162_io_registers[] =
+const gdb_io_reg_def_type atmega162_io_registers[] =
 {
     { "UBRR1L",  0x20, 0x00 },
     { "UCSR1B",  0x21, 0x00 },
@@ -176,7 +180,7 @@ gdb_io_reg_def_type atmega162_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega169_io_registers[] =
+const gdb_io_reg_def_type atmega169_io_registers[] =
 {
     { "PINA",    0x20, 0x00 },
     { "DDRA",    0x21, 0x00 },
@@ -290,7 +294,7 @@ gdb_io_reg_def_type atmega169_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega32_io_registers[] =
+const gdb_io_reg_def_type atmega32_io_registers[] =
 {
     { "TWBR",    0x20, 0x00 },
     { "TWSR",    0x21, 0x00 },
@@ -359,7 +363,7 @@ gdb_io_reg_def_type atmega32_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega128_io_registers[] =
+const gdb_io_reg_def_type atmega128_io_registers[] =
 {
     { "PINF",    0x20, 0x00 },
     { "PINE",    0x21, 0x00 },
@@ -469,7 +473,7 @@ gdb_io_reg_def_type atmega128_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega323_io_registers[] =
+const gdb_io_reg_def_type atmega323_io_registers[] =
 {
     { "TWBR", 0x20, 0x00 },
     { "TWSR", 0x21, 0x00 },
@@ -539,7 +543,7 @@ gdb_io_reg_def_type atmega323_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega64_io_registers[] =
+const gdb_io_reg_def_type atmega64_io_registers[] =
 {
     { "PINF", 0x20, 0x00 },
     { "PINE", 0x21, 0x00 },
@@ -650,7 +654,7 @@ gdb_io_reg_def_type atmega64_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90can128_io_registers[] =
+const gdb_io_reg_def_type at90can128_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -807,7 +811,7 @@ gdb_io_reg_def_type at90can128_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega164p_io_registers[] =
+const gdb_io_reg_def_type atmega164p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -911,7 +915,7 @@ gdb_io_reg_def_type atmega164p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega324p_io_registers[] =
+const gdb_io_reg_def_type atmega324p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1015,7 +1019,7 @@ gdb_io_reg_def_type atmega324p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega644_io_registers[] =
+const gdb_io_reg_def_type atmega644_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1113,7 +1117,7 @@ gdb_io_reg_def_type atmega644_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega325_io_registers[] =
+const gdb_io_reg_def_type atmega325_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1209,207 +1213,7 @@ gdb_io_reg_def_type atmega325_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega3250_io_registers[] =
-{
-    { "PINA", 0x20, 0x00 },
-    { "DDRA", 0x21, 0x00 },
-    { "PORTA", 0x22, 0x00 },
-    { "PINB", 0x23, 0x00 },
-    { "DDRB", 0x24, 0x00 },
-    { "PORTB", 0x25, 0x00 },
-    { "PINC", 0x26, 0x00 },
-    { "DDRC", 0x27, 0x00 },
-    { "PORTC", 0x28, 0x00 },
-    { "PIND", 0x29, 0x00 },
-    { "DDRD", 0x2a, 0x00 },
-    { "PORTD", 0x2b, 0x00 },
-    { "PINE", 0x2c, 0x00 },
-    { "DDRE", 0x2d, 0x00 },
-    { "PORTE", 0x2e, 0x00 },
-    { "PINF", 0x2f, 0x00 },
-    { "DDRF", 0x30, 0x00 },
-    { "PORTF", 0x31, 0x00 },
-    { "PING", 0x32, 0x00 },
-    { "DDRG", 0x33, 0x00 },
-    { "PORTG", 0x34, 0x00 },
-    { "TIFR0", 0x35, 0x00 },
-    { "TIFR1", 0x36, 0x00 },
-    { "TIFR2", 0x37, 0x00 },
-    { "EIFR", 0x3c, 0x00 },
-    { "EIMSK", 0x3d, 0x00 },
-    { "GPIOR0", 0x3e, 0x00 },
-    { "EECR", 0x3f, 0x00 },
-    { "EEDR", 0x40, 0x00 },
-    { "EEARL", 0x41, 0x00 },
-    { "EEARH", 0x42, 0x00 },
-    { "GTCCR", 0x43, 0x00 },
-    { "TCCR0A", 0x44, 0x00 },
-    { "TCNT0", 0x46, 0x00 },
-    { "OCR0A", 0x47, 0x00 },
-    { "GPIOR1", 0x4a, 0x00 },
-    { "GPIOR2", 0x4b, 0x00 },
-    { "SPCR", 0x4c, 0x00 },
-    { "SPSR", 0x4d, 0x00 },
-    { "SPDR", 0x4e, 0x00 },
-    { "ACSR", 0x50, 0x00 },
-    { "OCDR", 0x51, 0x00 },
-    { "SMCR", 0x53, 0x00 },
-    { "MCUSR", 0x54, 0x00 },
-    { "MCUCR", 0x55, 0x00 },
-    { "SPMCSR", 0x57, 0x00 },
-    { "SPL", 0x5d, 0x00 },
-    { "SPH", 0x5e, 0x00 },
-    { "SREG", 0x5f, 0x00 },
-    { "WDTCR", 0x60, 0x00 },
-    { "CLKPR", 0x61, 0x00 },
-    { "PRR", 0x64, 0x00 },
-    { "OSCCAL", 0x66, 0x00 },
-    { "EICRA", 0x69, 0x00 },
-    { "PCMSK0", 0x6b, 0x00 },
-    { "PCMSK1", 0x6c, 0x00 },
-    { "PCMSK2", 0x6d, 0x00 },
-    { "TIMSK0", 0x6e, 0x00 },
-    { "TIMSK1", 0x6f, 0x00 },
-    { "TIMSK2", 0x70, 0x00 },
-    { "PCMSK3", 0x73, 0x00 },
-    { "ADCL", 0x78, IO_REG_RSE },
-    { "ADCH", 0x79, IO_REG_RSE },
-    { "ADCSRA", 0x7a, 0x00 },
-    { "ADCSRB", 0x7b, 0x00 },
-    { "ADMUX", 0x7c, 0x00 },
-    { "DIDR0", 0x7e, 0x00 },
-    { "DIDR1", 0x7f, 0x00 },
-    { "TCCR1A", 0x80, 0x00 },
-    { "TCCR1B", 0x81, 0x00 },
-    { "TCCR1C", 0x82, 0x00 },
-    { "TCNT1L", 0x84, 0x00 },
-    { "TCNT1H", 0x85, 0x00 },
-    { "ICR1L", 0x86, 0x00 },
-    { "ICR1H", 0x87, 0x00 },
-    { "OCR1AL", 0x88, 0x00 },
-    { "OCR1AH", 0x89, 0x00 },
-    { "OCR1BL", 0x8a, 0x00 },
-    { "OCR1BH", 0x8b, 0x00 },
-    { "TCCR2A", 0xb0, 0x00 },
-    { "TCNT2", 0xb2, 0x00 },
-    { "OCR2A", 0xb3, 0x00 },
-    { "ASSR", 0xb6, 0x00 },
-    { "USICR", 0xb8, 0x00 },
-    { "USISR", 0xb9, 0x00 },
-    { "USIDR", 0xba, 0x00 },
-    { "UCSR0A", 0xc0, 0x00 },
-    { "UCSR0B", 0xc1, 0x00 },
-    { "UCSR0C", 0xc2, 0x00 },
-    { "UBRR0L", 0xc4, 0x00 },
-    { "UBRR0H", 0xc5, 0x00 },
-    { "UDR0", 0xc6, IO_REG_RSE },
-    { "PINH", 0xd8, 0x00 },
-    { "DDRH", 0xd9, 0x00 },
-    { "PORTH", 0xda, 0x00 },
-    { "PINJ", 0xdb, 0x00 },
-    { "DDRJ", 0xdc, 0x00 },
-    { "PORTJ", 0xdd, 0x00 },
-    { nullptr, 0, 0 }
-};
-
-
-gdb_io_reg_def_type atmega645_io_registers[] =
-{
-    { "PINA", 0x20, 0x00 },
-    { "DDRA", 0x21, 0x00 },
-    { "PORTA", 0x22, 0x00 },
-    { "PINB", 0x23, 0x00 },
-    { "DDRB", 0x24, 0x00 },
-    { "PORTB", 0x25, 0x00 },
-    { "PINC", 0x26, 0x00 },
-    { "DDRC", 0x27, 0x00 },
-    { "PORTC", 0x28, 0x00 },
-    { "PIND", 0x29, 0x00 },
-    { "DDRD", 0x2a, 0x00 },
-    { "PORTD", 0x2b, 0x00 },
-    { "PINE", 0x2c, 0x00 },
-    { "DDRE", 0x2d, 0x00 },
-    { "PORTE", 0x2e, 0x00 },
-    { "PINF", 0x2f, 0x00 },
-    { "DDRF", 0x30, 0x00 },
-    { "PORTF", 0x31, 0x00 },
-    { "PING", 0x32, 0x00 },
-    { "DDRG", 0x33, 0x00 },
-    { "PORTG", 0x34, 0x00 },
-    { "TIFR0", 0x35, 0x00 },
-    { "TIFR1", 0x36, 0x00 },
-    { "TIFR2", 0x37, 0x00 },
-    { "EIFR", 0x3c, 0x00 },
-    { "EIMSK", 0x3d, 0x00 },
-    { "GPIOR0", 0x3e, 0x00 },
-    { "EECR", 0x3f, 0x00 },
-    { "EEDR", 0x40, 0x00 },
-    { "EEARL", 0x41, 0x00 },
-    { "EEARH", 0x42, 0x00 },
-    { "GTCCR", 0x43, 0x00 },
-    { "TCCR0A", 0x44, 0x00 },
-    { "TCNT0", 0x46, 0x00 },
-    { "OCR0A", 0x47, 0x00 },
-    { "GPIOR1", 0x4a, 0x00 },
-    { "GPIOR2", 0x4b, 0x00 },
-    { "SPCR", 0x4c, 0x00 },
-    { "SPSR", 0x4d, 0x00 },
-    { "SPDR", 0x4e, 0x00 },
-    { "ACSR", 0x50, 0x00 },
-    { "OCDR", 0x51, 0x00 },
-    { "SMCR", 0x53, 0x00 },
-    { "MCUSR", 0x54, 0x00 },
-    { "MCUCR", 0x55, 0x00 },
-    { "SPMCSR", 0x57, 0x00 },
-    { "SPL", 0x5d, 0x00 },
-    { "SPH", 0x5e, 0x00 },
-    { "SREG", 0x5f, 0x00 },
-    { "WDTCR", 0x60, 0x00 },
-    { "CLKPR", 0x61, 0x00 },
-    { "PRR", 0x64, 0x00 },
-    { "OSCCAL", 0x66, 0x00 },
-    { "EICRA", 0x69, 0x00 },
-    { "PCMSK0", 0x6b, 0x00 },
-    { "PCMSK1", 0x6c, 0x00 },
-    { "TIMSK0", 0x6e, 0x00 },
-    { "TIMSK1", 0x6f, 0x00 },
-    { "TIMSK2", 0x70, 0x00 },
-    { "ADCL", 0x78, IO_REG_RSE },
-    { "ADCH", 0x79, IO_REG_RSE },
-    { "ADCSRA", 0x7a, 0x00 },
-    { "ADCSRB", 0x7b, 0x00 },
-    { "ADMUX", 0x7c, 0x00 },
-    { "DIDR0", 0x7e, 0x00 },
-    { "DIDR1", 0x7f, 0x00 },
-    { "TCCR1A", 0x80, 0x00 },
-    { "TCCR1B", 0x81, 0x00 },
-    { "TCCR1C", 0x82, 0x00 },
-    { "TCNT1L", 0x84, 0x00 },
-    { "TCNT1H", 0x85, 0x00 },
-    { "ICR1L", 0x86, 0x00 },
-    { "ICR1H", 0x87, 0x00 },
-    { "OCR1AL", 0x88, 0x00 },
-    { "OCR1AH", 0x89, 0x00 },
-    { "OCR1BL", 0x8a, 0x00 },
-    { "OCR1BH", 0x8b, 0x00 },
-    { "TCCR2A", 0xb0, 0x00 },
-    { "TCNT2", 0xb2, 0x00 },
-    { "OCR2A", 0xb3, 0x00 },
-    { "ASSR", 0xb6, 0x00 },
-    { "USICR", 0xb8, 0x00 },
-    { "USISR", 0xb9, 0x00 },
-    { "USIDR", 0xba, 0x00 },
-    { "UCSR0A", 0xc0, 0x00 },
-    { "UCSR0B", 0xc1, 0x00 },
-    { "UCSR0C", 0xc2, 0x00 },
-    { "UBRR0L", 0xc4, 0x00 },
-    { "UBRR0H", 0xc5, 0x00 },
-    { "UDR0", 0xc6, IO_REG_RSE },
-    { nullptr, 0, 0 }
-};
-
-
-gdb_io_reg_def_type atmega6450_io_registers[] =
+const gdb_io_reg_def_type atmega3250_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1513,7 +1317,207 @@ gdb_io_reg_def_type atmega6450_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega329_io_registers[] =
+const gdb_io_reg_def_type atmega645_io_registers[] =
+{
+    { "PINA", 0x20, 0x00 },
+    { "DDRA", 0x21, 0x00 },
+    { "PORTA", 0x22, 0x00 },
+    { "PINB", 0x23, 0x00 },
+    { "DDRB", 0x24, 0x00 },
+    { "PORTB", 0x25, 0x00 },
+    { "PINC", 0x26, 0x00 },
+    { "DDRC", 0x27, 0x00 },
+    { "PORTC", 0x28, 0x00 },
+    { "PIND", 0x29, 0x00 },
+    { "DDRD", 0x2a, 0x00 },
+    { "PORTD", 0x2b, 0x00 },
+    { "PINE", 0x2c, 0x00 },
+    { "DDRE", 0x2d, 0x00 },
+    { "PORTE", 0x2e, 0x00 },
+    { "PINF", 0x2f, 0x00 },
+    { "DDRF", 0x30, 0x00 },
+    { "PORTF", 0x31, 0x00 },
+    { "PING", 0x32, 0x00 },
+    { "DDRG", 0x33, 0x00 },
+    { "PORTG", 0x34, 0x00 },
+    { "TIFR0", 0x35, 0x00 },
+    { "TIFR1", 0x36, 0x00 },
+    { "TIFR2", 0x37, 0x00 },
+    { "EIFR", 0x3c, 0x00 },
+    { "EIMSK", 0x3d, 0x00 },
+    { "GPIOR0", 0x3e, 0x00 },
+    { "EECR", 0x3f, 0x00 },
+    { "EEDR", 0x40, 0x00 },
+    { "EEARL", 0x41, 0x00 },
+    { "EEARH", 0x42, 0x00 },
+    { "GTCCR", 0x43, 0x00 },
+    { "TCCR0A", 0x44, 0x00 },
+    { "TCNT0", 0x46, 0x00 },
+    { "OCR0A", 0x47, 0x00 },
+    { "GPIOR1", 0x4a, 0x00 },
+    { "GPIOR2", 0x4b, 0x00 },
+    { "SPCR", 0x4c, 0x00 },
+    { "SPSR", 0x4d, 0x00 },
+    { "SPDR", 0x4e, 0x00 },
+    { "ACSR", 0x50, 0x00 },
+    { "OCDR", 0x51, 0x00 },
+    { "SMCR", 0x53, 0x00 },
+    { "MCUSR", 0x54, 0x00 },
+    { "MCUCR", 0x55, 0x00 },
+    { "SPMCSR", 0x57, 0x00 },
+    { "SPL", 0x5d, 0x00 },
+    { "SPH", 0x5e, 0x00 },
+    { "SREG", 0x5f, 0x00 },
+    { "WDTCR", 0x60, 0x00 },
+    { "CLKPR", 0x61, 0x00 },
+    { "PRR", 0x64, 0x00 },
+    { "OSCCAL", 0x66, 0x00 },
+    { "EICRA", 0x69, 0x00 },
+    { "PCMSK0", 0x6b, 0x00 },
+    { "PCMSK1", 0x6c, 0x00 },
+    { "TIMSK0", 0x6e, 0x00 },
+    { "TIMSK1", 0x6f, 0x00 },
+    { "TIMSK2", 0x70, 0x00 },
+    { "ADCL", 0x78, IO_REG_RSE },
+    { "ADCH", 0x79, IO_REG_RSE },
+    { "ADCSRA", 0x7a, 0x00 },
+    { "ADCSRB", 0x7b, 0x00 },
+    { "ADMUX", 0x7c, 0x00 },
+    { "DIDR0", 0x7e, 0x00 },
+    { "DIDR1", 0x7f, 0x00 },
+    { "TCCR1A", 0x80, 0x00 },
+    { "TCCR1B", 0x81, 0x00 },
+    { "TCCR1C", 0x82, 0x00 },
+    { "TCNT1L", 0x84, 0x00 },
+    { "TCNT1H", 0x85, 0x00 },
+    { "ICR1L", 0x86, 0x00 },
+    { "ICR1H", 0x87, 0x00 },
+    { "OCR1AL", 0x88, 0x00 },
+    { "OCR1AH", 0x89, 0x00 },
+    { "OCR1BL", 0x8a, 0x00 },
+    { "OCR1BH", 0x8b, 0x00 },
+    { "TCCR2A", 0xb0, 0x00 },
+    { "TCNT2", 0xb2, 0x00 },
+    { "OCR2A", 0xb3, 0x00 },
+    { "ASSR", 0xb6, 0x00 },
+    { "USICR", 0xb8, 0x00 },
+    { "USISR", 0xb9, 0x00 },
+    { "USIDR", 0xba, 0x00 },
+    { "UCSR0A", 0xc0, 0x00 },
+    { "UCSR0B", 0xc1, 0x00 },
+    { "UCSR0C", 0xc2, 0x00 },
+    { "UBRR0L", 0xc4, 0x00 },
+    { "UBRR0H", 0xc5, 0x00 },
+    { "UDR0", 0xc6, IO_REG_RSE },
+    { nullptr, 0, 0 }
+};
+
+
+const gdb_io_reg_def_type atmega6450_io_registers[] =
+{
+    { "PINA", 0x20, 0x00 },
+    { "DDRA", 0x21, 0x00 },
+    { "PORTA", 0x22, 0x00 },
+    { "PINB", 0x23, 0x00 },
+    { "DDRB", 0x24, 0x00 },
+    { "PORTB", 0x25, 0x00 },
+    { "PINC", 0x26, 0x00 },
+    { "DDRC", 0x27, 0x00 },
+    { "PORTC", 0x28, 0x00 },
+    { "PIND", 0x29, 0x00 },
+    { "DDRD", 0x2a, 0x00 },
+    { "PORTD", 0x2b, 0x00 },
+    { "PINE", 0x2c, 0x00 },
+    { "DDRE", 0x2d, 0x00 },
+    { "PORTE", 0x2e, 0x00 },
+    { "PINF", 0x2f, 0x00 },
+    { "DDRF", 0x30, 0x00 },
+    { "PORTF", 0x31, 0x00 },
+    { "PING", 0x32, 0x00 },
+    { "DDRG", 0x33, 0x00 },
+    { "PORTG", 0x34, 0x00 },
+    { "TIFR0", 0x35, 0x00 },
+    { "TIFR1", 0x36, 0x00 },
+    { "TIFR2", 0x37, 0x00 },
+    { "EIFR", 0x3c, 0x00 },
+    { "EIMSK", 0x3d, 0x00 },
+    { "GPIOR0", 0x3e, 0x00 },
+    { "EECR", 0x3f, 0x00 },
+    { "EEDR", 0x40, 0x00 },
+    { "EEARL", 0x41, 0x00 },
+    { "EEARH", 0x42, 0x00 },
+    { "GTCCR", 0x43, 0x00 },
+    { "TCCR0A", 0x44, 0x00 },
+    { "TCNT0", 0x46, 0x00 },
+    { "OCR0A", 0x47, 0x00 },
+    { "GPIOR1", 0x4a, 0x00 },
+    { "GPIOR2", 0x4b, 0x00 },
+    { "SPCR", 0x4c, 0x00 },
+    { "SPSR", 0x4d, 0x00 },
+    { "SPDR", 0x4e, 0x00 },
+    { "ACSR", 0x50, 0x00 },
+    { "OCDR", 0x51, 0x00 },
+    { "SMCR", 0x53, 0x00 },
+    { "MCUSR", 0x54, 0x00 },
+    { "MCUCR", 0x55, 0x00 },
+    { "SPMCSR", 0x57, 0x00 },
+    { "SPL", 0x5d, 0x00 },
+    { "SPH", 0x5e, 0x00 },
+    { "SREG", 0x5f, 0x00 },
+    { "WDTCR", 0x60, 0x00 },
+    { "CLKPR", 0x61, 0x00 },
+    { "PRR", 0x64, 0x00 },
+    { "OSCCAL", 0x66, 0x00 },
+    { "EICRA", 0x69, 0x00 },
+    { "PCMSK0", 0x6b, 0x00 },
+    { "PCMSK1", 0x6c, 0x00 },
+    { "PCMSK2", 0x6d, 0x00 },
+    { "TIMSK0", 0x6e, 0x00 },
+    { "TIMSK1", 0x6f, 0x00 },
+    { "TIMSK2", 0x70, 0x00 },
+    { "PCMSK3", 0x73, 0x00 },
+    { "ADCL", 0x78, IO_REG_RSE },
+    { "ADCH", 0x79, IO_REG_RSE },
+    { "ADCSRA", 0x7a, 0x00 },
+    { "ADCSRB", 0x7b, 0x00 },
+    { "ADMUX", 0x7c, 0x00 },
+    { "DIDR0", 0x7e, 0x00 },
+    { "DIDR1", 0x7f, 0x00 },
+    { "TCCR1A", 0x80, 0x00 },
+    { "TCCR1B", 0x81, 0x00 },
+    { "TCCR1C", 0x82, 0x00 },
+    { "TCNT1L", 0x84, 0x00 },
+    { "TCNT1H", 0x85, 0x00 },
+    { "ICR1L", 0x86, 0x00 },
+    { "ICR1H", 0x87, 0x00 },
+    { "OCR1AL", 0x88, 0x00 },
+    { "OCR1AH", 0x89, 0x00 },
+    { "OCR1BL", 0x8a, 0x00 },
+    { "OCR1BH", 0x8b, 0x00 },
+    { "TCCR2A", 0xb0, 0x00 },
+    { "TCNT2", 0xb2, 0x00 },
+    { "OCR2A", 0xb3, 0x00 },
+    { "ASSR", 0xb6, 0x00 },
+    { "USICR", 0xb8, 0x00 },
+    { "USISR", 0xb9, 0x00 },
+    { "USIDR", 0xba, 0x00 },
+    { "UCSR0A", 0xc0, 0x00 },
+    { "UCSR0B", 0xc1, 0x00 },
+    { "UCSR0C", 0xc2, 0x00 },
+    { "UBRR0L", 0xc4, 0x00 },
+    { "UBRR0H", 0xc5, 0x00 },
+    { "UDR0", 0xc6, IO_REG_RSE },
+    { "PINH", 0xd8, 0x00 },
+    { "DDRH", 0xd9, 0x00 },
+    { "PORTH", 0xda, 0x00 },
+    { "PINJ", 0xdb, 0x00 },
+    { "DDRJ", 0xdc, 0x00 },
+    { "PORTJ", 0xdd, 0x00 },
+    { nullptr, 0, 0 }
+};
+
+
+const gdb_io_reg_def_type atmega329_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1629,7 +1633,7 @@ gdb_io_reg_def_type atmega329_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega3290_io_registers[] =
+const gdb_io_reg_def_type atmega3290_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1757,7 +1761,7 @@ gdb_io_reg_def_type atmega3290_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega649_io_registers[] =
+const gdb_io_reg_def_type atmega649_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -1873,7 +1877,7 @@ gdb_io_reg_def_type atmega649_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega6490_io_registers[] =
+const gdb_io_reg_def_type atmega6490_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2001,7 +2005,7 @@ gdb_io_reg_def_type atmega6490_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega640_io_registers[] =
+const gdb_io_reg_def_type atmega640_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2191,7 +2195,7 @@ gdb_io_reg_def_type atmega640_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega1280_io_registers[] =
+const gdb_io_reg_def_type atmega1280_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2381,7 +2385,7 @@ gdb_io_reg_def_type atmega1280_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega1281_io_registers[] =
+const gdb_io_reg_def_type atmega1281_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2546,7 +2550,7 @@ gdb_io_reg_def_type atmega1281_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega2560_io_registers[] =
+const gdb_io_reg_def_type atmega2560_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2736,7 +2740,7 @@ gdb_io_reg_def_type atmega2560_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega2561_io_registers[] =
+const gdb_io_reg_def_type atmega2561_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -2901,7 +2905,7 @@ gdb_io_reg_def_type atmega2561_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega48_io_registers[] =
+const gdb_io_reg_def_type atmega48_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -2995,7 +2999,7 @@ gdb_io_reg_def_type atmega48_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega88_io_registers[] =
+const gdb_io_reg_def_type atmega88_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3089,7 +3093,7 @@ gdb_io_reg_def_type atmega88_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega168_io_registers[] =
+const gdb_io_reg_def_type atmega168_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3183,7 +3187,7 @@ gdb_io_reg_def_type atmega168_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny13_io_registers[] =
+const gdb_io_reg_def_type attiny13_io_registers[] =
 {
     { "ADCSRB", 0x23, 0x00 },
     { "ADCL", 0x24, IO_REG_RSE },
@@ -3222,7 +3226,7 @@ gdb_io_reg_def_type attiny13_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny2313_io_registers[] =
+const gdb_io_reg_def_type attiny2313_io_registers[] =
 {
     { "DIDR", 0x21, 0x00 },
     { "UBRRH", 0x22, 0x00 },
@@ -3284,7 +3288,7 @@ gdb_io_reg_def_type attiny2313_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm2_io_registers[] =
+const gdb_io_reg_def_type at90pwm2_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3431,7 +3435,7 @@ gdb_io_reg_def_type at90pwm2_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm3_io_registers[] =
+const gdb_io_reg_def_type at90pwm3_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3578,7 +3582,7 @@ gdb_io_reg_def_type at90pwm3_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm2b_io_registers[] =
+const gdb_io_reg_def_type at90pwm2b_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3723,7 +3727,7 @@ gdb_io_reg_def_type at90pwm2b_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm3b_io_registers[] =
+const gdb_io_reg_def_type at90pwm3b_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -3868,7 +3872,7 @@ gdb_io_reg_def_type at90pwm3b_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny24_io_registers[] =
+const gdb_io_reg_def_type attiny24_io_registers[] =
 {
     { "PRR", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -3933,7 +3937,7 @@ gdb_io_reg_def_type attiny24_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny44_io_registers[] =
+const gdb_io_reg_def_type attiny44_io_registers[] =
 {
     { "PRR", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -3999,7 +4003,7 @@ gdb_io_reg_def_type attiny44_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny84_io_registers[] =
+const gdb_io_reg_def_type attiny84_io_registers[] =
 {
     { "PRR", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -4065,7 +4069,7 @@ gdb_io_reg_def_type attiny84_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny25_io_registers[] =
+const gdb_io_reg_def_type attiny25_io_registers[] =
 {
     { "ADCSRB", 0x23, 0x00 },
     { "ADCL", 0x24, IO_REG_RSE },
@@ -4122,7 +4126,7 @@ gdb_io_reg_def_type attiny25_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny45_io_registers[] =
+const gdb_io_reg_def_type attiny45_io_registers[] =
 {
     { "ADCSRB", 0x23, 0x00 },
     { "ADCL", 0x24, IO_REG_RSE },
@@ -4180,7 +4184,7 @@ gdb_io_reg_def_type attiny45_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny85_io_registers[] =
+const gdb_io_reg_def_type attiny85_io_registers[] =
 {
     { "ADCSRB", 0x23, 0x00 },
     { "ADCL", 0x24, IO_REG_RSE },
@@ -4238,7 +4242,7 @@ gdb_io_reg_def_type attiny85_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny261_io_registers[] =
+const gdb_io_reg_def_type attiny261_io_registers[] =
 {
     { "TCCR1E", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -4306,76 +4310,7 @@ gdb_io_reg_def_type attiny261_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny461_io_registers[] =
-{
-    { "TCCR1E", 0x20, 0x00 },
-    { "DIDR0", 0x21, 0x00 },
-    { "DIDR1", 0x22, 0x00 },
-    { "ADCSRB", 0x23, 0x00 },
-    { "ADCL", 0x24, IO_REG_RSE },
-    { "ADCH", 0x25, IO_REG_RSE },
-    { "ADCSRA", 0x26, 0x00 },
-    { "ADMUX", 0x27, 0x00 },
-    { "ACSRA", 0x28, 0x00 },
-    { "ACSRB", 0x29, 0x00 },
-    { "GPIOR0", 0x2a, 0x00 },
-    { "GPIOR1", 0x2b, 0x00 },
-    { "GPIOR2", 0x2c, 0x00 },
-    { "USICR", 0x2d, 0x00 },
-    { "USISR", 0x2e, 0x00 },
-    { "USIDR", 0x2f, 0x00 },
-    { "USIBR", 0x30, 0x00 },
-    { "USIPP", 0x31, 0x00 },
-    { "OCR0B", 0x32, 0x00 },
-    { "OCR0A", 0x33, 0x00 },
-    { "TCNT0H", 0x34, 0x00 },
-    { "TCCR0A", 0x35, 0x00 },
-    { "PINB", 0x36, 0x00 },
-    { "DDRB", 0x37, 0x00 },
-    { "PORTB", 0x38, 0x00 },
-    { "PINA", 0x39, 0x00 },
-    { "DDRA", 0x3a, 0x00 },
-    { "PORTA", 0x3b, 0x00 },
-    { "EECR", 0x3c, 0x00 },
-    { "EEDR", 0x3d, 0x00 },
-    { "EEARL", 0x3e, 0x00 },
-    { "EEARH", 0x3f, 0x00 },
-    { "DWDR", 0x40, 0x00 },
-    { "WDTCR", 0x41, 0x00 },
-    { "PCMSK1", 0x42, 0x00 },
-    { "PCMSK0", 0x43, 0x00 },
-    { "DT1", 0x44, 0x00 },
-    { "TC1H", 0x45, 0x00 },
-    { "TCCR1D", 0x46, 0x00 },
-    { "TCCR1C", 0x47, 0x00 },
-    { "CLKPR", 0x48, 0x00 },
-    { "PLLCSR", 0x49, 0x00 },
-    { "OCR1D", 0x4a, 0x00 },
-    { "OCR1C", 0x4b, 0x00 },
-    { "OCR1B", 0x4c, 0x00 },
-    { "OCR1A", 0x4d, 0x00 },
-    { "TCNT1", 0x4e, 0x00 },
-    { "TCCR1B", 0x4f, 0x00 },
-    { "TCCR1A", 0x50, 0x00 },
-    { "OSCCAL", 0x51, 0x00 },
-    { "TCNT0L", 0x52, 0x00 },
-    { "TCCR0B", 0x53, 0x00 },
-    { "MCUSR", 0x54, 0x00 },
-    { "MCUCR", 0x55, 0x00 },
-    { "PRR", 0x56, 0x00 },
-    { "SPMCSR", 0x57, 0x00 },
-    { "TIFR", 0x58, 0x00 },
-    { "TIMSK", 0x59, 0x00 },
-    { "GIFR", 0x5a, 0x00 },
-    { "GIMSK", 0x5b, 0x00 },
-    { "SPL", 0x5d, 0x00 },
-    { "SPH", 0x5e, 0x00 },
-    { "SREG", 0x5f, 0x00 },
-    { nullptr, 0, 0 }
-};
-
-
-gdb_io_reg_def_type attiny861_io_registers[] =
+const gdb_io_reg_def_type attiny461_io_registers[] =
 {
     { "TCCR1E", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -4444,7 +4379,76 @@ gdb_io_reg_def_type attiny861_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega32c1_io_registers[] =
+const gdb_io_reg_def_type attiny861_io_registers[] =
+{
+    { "TCCR1E", 0x20, 0x00 },
+    { "DIDR0", 0x21, 0x00 },
+    { "DIDR1", 0x22, 0x00 },
+    { "ADCSRB", 0x23, 0x00 },
+    { "ADCL", 0x24, IO_REG_RSE },
+    { "ADCH", 0x25, IO_REG_RSE },
+    { "ADCSRA", 0x26, 0x00 },
+    { "ADMUX", 0x27, 0x00 },
+    { "ACSRA", 0x28, 0x00 },
+    { "ACSRB", 0x29, 0x00 },
+    { "GPIOR0", 0x2a, 0x00 },
+    { "GPIOR1", 0x2b, 0x00 },
+    { "GPIOR2", 0x2c, 0x00 },
+    { "USICR", 0x2d, 0x00 },
+    { "USISR", 0x2e, 0x00 },
+    { "USIDR", 0x2f, 0x00 },
+    { "USIBR", 0x30, 0x00 },
+    { "USIPP", 0x31, 0x00 },
+    { "OCR0B", 0x32, 0x00 },
+    { "OCR0A", 0x33, 0x00 },
+    { "TCNT0H", 0x34, 0x00 },
+    { "TCCR0A", 0x35, 0x00 },
+    { "PINB", 0x36, 0x00 },
+    { "DDRB", 0x37, 0x00 },
+    { "PORTB", 0x38, 0x00 },
+    { "PINA", 0x39, 0x00 },
+    { "DDRA", 0x3a, 0x00 },
+    { "PORTA", 0x3b, 0x00 },
+    { "EECR", 0x3c, 0x00 },
+    { "EEDR", 0x3d, 0x00 },
+    { "EEARL", 0x3e, 0x00 },
+    { "EEARH", 0x3f, 0x00 },
+    { "DWDR", 0x40, 0x00 },
+    { "WDTCR", 0x41, 0x00 },
+    { "PCMSK1", 0x42, 0x00 },
+    { "PCMSK0", 0x43, 0x00 },
+    { "DT1", 0x44, 0x00 },
+    { "TC1H", 0x45, 0x00 },
+    { "TCCR1D", 0x46, 0x00 },
+    { "TCCR1C", 0x47, 0x00 },
+    { "CLKPR", 0x48, 0x00 },
+    { "PLLCSR", 0x49, 0x00 },
+    { "OCR1D", 0x4a, 0x00 },
+    { "OCR1C", 0x4b, 0x00 },
+    { "OCR1B", 0x4c, 0x00 },
+    { "OCR1A", 0x4d, 0x00 },
+    { "TCNT1", 0x4e, 0x00 },
+    { "TCCR1B", 0x4f, 0x00 },
+    { "TCCR1A", 0x50, 0x00 },
+    { "OSCCAL", 0x51, 0x00 },
+    { "TCNT0L", 0x52, 0x00 },
+    { "TCCR0B", 0x53, 0x00 },
+    { "MCUSR", 0x54, 0x00 },
+    { "MCUCR", 0x55, 0x00 },
+    { "PRR", 0x56, 0x00 },
+    { "SPMCSR", 0x57, 0x00 },
+    { "TIFR", 0x58, 0x00 },
+    { "TIMSK", 0x59, 0x00 },
+    { "GIFR", 0x5a, 0x00 },
+    { "GIMSK", 0x5b, 0x00 },
+    { "SPL", 0x5d, 0x00 },
+    { "SPH", 0x5e, 0x00 },
+    { "SREG", 0x5f, 0x00 },
+    { nullptr, 0, 0 }
+};
+
+
+const gdb_io_reg_def_type atmega32c1_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -4579,7 +4583,7 @@ gdb_io_reg_def_type atmega32c1_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega32m1_io_registers[] =
+const gdb_io_reg_def_type atmega32m1_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -4743,7 +4747,7 @@ gdb_io_reg_def_type atmega32m1_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90can32_io_registers[] =
+const gdb_io_reg_def_type at90can32_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -4900,7 +4904,7 @@ gdb_io_reg_def_type at90can32_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90can64_io_registers[] =
+const gdb_io_reg_def_type at90can64_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -5057,7 +5061,7 @@ gdb_io_reg_def_type at90can64_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm216_io_registers[] =
+const gdb_io_reg_def_type at90pwm216_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -5202,7 +5206,7 @@ gdb_io_reg_def_type at90pwm216_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90pwm316_io_registers[] =
+const gdb_io_reg_def_type at90pwm316_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -5347,7 +5351,7 @@ gdb_io_reg_def_type at90pwm316_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90usb1287_io_registers[] =
+const gdb_io_reg_def_type at90usb1287_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -5524,7 +5528,7 @@ gdb_io_reg_def_type at90usb1287_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90usb162_io_registers[] =
+const gdb_io_reg_def_type at90usb162_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -5631,7 +5635,7 @@ gdb_io_reg_def_type at90usb162_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90usb646_io_registers[] =
+const gdb_io_reg_def_type at90usb646_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -5781,7 +5785,7 @@ gdb_io_reg_def_type at90usb646_io_registers[] =
 };
 
 
-gdb_io_reg_def_type at90usb647_io_registers[] =
+const gdb_io_reg_def_type at90usb647_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -5957,7 +5961,7 @@ gdb_io_reg_def_type at90usb647_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega1284p_io_registers[] =
+const gdb_io_reg_def_type atmega1284p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6076,7 +6080,7 @@ gdb_io_reg_def_type atmega1284p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega165_io_registers[] =
+const gdb_io_reg_def_type atmega165_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6172,7 +6176,7 @@ gdb_io_reg_def_type atmega165_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega165p_io_registers[] =
+const gdb_io_reg_def_type atmega165p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6268,7 +6272,7 @@ gdb_io_reg_def_type atmega165p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega168p_io_registers[] =
+const gdb_io_reg_def_type atmega168p_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -6361,7 +6365,7 @@ gdb_io_reg_def_type atmega168p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega16hva_io_registers[] =
+const gdb_io_reg_def_type atmega16hva_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6447,7 +6451,7 @@ gdb_io_reg_def_type atmega16hva_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega3250p_io_registers[] =
+const gdb_io_reg_def_type atmega3250p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6551,7 +6555,7 @@ gdb_io_reg_def_type atmega3250p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega325p_io_registers[] =
+const gdb_io_reg_def_type atmega325p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6647,7 +6651,7 @@ gdb_io_reg_def_type atmega325p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega328p_io_registers[] =
+const gdb_io_reg_def_type atmega328p_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -6740,7 +6744,7 @@ gdb_io_reg_def_type atmega328p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega3290p_io_registers[] =
+const gdb_io_reg_def_type atmega3290p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6868,7 +6872,7 @@ gdb_io_reg_def_type atmega3290p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega329p_io_registers[] =
+const gdb_io_reg_def_type atmega329p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -6984,7 +6988,7 @@ gdb_io_reg_def_type atmega329p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega32hvb_io_registers[] =
+const gdb_io_reg_def_type atmega32hvb_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -7087,7 +7091,7 @@ gdb_io_reg_def_type atmega32hvb_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega32u4_io_registers[] =
+const gdb_io_reg_def_type atmega32u4_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -7281,7 +7285,7 @@ gdb_io_reg_def_type atmega32u4_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega406_io_registers[] =
+const gdb_io_reg_def_type atmega406_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -7372,7 +7376,7 @@ gdb_io_reg_def_type atmega406_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega48p_io_registers[] =
+const gdb_io_reg_def_type atmega48p_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -7464,7 +7468,7 @@ gdb_io_reg_def_type atmega48p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega644p_io_registers[] =
+const gdb_io_reg_def_type atmega644p_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -7568,7 +7572,7 @@ gdb_io_reg_def_type atmega644p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega88p_io_registers[] =
+const gdb_io_reg_def_type atmega88p_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -7661,7 +7665,7 @@ gdb_io_reg_def_type atmega88p_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny167_io_registers[] =
+const gdb_io_reg_def_type attiny167_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -7752,7 +7756,7 @@ gdb_io_reg_def_type attiny167_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny43u_io_registers[] =
+const gdb_io_reg_def_type attiny43u_io_registers[] =
 {
     { "PRR", 0x20, 0x00 },
     { "DIDR0", 0x21, 0x00 },
@@ -7810,7 +7814,7 @@ gdb_io_reg_def_type attiny43u_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny48_io_registers[] =
+const gdb_io_reg_def_type attiny48_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -7893,7 +7897,7 @@ gdb_io_reg_def_type attiny48_io_registers[] =
 };
 
 
-gdb_io_reg_def_type attiny88_io_registers[] =
+const gdb_io_reg_def_type attiny88_io_registers[] =
 {
     { "PINB", 0x23, 0x00 },
     { "DDRB", 0x24, 0x00 },
@@ -7976,7 +7980,7 @@ gdb_io_reg_def_type attiny88_io_registers[] =
 };
 
 
-gdb_io_reg_def_type atmega128rfa1_io_registers[] =
+const gdb_io_reg_def_type atmega128rfa1_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },
@@ -8232,7 +8236,7 @@ gdb_io_reg_def_type atmega128rfa1_io_registers[] =
     { nullptr, 0, 0 }
 };
 
-gdb_io_reg_def_type atmega256rfr2_io_registers[] =
+const gdb_io_reg_def_type atmega256rfr2_io_registers[] =
 {
     { "PINA", 0x20, 0x00 },
     { "DDRA", 0x21, 0x00 },

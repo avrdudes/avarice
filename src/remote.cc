@@ -36,6 +36,7 @@
 #include "avarice.h"
 #include "jtag.h"
 #include "remote.h"
+#include "ioreg.h"
 
 enum {
     /** BUFMAX defines the maximum number of characters in
@@ -765,7 +766,7 @@ void talkToGdb() {
 
             /* If there is an io_reg_defs for this device then respond */
 
-            gdb_io_reg_def_type *io_reg_defs = theJtagICE->deviceDef->io_reg_defs;
+            const gdb_io_reg_def_type *io_reg_defs = theJtagICE->deviceDef->io_reg_defs;
             if (io_reg_defs) {
                 // count the number of defined registers
                 regcount = 0;

@@ -33,7 +33,6 @@
 #include <memory>
 
 #include "avarice.h"
-#include "ioreg.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
 
@@ -196,6 +195,8 @@ enum dev_flags {
     DEVFL_MKII_ONLY = 0x000002, // Device is only supported in JTAG ICE mkII
 };
 
+struct gdb_io_reg_def_type;
+
 struct jtag_device_def_type {
     const char *name;
     const unsigned int device_id;   // Part Number from JTAG Device
@@ -207,7 +208,7 @@ struct jtag_device_def_type {
     unsigned int vectors_end;       // End of interrupt vector table
     enum dev_flags device_flags;    // See above.
 
-    gdb_io_reg_def_type *io_reg_defs;
+    const gdb_io_reg_def_type *io_reg_defs;
 
     bool is_xmega;           // Device is an ATxmega part
     unsigned int fusemap;    // Bitmap of fuses supported (0b00000111 = 0x07 for
