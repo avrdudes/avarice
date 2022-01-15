@@ -115,7 +115,6 @@ constexpr gdb_io_reg_def_type atmega3250_io_registers[] =
     25 * 4, // 25 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega3250_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

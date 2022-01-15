@@ -70,7 +70,6 @@ constexpr gdb_io_reg_def_type attiny2313_io_registers[] = {{"DIDR", 0x21, 0x00},
     19 * 2, // 19 interrupt vectors
     DEVFL_MKII_ONLY,
     attiny2313_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x51,   // osccal

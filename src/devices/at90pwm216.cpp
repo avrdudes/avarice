@@ -84,7 +84,6 @@ constexpr gdb_io_reg_def_type at90pwm216_io_registers[] = {
     32 * 4, // 32 interrupt vectors
     DEVFL_MKII_ONLY,
     at90pwm216_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

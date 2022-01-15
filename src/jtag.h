@@ -220,7 +220,6 @@ struct jtag_device_def_type {
 
     const gdb_io_reg_def_type *io_reg_defs;
 
-    bool is_xmega;           // Device is an ATxmega part
     unsigned int fusemap;    // Bitmap of fuses supported (0b00000111 = 0x07 for
                              // classic megaAVR devices, 0b00110111 = 0x37 for
                              // Xmega devices
@@ -235,7 +234,7 @@ struct jtag_device_def_type {
                                       // mkI device
     const jtag2_device_desc_type& dev_desc2; // Device descriptor to download to
                                       // mkII device
-    const xmega_device_desc_type* dev_desc3; // Device descriptor to download for
+    const xmega_device_desc_type* xmega_dev_desc; // Device descriptor to download for
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
 
@@ -243,18 +242,18 @@ struct jtag_device_def_type {
                          unsigned int flash_page_size, unsigned int flash_page_count,
                          unsigned char eeprom_page_size, unsigned int eeprom_page_count,
                          unsigned int vectors_end, dev_flags device_flags,
-                         const gdb_io_reg_def_type *io_reg_defs, bool is_xmega,
+                         const gdb_io_reg_def_type *io_reg_defs,
                          unsigned int fusemap,unsigned int ocden_fuse,
                          unsigned char osccal, unsigned char ocdrev,
                          const jtag1_device_desc_type& dev_desc1,
                          const jtag2_device_desc_type& dev_desc2,
-                         const xmega_device_desc_type* dev_desc3)
+                         const xmega_device_desc_type* xmega_dev_desc)
     :name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
           flash_page_count(flash_page_count), eeprom_page_size(eeprom_page_size),
           eeprom_page_count(eeprom_page_count), vectors_end(vectors_end),
-          device_flags(device_flags), io_reg_defs(io_reg_defs), is_xmega(is_xmega),
+          device_flags(device_flags), io_reg_defs(io_reg_defs),
           fusemap(fusemap), ocden_fuse(ocden_fuse), osccal(osccal), ocdrev(ocdrev),
-          dev_desc1(dev_desc1), dev_desc2(dev_desc2), dev_desc3(dev_desc3)
+          dev_desc1(dev_desc1), dev_desc2(dev_desc2), xmega_dev_desc(xmega_dev_desc)
     {
         devices.push_back(this);
     }

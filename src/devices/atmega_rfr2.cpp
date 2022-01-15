@@ -301,7 +301,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -366,7 +365,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -431,7 +429,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -496,7 +493,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -561,7 +557,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -626,7 +621,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
     77 * 4, // 77 interrupt vectors
     DEVFL_MKII_ONLY,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

@@ -79,7 +79,6 @@ constexpr gdb_io_reg_def_type atmega16_io_registers[] = {
     0x54, // 21 interrupt vectors
     DEVFL_NONE,
     atmega16_io_registers,
-    false,
     0x03,
     0x8000, // fuses
     0x51,   // osccal

@@ -78,7 +78,6 @@ constexpr gdb_io_reg_def_type atmega323_io_registers[] = {{"TWBR", 0x20, 0x00},
     0x50, // 20 interrupt vectors
     DEVFL_NONE,
     atmega323_io_registers,
-    false,
     0x03,
     0x8000, // fuses
     0x51,   // osccal

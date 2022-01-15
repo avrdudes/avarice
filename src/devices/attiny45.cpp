@@ -66,7 +66,6 @@ constexpr gdb_io_reg_def_type attiny45_io_registers[] = {{"ADCSRB", 0x23, 0x00},
     15 * 2, // 15 interrupt vectors
     DEVFL_MKII_ONLY,
     attiny45_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x51,   // osccal

@@ -47,7 +47,6 @@ constexpr gdb_io_reg_def_type atmega32hvb_io_registers[] = {
     29 * 4, // 29 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega32hvb_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

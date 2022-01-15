@@ -104,7 +104,6 @@ constexpr gdb_io_reg_def_type atmega165_io_registers[] = {{"PINA", 0x20, 0x00},
     22 * 4, // 22 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega165_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

@@ -41,7 +41,6 @@ constexpr gdb_io_reg_def_type atmega16hva_io_registers[] = {
     21 * 4, // 21 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega16hva_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

@@ -202,7 +202,6 @@ constexpr gdb_io_reg_def_type atmega32u4_io_registers[] = {{"PINB", 0x23, 0x00},
     43 * 4, // 43 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega32u4_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

@@ -58,7 +58,6 @@ constexpr gdb_io_reg_def_type atmega328p_io_registers[] = {
     26 * 4, // 26 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega328p_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

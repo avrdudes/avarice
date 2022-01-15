@@ -33,7 +33,6 @@ constexpr xmega_device_desc_type xmega_device_desc{
            81 * 4, // 81 interrupt vectors
            DEVFL_MKII_ONLY,
            nullptr, // registers not yet defined
-           true,
            0x37,
            0x0000, // fuses
            0,      // osccal

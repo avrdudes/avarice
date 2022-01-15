@@ -74,7 +74,6 @@ constexpr gdb_io_reg_def_type attiny84_io_registers[] = {{"PRR", 0x20, 0x00},
     17 * 2, // 17 interrupt vectors
     DEVFL_MKII_ONLY,
     attiny84_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x51,   // osccal

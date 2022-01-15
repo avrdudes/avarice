@@ -102,7 +102,6 @@ constexpr gdb_io_reg_def_type atmega168_io_registers[] = {{"PINB", 0x23, 0x00},
     26 * 4, // 26 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega168_io_registers,
-    false,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

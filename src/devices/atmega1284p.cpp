@@ -52,7 +52,6 @@ constexpr gdb_io_reg_def_type atmega1284p_io_registers[] = {
     35 * 4, // 35 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega1284p_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

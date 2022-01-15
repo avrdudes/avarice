@@ -187,7 +187,6 @@ constexpr gdb_io_reg_def_type at90usb647_io_registers[] =
     38 * 4, // 38 interrupt vectors
     DEVFL_MKII_ONLY,
     at90usb647_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

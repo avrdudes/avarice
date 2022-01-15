@@ -449,7 +449,8 @@ void Jtag2::changeBitRate(int newBitRate) {
 /** Set the JTAG ICE device descriptor data for specified device type **/
 void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const uchar *command = (is_xmega && has_full_xmega_support)
-        ?(uchar *)&dev.dev_desc3:(uchar *)&dev.dev_desc2;
+        ?(uchar *)&dev.xmega_dev_desc
+                                                                :(uchar *)&dev.dev_desc2;
 
     uchar *response;
     int respSize;
@@ -636,7 +637,7 @@ void Jtag2::initJtagBox() {
         const auto &pDevice = jtag_device_def_type::Find(0, device_name);
         // If a device name has been specified on the command-line,
         // this overrides the is_xmega setting.
-        is_xmega = pDevice.is_xmega;
+        is_xmega = pDevice.xmega_dev_desc != nullptr;
     }
 
     startJtagLink();

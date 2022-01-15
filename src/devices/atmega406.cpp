@@ -102,7 +102,6 @@ constexpr gdb_io_reg_def_type atmega406_io_registers[] =
     23 * 4, // 23 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega406_io_registers,
-    false,
     0x07,
     0x0200, // fuses
     0,      // osccal

@@ -12,7 +12,6 @@ namespace {
     31 * 4, // 31 interrupt vectors
     DEVFL_MKII_ONLY,
     nullptr, // registers not yet defined
-    false,
     0x00,
     0x0000, // fuses
     0x66,   // osccal

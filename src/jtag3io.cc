@@ -299,10 +299,10 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     jtag3_device_desc_type d3;
 
     if (is_xmega) {
-        param = (uchar *)&dev.dev_desc3 + 4;
-        paramsize = sizeof(dev.dev_desc3) - 4;
+        param = (uchar *)&dev.xmega_dev_desc + 4;
+        paramsize = sizeof(dev.xmega_dev_desc) - 4;
 
-        appsize = b4_to_u32(dev.dev_desc3->app_size);
+        appsize = b4_to_u32(dev.xmega_dev_desc->app_size);
     } else {
         param = (uchar *)&d3;
         paramsize = sizeof(d3);
@@ -495,7 +495,6 @@ void Jtag3::deviceAutoConfig() {
                 0,
                 DEVFL_NONE,
                 nullptr,
-                true,
                 0,
                 0,
                 0,
@@ -525,7 +524,7 @@ void Jtag3::initJtagBox() {
         const auto &pDevice = jtag_device_def_type::Find(0, device_name);
         // If a device name has been specified on the command-line,
         // this overrides the is_xmega setting.
-        is_xmega = pDevice.is_xmega;
+        is_xmega = pDevice.xmega_dev_desc != nullptr;
     }
 
     try {

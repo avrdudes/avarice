@@ -198,7 +198,6 @@ constexpr gdb_io_reg_def_type atmega1280_io_registers[] = {{"PINA", 0x20, 0x00},
     0xe4, // 57 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega1280_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

@@ -69,7 +69,6 @@ constexpr gdb_io_reg_def_type io_registers[] = {
     0x8c, // 35 interrupt vectors
     DEVFL_NO_SOFTBP,
     io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x6f,   // osccal

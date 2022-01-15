@@ -90,7 +90,6 @@ constexpr gdb_io_reg_def_type at90can128_io_registers[] = {
     0x94, // 37 interrupt vectors
     DEVFL_NONE,
     at90can128_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

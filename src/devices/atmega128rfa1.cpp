@@ -98,7 +98,6 @@ constexpr gdb_io_reg_def_type atmega128rfa1_io_registers[] = {
     72 * 4, // 72 interrupt vectors
     DEVFL_MKII_ONLY,
     atmega128rfa1_io_registers,
-    false,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
