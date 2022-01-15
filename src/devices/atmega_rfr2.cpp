@@ -290,6 +290,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
                                                 {"TRXFBST", 0x180, 0x00},
                                                 {"TRXFBEND", 0x1ff, 0x00},
                                                 {nullptr, 0, 0}};
+
 [[maybe_unused]] const jtag_device_def_type atmega256rfr2{
     "atmega256rfr2",
     0xA802,
@@ -352,7 +353,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 [[maybe_unused]] const jtag_device_def_type atmega64rfr2{
@@ -417,7 +418,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 [[maybe_unused]] const jtag_device_def_type atmega644rfr2{
@@ -482,7 +483,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 [[maybe_unused]] const jtag_device_def_type atmega128rfr2{
@@ -547,7 +548,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 [[maybe_unused]] const jtag_device_def_type atmega1284rfr2{
@@ -612,7 +613,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 [[maybe_unused]] const jtag_device_def_type atmega2564rfr2{
@@ -677,7 +678,7 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 } // namespace

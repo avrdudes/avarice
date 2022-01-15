@@ -61,7 +61,7 @@ namespace {
         0,               // ucEindAddress
         fill_b2(0x1F),   // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 }

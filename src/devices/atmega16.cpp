@@ -141,7 +141,7 @@ constexpr gdb_io_reg_def_type atmega16_io_registers[] = {
         0,                                                // ucEindAddress
         fill_b2(0x1c),                                    // EECRAddress
     },
-    {0}, // Xmega device descr.
+    nullptr
 };
 
 } // namespace

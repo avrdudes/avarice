@@ -154,7 +154,7 @@ constexpr gdb_io_reg_def_type at90can128_io_registers[] = {
         0,              // ucEindAddress
         fill_b2(0x1f),  // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 }

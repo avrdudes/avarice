@@ -302,7 +302,7 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
         param = (uchar *)&dev.dev_desc3 + 4;
         paramsize = sizeof(dev.dev_desc3) - 4;
 
-        appsize = b4_to_u32(dev.dev_desc3.app_size);
+        appsize = b4_to_u32(dev.dev_desc3->app_size);
     } else {
         param = (uchar *)&d3;
         paramsize = sizeof(d3);
@@ -482,6 +482,9 @@ void Jtag3::deviceAutoConfig() {
              * Hopefully, the values below will remain constant for all
              * Xmega devices ...
              */
+            constexpr xmega_device_desc_type xmega_device_desc
+                {.nvm_data_offset = fill_b4(0x1000000), .mcu_base_addr = fill_b2(0x90)};
+
             const jtag_device_def_type desc{
                 "dummy",
                 0,
@@ -499,7 +502,7 @@ void Jtag3::deviceAutoConfig() {
                 0,
                 {},
                 {},
-                {.nvm_data_offset = fill_b4(0x1000000), .mcu_base_addr = fill_b2(0x90)}};
+                &xmega_device_desc};
 
             setDeviceDescriptor(desc);
         }

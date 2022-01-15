@@ -152,7 +152,7 @@ constexpr gdb_io_reg_def_type atmega165p_io_registers[] = {{"PINA", 0x20, 0x00},
         0,              // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 } // namespace

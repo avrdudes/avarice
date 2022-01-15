@@ -140,7 +140,7 @@ constexpr gdb_io_reg_def_type atmega2561_io_registers[] = {
         0x3c,                   // ucEindAddress
         fill_b2(0x1F),          // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 } // namespace

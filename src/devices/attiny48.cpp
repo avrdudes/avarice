@@ -140,7 +140,7 @@ constexpr gdb_io_reg_def_type attiny48_io_registers[] = {{"PINB", 0x23, 0x00},
         0,              // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 } // namespace

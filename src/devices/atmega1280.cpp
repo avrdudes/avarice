@@ -248,7 +248,7 @@ constexpr gdb_io_reg_def_type atmega1280_io_registers[] = {{"PINA", 0x20, 0x00},
         0x3c,                                                // ucEindAddress
         fill_b2(0x1F),                                       // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 } // namespace

@@ -115,7 +115,7 @@ constexpr gdb_io_reg_def_type attiny45_io_registers[] = {{"ADCSRB", 0x23, 0x00},
         0,             // ucEindAddress
         fill_b2(0x1C), // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 } // namespace

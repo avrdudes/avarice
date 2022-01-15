@@ -201,8 +201,8 @@ constexpr unsigned char IO_REG_RSE = 0x01; // IO register has read side effect
 
 struct gdb_io_reg_def_type {
     const char* name;
-    const unsigned int reg_addr;
-    const unsigned char flags;
+    unsigned int reg_addr;
+    unsigned char flags;
 };
 
 PRAGMA_DIAG_IGNORED("-Wmissing-field-initializers")
@@ -235,7 +235,7 @@ struct jtag_device_def_type {
                                       // mkI device
     const jtag2_device_desc_type& dev_desc2; // Device descriptor to download to
                                       // mkII device
-    const xmega_device_desc_type& dev_desc3; // Device descriptor to download for
+    const xmega_device_desc_type* dev_desc3; // Device descriptor to download for
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
 
@@ -248,7 +248,7 @@ struct jtag_device_def_type {
                          unsigned char osccal, unsigned char ocdrev,
                          const jtag1_device_desc_type& dev_desc1,
                          const jtag2_device_desc_type& dev_desc2,
-                         const xmega_device_desc_type& dev_desc3)
+                         const xmega_device_desc_type* dev_desc3)
     :name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
           flash_page_count(flash_page_count), eeprom_page_size(eeprom_page_size),
           eeprom_page_count(eeprom_page_count), vectors_end(vectors_end),

@@ -235,7 +235,7 @@ constexpr gdb_io_reg_def_type at90usb647_io_registers[] =
         0x3C,           // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    {0} // Xmega device descr.
+    nullptr
 };
 
 }

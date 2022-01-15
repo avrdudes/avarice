@@ -82,7 +82,7 @@ constexpr xmega_device_desc_type xmega_device_desc{
                                                              0 // no mkI support
                                                          },
                                                          jtag2_device_desc,
-                                                         xmega_device_desc};
+                                                         &xmega_device_desc};
 
 // DEV_ATXMEGA128A1 revision G (and newer)
 [[maybe_unused]] const jtag_device_def_type device_rev_g{"atxmega128a1",
@@ -103,6 +103,6 @@ constexpr xmega_device_desc_type xmega_device_desc{
                                                              0 // no mkI support
                                                          },
                                                          jtag2_device_desc,
-                                                         xmega_device_desc};
+                                                         &xmega_device_desc};
 
 } // namespace
