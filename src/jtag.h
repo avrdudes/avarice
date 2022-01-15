@@ -31,7 +31,9 @@
 #include <exception>
 #include <string_view>
 #include <memory>
+#include <vector>
 
+#include "pragma.h"
 #include "avarice.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
@@ -195,11 +197,19 @@ enum dev_flags {
     DEVFL_MKII_ONLY = 0x000002, // Device is only supported in JTAG ICE mkII
 };
 
-struct gdb_io_reg_def_type;
+constexpr unsigned char IO_REG_RSE = 0x01; // IO register has read side effect
+
+struct gdb_io_reg_def_type {
+    const char* name;
+    const unsigned int reg_addr;
+    const unsigned char flags;
+};
+
+PRAGMA_DIAG_IGNORED("-Wmissing-field-initializers")
 
 struct jtag_device_def_type {
     const char *name;
-    const unsigned int device_id;   // Part Number from JTAG Device
+    unsigned int device_id;   // Part Number from JTAG Device
                                     // Identification Register
     unsigned int flash_page_size;   // Flash memory page size in bytes
     unsigned int flash_page_count;  // Flash memory page count
@@ -221,19 +231,46 @@ struct jtag_device_def_type {
     unsigned char osccal; // OSCCAL offset (XML param)
     unsigned char ocdrev; // OCD revision (Studio 6 XML param)
 
-    jtag1_device_desc_type dev_desc1; // Device descriptor to download to
+    const jtag1_device_desc_type& dev_desc1; // Device descriptor to download to
                                       // mkI device
-    jtag2_device_desc_type dev_desc2; // Device descriptor to download to
+    const jtag2_device_desc_type& dev_desc2; // Device descriptor to download to
                                       // mkII device
-    xmega_device_desc_type dev_desc3; // Device descriptor to download for
+    const xmega_device_desc_type& dev_desc3; // Device descriptor to download for
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
+
+    jtag_device_def_type(const char* dev_name, unsigned int device_id,
+                         unsigned int flash_page_size, unsigned int flash_page_count,
+                         unsigned char eeprom_page_size, unsigned int eeprom_page_count,
+                         unsigned int vectors_end, dev_flags device_flags,
+                         const gdb_io_reg_def_type *io_reg_defs, bool is_xmega,
+                         unsigned int fusemap,unsigned int ocden_fuse,
+                         unsigned char osccal, unsigned char ocdrev,
+                         const jtag1_device_desc_type& dev_desc1,
+                         const jtag2_device_desc_type& dev_desc2,
+                         const xmega_device_desc_type& dev_desc3)
+    :name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
+          flash_page_count(flash_page_count), eeprom_page_size(eeprom_page_size),
+          eeprom_page_count(eeprom_page_count), vectors_end(vectors_end),
+          device_flags(device_flags), io_reg_defs(io_reg_defs), is_xmega(is_xmega),
+          fusemap(fusemap), ocden_fuse(ocden_fuse), osccal(osccal), ocdrev(ocdrev),
+          dev_desc1(dev_desc1), dev_desc2(dev_desc2), dev_desc3(dev_desc3)
+    {
+        devices.push_back(this);
+    }
+
+    inline static std::vector<const jtag_device_def_type*> devices;
+
+    // Find device in our database giving priority to 'id', if given
+    static const jtag_device_def_type &Find(unsigned int id, const char* name);
+
+    static void DumpAll();
 };
 
-// Find device in our database giving priority to 'id', if given
-const jtag_device_def_type &FindDeviceDefinition(unsigned int id, const char* name);
-
-void DumpAllDeviceDefinitions();
+#define fill_b4(u)                                                                                 \
+    { ((u)&0xffUL), (((u)&0xff00UL) >> 8), (((u)&0xff0000UL) >> 16), (((u)&0xff000000UL) >> 24) }
+#define fill_b2(u)                                                                                 \
+    { ((u)&0xff), (((u)&0xff00) >> 8) }
 
 // various enums
 enum {

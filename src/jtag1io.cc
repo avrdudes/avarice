@@ -287,7 +287,7 @@ void jtag1::deviceAutoConfig() {
 
     device_id = (device_id & 0x0FFFF000) >> 12;
 
-    const auto& pDevice = FindDeviceDefinition(device_id, device_name);
+    const auto& pDevice = jtag_device_def_type::Find(device_id, device_name);
     if ((pDevice.device_flags & DEVFL_MKII_ONLY) != 0) {
         fprintf(stderr, "Device is not supported by JTAG ICE mkI");
         throw jtag_exception();

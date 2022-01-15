@@ -197,7 +197,7 @@ static void usage(const char *progname) {
 
 static void knownParts() {
     fprintf(stderr, "List of known AVR devices:\n\n");
-    DumpAllDeviceDefinitions();
+    jtag_device_def_type::DumpAll();
     exit(1);
 }
 

@@ -482,11 +482,25 @@ void Jtag3::deviceAutoConfig() {
              * Hopefully, the values below will remain constant for all
              * Xmega devices ...
              */
-            jtag_device_def_type desc{"dummy", 0, 0, 0, 0, 0,  0,  DEVFL_NONE, nullptr,
-                                      true,    0, 0, 0, 0, {}, {}, {}};
+            const jtag_device_def_type desc{
+                "dummy",
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                DEVFL_NONE,
+                nullptr,
+                true,
+                0,
+                0,
+                0,
+                0,
+                {},
+                {},
+                {.nvm_data_offset = fill_b4(0x1000000), .mcu_base_addr = fill_b2(0x90)}};
 
-            u32_to_b4(desc.dev_desc3.nvm_data_offset, 0x1000000);
-            u16_to_b2(desc.dev_desc3.mcu_base_addr, 0x90);
             setDeviceDescriptor(desc);
         }
 
@@ -495,7 +509,7 @@ void Jtag3::deviceAutoConfig() {
         delete[] resp;
     }
 
-    const auto &pDevice = FindDeviceDefinition(device_id, device_name);
+    const auto &pDevice = jtag_device_def_type::Find(device_id, device_name);
     device_name = pDevice.name;
     deviceDef = &pDevice;
     setDeviceDescriptor(pDevice);
@@ -505,7 +519,7 @@ void Jtag3::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
     if (device_name) {
-        const auto &pDevice = FindDeviceDefinition(0, device_name);
+        const auto &pDevice = jtag_device_def_type::Find(0, device_name);
         // If a device name has been specified on the command-line,
         // this overrides the is_xmega setting.
         is_xmega = pDevice.is_xmega;

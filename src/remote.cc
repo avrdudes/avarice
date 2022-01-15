@@ -36,7 +36,6 @@
 #include "avarice.h"
 #include "jtag.h"
 #include "remote.h"
-#include "ioreg.h"
 
 enum {
     /** BUFMAX defines the maximum number of characters in

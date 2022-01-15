@@ -71,7 +71,7 @@ for name, addr_str in re_mem8.findall(f):
 # Print the field initializer to stdout.
 
 addrs = register.keys()
-print('gdb_io_reg_def_type [PUT DEVICE NAME HERE]_io_registers[] =')
+print('constexpr gdb_io_reg_def_type io_registers[] =')
 print('{')
 for addr in sorted(addrs):
     print('    { %-12s, 0x%X, 0x00 },' % ('"%s"' % (register[addr]), addr))
