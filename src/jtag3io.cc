@@ -296,17 +296,18 @@ bool Jtag3::synchroniseAt(int) { throw; }
 
 void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     uchar *param, paramsize;
-    jtag3_device_desc_type d3;
 
     if (is_xmega) {
-        param = (uchar *)&dev.xmega_dev_desc + 4;
-        paramsize = sizeof(dev.xmega_dev_desc) - 4;
+        param = (uchar *)dev.xmega_dev_desc + 4;
+        paramsize = sizeof(*dev.xmega_dev_desc) - 4;
 
         appsize = b4_to_u32(dev.xmega_dev_desc->app_size);
     } else {
+        jtag3_device_desc_type d3;
+        memset(&d3, 0, sizeof(d3));
+
         param = (uchar *)&d3;
         paramsize = sizeof(d3);
-        memset(&d3, 0, sizeof(d3));
 
         // Copy over all the data that can be derived from the existing
         // JTAG ICE mkII device descriptor.
@@ -315,7 +316,7 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
         memcpy(d3.boot_address, dev.jtag2_dev_desc2.ulBootAddress, 4);
         memcpy(d3.sram_offset, dev.jtag2_dev_desc2.uiSramStartAddr, 2);
 
-        unsigned int eesize = dev.eeprom_page_size * dev.eeprom_page_count;
+        const unsigned int eesize = dev.eeprom_page_size * dev.eeprom_page_count;
         d3.eeprom_size[0] = eesize & 0xff;
         d3.eeprom_size[1] = (eesize >> 8) & 0xff;
         d3.eeprom_page_size = dev.eeprom_page_size;
