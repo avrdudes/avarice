@@ -557,13 +557,8 @@ bool Jtag::layoutBreakpoints() {
     // array element, it's meaningless...  FIXME: Slot 4 is set to
     // 'false', doesn't seem to work?
     bool remaining_bps[MAX_BREAKPOINTS2 + 2] = {false, true, true, true, false, false};
-    uchar bpnum;
-    bool softwarebps = true;
+    const bool softwarebps = (deviceDef->tweaks & NO_SOFTWARE_BREAKPOINTS) == 0;
     bool hadroom = true;
-
-    if (deviceDef->device_flags == DEVFL_NO_SOFTBP) {
-        softwarebps = false;
-    }
 
     // Turn off everything but software breakpoints for DebugWire,
     // or for old firmware JTAGICEmkII with Xmega devices
@@ -621,7 +616,7 @@ bool Jtag::layoutBreakpoints() {
             }
 
             // Find next available slot
-            bpnum = BREAKPOINT2_FIRST_DATA;
+            uchar bpnum = BREAKPOINT2_FIRST_DATA;
             while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2)) {
                 bpnum++;
             }
@@ -642,7 +637,7 @@ bool Jtag::layoutBreakpoints() {
     bp_i = 0;
     while (!bp[bp_i].last) {
         // Find the next spot to live in.
-        bpnum = 0x00;
+        uchar bpnum = 0x00;
         while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2)) {
             // debugOut("Slot %d full\n", bpnum);
             bpnum++;

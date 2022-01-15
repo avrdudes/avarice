@@ -89,15 +89,13 @@ constexpr gdb_io_reg_def_type attiny48_io_registers[] = {{"PINB", 0x23, 0x00},
     4,
     16,     // 64 bytes EEPROM
     20 * 2, // 20 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     attiny48_io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal
     1,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xF8, 0x7F, 0x64, 0xF8, 0xEB, 0x3D, 0xB9, 0xA0}, // ucReadIO

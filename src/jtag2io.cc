@@ -450,7 +450,7 @@ void Jtag2::changeBitRate(int newBitRate) {
 void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const uchar *command = (is_xmega && has_full_xmega_support)
         ?(uchar *)&dev.xmega_dev_desc
-                                                                :(uchar *)&dev.dev_desc2;
+                                                                :(uchar *)&dev.jtag2_dev_desc2;
 
     uchar *response;
     int respSize;

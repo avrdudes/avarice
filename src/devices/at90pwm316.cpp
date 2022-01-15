@@ -82,15 +82,13 @@ constexpr gdb_io_reg_def_type at90pwm316_io_registers[] = {
     4,
     128,    // 512 bytes EEPROM
     32 * 4, // 32 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     at90pwm316_io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal
     1,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xF8, 0x7F, 0x60, 0xFE, 0xFF, 0x33, 0xB9, 0xE0}, // ucReadIO

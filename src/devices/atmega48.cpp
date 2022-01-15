@@ -100,15 +100,13 @@ constexpr gdb_io_reg_def_type atmega48_io_registers[] = {{"PINB", 0x23, 0x00},
     4,
     64,     // 256 bytes EEPROM
     26 * 2, // 26 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega48_io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal
     1,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xF8, 0x0F, 0xE0, 0xF8, 0xFB, 0x3D, 0xB9, 0xE0}, // ucReadIO

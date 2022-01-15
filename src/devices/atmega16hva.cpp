@@ -39,15 +39,13 @@ constexpr gdb_io_reg_def_type atmega16hva_io_registers[] = {
     4,
     64,     // 256 bytes EEPROM
     21 * 4, // 21 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega16hva_io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal
     1,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0x7F, 0x01, 0xE0, 0xF0, 0xFB, 0x3F, 0xB8, 0xE0}, // ucReadIO

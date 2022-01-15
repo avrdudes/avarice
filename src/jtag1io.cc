@@ -204,9 +204,9 @@ void jtag1::changeBitRate(int newBitRate) {
 
 /** Set the JTAG ICE device descriptor data for specified device type **/
 void jtag1::setDeviceDescriptor(const jtag_device_def_type &dev) {
-    const auto *command = reinterpret_cast<const uchar *>(&dev.dev_desc1);
+    const auto *command = reinterpret_cast<const uchar *>(&dev.jtag1_dev_desc1);
 
-    auto response = doJtagCommand(command, sizeof(dev.dev_desc1), 1);
+    auto response = doJtagCommand(command, sizeof(dev.jtag1_dev_desc1), 1);
     if (Resp{response[0]} != Resp::OK)
         throw jtag_exception("JTAG ICE: Failed to set device description");
 }
@@ -288,7 +288,7 @@ void jtag1::deviceAutoConfig() {
     device_id = (device_id & 0x0FFFF000) >> 12;
 
     const auto& pDevice = jtag_device_def_type::Find(device_id, device_name);
-    if ((pDevice.device_flags & DEVFL_MKII_ONLY) != 0) {
+    if ( pDevice.jtag1_dev_desc1 == nullptr ) {
         fprintf(stderr, "Device is not supported by JTAG ICE mkI");
         throw jtag_exception();
     }

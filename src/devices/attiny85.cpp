@@ -64,15 +64,13 @@ constexpr gdb_io_reg_def_type attiny85_io_registers[] = {{"ADCSRB", 0x23, 0x00},
     4,
     128,    // 512 bytes EEPROM
     15 * 2, // 15 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     attiny85_io_registers,
     0x07,
     0x0000, // fuses
     0x51,   // osccal
     1,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xF8, 0xE1, 0xFF, 0xF1, 0xFB, 0xFF, 0xBF, 0xEF}, // ucReadIO

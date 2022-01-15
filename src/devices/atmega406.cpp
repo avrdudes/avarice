@@ -100,15 +100,13 @@ constexpr gdb_io_reg_def_type atmega406_io_registers[] =
     4,
     128,    // 512 bytes EEPROM
     23 * 4, // 23 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega406_io_registers,
     0x07,
     0x0200, // fuses
     0,      // osccal
     0,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0x3F, 0x0F, 0x60, 0xF8, 0xFF, 0x0D, 0xB8, 0xE0}, // ucReadIO

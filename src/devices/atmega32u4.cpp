@@ -200,15 +200,13 @@ constexpr gdb_io_reg_def_type atmega32u4_io_registers[] = {{"PINB", 0x23, 0x00},
     4,
     256,    // 1024 bytes EEPROM
     43 * 4, // 43 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega32u4_io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
     3,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xF8, 0xFF, 0xE3, 0xFB, 0xFF, 0x3F, 0xBD, 0xF8}, // ucReadIO

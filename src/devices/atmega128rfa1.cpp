@@ -96,15 +96,13 @@ constexpr gdb_io_reg_def_type atmega128rfa1_io_registers[] = {
     8,
     512,    // 4096 bytes EEPROM
     72 * 4, // 72 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega128rfa1_io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
     3,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xFF, 0xFF, 0xFF, 0xF9, 0xFF, 0x3D, 0xB9, 0xF8}, // ucReadIO

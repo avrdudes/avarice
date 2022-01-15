@@ -31,15 +31,13 @@ constexpr xmega_device_desc_type xmega_device_desc{
            32,
            32,     // 1024 bytes EEPROM
            40 * 4, // 40 interrupt vectors
-           DEVFL_MKII_ONLY,
+           NO_TWEAKS,
            nullptr, // registers not yet defined
            0x37,
            0x0000, // fuses
            0,      // osccal
            0,      // OCD revision
-           {
-               0 // no mkI support
-           },
+           nullptr,
            {
                CMND_SET_DEVICE_DESCRIPTOR,
                {0xFF, 0xFF, 0xFF, 0xF9, 0xFF, 0x3D, 0xB9, 0xF8}, // ucReadIO

@@ -71,15 +71,13 @@ constexpr xmega_device_desc_type xmega_device_desc{
                                                          32,
                                                          64,      // 2048 bytes EEPROM
                                                          125 * 4, // 125 interrupt vectors
-                                                         DEVFL_MKII_ONLY,
+                                                         NO_TWEAKS,
                                                          nullptr, // registers not yet defined
                                                          0x37,
                                                          0x0000, // fuses
                                                          0,      // osccal
                                                          0,      // OCD revision
-                                                         {
-                                                             0 // no mkI support
-                                                         },
+                                                         nullptr,
                                                          jtag2_device_desc,
                                                          &xmega_device_desc};
 
@@ -91,15 +89,13 @@ constexpr xmega_device_desc_type xmega_device_desc{
                                                          32,
                                                          64,      // 2048 bytes EEPROM
                                                          125 * 4, // 125 interrupt vectors
-                                                         DEVFL_MKII_ONLY,
+                                                         NO_TWEAKS,
                                                          nullptr, // registers not yet defined
                                                          0x37,
                                                          0x0000, // fuses
                                                          0,      // osccal
                                                          0,      // OCD revision
-                                                         {
-                                                             0 // no mkI support
-                                                         },
+                                                         nullptr,
                                                          jtag2_device_desc,
                                                          &xmega_device_desc};
 

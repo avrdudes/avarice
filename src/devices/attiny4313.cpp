@@ -10,15 +10,13 @@ namespace {
     4,
     64,     // 256 bytes EEPROM
     21 * 2, // 21 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     nullptr, // registers not yet defined
     0x07,
     0x0000, // fuses
     0x51,   // osccal
     0,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0x0E, 0xEF, 0xFF, 0x7F, 0x3F, 0xFF, 0x7F, 0xFF}, // ucReadIO

@@ -191,12 +191,6 @@ struct jtag3_device_desc_type {
     unsigned char osccal_address;
 };
 
-enum dev_flags {
-    DEVFL_NONE = 0x000000,
-    DEVFL_NO_SOFTBP = 0x000001, // Device cannot use software BPs (no BREAK insn)
-    DEVFL_MKII_ONLY = 0x000002, // Device is only supported in JTAG ICE mkII
-};
-
 constexpr unsigned char IO_REG_RSE = 0x01; // IO register has read side effect
 
 struct gdb_io_reg_def_type {
@@ -207,6 +201,11 @@ struct gdb_io_reg_def_type {
 
 PRAGMA_DIAG_IGNORED("-Wmissing-field-initializers")
 
+enum Tweaks {
+    NO_TWEAKS = 0,
+    NO_SOFTWARE_BREAKPOINTS = (1<<0)
+};
+
 struct jtag_device_def_type {
     const char *name;
     unsigned int device_id;   // Part Number from JTAG Device
@@ -216,7 +215,7 @@ struct jtag_device_def_type {
     unsigned char eeprom_page_size; // EEPROM page size in bytes
     unsigned int eeprom_page_count; // EEPROM page count
     unsigned int vectors_end;       // End of interrupt vector table
-    enum dev_flags device_flags;    // See above.
+    Tweaks tweaks;
 
     const gdb_io_reg_def_type *io_reg_defs;
 
@@ -230,31 +229,28 @@ struct jtag_device_def_type {
     unsigned char osccal; // OSCCAL offset (XML param)
     unsigned char ocdrev; // OCD revision (Studio 6 XML param)
 
-    const jtag1_device_desc_type& dev_desc1; // Device descriptor to download to
+    const jtag1_device_desc_type *jtag1_dev_desc1; // Device descriptor to download to
                                       // mkI device
-    const jtag2_device_desc_type& dev_desc2; // Device descriptor to download to
+    const jtag2_device_desc_type &jtag2_dev_desc2; // Device descriptor to download to
                                       // mkII device
-    const xmega_device_desc_type* xmega_dev_desc; // Device descriptor to download for
+    const xmega_device_desc_type *xmega_dev_desc; // Device descriptor to download for
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
 
-    jtag_device_def_type(const char* dev_name, unsigned int device_id,
-                         unsigned int flash_page_size, unsigned int flash_page_count,
-                         unsigned char eeprom_page_size, unsigned int eeprom_page_count,
-                         unsigned int vectors_end, dev_flags device_flags,
-                         const gdb_io_reg_def_type *io_reg_defs,
-                         unsigned int fusemap,unsigned int ocden_fuse,
-                         unsigned char osccal, unsigned char ocdrev,
-                         const jtag1_device_desc_type& dev_desc1,
-                         const jtag2_device_desc_type& dev_desc2,
-                         const xmega_device_desc_type* xmega_dev_desc)
-    :name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
+    jtag_device_def_type(const char *dev_name, unsigned int device_id, unsigned int flash_page_size,
+                         unsigned int flash_page_count, unsigned char eeprom_page_size,
+                         unsigned int eeprom_page_count, unsigned int vectors_end, Tweaks tweaks,
+                         const gdb_io_reg_def_type *io_reg_defs, unsigned int fusemap,
+                         unsigned int ocden_fuse, unsigned char osccal, unsigned char ocdrev,
+                         const jtag1_device_desc_type *jtag1_dev_desc,
+                         const jtag2_device_desc_type &jtag2_dev_desc,
+                         const xmega_device_desc_type *xmega_dev_desc)
+        : name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
           flash_page_count(flash_page_count), eeprom_page_size(eeprom_page_size),
-          eeprom_page_count(eeprom_page_count), vectors_end(vectors_end),
-          device_flags(device_flags), io_reg_defs(io_reg_defs),
-          fusemap(fusemap), ocden_fuse(ocden_fuse), osccal(osccal), ocdrev(ocdrev),
-          dev_desc1(dev_desc1), dev_desc2(dev_desc2), xmega_dev_desc(xmega_dev_desc)
-    {
+          eeprom_page_count(eeprom_page_count), vectors_end(vectors_end), tweaks(tweaks),
+          io_reg_defs(io_reg_defs), fusemap(fusemap), ocden_fuse(ocden_fuse), osccal(osccal),
+          ocdrev(ocdrev), jtag1_dev_desc1(jtag1_dev_desc), jtag2_dev_desc2(jtag2_dev_desc),
+          xmega_dev_desc(xmega_dev_desc) {
         devices.push_back(this);
     }
 

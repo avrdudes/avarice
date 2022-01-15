@@ -125,15 +125,13 @@ constexpr gdb_io_reg_def_type atmega649_io_registers[] =
     8,
     256,    // 2K bytes EEPROM
     23 * 4, // 23 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     atmega649_io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
     3,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xFF, 0xFF, 0xFF, 0xF0, 0xDF, 0x3C, 0xB9, 0xE0}, // ucReadIO

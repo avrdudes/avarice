@@ -310,23 +310,23 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
 
         // Copy over all the data that can be derived from the existing
         // JTAG ICE mkII device descriptor.
-        memcpy(d3.flash_page_size, dev.dev_desc2.uiFlashPageSize, 2);
-        memcpy(d3.flash_size, dev.dev_desc2.ulFlashSize, 4);
-        memcpy(d3.boot_address, dev.dev_desc2.ulBootAddress, 4);
-        memcpy(d3.sram_offset, dev.dev_desc2.uiSramStartAddr, 2);
+        memcpy(d3.flash_page_size, dev.jtag2_dev_desc2.uiFlashPageSize, 2);
+        memcpy(d3.flash_size, dev.jtag2_dev_desc2.ulFlashSize, 4);
+        memcpy(d3.boot_address, dev.jtag2_dev_desc2.ulBootAddress, 4);
+        memcpy(d3.sram_offset, dev.jtag2_dev_desc2.uiSramStartAddr, 2);
 
         unsigned int eesize = dev.eeprom_page_size * dev.eeprom_page_count;
         d3.eeprom_size[0] = eesize & 0xff;
         d3.eeprom_size[1] = (eesize >> 8) & 0xff;
         d3.eeprom_page_size = dev.eeprom_page_size;
         d3.always_one = 1;
-        d3.allow_full_page_bitstream = dev.dev_desc2.ucAllowFullPageBitstream;
-        d3.idr_address = dev.dev_desc2.ucIDRAddress;
-        d3.eearh_address = dev.dev_desc2.EECRAddress[0] + 3;
-        d3.eearl_address = dev.dev_desc2.EECRAddress[0] + 2;
-        d3.eecr_address = dev.dev_desc2.EECRAddress[0];
-        d3.eedr_address = dev.dev_desc2.EECRAddress[0] + 1;
-        d3.spmcr_address = dev.dev_desc2.ucSPMCRAddress;
+        d3.allow_full_page_bitstream = dev.jtag2_dev_desc2.ucAllowFullPageBitstream;
+        d3.idr_address = dev.jtag2_dev_desc2.ucIDRAddress;
+        d3.eearh_address = dev.jtag2_dev_desc2.EECRAddress[0] + 3;
+        d3.eearl_address = dev.jtag2_dev_desc2.EECRAddress[0] + 2;
+        d3.eecr_address = dev.jtag2_dev_desc2.EECRAddress[0];
+        d3.eedr_address = dev.jtag2_dev_desc2.EECRAddress[0] + 1;
+        d3.spmcr_address = dev.jtag2_dev_desc2.ucSPMCRAddress;
 
         // These data have to be recorded separately.
         d3.osccal_address = dev.osccal - 0x20;
@@ -493,13 +493,13 @@ void Jtag3::deviceAutoConfig() {
                 0,
                 0,
                 0,
-                DEVFL_NONE,
+                NO_TWEAKS,
                 nullptr,
                 0,
                 0,
                 0,
                 0,
-                {},
+                nullptr,
                 {},
                 &xmega_device_desc};
 

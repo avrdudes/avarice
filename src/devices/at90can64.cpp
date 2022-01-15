@@ -88,15 +88,13 @@ constexpr gdb_io_reg_def_type at90can64_io_registers[] = {
     8,
     256,    // 2048 bytes EEPROM
     37 * 4, // 37 interrupt vectors
-    DEVFL_MKII_ONLY,
+    NO_TWEAKS,
     at90can64_io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
     3,      // OCD revision
-    {
-        0 // no mkI support
-    },
+    nullptr,
     {
         CMND_SET_DEVICE_DESCRIPTOR,
         {0xFF, 0xFF, 0xFF, 0xF1, 0xDF, 0x3C, 0xB9, 0xE8}, // ucReadIO
