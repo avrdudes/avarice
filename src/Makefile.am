@@ -137,8 +137,7 @@ avarice_SOURCES =	\
         devices/attiny43u.cpp    \
         devices/attiny48.cpp     \
         devices/attiny88.cpp     \
-        devices/atxmega128a1revd.cpp \
-        devices/atxmega128a1revg.cpp \
+        devices/atxmega128a1.cpp \
         devices/atmega128rfa1.cpp \
         devices/atmega_rfr2.cpp \
         devices/atxmega8e5.cpp    \
