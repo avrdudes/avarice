@@ -4,23 +4,23 @@ namespace {
 
 constexpr xmega_device_desc_type xmega_device_desc{
     CMND_SET_XMEGA_PARAMS, // cmd
-    fill_b2(2),            // whatever
+    2,            // whatever
     47,                    // length of following data
-    fill_b4(0x800000),     // NVM offset for application flash
-    fill_b4(0x840000),     // NVM offset for boot flash
-    fill_b4(0x8c0000),     // NVM offset for EEPROM
-    fill_b4(0x8f0020),     // NVM offset for fuses
-    fill_b4(0x8f0027),     // NVM offset for lock bits
-    fill_b4(0x8e0400),     // NVM offset for user signature row
-    fill_b4(0x8e0200),     // NVM offset for production sig. row
-    fill_b4(0x1000000),    // NVM offset for data memory
-    fill_b4(69632),        // size of application flash
-    fill_b2(4096),         // size of boot flash
-    fill_b2(256),          // flash page size
-    fill_b2(2048),         // size of EEPROM
+    0x800000,     // NVM offset for application flash
+    0x840000,     // NVM offset for boot flash
+    0x8c0000,     // NVM offset for EEPROM
+    0x8f0020,     // NVM offset for fuses
+    0x8f0027,     // NVM offset for lock bits
+    0x8e0400,     // NVM offset for user signature row
+    0x8e0200,     // NVM offset for production sig. row
+    0x1000000,    // NVM offset for data memory
+    69632,        // size of application flash
+    4096,         // size of boot flash
+    256,          // flash page size
+    2048,         // size of EEPROM
     32,                    // EEPROM page size
-    fill_b2(0x1c0),        // IO space base address of NVM controller
-    fill_b2(0x90),         // IO space address of MCU control
+    0x1c0,        // IO space base address of NVM controller
+    0x90,         // IO space address of MCU control
 };
 
 [[maybe_unused]] const jtag_device_def_type
@@ -57,28 +57,28 @@ constexpr xmega_device_desc_type xmega_device_desc{
                0x31,                                                         // ucIDRAddress
                0x57,                                                         // ucSPMCRAddress
                0,                                                            // ucRAMPZAddress
-               fill_b2(256),                                                 // uiFlashPageSize
+               256,                                                 // uiFlashPageSize
                32,                                                           // ucEepromPageSize
-               fill_b4(0x20000),                                             // ulBootAddress
-               fill_b2(0x136),                                               // uiUpperExtIOLoc
-               fill_b4(69632),                                               // ulFlashSize
+               0x20000,                                             // ulBootAddress
+               0x136,                                               // uiUpperExtIOLoc
+               69632,                                               // ulFlashSize
                {0x00},                                                       // ucEepromInst
                {0x00},                                                       // ucFlashInst
                0x3E,                                                         // ucSPHaddr
                0x3D,                                                         // ucSPLaddr
-               fill_b2(69632 / 256),                                         // uiFlashpages
+               69632 / 256,                                         // uiFlashpages
                0x00,                                                         // ucDWDRAddress
                0x00,                                                         // ucDWBasePC
                0x00,          // ucAllowFullPageBitstream
-               fill_b2(0x00), // uiStartSmallestBootLoaderSection
+               0x00, // uiStartSmallestBootLoaderSection
                1,             // EnablePageProgramming
                0x02,          // ucCacheType
-               fill_b2(8192), // uiSramStartAddr
+               8192, // uiSramStartAddr
                0,             // ucResetType
                0,             // ucPCMaskExtended
                0,             // ucPCMaskHigh
                0,             // ucEindAddress
-               fill_b2(0),    // EECRAddress
+               0,    // EECRAddress
            },
            &xmega_device_desc};
 

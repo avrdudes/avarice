@@ -75,28 +75,28 @@ constexpr gdb_io_reg_def_type io_registers[] = {
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        fill_b2(128),                                                 // uiFlashPageSize
+        128,                                                 // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        fill_b4(0x3F00),                                              // ulBootAddress
-        fill_b2(0xFE),                                                // uiUpperExtIOLoc
-        fill_b4(0x8000),                                              // ulFlashSize
+        0x3F00,                                              // ulBootAddress
+        0xFE,                                                // uiUpperExtIOLoc
+        0x8000,                                              // ulFlashSize
         {0},                                                          // ucEepromInst
         {0},                                                          // ucFlashInst
         0x3e,                                                         // ucSPHaddr
         0x3d,                                                         // ucSPLaddr
-        fill_b2(0x8000 / 128),                                        // uiFlashpages
+        0x8000 / 128,                                        // uiFlashpages
         0,                                                            // ucDWDRAddress
         0x40,                                                         // ucDWBasePC
         0,                                                            // ucAllowFullPageBitstream
-        fill_b2(0),     // uiStartSmallestBootLoaderSection
+        0,     // uiStartSmallestBootLoaderSection
         1,              // EnablePageProgramming
         0,              // ucCacheType
-        fill_b2(0x100), // uiSramStartAddr
+        0x100, // uiSramStartAddr
         0,              // ucResetType
         0,              // ucPCMaskExtended
         0x0,            // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1F),  // EECRAddress
+        0x1F,  // EECRAddress
     },
     nullptr};
 

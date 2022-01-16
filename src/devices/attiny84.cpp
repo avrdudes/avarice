@@ -96,11 +96,11 @@ constexpr gdb_io_reg_def_type attiny84_io_registers[] = {{"PRR", 0x20, 0x00},
         0x27,                                                         // ucIDRAddress
         0X57,                                                         // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        fill_b2(64),                                                  // uiFlashPageSize
+        64,                                                  // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        fill_b4(0x0000),                                              // ulBootAddress
-        fill_b2(0x00),                                                // uiUpperExtIOLoc
-        fill_b4(8192),                                                // ulFlashSize
+        0x0000,                                              // ulBootAddress
+        0x00,                                                // uiUpperExtIOLoc
+        8192,                                                // ulFlashSize
         {
             0xBB, 0xFF, 0xBB, 0xEE, 0xBB, 0xCC, 0xB2, 0x0D, 0xBC, 0x07,
             0xB4, 0x07, 0xBA, 0x0D, 0xBB, 0xBC, 0x99, 0xE1, 0xBB, 0xAC,
@@ -108,19 +108,19 @@ constexpr gdb_io_reg_def_type attiny84_io_registers[] = {{"PRR", 0x20, 0x00},
         {0xB4, 0x07, 0x17}, // ucFlashInst
         0x3E,               // ucSPHaddr
         0x3D,               // ucSPLaddr
-        fill_b2(8192 / 64), // uiFlashpages
+        8192 / 64, // uiFlashpages
         0x27,               // ucDWDRAddress
         0x00,               // ucDWBasePC
         0x00,               // ucAllowFullPageBitstream
-        fill_b2(0x00),      // uiStartSmallestBootLoaderSection
+        0x00,      // uiStartSmallestBootLoaderSection
         1,                  // EnablePageProgramming
         0,                  // ucCacheType
-        fill_b2(0x60),      // uiSramStartAddr
+        0x60,      // uiSramStartAddr
         0,                  // ucResetType
         0,                  // ucPCMaskExtended
         0,                  // ucPCMaskHigh
         0,                  // ucEindAddress
-        fill_b2(0x1C),      // EECRAddress
+        0x1C,      // EECRAddress
     },
     nullptr
 };

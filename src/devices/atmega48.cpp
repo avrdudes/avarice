@@ -122,29 +122,29 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINB", 0x23, 0x00},
         0,                                                            // ucIDRAddress
         0,                                                            // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        fill_b2(64),                                                  // uiFlashPageSize
+        64,                                                  // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        fill_b4(0),                                                   // ulBootAddress
-        fill_b2(0xC6),                                                // uiUpperExtIOLoc
-        fill_b4(0x1000),                                              // ulFlashSize
+        0,                                                   // ulBootAddress
+        0xC6,                                                // uiUpperExtIOLoc
+        0x1000,                                              // ulFlashSize
         {0xBD, 0xF2, 0xBD, 0xE1, 0xBB, 0xCF, 0xB4, 0x00, 0xBE, 0x01,
          0xB6, 0x01, 0xBC, 0x00, 0xBB, 0xBF, 0x99, 0xF9, 0xBB, 0xAF}, // ucEepromInst
         {0xB6, 0x01, 0x11},                                           // ucFlashInst
         0x3e,                                                         // ucSPHaddr
         0x3d,                                                         // ucSPLaddr
-        fill_b2(0x1000 / 64),                                         // uiFlashpages
+        0x1000 / 64,                                         // uiFlashpages
         0x31,                                                         // ucDWDRAddress
         0x18,                                                         // ucDWBasePC
         0,                                                            // ucAllowFullPageBitstream
-        fill_b2(0),     // uiStartSmallestBootLoaderSection
+        0,     // uiStartSmallestBootLoaderSection
         1,              // EnablePageProgramming
         0,              // ucCacheType
-        fill_b2(0x100), // uiSramStartAddr
+        0x100, // uiSramStartAddr
         0,              // ucResetType
         0,              // ucPCMaskExtended
         0,              // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1F),  // EECRAddress
+        0x1F,  // EECRAddress
     },
     nullptr};
 

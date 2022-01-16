@@ -59,9 +59,9 @@ constexpr jtag1_device_desc_type jtag1_device_desc{
     0x31,
     0x57,
     0x00,
-    {128, 0},
+    128,
     4,
-    {0x80, 0x1F, 0x00, 0x00},
+    0x1F80,
     0xFE,
     {JTAG_EOM}};
 
@@ -95,28 +95,28 @@ constexpr jtag1_device_desc_type jtag1_device_desc{
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        fill_b2(128),                                                 // uiFlashPageSize
+        128,                                                 // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        fill_b4(0x1F80),                                              // ulBootAddress
-        fill_b2(0xFE),                                                // uiUpperExtIOLoc
-        fill_b4(0x4000),                                              // ulFlashSize
+        0x1F80,                                              // ulBootAddress
+        0xFE,                                                // uiUpperExtIOLoc
+        0x4000,                                              // ulFlashSize
         {0},                                                          // ucEepromInst
         {0},                                                          // ucFlashInst
         0x3e,                                                         // ucSPHaddr
         0x3d,                                                         // ucSPLaddr
-        fill_b2(0x4000 / 128),                                        // uiFlashpages
+        0x4000 / 128,                                        // uiFlashpages
         0,                                                            // ucDWDRAddress
         0,                                                            // ucDWBasePC
         1,                                                            // ucAllowFullPageBitstream
-        fill_b2(0),     // uiStartSmallestBootLoaderSection
+        0,     // uiStartSmallestBootLoaderSection
         1,              // EnablePageProgramming
         0,              // ucCacheType
-        fill_b2(0x100), // uiSramStartAddr
+        0x100, // uiSramStartAddr
         0,              // ucResetType
         0,              // ucPCMaskExtended
         0,              // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1f),  // EECRAddress
+        0x1f,  // EECRAddress
     },
     nullptr};
 

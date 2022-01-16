@@ -55,18 +55,18 @@ void Jtag3::eraseProgramMemory() {
     delete[] resp;
 }
 
-void Jtag3::eraseProgramPage(unsigned long address) {
+void Jtag3::eraseProgramPage(const unsigned long address) {
     uchar buf[8];
     buf[0] = SCOPE_AVR;
     buf[1] = CMD3_ERASE_MEMORY;
     buf[2] = 0;
     if (is_xmega && address >= appsize) {
         buf[3] = XMEGA_ERASE_BOOT_PAGE;
-        address -= appsize;
+        u32_to_b4(buf + 4, address - appsize);
     } else {
         buf[3] = XMEGA_ERASE_APP_PAGE;
+        u32_to_b4(buf + 4, address);
     }
-    u32_to_b4(buf + 4, address);
 
     uchar *resp;
     int respsize;

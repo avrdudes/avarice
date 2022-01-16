@@ -218,28 +218,28 @@ constexpr gdb_io_reg_def_type atmega2560_io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                   // ucIDRAddress
         0x57,                   // ucSPMCRAddress
         0x3B,                   // ucRAMPZAddress
-        fill_b2(256),           // uiFlashPageSize
+        256,           // uiFlashPageSize
         8,                      // ucEepromPageSize
-        fill_b4(0x1FE00),       // ulBootAddress
-        fill_b2(0x0136),        // uiUpperExtIOLoc
-        fill_b4(0x40000),       // ulFlashSize
+        0x1FE00,       // ulBootAddress
+        0x0136,        // uiUpperExtIOLoc
+        0x40000,       // ulFlashSize
         {0},                    // ucEepromInst
         {0},                    // ucFlashInst
         0x3e,                   // ucSPHaddr
         0x3d,                   // ucSPLaddr
-        fill_b2(0x40000 / 256), // uiFlashpages
+        0x40000 / 256, // uiFlashpages
         0,                      // ucDWDRAddress
         0,                      // ucDWBasePC
         0,                      // ucAllowFullPageBitstream
-        fill_b2(0),             // uiStartSmallestBootLoaderSection
+        0,             // uiStartSmallestBootLoaderSection
         1,                      // EnablePageProgramming
         0,                      // ucCacheType
-        fill_b2(0x200),         // uiSramStartAddr
+        0x200,         // uiSramStartAddr
         0,                      // ucResetType
         0,                      // ucPCMaskExtended
         0,                      // ucPCMaskHigh
         0x3c,                   // ucEindAddress
-        fill_b2(0x1F),          // EECRAddress
+        0x1F,          // EECRAddress
     },
     nullptr
 };

@@ -293,43 +293,39 @@ void Jtag3::changeBitRate(int) { throw; }
 bool Jtag3::synchroniseAt(int) { throw; }
 
 void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
-    uchar *param, paramsize;
+    const uchar *param;
+    uchar paramsize;
 
     if (is_xmega) {
-        param = (uchar *)dev.xmega_dev_desc + 4;
+        param = (const uchar *)dev.xmega_dev_desc + 4;
         paramsize = sizeof(*dev.xmega_dev_desc) - 4;
 
-        appsize = b4_to_u32(dev.xmega_dev_desc->app_size);
+        appsize = dev.xmega_dev_desc->app_size;
     } else {
-        jtag3_device_desc_type d3;
-        memset(&d3, 0, sizeof(d3));
+        const uint8_t eeprom_address = dev.jtag2_dev_desc2.EECRAddress & 0xff;
+        const jtag3_device_desc_type d3 {
+            dev.jtag2_dev_desc2.uiFlashPageSize,
+            dev.jtag2_dev_desc2.ulFlashSize,
+            0,
+            dev.jtag2_dev_desc2.ulBootAddress,
+            dev.jtag2_dev_desc2.uiSramStartAddr,
+            dev.eeprom_page_size * dev.eeprom_page_count,
+            dev.eeprom_page_size,
+            dev.ocdrev,
+            1,
+            dev.jtag2_dev_desc2.ucAllowFullPageBitstream,
+            0,
+            dev.jtag2_dev_desc2.ucIDRAddress,
+            static_cast<uchar>(eeprom_address + 3),
+            static_cast<uchar>(eeprom_address + 2),
+            eeprom_address,
+            static_cast<uchar>(eeprom_address + 1),
+            dev.jtag2_dev_desc2.ucSPMCRAddress,
+            static_cast<uchar>(dev.osccal - 0x20)
+        };
 
-        param = (uchar *)&d3;
+        param = (const uchar *)&d3;
         paramsize = sizeof(d3);
-
-        // Copy over all the data that can be derived from the existing
-        // JTAG ICE mkII device descriptor.
-        memcpy(d3.flash_page_size, dev.jtag2_dev_desc2.uiFlashPageSize, 2);
-        memcpy(d3.flash_size, dev.jtag2_dev_desc2.ulFlashSize, 4);
-        memcpy(d3.boot_address, dev.jtag2_dev_desc2.ulBootAddress, 4);
-        memcpy(d3.sram_offset, dev.jtag2_dev_desc2.uiSramStartAddr, 2);
-
-        const unsigned int eesize = dev.eeprom_page_size * dev.eeprom_page_count;
-        d3.eeprom_size[0] = eesize & 0xff;
-        d3.eeprom_size[1] = (eesize >> 8) & 0xff;
-        d3.eeprom_page_size = dev.eeprom_page_size;
-        d3.always_one = 1;
-        d3.allow_full_page_bitstream = dev.jtag2_dev_desc2.ucAllowFullPageBitstream;
-        d3.idr_address = dev.jtag2_dev_desc2.ucIDRAddress;
-        d3.eearh_address = dev.jtag2_dev_desc2.EECRAddress[0] + 3;
-        d3.eearl_address = dev.jtag2_dev_desc2.EECRAddress[0] + 2;
-        d3.eecr_address = dev.jtag2_dev_desc2.EECRAddress[0];
-        d3.eedr_address = dev.jtag2_dev_desc2.EECRAddress[0] + 1;
-        d3.spmcr_address = dev.jtag2_dev_desc2.ucSPMCRAddress;
-
-        // These data have to be recorded separately.
-        d3.osccal_address = dev.osccal - 0x20;
-        d3.ocd_revision = dev.ocdrev;
     }
 
     try {
@@ -476,27 +472,10 @@ void Jtag3::deviceAutoConfig() {
              * Xmega devices ...
              */
             constexpr xmega_device_desc_type xmega_device_desc{
-                0, fill_b2(0), 0, fill_b4(0), fill_b4(0), fill_b4(0),
-                fill_b4(0), fill_b4(0), fill_b4(0), fill_b4(0), fill_b4(0x1000000), fill_b4(0),
-                fill_b2(0), fill_b2(0), fill_b2(0), 0, fill_b2(0), fill_b2(0x90)};
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1000000, 0, 0, 0, 0, 0, 0, 0x90};
 
-            const jtag_device_def_type desc{
-                "dummy",
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                NO_TWEAKS,
-                nullptr,
-                0,
-                0,
-                0,
-                0,
-                nullptr,
-                {},
-                &xmega_device_desc};
+            const jtag_device_def_type desc{"dummy", 0, 0, 0, 0, 0,       0,  NO_TWEAKS,
+                                            nullptr, 0, 0, 0, 0, nullptr, {}, &xmega_device_desc};
 
             setDeviceDescriptor(desc);
         }

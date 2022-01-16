@@ -36,6 +36,28 @@
 
 #include "avarice.h"
 
+// Little endian
+struct Word {
+    uint8_t bytes[sizeof(uint16_t)];
+    constexpr Word() : Word(0) {}
+    constexpr Word(uint16_t v)
+        :bytes{static_cast<uint8_t>(v&0xff),
+                static_cast<uint8_t>((v>>8)&0xff)} {}
+    operator uint16_t() const { return bytes[0] + (static_cast<uint16_t>(bytes[1])>>8); }
+};
+
+struct DWord {
+    uint8_t bytes[sizeof(uint32_t)];
+    constexpr DWord() : DWord(0) {}
+    constexpr DWord(uint32_t v)
+        : bytes{static_cast<uint8_t>(v), static_cast<uint8_t>(v >> 8),
+                static_cast<uint8_t>(v >> 16), static_cast<uint8_t>(v >> 24)} {}
+    operator uint32_t() const {
+        return bytes[0] + (static_cast<uint32_t>(bytes[1]) >> 8) +
+               (static_cast<uint32_t>(bytes[2]) >> 16) + (static_cast<uint32_t>(bytes[3]) >> 24);
+    }
+};
+
 /* The data in this structure will be sent directorly to the jtagice box. */
 
 struct jtag1_device_desc_type {
@@ -67,10 +89,10 @@ struct jtag1_device_desc_type {
 
     /* Memory programming page sizes (in bytes). */
 
-    unsigned char flash_pg_sz[2]; // [0]->little end; [1]->big end
+    Word flash_pg_sz;
     unsigned char eeprom_pg_sz;
 
-    unsigned char boot_addr[4]; // Boot loader start address.
+    DWord boot_addr; // Boot loader start address.
                                 // This is a WORD address.
                                 // [0]->little end; [3]->big end
 
@@ -102,24 +124,24 @@ struct jtag2_device_desc_type {
     unsigned char ucSPMCRAddress;         // SPMCR Register address and dW BasePC
     unsigned char ucRAMPZAddress;         // RAMPZ Register address in SRAM I/O
                                   // space
-    unsigned char uiFlashPageSize[2]; // Device Flash Page Size
+    Word uiFlashPageSize; // Device Flash Page Size
     unsigned char ucEepromPageSize;   // Device Eeprom Page Size in bytes
-    unsigned char ulBootAddress[4];   // Device Boot Loader Start Address
-    unsigned char uiUpperExtIOLoc[2]; // Topmost (last) extended I/O
+    DWord ulBootAddress;   // Device Boot Loader Start Address
+    Word uiUpperExtIOLoc; // Topmost (last) extended I/O
                                       // location, 0 if no external I/O
-    unsigned char ulFlashSize[4];   // Device Flash Size
+    DWord ulFlashSize;   // Device Flash Size
     unsigned char ucEepromInst[20]; // Instructions for W/R EEPROM
     unsigned char ucFlashInst[3];   // Instructions for W/R FLASH
     unsigned char ucSPHaddr;        // stack pointer high
     unsigned char ucSPLaddr;        // stack pointer low
     // new as of 16-02-2004
-    unsigned char uiFlashpages[2]; // number of pages in flash
+    Word uiFlashpages; // number of pages in flash
     unsigned char ucDWDRAddress;   // DWDR register address
     unsigned char ucDWBasePC;      // base/mask value of the PC
     // new as of 30-04-2004
     unsigned char ucAllowFullPageBitstream;            // FALSE on ALL new
                                                        // parts
-    unsigned char uiStartSmallestBootLoaderSection[2]; //
+    Word uiStartSmallestBootLoaderSection; //
     // new as of 18-10-2004
     unsigned char EnablePageProgramming; // For JTAG parts only,
                                          // default TRUE
@@ -127,37 +149,37 @@ struct jtag2_device_desc_type {
                                // CacheType_CAN 0x01,
                                // CacheType_HEIMDALL 0x02
                                // new as of 27-10-2004
-    unsigned char uiSramStartAddr[2]; // Start of SRAM
+    Word uiSramStartAddr; // Start of SRAM
     unsigned char ucResetType;        // Selects reset type. ResetNormal = 0x00
                                // ResetAT76CXXX = 0x01
     unsigned char ucPCMaskExtended; // For parts with extended PC
     unsigned char ucPCMaskHigh;     // PC high mask
     unsigned char ucEindAddress;    // Selects reset type. [EIND address...]
     // new as of early 2005, firmware 4.x
-    unsigned char EECRAddress[2]; // EECR IO address
+    Word EECRAddress; // EECR IO address
 };
 static_assert(sizeof(jtag2_device_desc_type) == 299);
 
 // New Xmega device descriptor, for firmware version 7 and above
 struct xmega_device_desc_type {
     unsigned char cmd;                    // CMND_SET_XMEGA_PARAMS
-    unsigned char whatever[2];            // cannot guess; must be 0x0002
+    Word whatever;            // cannot guess; must be 0x0002
     unsigned char datalen;                // length of the following data, = 47
-    unsigned char nvm_app_offset[4];      // NVM offset for application flash
-    unsigned char nvm_boot_offset[4];     // NVM offset for boot flash
-    unsigned char nvm_eeprom_offset[4];   // NVM offset for EEPROM
-    unsigned char nvm_fuse_offset[4];     // NVM offset for fuses
-    unsigned char nvm_lock_offset[4];     // NVM offset for lock bits
-    unsigned char nvm_user_sig_offset[4]; // NVM offset for user signature row
-    unsigned char nvm_prod_sig_offset[4]; // NVM offset for production sign. row
-    unsigned char nvm_data_offset[4];     // NVM offset for data memory (SRAM + IO)
-    unsigned char app_size[4];            // size of application flash
-    unsigned char boot_size[2];           // size of boot flash
-    unsigned char flash_page_size[2];     // flash page size
-    unsigned char eeprom_size[2];         // size of EEPROM
+    DWord nvm_app_offset;      // NVM offset for application flash
+    DWord nvm_boot_offset;     // NVM offset for boot flash
+    DWord nvm_eeprom_offset;   // NVM offset for EEPROM
+    DWord nvm_fuse_offset;     // NVM offset for fuses
+    DWord nvm_lock_offset;     // NVM offset for lock bits
+    DWord nvm_user_sig_offset; // NVM offset for user signature row
+    DWord nvm_prod_sig_offset; // NVM offset for production sign. row
+    DWord nvm_data_offset;     // NVM offset for data memory (SRAM + IO)
+    DWord app_size;            // size of application flash
+    Word boot_size;           // size of boot flash
+    Word flash_page_size;     // flash page size
+    Word eeprom_size;         // size of EEPROM
     unsigned char eeprom_page_size;       // EEPROM page size
-    unsigned char nvm_base_addr[2];       // IO space base address of NVM controller
-    unsigned char mcu_base_addr[2];       // IO space base address of MCU control
+    Word nvm_base_addr;       // IO space base address of NVM controller
+    Word mcu_base_addr;       // IO space base address of MCU control
 };
 static_assert(sizeof(xmega_device_desc_type) == 51);
 
@@ -205,7 +227,7 @@ struct jtag_device_def_type {
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
 
-    jtag_device_def_type(const char *dev_name, unsigned int device_id, unsigned int flash_page_size,
+    constexpr jtag_device_def_type(const char *dev_name, unsigned int device_id, unsigned int flash_page_size,
                          unsigned int flash_page_count, unsigned char eeprom_page_size,
                          unsigned int eeprom_page_count, unsigned int vectors_end, Tweaks tweaks,
                          const gdb_io_reg_def_type *io_reg_defs, unsigned int fusemap,
@@ -229,11 +251,6 @@ struct jtag_device_def_type {
 
     static void DumpAll();
 };
-
-#define fill_b4(u)                                                                                 \
-    { ((u)&0xffUL), (((u)&0xff00UL) >> 8), (((u)&0xff0000UL) >> 16), (((u)&0xff000000UL) >> 24) }
-#define fill_b2(u)                                                                                 \
-    { ((u)&0xff), (((u)&0xff00) >> 8) }
 
 // various enums
 enum {
@@ -889,7 +906,7 @@ class jtag_timeout_exception : public jtag_exception {
     jtag_timeout_exception() : jtag_exception("JTAG ICE timeout exception") {}
 };
 
-static inline unsigned long b4_to_u32(const unsigned char *b) {
+static inline uint32_t b4_to_u32(const unsigned char *b) {
     unsigned long l = (unsigned)b[0];
     l += (unsigned)b[1] << 8;
     l += (unsigned)(unsigned)b[2] << 16;
@@ -897,20 +914,20 @@ static inline unsigned long b4_to_u32(const unsigned char *b) {
     return l;
 };
 
-static inline void u32_to_b4(unsigned char *b, unsigned long l) {
+static inline void u32_to_b4(unsigned char *b, uint32_t l) {
     b[0] = l & 0xff;
     b[1] = (l >> 8) & 0xff;
     b[2] = (l >> 16) & 0xff;
     b[3] = (l >> 24) & 0xff;
 };
 
-static inline unsigned short b2_to_u16(const unsigned char *b) {
+static inline uint16_t b2_to_u16(const unsigned char *b) {
     unsigned short l = (unsigned)b[0];
     l += (unsigned)b[1] << 8;
     return l;
 };
 
-static inline void u16_to_b2(unsigned char *b, unsigned short l) {
+static inline void u16_to_b2(unsigned char *b, uint16_t l) {
     b[0] = l & 0xff;
     b[1] = (l >> 8) & 0xff;
 };

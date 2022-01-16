@@ -175,13 +175,13 @@ enum jtag3consts {
 
 // JTAGICE3 megaAVR parameter structure
 struct jtag3_device_desc_type {
-    unsigned char flash_page_size[2]; // in bytes
-    unsigned char flash_size[4];      // in bytes
-    unsigned char dummy1[4];          // always 0
-    unsigned char boot_address[4];    // maximal (BOOTSZ = 3) bootloader
+    Word flash_page_size; // in bytes
+    DWord flash_size;      // in bytes
+    DWord dummy1 = 0;          // always 0
+    DWord boot_address;    // maximal (BOOTSZ = 3) bootloader
     // address, in 16-bit words (!)
-    unsigned char sram_offset[2];     // pointing behind IO registers
-    unsigned char eeprom_size[2];
+    Word sram_offset;     // pointing behind IO registers
+    Word eeprom_size;
     unsigned char eeprom_page_size;
     unsigned char ocd_revision;              // see XML; basically:
     // t13*, t2313*, t4313:        0
@@ -190,9 +190,9 @@ struct jtag3_device_desc_type {
     // ATmega16*,162,169*,32*,64*: 2
     // ATmega2560/2561:            4
     // all other megaAVR devices:  3
-    unsigned char always_one;                // always = 1
+    unsigned char always_one = 1;                // always = 1
     unsigned char allow_full_page_bitstream; // old AVRs, see XML
-    unsigned char dummy2[2];                 // always 0
+    Word dummy2 = 0;                 // always 0
     // all IO addresses below are given
     // in IO number space (without
     // offset 0x20), even though e.g.
@@ -221,7 +221,7 @@ class Jtag3 : public Jtag {
     unsigned char eepromCache[MAX_EEPROM_PAGE_SIZE];
     unsigned int eepromCachePageAddr = (unsigned short)-1;
 
-    unsigned long appsize = 0;
+    unsigned int appsize = 0;
     unsigned int device_id = 0;
 
     unsigned char *cached_event = nullptr;

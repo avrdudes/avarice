@@ -69,28 +69,28 @@ constexpr gdb_io_reg_def_type atmega6450_io_registers[] = {
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        fill_b2(256),                                                 // uiFlashPageSize
+        256,                                                 // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        fill_b4(0x7E00),                                              // ulBootAddress
-        fill_b2(0xDD),                                                // uiUpperExtIOLoc
-        fill_b4(65536),                                               // ulFlashSize
+        0x7E00,                                              // ulBootAddress
+        0xDD,                                                // uiUpperExtIOLoc
+        65536,                                               // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        fill_b2(65536 / 256),                                         // uiFlashpages
+        65536 / 256,                                         // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x40,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
-        fill_b2(0x00),  // uiStartSmallestBootLoaderSection
+        0x00,  // uiStartSmallestBootLoaderSection
         1,              // EnablePageProgramming
         0,              // ucCacheType
-        fill_b2(0x100), // uiSramStartAddr
+        0x100, // uiSramStartAddr
         0,              // ucResetType
         0,              // ucPCMaskExtended
         0x00,           // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1F),  // EECRAddress
+        0x1F,  // EECRAddress
     },
     nullptr
 };
