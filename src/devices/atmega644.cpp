@@ -2,7 +2,7 @@
 
 namespace {
 
-constexpr gdb_io_reg_def_type atmega644_io_registers[] = {
+constexpr gdb_io_reg_def_type io_registers[] = {
     {"PINA", 0x20, 0x00},        {"DDRA", 0x21, 0x00},       {"PORTA", 0x22, 0x00},
     {"PINB", 0x23, 0x00},        {"DDRB", 0x24, 0x00},       {"PORTB", 0x25, 0x00},
     {"PINC", 0x26, 0x00},        {"DDRC", 0x27, 0x00},       {"PORTC", 0x28, 0x00},
@@ -35,7 +35,7 @@ constexpr gdb_io_reg_def_type atmega644_io_registers[] = {
     {"UCSR0B", 0xc1, 0x00},      {"UCSR0C", 0xc2, 0x00},     {"UBRR0L", 0xc4, 0x00},
     {"UBRR0H", 0xc5, 0x00},      {"UDR0", 0xc6, IO_REG_RSE}, {nullptr, 0, 0}};
 
-[[maybe_unused]] const jtag_device_def_type atmega644{
+[[maybe_unused]] const jtag_device_def_type device{
     "atmega644",
     0x9609,
     256,
@@ -44,7 +44,7 @@ constexpr gdb_io_reg_def_type atmega644_io_registers[] = {
     256,    // 2K bytes EEPROM
     28 * 4, // 28 interrupt vectors
     NO_TWEAKS,
-    atmega644_io_registers,
+    io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal

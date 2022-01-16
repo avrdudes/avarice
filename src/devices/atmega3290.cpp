@@ -2,7 +2,7 @@
 
 namespace {
 
-constexpr gdb_io_reg_def_type atmega3290_io_registers[] = {
+constexpr gdb_io_reg_def_type io_registers[] = {
     {"PINA", 0x20, 0x00},    {"DDRA", 0x21, 0x00},       {"PORTA", 0x22, 0x00},
     {"PINB", 0x23, 0x00},    {"DDRB", 0x24, 0x00},       {"PORTB", 0x25, 0x00},
     {"PINC", 0x26, 0x00},    {"DDRC", 0x27, 0x00},       {"PORTC", 0x28, 0x00},
@@ -45,16 +45,16 @@ constexpr gdb_io_reg_def_type atmega3290_io_registers[] = {
     {"LCDDR15", 0xfb, 0x00}, {"LCDDR16", 0xfc, 0x00},    {"LCDDR17", 0xfd, 0x00},
     {"LCDDR18", 0xfe, 0x00}, {"LCDDR19", 0xff, 0x00},    {nullptr, 0, 0}};
 
-[[maybe_unused]] const jtag_device_def_type atmega3290{
+[[maybe_unused]] const jtag_device_def_type device{
     "atmega3290",
     0x9504,
     128,
-    256, // 32K flash
+    256,
     4,
-    256,    // 1K bytes EEPROM
+    256,
     25 * 4, // 25 interrupt vectors
     NO_TWEAKS,
-    atmega3290_io_registers,
+    io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -96,9 +96,8 @@ constexpr gdb_io_reg_def_type atmega3290_io_registers[] = {
         0,              // ucPCMaskExtended
         0x0,            // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1f),  // EECRAddress
+        fill_b2(0x1F),  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace

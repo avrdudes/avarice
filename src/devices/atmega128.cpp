@@ -131,7 +131,7 @@ constexpr jtag1_device_desc_type jtag1_device_desc{
         0,              // ucPCMaskExtended
         0,              // ucPCMaskHigh
         0,              // ucEindAddress
-        fill_b2(0x1c),  // EECRAddress
+        fill_b2(0x1C),  // EECRAddress
     },
     nullptr};
 

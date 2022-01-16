@@ -2,7 +2,7 @@
 
 namespace {
 
-constexpr gdb_io_reg_def_type at90pwm3_io_registers[] = {
+constexpr gdb_io_reg_def_type io_registers[] = {
     {"PINB", 0x23, 0x00},       {"DDRB", 0x24, 0x00},
     {"PORTB", 0x25, 0x00},      {"PINC", 0x26, 0x00},
     {"DDRC", 0x27, 0x00},       {"PORTC", 0x28, 0x00},
@@ -75,7 +75,7 @@ constexpr gdb_io_reg_def_type at90pwm3_io_registers[] = {
     {"PFRC2B", 0xfd, 0x00},     {"PICR2L", 0xfe, 0x00},
     {"PICR2H", 0xff, 0x00},     {nullptr, 0, 0}};
 
-[[maybe_unused]] const jtag_device_def_type at90pwm3{
+[[maybe_unused]] const jtag_device_def_type device{
     "at90pwm3",
     0x9381,
     64,
@@ -84,7 +84,7 @@ constexpr gdb_io_reg_def_type at90pwm3_io_registers[] = {
     128,    // 512 bytes EEPROM
     32 * 2, // 32 interrupt vectors
     NO_TWEAKS,
-    at90pwm3_io_registers,
+    io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal

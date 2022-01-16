@@ -2,7 +2,7 @@
 
 namespace {
 
-constexpr gdb_io_reg_def_type atmega3250p_io_registers[] = {
+constexpr gdb_io_reg_def_type io_registers[] = {
     {"PINA", 0x20, 0x00},   {"DDRA", 0x21, 0x00},       {"PORTA", 0x22, 0x00},
     {"PINB", 0x23, 0x00},   {"DDRB", 0x24, 0x00},       {"PORTB", 0x25, 0x00},
     {"PINC", 0x26, 0x00},   {"DDRC", 0x27, 0x00},       {"PORTC", 0x28, 0x00},
@@ -46,7 +46,7 @@ constexpr gdb_io_reg_def_type atmega3250p_io_registers[] = {
     256,    // 1024 bytes EEPROM
     25 * 4, // 25 interrupt vectors
     NO_TWEAKS,
-    atmega3250p_io_registers,
+    io_registers,
     0x07,
     0x8000, // fuses
     0x66,   // osccal
@@ -92,7 +92,6 @@ constexpr gdb_io_reg_def_type atmega3250p_io_registers[] = {
         0,              // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace

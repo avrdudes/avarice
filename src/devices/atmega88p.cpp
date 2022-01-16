@@ -2,7 +2,7 @@
 
 namespace {
 
-constexpr gdb_io_reg_def_type atmega88p_io_registers[] = {
+constexpr gdb_io_reg_def_type io_registers[] = {
     {"PINB", 0x23, 0x00},       {"DDRB", 0x24, 0x00},
     {"PORTB", 0x25, 0x00},      {"PINC", 0x26, 0x00},
     {"DDRC", 0x27, 0x00},       {"PORTC", 0x28, 0x00},
@@ -57,7 +57,7 @@ constexpr gdb_io_reg_def_type atmega88p_io_registers[] = {
     128,    // 512 bytes EEPROM
     26 * 2, // 26 interrupt vectors
     NO_TWEAKS,
-    atmega88p_io_registers,
+    io_registers,
     0x07,
     0x0000, // fuses
     0x66,   // osccal
@@ -104,7 +104,6 @@ constexpr gdb_io_reg_def_type atmega88p_io_registers[] = {
         0,              // ucEindAddress
         fill_b2(0x1F),  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace
