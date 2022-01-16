@@ -253,9 +253,7 @@ class Jtag2 : public Jtag {
 
   public:
     Jtag2(Emulator emul, const char *dev, std::string_view expected_dev, Debugproto prot, bool nsrst, bool xmega)
-        : Jtag(emul, dev, expected_dev, nsrst), proto(prot) {
-        is_xmega = xmega;
-    };
+        : Jtag(emul, dev, expected_dev, nsrst, xmega), proto(prot) {};
     ~Jtag2() override;
 
     void initJtagBox() override;

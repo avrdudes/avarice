@@ -44,8 +44,8 @@ void Jtag::restoreSerialPort() {
         tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view expected_dev, bool nsrst)
-    : emu_type(emul), apply_nSRST(nsrst), expected_dev(expected_dev) {
+Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view expected_dev, bool nsrst, bool is_xmega)
+    : emu_type(emul), apply_nSRST(nsrst), is_xmega(is_xmega), expected_dev(expected_dev) {
 
     if (strncmp(jtagDeviceName, "usb", 3) == 0) {
 #ifdef HAVE_LIBUSB

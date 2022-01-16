@@ -474,8 +474,8 @@ int main(int argc, char **argv) {
 
         case Emulator::JTAGICE3:
         case Emulator::EDBG:
-            theJtagICE = std::make_unique<Jtag3>(devicetype, jtagDeviceName, device_name, proto,
-                                                 apply_nsrst, is_xmega);
+            theJtagICE = std::make_unique<Jtag3>(devicetype, jtagDeviceName, device_name,
+                                                 apply_nsrst, is_xmega, proto);
             break;
         }
 

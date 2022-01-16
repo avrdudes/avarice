@@ -689,7 +689,7 @@ class Jtag {
     virtual void deviceAutoConfig() = 0;
 
   public:
-    Jtag(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst);
+    Jtag(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst, bool is_xmega = false);
     virtual ~Jtag();
 
     // Basic JTAG I/O
@@ -860,7 +860,7 @@ class Jtag {
       from.  0x5D + DATA_SPACE_ADDR_OFFSET for megaAVR, 0x3D +
       DATA_SPACE_ADDR_OFFSET for Xmega devices.
     **/
-    virtual unsigned int statusAreaAddress() const = 0;
+    [[nodiscard]] virtual unsigned int statusAreaAddress() const = 0;
 
     /** Return read address for CPU registers.
 
@@ -869,7 +869,7 @@ class Jtag {
       for Xmega devices.
 
     **/
-    virtual unsigned int cpuRegisterAreaAddress() const = 0;
+    [[nodiscard]] virtual unsigned int cpuRegisterAreaAddress() const = 0;
 };
 
 extern std::unique_ptr<Jtag> theJtagICE;

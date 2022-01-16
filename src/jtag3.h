@@ -227,10 +227,8 @@ class Jtag3 : public Jtag {
     unsigned char *cached_event = nullptr;
 
   public:
-    Jtag3(Emulator emul, const char *dev, std::string_view expected_dev, Debugproto prot, bool nsrst, bool xmega)
-        : Jtag(emul, dev, expected_dev, nsrst), proto(prot) {
-        is_xmega = xmega;
-    };
+    Jtag3(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst, bool xmega, Debugproto prot)
+        : Jtag(emul, dev, expected_dev, nsrst, xmega), proto(prot) {};
     ~Jtag3() override;
 
     void initJtagBox() override;
