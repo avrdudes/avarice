@@ -668,7 +668,6 @@ class Jtag {
     void changeLocalBitRate(int newBitRate) const;
     void restoreSerialPort();
 
-    virtual void changeBitRate(int newBitRate) = 0;
     virtual void setDeviceDescriptor(const jtag_device_def_type &dev) = 0;
     virtual bool synchroniseAt(int bitrate) = 0;
     virtual void startJtagLink() = 0;
@@ -742,8 +741,6 @@ class Jtag {
 
     /** Erase all chip memory **/
     virtual void eraseProgramMemory() = 0;
-
-    virtual void eraseProgramPage(unsigned long address) = 0;
 
     // Running, single stepping, etc
     // -----------------------------

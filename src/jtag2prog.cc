@@ -70,22 +70,3 @@ void Jtag2::eraseProgramMemory() {
         doSimpleJtagCommand(CMND_CHIP_ERASE);
     }
 }
-
-void Jtag2::eraseProgramPage(unsigned long address) {
-    const uchar command[5] = {CMND_ERASEPAGE_SPM,
-    static_cast<uchar>((address & 0xff000000) >> 24),
-    static_cast<uchar>((address & 0xff0000) >> 16),
-    static_cast<uchar>((address & 0xff00) >> 8),
-    static_cast<uchar>(address)};
-
-    uchar *response;
-    int respSize;
-    try {
-        doJtagCommand(command, sizeof(command), response, respSize);
-    } catch (jtag_exception &e) {
-        fprintf(stderr, "Page erase failed: %s\n", e.what());
-        throw;
-    }
-
-    delete[] response;
-}

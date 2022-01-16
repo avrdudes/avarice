@@ -20,15 +20,15 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <inttypes.h>
 
 #include "avarice.h"
 
 bool debugMode = false;
 
 void vdebugOut(const char *fmt, va_list args) {
-    if (debugMode) {
-        (void)vfprintf(stderr, fmt, args);
-    }
+    if (!debugMode) return;
+    (void)vfprintf(stderr, fmt, args);
 }
 
 void debugOut(const char *fmt, ...) {
@@ -36,6 +36,16 @@ void debugOut(const char *fmt, ...) {
     va_start(args, fmt);
     vdebugOut(fmt, args);
     va_end(args);
+}
+
+void debugOutBufHex(const char* prefix, const void* data, size_t data_size) {
+    if (!debugMode) return;
+
+    const auto* data_bytes = static_cast<const uint8_t*>(data);
+    debugOut(prefix);
+    for (size_t i = 0; i < data_size; ++i)
+        debugOut("%.2X ", data_bytes[i]);
+    debugOut("\n");
 }
 
 void vstatusOut(const char *fmt, va_list args) { vprintf(fmt, args); }

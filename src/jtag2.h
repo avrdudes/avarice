@@ -267,7 +267,6 @@ class Jtag2 : public Jtag {
     void enableProgramming() override;
     void disableProgramming() override;
     void eraseProgramMemory() override;
-    void eraseProgramPage(unsigned long address) override;
 
     unsigned long getProgramCounter() override;
     void setProgramCounter(unsigned long pc) override;
@@ -279,15 +278,15 @@ class Jtag2 : public Jtag {
 
     uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
     void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) override;
-    unsigned int statusAreaAddress() const override {
+    [[nodiscard]] unsigned int statusAreaAddress() const override {
         return (is_xmega ? 0x3D : 0x5D) + DATA_SPACE_ADDR_OFFSET;
     };
-    unsigned int cpuRegisterAreaAddress() const override {
+    [[nodiscard]] unsigned int cpuRegisterAreaAddress() const override {
         return is_xmega ? REGISTER_SPACE_ADDR_OFFSET : DATA_SPACE_ADDR_OFFSET;
     }
 
   private:
-    void changeBitRate(int newBitRate) override;
+    void changeBitRate(int newBitRate);
     void setDeviceDescriptor(const jtag_device_def_type &dev) override;
     bool synchroniseAt(int bitrate) override;
     void startJtagLink() override;

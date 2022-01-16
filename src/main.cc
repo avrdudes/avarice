@@ -252,7 +252,7 @@ int main(int argc, char **argv) {
     Emulator devicetype = Emulator::JTAGICE; // default to mkI devicetype
     Debugproto proto = Debugproto::JTAG;
     int option_index;
-    DaisyChainInfo daisy_chain_info {};
+    DaisyChainInfo daisy_chain_info{};
 
     statusOut("AVaRICE version %s, %s %s\n\n", PACKAGE_VERSION, __DATE__, __TIME__);
 
@@ -260,211 +260,211 @@ int main(int argc, char **argv) {
 
     opterr = 0; /* disable default error message */
 
-    while (true) {
-        int c = getopt_long(argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX", long_opts,
-                            &option_index);
-        if (c == -1)
-            break; /* no more options */
-
-        switch (c) {
-        case 'h':
-        case '?':
-            usage(progname);
-            [[fallthrough]];
-        case 'k':
-            knownParts();
-            [[fallthrough]];
-        case '1':
-            devicetype = Emulator::JTAGICE;
-            break;
-        case '2':
-            devicetype = Emulator::JTAGICE2;
-            break;
-        case '3':
-            devicetype = Emulator::JTAGICE3;
-            break;
-        case '4':
-            devicetype = Emulator::EDBG;
-            break;
-        case 'g':
-            devicetype = Emulator::DRAGON;
-            break;
-        case 'B':
-            jtagBitrate = parseJtagBitrate(optarg);
-            break;
-        case 'C':
-            capture = true;
-            break;
-        case 'c': {
-            unsigned int units_before = 0;
-            unsigned int units_after = 0;
-            unsigned int bits_before = 0;
-            unsigned int bits_after = 0;
-
-            if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
-                       &bits_after) != 4)
-                usage(progname);
-
-            daisy_chain_info = DaisyChainInfo{
-                static_cast<uchar>(units_before), static_cast<uchar>(units_after),
-                    static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
-            if (!daisy_chain_info.IsValid()) {
-                fprintf(stderr,
-                        "%s: daisy-chain parameters out of range"
-                        " (max. 32 bits before/after)\n",
-                        progname);
-                exit(1);
-            }
-            break;
-        }
-        case 'D':
-            detach = true;
-            break;
-        case 'd':
-            debugMode = true;
-            break;
-        case 'e':
-            erase = true;
-            break;
-        case 'E':
-            eventlist = optarg;
-            break;
-        case 'f':
-            inFileName = optarg;
-            break;
-        case 'I':
-            ignoreInterrupts = true;
-            break;
-        case 'j':
-            jtagDeviceName = optarg;
-            break;
-        case 'L':
-            lockBits = optarg;
-            writeLockBits = true;
-            break;
-        case 'l':
-            readLockBits = true;
-            break;
-        case 'P':
-            device_name = optarg;
-            break;
-        case 'p':
-            program = true;
-            break;
-        case 'R':
-            apply_nsrst = true;
-            break;
-        case 'r':
-            readFuses = true;
-            break;
-        case 'V':
-            exit(0);
-        case 'v':
-            verify = true;
-            break;
-        case 'w':
-            proto = Debugproto::DW;
-            break;
-        case 'W':
-            fuses = optarg;
-            writeFuses = true;
-            break;
-        case 'x':
-            is_xmega = true;
-            break;
-        case 'X':
-            is_xmega = true;
-            proto = Debugproto::PDI;
-            break;
-        default:
-            fprintf(stderr, "getop() did something screwey");
-            exit(1);
-        }
-    }
-
-    if ((optind + 1) == argc) {
-        /* Looks like user has given [[host]:port], so parse out the host and
-           port number then enable gdb server mode. */
-
-        int i;
-        char *arg = argv[optind];
-        int len = strlen(arg);
-        char *host = new char[len + 1];
-        memset(host, '\0', len + 1);
-
-        for (i = 0; i < len; i++) {
-            if ((arg[i] == '\0') || (arg[i] == ':'))
-                break;
-
-            host[i] = arg[i];
-        }
-
-        if (strlen(host)) {
-            hostName = host;
-        }
-
-        if (arg[i] == ':') {
-            i++;
-        }
-
-        if (i >= len) {
-            /* No port was given. */
-            fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
-            exit(1);
-        }
-
-        char *endptr;
-        hostPortNumber = (int)strtol(arg + i, &endptr, 0);
-        if (endptr == arg + i) {
-            /* Invalid convertion. */
-            fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
-            exit(1);
-        }
-
-        /* Make sure the the port value is not a priviledged port and is not
-           greater than max port value. */
-
-        if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
-            fprintf(stderr,
-                    "avarice: invalid port number: %d (must be >= %d"
-                    " and <= %d)\n",
-                    hostPortNumber, 1024, 0xffff);
-            exit(1);
-        }
-
-        gdbServerMode = true;
-    } else if (optind != argc) {
-        usage(progname);
-    }
-
-    if (jtagBitrate == 0 && (proto == Debugproto::JTAG)) {
-        fprintf(stdout, "Defaulting JTAG bitrate to 250 kHz.\n\n");
-
-        jtagBitrate = 250000;
-    }
-
-    // Use a default device name to connect to if not specified on the
-    // command-line.  If the JTAG_DEV environment variable is set, use
-    // the name given there.  As the AVR Dragon can only be talked to
-    // through USB, default it to USB, but use a generic name else.
-    if (jtagDeviceName == nullptr) {
-        char *cp = getenv("JTAG_DEV");
-
-        if (cp != nullptr)
-            jtagDeviceName = cp;
-        else if (devicetype == Emulator::DRAGON || devicetype == Emulator::JTAGICE3 ||
-                 devicetype == Emulator::EDBG || devicetype == Emulator::JTAGICE2)
-            jtagDeviceName = "usb";
-        else
-            jtagDeviceName = "/dev/avrjtag";
-    }
-
-    if (debugMode)
-        setvbuf(stderr, nullptr, _IOLBF, 0);
-
     int rv = 0; // return value from main()
 
     try {
+        while (true) {
+            int c = getopt_long(argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX", long_opts,
+                                &option_index);
+            if (c == -1)
+                break; /* no more options */
+
+            switch (c) {
+            case 'h':
+            case '?':
+                usage(progname);
+                [[fallthrough]];
+            case 'k':
+                knownParts();
+                [[fallthrough]];
+            case '1':
+                devicetype = Emulator::JTAGICE;
+                break;
+            case '2':
+                devicetype = Emulator::JTAGICE2;
+                break;
+            case '3':
+                devicetype = Emulator::JTAGICE3;
+                break;
+            case '4':
+                devicetype = Emulator::EDBG;
+                break;
+            case 'g':
+                devicetype = Emulator::DRAGON;
+                break;
+            case 'B':
+                jtagBitrate = parseJtagBitrate(optarg);
+                break;
+            case 'C':
+                capture = true;
+                break;
+            case 'c': {
+                unsigned int units_before = 0;
+                unsigned int units_after = 0;
+                unsigned int bits_before = 0;
+                unsigned int bits_after = 0;
+
+                if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
+                           &bits_after) != 4)
+                    usage(progname);
+
+                daisy_chain_info = DaisyChainInfo{
+                    static_cast<uchar>(units_before), static_cast<uchar>(units_after),
+                    static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
+                if (!daisy_chain_info.IsValid()) {
+                    fprintf(stderr,
+                            "%s: daisy-chain parameters out of range"
+                            " (max. 32 bits before/after)\n",
+                            progname);
+                    exit(1);
+                }
+                break;
+            }
+            case 'D':
+                detach = true;
+                break;
+            case 'd':
+                debugMode = true;
+                break;
+            case 'e':
+                erase = true;
+                break;
+            case 'E':
+                eventlist = optarg;
+                break;
+            case 'f':
+                inFileName = optarg;
+                break;
+            case 'I':
+                ignoreInterrupts = true;
+                break;
+            case 'j':
+                jtagDeviceName = optarg;
+                break;
+            case 'L':
+                lockBits = optarg;
+                writeLockBits = true;
+                break;
+            case 'l':
+                readLockBits = true;
+                break;
+            case 'P':
+                device_name = optarg;
+                break;
+            case 'p':
+                program = true;
+                break;
+            case 'R':
+                apply_nsrst = true;
+                break;
+            case 'r':
+                readFuses = true;
+                break;
+            case 'V':
+                exit(0);
+            case 'v':
+                verify = true;
+                break;
+            case 'w':
+                proto = Debugproto::DW;
+                break;
+            case 'W':
+                fuses = optarg;
+                writeFuses = true;
+                break;
+            case 'x':
+                is_xmega = true;
+                break;
+            case 'X':
+                is_xmega = true;
+                proto = Debugproto::PDI;
+                break;
+            default:
+                fprintf(stderr, "getop() did something screwey");
+                exit(1);
+            }
+        }
+
+        if ((optind + 1) == argc) {
+            /* Looks like user has given [[host]:port], so parse out the host and
+               port number then enable gdb server mode. */
+
+            int i;
+            char *arg = argv[optind];
+            int len = strlen(arg);
+            char *host = new char[len + 1];
+            memset(host, '\0', len + 1);
+
+            for (i = 0; i < len; i++) {
+                if ((arg[i] == '\0') || (arg[i] == ':'))
+                    break;
+
+                host[i] = arg[i];
+            }
+
+            if (strlen(host)) {
+                hostName = host;
+            }
+
+            if (arg[i] == ':') {
+                i++;
+            }
+
+            if (i >= len) {
+                /* No port was given. */
+                fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+                exit(1);
+            }
+
+            char *endptr;
+            hostPortNumber = (int)strtol(arg + i, &endptr, 0);
+            if (endptr == arg + i) {
+                /* Invalid convertion. */
+                fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+                exit(1);
+            }
+
+            /* Make sure the the port value is not a priviledged port and is not
+               greater than max port value. */
+
+            if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
+                fprintf(stderr,
+                        "avarice: invalid port number: %d (must be >= %d"
+                        " and <= %d)\n",
+                        hostPortNumber, 1024, 0xffff);
+                exit(1);
+            }
+
+            gdbServerMode = true;
+        } else if (optind != argc) {
+            usage(progname);
+        }
+
+        if (jtagBitrate == 0 && (proto == Debugproto::JTAG)) {
+            fprintf(stdout, "Defaulting JTAG bitrate to 250 kHz.\n\n");
+
+            jtagBitrate = 250000;
+        }
+
+        // Use a default device name to connect to if not specified on the
+        // command-line.  If the JTAG_DEV environment variable is set, use
+        // the name given there.  As the AVR Dragon can only be talked to
+        // through USB, default it to USB, but use a generic name else.
+        if (jtagDeviceName == nullptr) {
+            char *cp = getenv("JTAG_DEV");
+
+            if (cp != nullptr)
+                jtagDeviceName = cp;
+            else if (devicetype == Emulator::DRAGON || devicetype == Emulator::JTAGICE3 ||
+                     devicetype == Emulator::EDBG || devicetype == Emulator::JTAGICE2)
+                jtagDeviceName = "usb";
+            else
+                jtagDeviceName = "/dev/avrjtag";
+        }
+
+        if (debugMode)
+            setvbuf(stderr, nullptr, _IOLBF, 0);
+
         // And say hello to the JTAG box
         switch (devicetype) {
         case Emulator::JTAGICE:

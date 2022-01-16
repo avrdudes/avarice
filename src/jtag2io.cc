@@ -169,11 +169,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
                 }
             } else {
                 rv += timeout_read(buf + 8, msglen, JTAG_RESPONSE_TIMEOUT);
-                debugOut("read: ");
-                for (l = 0; l < msglen; l++) {
-                    debugOut(" %02x", buf[l + 8]);
-                }
-                debugOut("\n");
+                debugOutBufHex("read: ", buf + 8, msglen);
             }
             if (rv == 0)
                 /* timeout */
@@ -329,11 +325,7 @@ bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
         throw jtag_exception("JTAG communication failed");
 
     debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
-
-    for (int i = 0; i < commandSize; i++)
-        debugOut("%.2X ", command[i]);
-
-    debugOut("\n");
+    debugOutBufHex("", command, commandSize);
 
     sendFrame(command, commandSize);
 
@@ -343,11 +335,7 @@ bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
     else if (msgsize < 1)
         return false;
 
-    debugOut("response: ");
-    for (int i = 0; i < msgsize; i++) {
-        debugOut("%.2X ", msg[i]);
-    }
-    debugOut("\n");
+    debugOutBufHex("response: ", msg, msgsize);
 
     unsigned char c = msg[0];
 

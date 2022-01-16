@@ -53,14 +53,3 @@ void jtag1::eraseProgramMemory() {
         throw jtag_exception();
     }
 }
-
-void jtag1::eraseProgramPage(unsigned long address) {
-    const uchar command[] = {0xa1, static_cast<uchar>(address >> 8), static_cast<uchar>(address), 0,
-                             JTAG_EOM};
-
-    auto response = doJtagCommand(command, sizeof(command), 1);
-    if (Resp{response[0]} != Resp::OK) {
-        fprintf(stderr, "Page erase failed\n");
-        throw jtag_exception();
-    }
-}

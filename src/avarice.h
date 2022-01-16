@@ -22,6 +22,7 @@
 #define INCLUDE_AVARICE_H
 
 #include <cstdarg>
+#include <cstddef>
 
 #include "autoconf.h"
 
@@ -36,6 +37,7 @@ extern bool ignoreInterrupts;
 /** printf 'fmt, ...' if debugMode **/
 void vdebugOut(const char *fmt, va_list args);
 void debugOut(const char *fmt, ...);
+void debugOutBufHex(const char* prefix, const void* data, size_t data_size);
 
 /** printf 'fmt, ...' to status file descriptor (currently stdout) **/
 void vstatusOut(const char *fmt, va_list args);

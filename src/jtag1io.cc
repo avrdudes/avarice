@@ -22,7 +22,6 @@
  * $Id$
  */
 
-#include <cstdio>
 #include <cstring>
 #include <unistd.h>
 
@@ -42,11 +41,7 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
         throw jtag_exception("JTAG communication failed");
 
     debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
-
-    for (int i = 0; i < commandSize; i++)
-        debugOut("%.2X ", command[i]);
-
-    debugOut("\n");
+    debugOutBufHex("", command, commandSize);
 
     // before writing, clean up any "unfinished business".
     if (tcflush(jtagBox, TCIFLUSH) < 0)
@@ -81,12 +76,8 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
             unsigned char infobuf[2];
 
             /* An info ("IDR dirty") response. Ignore it. */
-            debugOut("Info response: ");
             count = timeout_read(infobuf, 2, JTAG_RESPONSE_TIMEOUT);
-            for (int i = 0; i < count; i++) {
-                debugOut("%.2X ", infobuf[i]);
-            }
-            debugOut("\n");
+            debugOutBufHex("Info response: ", infobuf, count);
             if (count != 2 || Resp{infobuf[1]} != Resp::OK)
                 return send_failed;
             else
@@ -116,11 +107,7 @@ std::unique_ptr<uchar[]> jtag1::getJtagResponse(int responseSize) {
     if (numCharsRead < 0)
         throw jtag_exception();
 
-    debugOut("response: ");
-    for (int i = 0; i < numCharsRead; i++) {
-        debugOut("%.2X ", response[i]);
-    }
-    debugOut("\n");
+    debugOutBufHex("response: ", response.get(), numCharsRead);
 
     if (numCharsRead < responseSize) // timeout problem
     {

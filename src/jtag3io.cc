@@ -104,9 +104,7 @@ void Jtag3::sendFrame(const uchar *command, int commandSize) {
     buf[1] = 0;
     u16_to_b2(buf.get() + 2, command_sequence);
     memcpy(buf.get() + 4, command, commandSize);
-    for (int i = 0; i < commandSize + 4; i++)
-        debugOut("%.2X ", buf[i]);
-    debugOut("\n");
+    debugOutBufHex("", buf.get(), commandSize);
 
     int count = safewrite(buf.get(), commandSize + 4);
     if (count < 0)
@@ -151,11 +149,7 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         if (istoken)
             tempbuf[0] = TOKEN;
 
-        debugOut("read: ");
-        for (int l = 0; l < rv; l++) {
-            debugOut(" %02x", tempbuf[l]);
-        }
-        debugOut("\n");
+        debugOutBufHex("read: ", tempbuf, rv);
 
         if (istoken) {
             unsigned int serial = tempbuf[2] + (tempbuf[3] << 8);
@@ -238,11 +232,7 @@ bool Jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *n
     if (msgsize < 1)
         return false;
 
-    debugOut("response: ");
-    for (int i = 0; i < msgsize; i++) {
-        debugOut("%.2X ", msg[i]);
-    }
-    debugOut("\n");
+    debugOutBufHex("response: ", msg, msgsize);
 
     const auto c = msg[1];
     if (c >= RSP3_OK && c < RSP3_FAILED)
@@ -287,8 +277,6 @@ void Jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
     }
     throw jtag_exception("doSimpleJtagCommand(): too many failures");
 }
-
-void Jtag3::changeBitRate(int) { throw; }
 
 bool Jtag3::synchroniseAt(int) { throw; }
 
