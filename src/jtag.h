@@ -34,7 +34,6 @@
 #include <vector>
 #include <string>
 
-#include "pragma.h"
 #include "avarice.h"
 
 /* The data in this structure will be sent directorly to the jtagice box. */
@@ -199,8 +198,6 @@ struct gdb_io_reg_def_type {
     unsigned int reg_addr;
     unsigned char flags;
 };
-
-PRAGMA_DIAG_IGNORED("-Wmissing-field-initializers")
 
 enum Tweaks {
     NO_TWEAKS = 0,

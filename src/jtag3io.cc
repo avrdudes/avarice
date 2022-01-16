@@ -481,8 +481,10 @@ void Jtag3::deviceAutoConfig() {
              * Hopefully, the values below will remain constant for all
              * Xmega devices ...
              */
-            constexpr xmega_device_desc_type xmega_device_desc
-                {.nvm_data_offset = fill_b4(0x1000000), .mcu_base_addr = fill_b2(0x90)};
+            constexpr xmega_device_desc_type xmega_device_desc{
+                0, fill_b2(0), 0, fill_b4(0), fill_b4(0), fill_b4(0),
+                fill_b4(0), fill_b4(0), fill_b4(0), fill_b4(0), fill_b4(0x1000000), fill_b4(0),
+                fill_b2(0), fill_b2(0), fill_b2(0), 0, fill_b2(0), fill_b2(0x90)};
 
             const jtag_device_def_type desc{
                 "dummy",
