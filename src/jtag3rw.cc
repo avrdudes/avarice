@@ -171,7 +171,7 @@ uchar *Jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
     again:
         try {
             doJtagCommand(cmd, sizeof(cmd), "read memory", response, responsesize);
-        } catch (jtag_io_exception &e) {
+        } catch (jtag3_io_exception &e) {
             ++cnt;
             if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {
                 interruptProgram();
@@ -233,7 +233,7 @@ void Jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
         unsigned int mask = pageSize - 1;
         addr &= ~mask;
         if (numBytes != pageSize)
-            throw("jtagWrite(): numByte does not match page size");
+            throw jtag_exception("jtagWrite(): numByte does not match page size");
     }
 
     uchar cmd[14 + numBytes];

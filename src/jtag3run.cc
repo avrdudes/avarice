@@ -38,7 +38,7 @@ unsigned long Jtag3::getProgramCounter() {
 again:
     try {
         doJtagCommand(cmd, sizeof(cmd), "read PC", resp, respsize);
-    } catch (jtag_io_exception &e) {
+    } catch (jtag3_io_exception &e) {
         cnt++;
         if (e.get_response() == RSP3_FAIL_WRONG_MODE && cnt < 2) {
             interruptProgram();
@@ -259,7 +259,7 @@ void Jtag3::jtagSingleStep() {
 
     try {
         doJtagCommand(cmd, sizeof(cmd), "single-step", resp, respsize);
-    } catch (jtag_io_exception &e) {
+    } catch (jtag3_io_exception &e) {
         if (e.get_response() != RSP3_FAIL_WRONG_MODE)
             throw;
     }

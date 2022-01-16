@@ -52,7 +52,7 @@ Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view exp
         is_usb = true;
         openUSB(jtagDeviceName);
 #else
-        throw "avarice has not been compiled with libusb support\n";
+        throw jtag_exception("avarice has not been compiled with libusb support\n");
 #endif
     } else {
         // Open modem device for reading and writing and not as controlling

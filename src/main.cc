@@ -582,13 +582,13 @@ int main(int argc, char **argv) {
             for (;;)
                 talkToGdb();
         }
-    } catch (const char *msg) {
-        fprintf(stderr, "%s\n", msg);
-        return 1;
     } catch (jtag_exception &) {
         // ignored; guarantee theJtagICE object will be deleted
         // correctly, as this says "good-bye" to the JTAG ICE mkII
         rv = 1;
+    } catch (...) {
+        // Fatal error?
+        rv = 2;
     }
 
     return rv;

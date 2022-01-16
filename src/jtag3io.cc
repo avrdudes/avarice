@@ -272,14 +272,14 @@ void Jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
     for (int tries = 0; tries < 10; tries++) {
         if (sendJtagCommand(cmd, 3, name, replydummy, dummy)) {
             if (replydummy == nullptr)
-                throw jtag_io_exception();
+                throw jtag3_io_exception();
             if (dummy < 3)
                 throw jtag_exception("Unexpected response size in doSimpleJtagCommand");
             if (replydummy[1] != RSP3_OK) {
                 if (replydummy[1] < RSP3_FAILED)
                     throw jtag_exception("Unexpected positive reply in doSimpleJtagCommand");
                 else
-                    throw jtag_io_exception(dummy >= 4 ? replydummy[3] : 0);
+                    throw jtag3_io_exception(dummy >= 4 ? replydummy[3] : 0);
             }
             delete[] replydummy;
             return;
@@ -345,15 +345,12 @@ void Jtag3::startJtagLink() {
 
     signedIn = true;
 
-    uchar cmd[4], *resp;
+    uchar *resp;
     int respsize;
 
-    cmd[0] = SCOPE_INFO;
-    cmd[1] = CMD3_GET_INFO;
-    cmd[2] = 0;
-    cmd[3] = CMD3_INFO_SERIAL;
+    const uchar get_info_cmd[4] = {SCOPE_INFO, CMD3_GET_INFO, 0, CMD3_INFO_SERIAL};
 
-    doJtagCommand(cmd, 4, "get info (serial number)", resp, respsize);
+    doJtagCommand(get_info_cmd, sizeof(get_info_cmd), "get info (serial number)", resp, respsize);
 
     if (resp[1] != RSP3_INFO)
         debugOut("Unexpected positive response to get info: 0x%02x\n", resp[1]);
@@ -406,12 +403,9 @@ void Jtag3::startJtagLink() {
     if (proto == Debugproto::JTAG)
         configDaisyChain();
 
-    cmd[0] = SCOPE_AVR;
-    cmd[1] = CMD3_SIGN_ON;
-    cmd[2] = 0;
-    cmd[3] = proto == Debugproto::JTAG && apply_nSRST;
+    const uchar sign_on_cmd[4] = {SCOPE_AVR, CMD3_SIGN_ON, 0, proto == Debugproto::JTAG && apply_nSRST};
 
-    doJtagCommand(cmd, 4, "AVR sign-on", resp, respsize);
+    doJtagCommand(sign_on_cmd, 4, "AVR sign-on", resp, respsize);
 
     if (resp[1] == RSP3_DATA && respsize >= 6) {
         unsigned int did = resp[3] | (resp[4] << 8) | (resp[5] << 16) | resp[6] << 24;

@@ -351,4 +351,15 @@ class Jtag2 : public Jtag {
     void xmegaSendBPs();
 };
 
+class jtag2_io_exception : public jtag_exception {
+  protected:
+    unsigned int response_code = 0;
+
+  public:
+    jtag2_io_exception() : jtag_exception("Unknown JTAG response exception") {}
+    explicit jtag2_io_exception(unsigned int code);
+
+    [[nodiscard]] unsigned int get_response() const { return response_code; }
+};
+
 #endif

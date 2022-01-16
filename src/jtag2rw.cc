@@ -227,7 +227,7 @@ void Jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
         unsigned int mask = pageSize - 1;
         addr &= ~mask;
         if (numBytes != pageSize)
-            throw("jtagWrite(): numByte does not match page size");
+            throw jtag_exception("jtagWrite(): numByte does not match page size");
         if (pageSize > 256) {
             chunksize = 256; // that's all the JTAGICEmkII can handle at a time
         }

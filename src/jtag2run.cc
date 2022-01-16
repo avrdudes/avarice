@@ -262,7 +262,7 @@ void Jtag2::jtagSingleStep() {
     do {
         try {
             doJtagCommand(cmd, sizeof(cmd), resp, respSize);
-        } catch (jtag_io_exception &e) {
+        } catch (jtag2_io_exception &e) {
             if (e.get_response() != RSP_ILLEGAL_MCU_STATE)
                 throw;
             continue;

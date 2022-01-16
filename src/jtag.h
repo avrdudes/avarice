@@ -79,6 +79,7 @@ struct jtag1_device_desc_type {
 
     unsigned char eom[2]; // JTAG command terminator.
 };
+static_assert(sizeof(jtag1_device_desc_type) == 126);
 
 // In appnote AVR067, struct device_descriptor is written with
 // int/long field types.  We cannot use them directly, as they were
@@ -135,6 +136,7 @@ struct jtag2_device_desc_type {
     // new as of early 2005, firmware 4.x
     unsigned char EECRAddress[2]; // EECR IO address
 };
+static_assert(sizeof(jtag2_device_desc_type) == 299);
 
 // New Xmega device descriptor, for firmware version 7 and above
 struct xmega_device_desc_type {
@@ -157,39 +159,7 @@ struct xmega_device_desc_type {
     unsigned char nvm_base_addr[2];       // IO space base address of NVM controller
     unsigned char mcu_base_addr[2];       // IO space base address of MCU control
 };
-
-// JTAGICE3 megaAVR parameter structure
-struct jtag3_device_desc_type {
-    unsigned char flash_page_size[2]; // in bytes
-    unsigned char flash_size[4];      // in bytes
-    unsigned char dummy1[4];          // always 0
-    unsigned char boot_address[4];    // maximal (BOOTSZ = 3) bootloader
-                                      // address, in 16-bit words (!)
-    unsigned char sram_offset[2];     // pointing behind IO registers
-    unsigned char eeprom_size[2];
-    unsigned char eeprom_page_size;
-    unsigned char ocd_revision;              // see XML; basically:
-                                             // t13*, t2313*, t4313:        0
-                                             // all other DW devices:       1
-                                             // ATmega128(A):               1 (!)
-                                             // ATmega16*,162,169*,32*,64*: 2
-                                             // ATmega2560/2561:            4
-                                             // all other megaAVR devices:  3
-    unsigned char always_one;                // always = 1
-    unsigned char allow_full_page_bitstream; // old AVRs, see XML
-    unsigned char dummy2[2];                 // always 0
-                                             // all IO addresses below are given
-                                             // in IO number space (without
-                                             // offset 0x20), even though e.g.
-                                             // OSCCAL always resides outside
-    unsigned char idr_address;               // IDR, aka. OCDR
-    unsigned char eearh_address;             // EEPROM access
-    unsigned char eearl_address;
-    unsigned char eecr_address;
-    unsigned char eedr_address;
-    unsigned char spmcr_address;
-    unsigned char osccal_address;
-};
+static_assert(sizeof(xmega_device_desc_type) == 51);
 
 constexpr unsigned char IO_REG_RSE = 0x01; // IO register has read side effect
 
@@ -917,17 +887,6 @@ class jtag_exception : public std::exception {
 class jtag_timeout_exception : public jtag_exception {
   public:
     jtag_timeout_exception() : jtag_exception("JTAG ICE timeout exception") {}
-};
-
-class jtag_io_exception : public jtag_exception {
-  protected:
-    unsigned int response_code;
-
-  public:
-    jtag_io_exception() : jtag_exception("Unknown JTAG response exception") { response_code = 0; }
-    explicit jtag_io_exception(unsigned int code);
-
-    [[nodiscard]] unsigned int get_response() const { return response_code; }
 };
 
 static inline unsigned long b4_to_u32(const unsigned char *b) {

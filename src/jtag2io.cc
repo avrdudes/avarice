@@ -28,7 +28,7 @@
 #include "crc16.h"
 #include "jtag2.h"
 
-jtag_io_exception::jtag_io_exception(unsigned int code) {
+jtag2_io_exception::jtag2_io_exception(unsigned int code) {
     static char buffer[50];
     response_code = code;
 
@@ -370,12 +370,12 @@ void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&respons
             if (responseSize == 0)
                 throw jtag_timeout_exception();
             else
-                throw jtag_io_exception(response[0]);
+                throw jtag2_io_exception(response[0]);
         }
 
         if (responseSize > 0 && response[0] > RSP_FAILED)
             // no point in retrying failures other than FAILED
-            throw jtag_io_exception(response[0]);
+            throw jtag2_io_exception(response[0]);
 
         if (responseSize > 0) {
             sizeseen = responseSize;
@@ -391,7 +391,7 @@ void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&respons
 #endif
     }
     if (sizeseen > 0)
-        throw jtag_io_exception(code);
+        throw jtag2_io_exception(code);
     else
         throw jtag_timeout_exception();
 }
@@ -404,11 +404,11 @@ void Jtag2::doSimpleJtagCommand(uchar command) {
     for (;;) {
         if (sendJtagCommand(&command, 1, tryCount, replydummy, dummy, false)) {
             if (replydummy == nullptr)
-                throw jtag_io_exception();
+                throw jtag2_io_exception();
             if (dummy != 1)
                 throw jtag_exception("Unexpected response size in doSimpleJtagCommand");
             if (replydummy[0] != RSP_OK)
-                throw jtag_io_exception(replydummy[0]);
+                throw jtag2_io_exception(replydummy[0]);
             delete[] replydummy;
             return;
         }
@@ -572,7 +572,7 @@ void Jtag2::startJtagLink() {
             try {
                 setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
                 debug_active = true;
-            } catch (jtag_io_exception &) {
+            } catch (jtag2_io_exception &) {
                 fprintf(stderr, "Failed to activate %s debugging protocol\n", protoName);
                 throw;
             }

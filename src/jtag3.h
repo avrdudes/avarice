@@ -173,6 +173,40 @@ enum jtag3consts {
     MAX_MESSAGE_SIZE_JTAGICE3 = 512,
 };
 
+// JTAGICE3 megaAVR parameter structure
+struct jtag3_device_desc_type {
+    unsigned char flash_page_size[2]; // in bytes
+    unsigned char flash_size[4];      // in bytes
+    unsigned char dummy1[4];          // always 0
+    unsigned char boot_address[4];    // maximal (BOOTSZ = 3) bootloader
+    // address, in 16-bit words (!)
+    unsigned char sram_offset[2];     // pointing behind IO registers
+    unsigned char eeprom_size[2];
+    unsigned char eeprom_page_size;
+    unsigned char ocd_revision;              // see XML; basically:
+    // t13*, t2313*, t4313:        0
+    // all other DW devices:       1
+    // ATmega128(A):               1 (!)
+    // ATmega16*,162,169*,32*,64*: 2
+    // ATmega2560/2561:            4
+    // all other megaAVR devices:  3
+    unsigned char always_one;                // always = 1
+    unsigned char allow_full_page_bitstream; // old AVRs, see XML
+    unsigned char dummy2[2];                 // always 0
+    // all IO addresses below are given
+    // in IO number space (without
+    // offset 0x20), even though e.g.
+    // OSCCAL always resides outside
+    unsigned char idr_address;               // IDR, aka. OCDR
+    unsigned char eearh_address;             // EEPROM access
+    unsigned char eearl_address;
+    unsigned char eecr_address;
+    unsigned char eedr_address;
+    unsigned char spmcr_address;
+    unsigned char osccal_address;
+};
+static_assert(sizeof(jtag3_device_desc_type) == 31);
+
 class Jtag3 : public Jtag {
   private:
     unsigned short command_sequence = 0;
@@ -290,12 +324,15 @@ class Jtag3 : public Jtag {
     void xmegaSendBPs();
 };
 
-class jtag3_io_exception : public jtag_io_exception {
+class jtag3_io_exception : public jtag_exception {
+  protected:
+    unsigned int response_code = 0;
+
   public:
-    jtag3_io_exception() : jtag_io_exception(0) {}
+    jtag3_io_exception() = default;
     explicit jtag3_io_exception(unsigned int code);
 
-    unsigned int get_response() { return response_code; }
+    [[nodiscard]] unsigned int get_response() const { return response_code; }
 };
 
 #endif
