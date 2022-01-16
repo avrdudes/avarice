@@ -643,7 +643,8 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
   walk = list;
   while (walk)
     {
-      if (wcsstr(walk->product_string, L"CMSIS-DAP") != NULL)
+      if (walk->product_string != nullptr &&
+	  wcsstr(walk->product_string, L"CMSIS-DAP") != NULL)
 	{
 	  debugOut("Found HID PID:VID 0x%04x:0x%04x, serno %ls\n",
 		   walk->vendor_id, walk->product_id,
