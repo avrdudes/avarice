@@ -29,6 +29,7 @@ avarice_SOURCES =	\
 	crc16.c		\
 	devdescr.cc	\
 	jtag.h		\
+        jtag.cpp        \
 	jtag1.h		\
 	jtag2.h		\
 	jtag3.h		\
@@ -47,7 +48,6 @@ avarice_SOURCES =	\
 	jtag3run.cc	\
 	jtag3rw.cc	\
 	jtag1bp.cc	\
-	jtaggeneric.cc	\
 	jtag1io.cc	\
 	jtag1misc.cc	\
 	jtag1prog.cc	\

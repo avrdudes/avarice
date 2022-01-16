@@ -778,10 +778,8 @@ void talkToGdb() {
                     sprintf(remcomOutBuffer, "%02x", regcount);
                 } else if (*ptr == ':') {
                     // Request for a sequence of io registers
-                    int offset;
                     i = 0;
                     j = 0;
-                    int count;
 
                     // Find the first register
                     ptr++;
@@ -795,7 +793,8 @@ void talkToGdb() {
                     // i is the first register to read
                     // j is the number of registers to read
                     while ((j > 0) && (i < regcount)) {
-                        count = 0;
+                        int count = 0;
+                        int offset;
 
                         if ((io_reg_defs[i].name != nullptr) && (io_reg_defs[i].flags != 0x00)) {
                             // Register with special flags set

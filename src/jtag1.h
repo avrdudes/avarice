@@ -93,7 +93,8 @@ class jtag1 : public Jtag {
     int numBreakpointsData = 0;
 
   public:
-    jtag1(Emulator emul, const char *dev, const char *name, bool nsrst) : Jtag(emul, dev, name, nsrst){};
+    jtag1(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst)
+        : Jtag(emul, dev, expected_dev, nsrst){};
 
     void initJtagBox() override;
     void initJtagOnChipDebugging(unsigned long bitrate) override;

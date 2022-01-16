@@ -264,11 +264,9 @@ void Jtag3::doJtagCommand(const uchar *command, int commandSize, const char *nam
 
 void Jtag3::doSimpleJtagCommand(uchar command, const char *name, uchar scope) {
     int dummy;
-    uchar *replydummy, cmd[3];
+    uchar *replydummy;
 
-    cmd[0] = scope;
-    cmd[1] = command;
-    cmd[2] = 0;
+    const uchar cmd[3] = {scope, command, 0};
 
     // Send command until we get an OK response
     for (int tries = 0; tries < 10; tries++) {
@@ -512,17 +510,15 @@ void Jtag3::deviceAutoConfig() {
         delete[] resp;
     }
 
-    const auto &pDevice = jtag_device_def_type::Find(device_id, device_name);
-    device_name = pDevice.name;
-    deviceDef = &pDevice;
-    setDeviceDescriptor(pDevice);
+    deviceDef = &jtag_device_def_type::Find(device_id, expected_dev);
+    setDeviceDescriptor(*deviceDef);
 }
 
 void Jtag3::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
-    if (device_name) {
-        const auto &pDevice = jtag_device_def_type::Find(0, device_name);
+    if (!expected_dev.empty()) {
+        const auto &pDevice = jtag_device_def_type::Find(0, expected_dev);
         // If a device name has been specified on the command-line,
         // this overrides the is_xmega setting.
         is_xmega = pDevice.xmega_dev_desc != nullptr;

@@ -37,6 +37,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <string>
+
 #include "avarice.h"
 #include "gnu_getopt.h"
 #include "jtag.h"
@@ -256,7 +259,7 @@ int main(int argc, char **argv) {
 
     statusOut("AVaRICE version %s, %s %s\n\n", PACKAGE_VERSION, __DATE__, __TIME__);
 
-    char *device_name = nullptr;
+    std::string_view device_name;
 
     opterr = 0; /* disable default error message */
 

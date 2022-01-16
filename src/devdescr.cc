@@ -29,7 +29,12 @@
 #include <cstring>
 #include <cstdio>
 
-const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, const char *name) {
+const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, std::string_view name) {
+
+    // So we can do a case insensitive search in our database
+    std::string lowercase_name;
+    std::transform(name.begin(), name.end(), lowercase_name.begin(), ::tolower);
+
     const jtag_device_def_type *found_id = nullptr;
     if (id) {
         statusOut("Reported device ID: 0x%0X\n", id);
@@ -41,22 +46,22 @@ const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, co
     }
 
     const jtag_device_def_type *found_name = nullptr;
-    if (name) {
-        debugOut("Looking for device: %s\n", name);
+    if (!lowercase_name.empty()) {
+        debugOut("Looking for device: %s\n", lowercase_name.data());
         found_name = *std::find_if(jtag_device_def_type::devices.cbegin(),
                                   jtag_device_def_type::devices.cend(),
-                                  [&](const auto *dev) { return strcasecmp(dev->name, name) == 0; });
+                                  [&](const auto *dev) { return dev->name == lowercase_name; });
         if( found_name == *jtag_device_def_type::devices.cend() )
             found_name = nullptr;
     }
 
     if( !found_id && !found_name ) {
-        fprintf(stderr, "Device not found in internal database: id=0x%0X or name='%s'\n", id, name?name:"");
+        fprintf(stderr, "Device not found in internal database: id=0x%0X or name='%s'\n", id, name.data());
         throw jtag_exception();
     } else if( found_id && found_name ) {
         if( found_name->device_id != found_id->device_id ) {
             statusOut("Detected device ID: 0x%0X %s -- FORCED with %s\n", found_id->device_id,
-                      found_id->name, name);
+                      found_id->name, name.data());
             return *found_name;
         } else {
             return *found_id;

@@ -32,6 +32,7 @@
 #include <string_view>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "pragma.h"
 #include "avarice.h"
@@ -257,7 +258,7 @@ struct jtag_device_def_type {
     inline static std::vector<const jtag_device_def_type*> devices;
 
     // Find device in our database giving priority to 'id', if given
-    static const jtag_device_def_type &Find(unsigned int id, const char* name);
+    static const jtag_device_def_type &Find(unsigned int id, std::string_view name);
 
     static void DumpAll();
 };
@@ -694,7 +695,7 @@ class Jtag {
     bool programmingEnabled = false;
 
     // Name of the device controlled by the JTAG ICE
-    const char *device_name = nullptr;
+    const std::string_view expected_dev;
 
     // Pointer to device definition
     const jtag_device_def_type *deviceDef = {};
@@ -721,7 +722,7 @@ class Jtag {
     virtual void deviceAutoConfig() = 0;
 
   public:
-    Jtag(Emulator emul, const char *dev, const char *name, bool nsrst);
+    Jtag(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst);
     virtual ~Jtag();
 
     // Basic JTAG I/O

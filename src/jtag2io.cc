@@ -627,17 +627,15 @@ void Jtag2::deviceAutoConfig() {
         device_id = (device_id & 0x0FFFF000) >> 12;
     }
 
-    const auto &pDevice = jtag_device_def_type::Find(device_id, device_name);
-    device_name = pDevice.name;
-    deviceDef = &pDevice;
-    setDeviceDescriptor(pDevice);
+    deviceDef = &jtag_device_def_type::Find(device_id, expected_dev);
+    setDeviceDescriptor(*deviceDef);
 }
 
 void Jtag2::initJtagBox() {
     statusOut("JTAG config starting.\n");
 
-    if (device_name) {
-        const auto &pDevice = jtag_device_def_type::Find(0, device_name);
+    if (!expected_dev.empty()) {
+        const auto &pDevice = jtag_device_def_type::Find(0, expected_dev);
         // If a device name has been specified on the command-line,
         // this overrides the is_xmega setting.
         is_xmega = pDevice.xmega_dev_desc != nullptr;

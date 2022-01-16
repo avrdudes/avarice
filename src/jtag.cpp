@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
+#include <algorithm>
 
 #include <fcntl.h>
 #include <sys/time.h>
@@ -43,8 +44,9 @@ void Jtag::restoreSerialPort() {
         tcsetattr(jtagBox, TCSANOW, &oldtio);
 }
 
-Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const char *name, bool nsrst)
-    : emu_type(emul), apply_nSRST(nsrst), device_name(name) {
+Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view expected_dev, bool nsrst)
+    : emu_type(emul), apply_nSRST(nsrst), expected_dev(expected_dev) {
+
     if (strncmp(jtagDeviceName, "usb", 3) == 0) {
 #ifdef HAVE_LIBUSB
         is_usb = true;

@@ -252,8 +252,8 @@ class Jtag2 : public Jtag {
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
-    Jtag2(Emulator emul, const char *dev, const char *name, Debugproto prot, bool nsrst, bool xmega)
-        : Jtag(emul, dev, name, nsrst), proto(prot) {
+    Jtag2(Emulator emul, const char *dev, std::string_view expected_dev, Debugproto prot, bool nsrst, bool xmega)
+        : Jtag(emul, dev, expected_dev, nsrst), proto(prot) {
         is_xmega = xmega;
     };
     ~Jtag2() override;
