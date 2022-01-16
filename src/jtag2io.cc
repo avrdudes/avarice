@@ -694,9 +694,7 @@ void Jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
 }
 
 void Jtag2::configDaisyChain() {
-    if (dchain.units_before || dchain.units_after || dchain.bits_before || dchain.bits_after) {
-        const unsigned char buf[4] = {dchain.units_before, dchain.units_after, dchain.bits_before,
-                                      dchain.bits_after};
-        setJtagParameter(PAR_DAISY_CHAIN_INFO, buf, sizeof(buf));
+    if (dchain) {
+        setJtagParameter(PAR_DAISY_CHAIN_INFO, reinterpret_cast<const uchar*>(&dchain), sizeof(dchain));
     }
 }

@@ -292,7 +292,7 @@ class Jtag2 : public Jtag {
     bool synchroniseAt(int bitrate) override;
     void startJtagLink() override;
     void deviceAutoConfig() override;
-    virtual void configDaisyChain();
+    void configDaisyChain();
 
     void sendFrame(const uchar *command, int commandSize);
     int recvFrame(unsigned char *&msg, unsigned short &seqno);

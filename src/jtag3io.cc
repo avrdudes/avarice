@@ -567,14 +567,7 @@ void Jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
 }
 
 void Jtag3::configDaisyChain() {
-    unsigned char buf[4];
-
-    if ((dchain.units_before > 0) || (dchain.units_after > 0) || (dchain.bits_before > 0) ||
-        (dchain.bits_after > 0)) {
-        buf[0] = dchain.units_before;
-        buf[1] = dchain.units_after;
-        buf[2] = dchain.bits_before;
-        buf[3] = dchain.bits_after;
-        setJtagParameter(SCOPE_AVR, 1, PARM3_JTAGCHAIN, buf, 4);
+    if (dchain) {
+        setJtagParameter(SCOPE_AVR, 1, PARM3_JTAGCHAIN, reinterpret_cast<const uchar*>(&dchain), sizeof(dchain));
     }
 }

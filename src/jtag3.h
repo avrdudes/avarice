@@ -267,7 +267,7 @@ class Jtag3 : public Jtag {
     void setDeviceDescriptor(const jtag_device_def_type &dev) override;
     void startJtagLink() override;
     void deviceAutoConfig() override;
-    virtual void configDaisyChain();
+    void configDaisyChain();
 
     void sendFrame(const uchar *command, int commandSize);
     int recvFrame(unsigned char *&msg, unsigned short &seqno);

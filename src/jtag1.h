@@ -51,6 +51,48 @@
 */
 
 enum {
+    // JTAG parameters
+    JTAG_P_BITRATE = 'b',
+    JTAG_P_SW_VERSION = 0x7b,
+    JTAG_P_HW_VERSION = 0x7a,
+    JTAG_P_IREG_HIGH = 0x81,
+    JTAG_P_IREG_LOW = 0x82,
+    JTAG_P_OCD_VTARGET = 0x84,
+    JTAG_P_OCD_BREAK_CAUSE = 0x85,
+    JTAG_P_CLOCK = 0x86,
+    JTAG_P_EXTERNAL_RESET = 0x8b,      /* W */
+    JTAG_P_FLASH_PAGESIZE_LOW = 0x88,  /* W */
+    JTAG_P_FLASH_PAGESIZE_HIGH = 0x89, /* W */
+    JTAG_P_EEPROM_PAGESIZE = 0x8a,     /* W */
+    JTAG_P_TIMERS_RUNNING = 0xa0,
+    JTAG_P_BP_FLOW = 0xa1,
+    JTAG_P_BP_X_HIGH = 0xa2,
+    JTAG_P_BP_X_LOW = 0xa3,
+    JTAG_P_BP_Y_HIGH = 0xa4,
+    JTAG_P_BP_Y_LOW = 0xa5,
+    JTAG_P_BP_MODE = 0xa6,
+    JTAG_P_JTAGID_BYTE0 = 0xa7, /* R */
+    JTAG_P_JTAGID_BYTE1 = 0xa8, /* R */
+    JTAG_P_JTAGID_BYTE2 = 0xa9, /* R */
+    JTAG_P_JTAGID_BYTE3 = 0xaa, /* R */
+    JTAG_P_UNITS_BEFORE = 0xab, /* W */
+    JTAG_P_UNITS_AFTER = 0xac,  /* W */
+    JTAG_P_BIT_BEFORE = 0xad,   /* W */
+    JTAG_P_BIT_AFTER = 0xae,    /* W */
+    JTAG_P_PSB0_LOW = 0xaf,     /* W */
+    JTAG_P_PSBO_HIGH = 0xb0,    /* W */
+    JTAG_P_PSB1_LOW = 0xb1,     /* W */
+    JTAG_P_PSB1_HIGH = 0xb2,    /* W */
+    JTAG_P_MCU_MODE = 0xb3,     /* R */
+
+    // Set JTAG bitrate to 1MHz
+    // ff: 1MHz, fe: 500kHz, fd: 250khz, fb: 125Khz
+    // JTAG bitrates
+    JTAG_BITRATE_1_MHz = 0xff,
+    JTAG_BITRATE_500_KHz = 0xfe,
+    JTAG_BITRATE_250_KHz = 0xfd,
+    JTAG_BITRATE_125_KHz = 0xfb,
+
     // We distinguish the total possible breakpoints and those for each type
     // (code or data) - see above
     MAX_BREAKPOINTS_CODE = 4,

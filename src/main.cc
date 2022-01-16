@@ -252,10 +252,7 @@ int main(int argc, char **argv) {
     Emulator devicetype = Emulator::JTAGICE; // default to mkI devicetype
     Debugproto proto = Debugproto::JTAG;
     int option_index;
-    unsigned int units_before = 0;
-    unsigned int units_after = 0;
-    unsigned int bits_before = 0;
-    unsigned int bits_after = 0;
+    DaisyChainInfo daisy_chain_info {};
 
     statusOut("AVaRICE version %s, %s %s\n\n", PACKAGE_VERSION, __DATE__, __TIME__);
 
@@ -298,12 +295,20 @@ int main(int argc, char **argv) {
         case 'C':
             capture = true;
             break;
-        case 'c':
+        case 'c': {
+            unsigned int units_before = 0;
+            unsigned int units_after = 0;
+            unsigned int bits_before = 0;
+            unsigned int bits_after = 0;
+
             if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
                        &bits_after) != 4)
                 usage(progname);
-            if (units_before > bits_before || units_after > bits_after || bits_before > 32 ||
-                bits_after > 32) {
+
+            daisy_chain_info = DaisyChainInfo{
+                static_cast<uchar>(units_before), static_cast<uchar>(units_after),
+                    static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
+            if (!daisy_chain_info.IsValid()) {
                 fprintf(stderr,
                         "%s: daisy-chain parameters out of range"
                         " (max. 32 bits before/after)\n",
@@ -311,6 +316,7 @@ int main(int argc, char **argv) {
                 exit(1);
             }
             break;
+        }
         case 'D':
             detach = true;
             break;
@@ -480,10 +486,7 @@ int main(int argc, char **argv) {
         }
 
         // Set Daisy-chain variables
-        theJtagICE->dchain.units_before = (unsigned char)units_before;
-        theJtagICE->dchain.units_after = (unsigned char)units_after;
-        theJtagICE->dchain.bits_before = (unsigned char)bits_before;
-        theJtagICE->dchain.bits_after = (unsigned char)bits_after;
+        theJtagICE->dchain = daisy_chain_info;
 
         // Tell which events to ignore.
         theJtagICE->parseEvents(eventlist);
