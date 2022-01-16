@@ -84,60 +84,61 @@ constexpr gdb_io_reg_def_type atmega2561_io_registers[] = {
     {"OCR5BH", 0x12b, 0x00},    {"OCR5CL", 0x12c, 0x00},
     {"OCR5CH", 0x12d, 0x00},    {nullptr, 0, 0}};
 
-[[maybe_unused]] const jtag_device_def_type atmega2561{
-    "atmega2561",
-    0x9802,
-    256,
-    1024, // 256K flash
-    8,
-    512,  // 4K bytes EEPROM
-    0xe4, // 57 interrupt vectors
-    NO_TWEAKS,
-    atmega2561_io_registers,
-    0x07,
-    0x8000, // fuses
-    0x66,   // osccal
-    4,      // OCD revision
-    nullptr,
-    {
-        CMND_SET_DEVICE_DESCRIPTOR,
-        {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3D, 0xB9, 0xF8}, // ucReadIO
-        {0},                                              // ucReadIOShadow
-        {0xFF, 0xFF, 0x1F, 0xE0, 0xFF, 0x1D, 0xA9, 0xF8}, // ucWriteIO
-        {0},                                              // ucWriteIOShadow
-        {0x73, 0xFF, 0x3F, 0xFF, 0xF7, 0x3F, 0xF7, 0x3F, 0xF7, 0x3F, 0x5F, 0x3F, 0x37, 0x37,
-         0x37, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0xF7, 0x3F, 0x37}, // ucReadExtIO
-        {0}, // ucReadIOExtShadow
-        {0x73, 0xFF, 0x3F, 0xF8, 0xF7, 0x3F, 0xF7, 0x3F, 0xF7, 0x3F, 0x5F, 0x2F, 0x36, 0x36,
-         0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0xF7, 0x3F, 0x36}, // ucWriteExtIO
-        {0},                    // ucWriteIOExtShadow
-        0x31,                   // ucIDRAddress
-        0x57,                   // ucSPMCRAddress
-        0x3B,                   // ucRAMPZAddress
-        256,           // uiFlashPageSize
-        8,                      // ucEepromPageSize
-        0x1FE00,       // ulBootAddress
-        0x0136,        // uiUpperExtIOLoc
-        0x40000,       // ulFlashSize
-        {0},                    // ucEepromInst
-        {0},                    // ucFlashInst
-        0x3e,                   // ucSPHaddr
-        0x3d,                   // ucSPLaddr
-        0x40000 / 256, // uiFlashpages
-        0,                      // ucDWDRAddress
-        0,                      // ucDWBasePC
-        0,                      // ucAllowFullPageBitstream
-        0,             // uiStartSmallestBootLoaderSection
-        1,                      // EnablePageProgramming
-        0,                      // ucCacheType
-        0x200,         // uiSramStartAddr
-        0,                      // ucResetType
-        0,                      // ucPCMaskExtended
-        0,                      // ucPCMaskHigh
-        0x3c,                   // ucEindAddress
-        0x1F,          // EECRAddress
-    },
-    nullptr
-};
+[[maybe_unused]] const jtag_device_def_type
+    atmega2561{"atmega2561",
+               0x9802,
+               256,
+               1024, // 256K flash
+               8,
+               512,  // 4K bytes EEPROM
+               0xe4, // 57 interrupt vectors
+               NO_TWEAKS,
+               atmega2561_io_registers,
+               0x07,
+               0x8000, // fuses
+               0x66,   // osccal
+               4,      // OCD revision
+               nullptr,
+               {
+                   CMND_SET_DEVICE_DESCRIPTOR,
+                   {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3D, 0xB9, 0xF8}, // ucReadIO
+                   {0},                                              // ucReadIOShadow
+                   {0xFF, 0xFF, 0x1F, 0xE0, 0xFF, 0x1D, 0xA9, 0xF8}, // ucWriteIO
+                   {0},                                              // ucWriteIOShadow
+                   {0x73, 0xFF, 0x3F, 0xFF, 0xF7, 0x3F, 0xF7, 0x3F, 0xF7,
+                    0x3F, 0x5F, 0x3F, 0x37, 0x37, 0x37, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0xF7, 0x3F, 0x37}, // ucReadExtIO
+                   {0},                                                    // ucReadIOExtShadow
+                   {0x73, 0xFF, 0x3F, 0xF8, 0xF7, 0x3F, 0xF7, 0x3F, 0xF7,
+                    0x3F, 0x5F, 0x2F, 0x36, 0x36, 0x36, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0xF7, 0x3F, 0x36}, // ucWriteExtIO
+                   {0},                                                    // ucWriteIOExtShadow
+                   0x31,                                                   // ucIDRAddress
+                   0x57,                                                   // ucSPMCRAddress
+                   0x3B,                                                   // ucRAMPZAddress
+                   256,                                                    // uiFlashPageSize
+                   8,                                                      // ucEepromPageSize
+                   0x1FE00,                                                // ulBootAddress
+                   0x0136,                                                 // uiUpperExtIOLoc
+                   0x40000,                                                // ulFlashSize
+                   {0},                                                    // ucEepromInst
+                   {0},                                                    // ucFlashInst
+                   0x3e,                                                   // ucSPHaddr
+                   0x3d,                                                   // ucSPLaddr
+                   0x40000 / 256,                                          // uiFlashpages
+                   0,                                                      // ucDWDRAddress
+                   0,                                                      // ucDWBasePC
+                   0,     // ucAllowFullPageBitstream
+                   0,     // uiStartSmallestBootLoaderSection
+                   1,     // EnablePageProgramming
+                   0,     // ucCacheType
+                   0x200, // uiSramStartAddr
+                   0,     // ucResetType
+                   0,     // ucPCMaskExtended
+                   0,     // ucPCMaskHigh
+                   0x3c,  // ucEindAddress
+                   0x1F,  // EECRAddress
+               },
+               nullptr};
 
 } // namespace

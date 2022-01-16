@@ -69,30 +69,29 @@ constexpr gdb_io_reg_def_type atmega164p_io_registers[] = {
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        128,                                                 // uiFlashPageSize
+        128,                                                          // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        0x1f80,                                              // ulBootAddress
-        0x00C6,                                              // uiUpperExtIOLoc
-        16384,                                               // ulFlashSize
+        0x1f80,                                                       // ulBootAddress
+        0x00C6,                                                       // uiUpperExtIOLoc
+        16384,                                                        // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        16384 / 128,                                         // uiFlashpages
+        16384 / 128,                                                  // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x100, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0,              // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0,     // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace

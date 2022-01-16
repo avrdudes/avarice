@@ -54,31 +54,30 @@ constexpr gdb_io_reg_def_type attiny25_io_registers[] = {
         0x00,                                                         // ucIDRAddress
         0X00,                                                         // ucSPMCRAddress
         0,                                                            // ucRAMPZAddress
-        32,                                                  // uiFlashPageSize
+        32,                                                           // uiFlashPageSize
         4,                                                            // ucEepromPageSize
-        0x0000,                                              // ulBootAddress
-        0x00,                                                // uiUpperExtIOLoc
-        2048,                                                // ulFlashSize
+        0x0000,                                                       // ulBootAddress
+        0x00,                                                         // uiUpperExtIOLoc
+        2048,                                                         // ulFlashSize
         {0xBB, 0xFF, 0xBB, 0xEE, 0xBB, 0xCC, 0xB2, 0x0D, 0xBC, 0x02,
          0xB4, 0x02, 0xBA, 0x0D, 0xBB, 0xBC, 0x99, 0xE1, 0xBB, 0xAC}, // ucEepromInst
         {0xB4, 0x02, 0x12},                                           // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        2048 / 32,                                           // uiFlashpages
+        2048 / 32,                                                    // uiFlashpages
         0x22,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00, // uiStartSmallestBootLoaderSection
-        1,             // EnablePageProgramming
-        0,             // ucCacheType
+        1,    // EnablePageProgramming
+        0,    // ucCacheType
         0x60, // uiSramStartAddr
-        0,             // ucResetType
-        0,             // ucPCMaskExtended
-        0,             // ucPCMaskHigh
-        0,             // ucEindAddress
+        0,    // ucResetType
+        0,    // ucPCMaskExtended
+        0,    // ucPCMaskHigh
+        0,    // ucEindAddress
         0x1C, // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace

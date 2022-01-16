@@ -327,31 +327,30 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0x1FE00,                                             // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        262144,                                              // ulFlashSize
+        0x1FE00,                                                      // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        262144,                                                       // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        262144 / 256,                                        // uiFlashpages
+        262144 / 256,                                                 // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 [[maybe_unused]] const jtag_device_def_type atmega64rfr2{
     "atmega64rfr2",
@@ -389,31 +388,30 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0x7E00,                                              // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        65536,                                               // ulFlashSize
+        0x7E00,                                                       // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        65536,                                                        // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        65536 / 256,                                         // uiFlashpages
+        65536 / 256,                                                  // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 [[maybe_unused]] const jtag_device_def_type atmega644rfr2{
     "atmega644rfr2",
@@ -451,31 +449,30 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0x7E00,                                              // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        65536,                                               // ulFlashSize
+        0x7E00,                                                       // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        65536,                                                        // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        65536 / 256,                                         // uiFlashpages
+        65536 / 256,                                                  // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 [[maybe_unused]] const jtag_device_def_type atmega128rfr2{
     "atmega128rfr2",
@@ -513,31 +510,30 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0xFE00,                                              // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        131072,                                              // ulFlashSize
+        0xFE00,                                                       // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        131072,                                                       // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        131072 / 256,                                        // uiFlashpages
+        131072 / 256,                                                 // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 [[maybe_unused]] const jtag_device_def_type atmega1284rfr2{
     "atmega1284rfr2",
@@ -575,31 +571,30 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0xFE00,                                              // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        131072,                                              // ulFlashSize
+        0xFE00,                                                       // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        131072,                                                       // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        131072 / 256,                                        // uiFlashpages
+        131072 / 256,                                                 // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 [[maybe_unused]] const jtag_device_def_type atmega2564rfr2{
     "atmega2564rfr2",
@@ -637,30 +632,29 @@ constexpr gdb_io_reg_def_type io_registers[] = {{"PINA", 0x20, 0x00},
         0x31,                                                         // ucIDRAddress
         0x57,                                                         // ucSPMCRAddress
         0x3B,                                                         // ucRAMPZAddress
-        256,                                                 // uiFlashPageSize
+        256,                                                          // uiFlashPageSize
         8,                                                            // ucEepromPageSize
-        0x1FE00,                                             // ulBootAddress
-        0x01FF,                                              // uiUpperExtIOLoc
-        262144,                                              // ulFlashSize
+        0x1FE00,                                                      // ulBootAddress
+        0x01FF,                                                       // uiUpperExtIOLoc
+        262144,                                                       // ulFlashSize
         {0x00},                                                       // ucEepromInst
         {0x00},                                                       // ucFlashInst
         0x3E,                                                         // ucSPHaddr
         0x3D,                                                         // ucSPLaddr
-        262144 / 256,                                        // uiFlashpages
+        262144 / 256,                                                 // uiFlashpages
         0x00,                                                         // ucDWDRAddress
         0x00,                                                         // ucDWBasePC
         0x00,                                                         // ucAllowFullPageBitstream
         0x00,  // uiStartSmallestBootLoaderSection
-        1,              // EnablePageProgramming
-        0,              // ucCacheType
+        1,     // EnablePageProgramming
+        0,     // ucCacheType
         0x200, // uiSramStartAddr
-        0,              // ucResetType
-        0,              // ucPCMaskExtended
-        0,              // ucPCMaskHigh
-        0x3C,           // ucEindAddress
+        0,     // ucResetType
+        0,     // ucPCMaskExtended
+        0,     // ucPCMaskHigh
+        0x3C,  // ucEindAddress
         0x1F,  // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace

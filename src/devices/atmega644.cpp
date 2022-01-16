@@ -59,34 +59,33 @@ constexpr gdb_io_reg_def_type io_registers[] = {
         {0x53, 0xFB, 0x9, 0xDF, 0xF7, 0xF, 0x0, 0x0, 0x0, 0x0, 0x5F, 0x3F, 0x37}, // ucReadExtIO
         {0}, // ucReadIOExtShadow
         {0x53, 0xFB, 0x9, 0xD8, 0xF7, 0xF, 0x0, 0x0, 0x0, 0x0, 0x5F, 0x2F, 0x36}, // ucWriteExtIO
-        {0},                    // ucWriteIOExtShadow
-        0x31,                   // ucIDRAddress
-        0x57,                   // ucSPMCRAddress
-        0,                      // ucRAMPZAddress
+        {0},           // ucWriteIOExtShadow
+        0x31,          // ucIDRAddress
+        0x57,          // ucSPMCRAddress
+        0,             // ucRAMPZAddress
         256,           // uiFlashPageSize
-        8,                      // ucEepromPageSize
+        8,             // ucEepromPageSize
         0x7E00,        // ulBootAddress
         0xC6,          // uiUpperExtIOLoc
         0x10000,       // ulFlashSize
-        {0},                    // ucEepromInst
-        {0},                    // ucFlashInst
-        0x3e,                   // ucSPHaddr
-        0x3d,                   // ucSPLaddr
+        {0},           // ucEepromInst
+        {0},           // ucFlashInst
+        0x3e,          // ucSPHaddr
+        0x3d,          // ucSPLaddr
         0x10000 / 256, // uiFlashpages
-        0,                      // ucDWDRAddress
-        0,                      // ucDWBasePC
-        0,                      // ucAllowFullPageBitstream
+        0,             // ucDWDRAddress
+        0,             // ucDWBasePC
+        0,             // ucAllowFullPageBitstream
         0,             // uiStartSmallestBootLoaderSection
-        1,                      // EnablePageProgramming
-        0,                      // ucCacheType
+        1,             // EnablePageProgramming
+        0,             // ucCacheType
         0x100,         // uiSramStartAddr
-        0,                      // ucResetType
-        0,                      // ucPCMaskExtended
-        0,                      // ucPCMaskHigh
-        0,                      // ucEindAddress
+        0,             // ucResetType
+        0,             // ucPCMaskExtended
+        0,             // ucPCMaskHigh
+        0,             // ucEindAddress
         0x1f,          // EECRAddress
     },
-    nullptr
-};
+    nullptr};
 
 } // namespace
