@@ -574,7 +574,7 @@ void jtag3::deviceAutoConfig(void)
 	   * Hopefully, the values below will remain constant for all
 	   * Xmega devices ...
 	   */
-	  jtag_device_def_type desc{ "dummy", 0,
+	  jtag_device_def_type desc = { "dummy", 0,
 				     0, 0, 0, 0, 0, DEVFL_NONE,
 				     nullptr, true, 0, 0, 0, 0,
 				     {}, {}, {} };
