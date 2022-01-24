@@ -1,6 +1,0 @@
-To build avarice: in this directory
-./configure
-make
-
-To install:
-make install
