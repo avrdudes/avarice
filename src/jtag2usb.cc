@@ -17,8 +17,6 @@
  *
  * This file implements the libusb-based USB connection to a JTAG ICE
  * mkII.  It is also used by the JTAGICE3.
- *
- * $Id$
  */
 
 #include "avarice.h"
@@ -566,12 +564,11 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
      *
      * If a serial number has been asked for, try to match it as well.
      */
-    struct hid_device_info *list, *walk;
-    list = hid_enumerate(USB_VENDOR_ATMEL, 0);
-    if (list == nullptr)
+    auto list = hid_enumerate(USB_VENDOR_ATMEL, 0);
+    if (!list)
         return nullptr;
 
-    walk = list;
+    auto walk = list;
     while (walk) {
         if (wcsstr(walk->product_string, L"CMSIS-DAP") != nullptr) {
             debugOut("Found HID PID:VID 0x%04x:0x%04x, serno %ls\n", walk->vendor_id,
@@ -865,7 +862,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
 static void *usb_thread_write(void *) {
     while (true) {
         char buf[MAX_MESSAGE];
-        int rv = read(pype[0], buf, MAX_MESSAGE);
+        auto rv = read(pype[0], buf, MAX_MESSAGE);
         if (rv > 0) {
             int offset = 0;
 
@@ -975,7 +972,7 @@ static void *usb_thread_event(void *) {
          */
         char buf[USBDEV_MAX_EVT_3 + sizeof(unsigned int)];
 
-        int rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int), USBDEV_MAX_EVT_3, 0);
+        const auto rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int), USBDEV_MAX_EVT_3, 0);
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
         } else if (rv < 0) {
@@ -1022,7 +1019,7 @@ void Jtag::resetUSB() {
 #ifdef HAVE_LIBHIDAPI
 static void *hid_thread(void *data) {
     struct pollfd fds[1];
-    struct hid_thread_data *hdata = (struct hid_thread_data *)data;
+    auto hdata = static_cast<struct hid_thread_data *>(data);
 
     fds[0].fd = pype[0];
     fds[0].events = POLLIN | POLLRDNORM;

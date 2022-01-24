@@ -22,8 +22,6 @@
  *
  * This file implements the target memory programming interface for
  * the mkII protocol.
- *
- * $Id$
  */
 
 #include <cstdio>

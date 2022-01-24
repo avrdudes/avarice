@@ -17,8 +17,6 @@
  *
  * This file implements the target memory programming interface for
  * the JTAGICE3 protocol.
- *
- * $Id$
  */
 
 #include "jtag3.h"

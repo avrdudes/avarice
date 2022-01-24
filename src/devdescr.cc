@@ -19,8 +19,6 @@
  *
  * This file contains the JTAG ICE device descriptors of all supported
  * MCU types for both, the mkI and mkII protocol.
- *
- * $Id$
  */
 
 #include "jtag.h"

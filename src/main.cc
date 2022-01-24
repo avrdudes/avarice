@@ -20,8 +20,6 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains the main() & support for avrjtagd.
- *
- * $Id$
  */
 
 #include <arpa/inet.h>

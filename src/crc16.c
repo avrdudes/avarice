@@ -2,7 +2,6 @@
  * Derived from CRC algorithm for JTAG ICE mkII, published in Atmel
  * Appnote AVR067.  Converted from C++ to C.
  */
-/* $Id$ */
 #include "crc16.h"
 
 /* CRC16 Definitions */

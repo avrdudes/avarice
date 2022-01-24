@@ -20,8 +20,6 @@
  *
  * This file contains the breakpoint handling for the mkII
  * protocol. It has been re-written by Colin O'Flynn.
- *
- * $Id$
  */
 
 #include <cstdio>

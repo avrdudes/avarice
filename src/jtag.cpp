@@ -19,8 +19,6 @@
  *
  * This file implements those parts of class "jtag" that are common
  * for both, the mkI and mkII protocol.
- *
- * $Id$
  */
 
 #include <cerrno>

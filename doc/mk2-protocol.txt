@@ -1,6 +1,4 @@
 ##
-## $Id$
-##
 ## Contrubuted by Colin O'Flynn <coflynn@newae.com>
 ##
 

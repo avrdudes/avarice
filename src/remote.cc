@@ -18,8 +18,6 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file contains functions for interfacing with the GDB remote protocol.
- *
- * $Id$
  */
 
 #include <cctype>

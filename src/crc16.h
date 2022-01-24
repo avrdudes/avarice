@@ -4,7 +4,6 @@
  * Derived from CRC algorithm for JTAG ICE mkII, published in Atmel
  * Appnote AVR067.  Converted from C++ to C.
  */
-/* $Id$ */
 
 #if defined(__cplusplus)
 extern "C" {

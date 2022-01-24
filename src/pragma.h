@@ -16,8 +16,6 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * Pragma abstractions for various compilers/compiler versions.
- *
- * $Id$
  */
 
 #ifndef PRAGMA_H

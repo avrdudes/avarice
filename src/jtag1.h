@@ -18,8 +18,6 @@
  *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
  *
  * This file extends the generic "jtag" class for the mkI protocol.
- *
- * $Id$
  */
 
 #ifndef JTAG1_H

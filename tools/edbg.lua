@@ -12,8 +12,6 @@
 -- http://www.gnu.org/licenses/gpl-2.0.html
 -- for further information about the licensing conditions.
 
--- $Id$
-
 -- do
 
    -- Wireshark dissector for EDBG USB frames
