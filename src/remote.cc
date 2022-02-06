@@ -52,11 +52,10 @@ enum {
     MONMAX = 100,
 };
 
-static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
 
-static void ok();
-static void error();
+static void gdb_ok();
+static void gdb_error();
 
 int gdbFileDescriptor = -1;
 
@@ -133,27 +132,6 @@ unsigned char getDebugChar() {
     return c;
 }
 
-int checkForDebugChar() {
-    uchar c = 0;
-
-    const auto result = read(gdbFileDescriptor, &c, 1);
-
-    if (result < 0 && errno == EAGAIN)
-        return -1;
-
-    if (result < 0)
-        throw jtag_exception();
-
-    if (result == 0) // gdb exited
-    {
-        statusOut("gdb exited.\n");
-        theJtagICE->resumeProgram();
-        throw jtag_exception("gdb exited");
-    }
-
-    return (int)c;
-}
-
 static const char hexchars[] = "0123456789abcdef";
 
 static char *byteToHex(uchar x, char *buf) {
@@ -187,21 +165,21 @@ static int hexToInt(const char **ptr, int *intValue, int nMax = 0) {
         const int hexValue = hex(**ptr);
         if (hexValue >= 0) {
             *intValue = (*intValue << 4) | hexValue;
-            numChars++;
+            ++numChars;
         } else {
             break;
         }
         (*ptr)++;
         if (nMax != 0 && numChars >= nMax)
-            return numChars;
+            break;
     }
-    return (numChars);
+    return numChars;
 }
 
 /** Convert the memory pointed to by mem into hex, placing result in buf.
     Return a pointer to the last char put in buf (null).
 **/
-static char *mem2hex(uchar *mem, char *buf, int count) {
+static char *mem2hex(const uchar *mem, char *buf, int count) {
     for (int i = 0; i < count; ++i)
         buf = byteToHex(*mem++, buf);
     *buf = 0;
@@ -228,15 +206,15 @@ void vgdbOut(const char *fmt, va_list args) {
     static bool reentered = false;
 
     if (gdbFileDescriptor >= 0 && !reentered) {
-        char textbuf[BUFMAX], hexbuf[2 * BUFMAX], *textscan, *hexscan;
+        char textbuf[BUFMAX], hexbuf[2 * BUFMAX];
 
         reentered = true;
 
         vsnprintf(textbuf, BUFMAX, fmt, args);
 
-        hexscan = hexbuf;
+        char* hexscan = hexbuf;
         *hexscan++ = 'O';
-        for (textscan = textbuf; *textscan; textscan++)
+        for (const char* textscan = textbuf; *textscan; textscan++)
             hexscan = byteToHex(*textscan, hexscan);
         *hexscan = '\0';
         putpacket(hexbuf);
@@ -290,7 +268,7 @@ static void reportStatusExtended(int sigval) {
 
         delete[] jtagBuffer;
     } else {
-        error();
+        gdb_error();
         return;
     }
 }
@@ -396,29 +374,26 @@ static bool singleStep() {
     the checksum)
 **/
 static char *getpacket(int &len) {
-    char *buffer = &remcomInBuffer[0];
-    unsigned char checksum;
-    unsigned char xmitcsum;
-    int count;
-    uchar ch;
-    bool is_escaped;
+    static char remcomInBuffer[BUFMAX];
+    char *buffer = remcomInBuffer;
 
     // scan for the sequence $<data>#<checksum>
     while (true) {
         // wait around for the start character, ignore all other characters
+        uchar ch;
         while ((ch = getDebugChar()) != '$')
             ;
 
     retry:
-        checksum = 0;
-        count = 0;
-        is_escaped = false;
+        uchar checksum = 0;
+        int count = 0;
+        bool is_escaped = false;
 
         // now, read until a # or end of buffer is found
         while (count < BUFMAX - 1) {
             ch = getDebugChar();
             if (is_escaped) {
-                checksum = checksum + ch;
+                checksum += ch;
                 ch ^= 0x20;
                 is_escaped = false;
                 goto have_char;
@@ -429,22 +404,22 @@ static char *getpacket(int &len) {
             if (ch == '#') {
                 break;
             }
-            checksum = checksum + ch;
+            checksum += ch;
             if (ch == '}') {
                 is_escaped = true;
                 continue;
             }
         have_char:
-            buffer[count] = ch;
-            count = count + 1;
+            buffer[count++] = ch;
         }
-        buffer[count] = 0;
+        buffer[count] = '\0';
 
         if (ch == '#') {
-            ch = getDebugChar();
-            xmitcsum = hex(ch) << 4;
-            ch = getDebugChar();
-            xmitcsum += hex(ch);
+            const auto xmitcsum = [&]() -> uchar {
+              const auto high_nibble = getDebugChar();
+              const auto low_nibble = getDebugChar();
+              return (hex(high_nibble) << 4) + hex(low_nibble);
+            }();
 
             if (checksum != xmitcsum) {
                 char buf[16];
@@ -470,7 +445,7 @@ static char *getpacket(int &len) {
                 }
 
                 len = count;
-                return &buffer[0];
+                return buffer;
             }
         }
     }
@@ -498,10 +473,10 @@ static void putpacket(const char *buffer) {
 }
 
 /** Set remcomOutBuffer to "ok" response */
-static void ok() { strcpy(remcomOutBuffer, "OK"); }
+static void gdb_ok() { strcpy(remcomOutBuffer, "OK"); }
 
 /** Set remcomOutBuffer to error 'n' response */
-static void error() {
+static void gdb_error() {
     char *ptr = remcomOutBuffer;
 
     const int default_error = 1;
@@ -593,7 +568,7 @@ void talkToGdb() {
     }
 
     // default empty response
-    remcomOutBuffer[0] = 0;
+    remcomOutBuffer[0] = '\0';
 
     const char cmd = *ptr++;
     switch (cmd) {
@@ -611,7 +586,7 @@ void talkToGdb() {
         break;
 
     case '!':
-        ok();
+        gdb_ok();
         break;
 
     case 'M': {
@@ -622,7 +597,7 @@ void talkToGdb() {
         // MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK
         // TRY TO READ '%x,%x:'.  IF SUCCEED, SET PTR = 0
 
-        error(); // default is error
+        gdb_error(); // default is error
         int length;
         int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length)) &&
@@ -665,7 +640,7 @@ void talkToGdb() {
                 delete[] jtagBuffer;
                 break;
             }
-            ok();
+            gdb_ok();
             delete[] jtagBuffer;
         }
         break;
@@ -680,7 +655,7 @@ void talkToGdb() {
                 mem2hex(jtagBuffer, remcomOutBuffer, length);
                 delete[] jtagBuffer;
             } catch (jtag_exception &) {
-                error();
+                gdb_error();
             }
         }
         break;
@@ -708,7 +683,7 @@ void talkToGdb() {
 
             delete[] jtagBuffer;
         } else {
-            error();
+            gdb_error();
             break;
         }
 
@@ -731,7 +706,7 @@ void talkToGdb() {
 
             delete[] jtagBuffer;
         } else {
-            error();
+            gdb_error();
             break;
         }
 
@@ -744,7 +719,7 @@ void talkToGdb() {
         debugOut("PC = %x\n", newPC);
 
         if (newPC == PC_INVALID)
-            error();
+            gdb_error();
         else
             mem2hex(regBuffer, remcomOutBuffer, 32 + 1 + 2 + 4);
 
@@ -860,10 +835,10 @@ void talkToGdb() {
             memset(cmdbuf, 0, sizeof(cmdbuf));
             ptr += 5;
             auto length = strlen(ptr);
-            for (int i = 0; i < MONMAX && length; i++) {
+            for (int i = 0; i < MONMAX && length; ++i) {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);
-                cmdbuf[i] = (char)c;
+                cmdbuf[i] = static_cast<char>(c);
             }
             debugOut("\nGDB: (monitor) %s\n", cmdbuf);
 
@@ -877,7 +852,7 @@ void talkToGdb() {
     }
 
     case 'P':     // set the value of a single CPU register - return OK
-        error(); // error by default
+        gdb_error(); // error by default
         int regno;
         if (hexToInt(&ptr, &regno) && *ptr++ == '=') {
             uchar reg[4];
@@ -886,7 +861,7 @@ void talkToGdb() {
                 if (regno >= 0 && regno < NUMREGS) {
                     hex2mem(ptr, reg, 1);
                     theJtagICE->jtagWrite(theJtagICE->cpuRegisterAreaAddress() + regno, 1, reg);
-                    ok();
+                    gdb_ok();
                     break;
                 } else if (regno == SREG) {
                     hex2mem(ptr, reg, 1);
@@ -894,11 +869,11 @@ void talkToGdb() {
                 } else if (regno == SP) {
                     hex2mem(ptr, reg, 2);
                     theJtagICE->jtagWrite(theJtagICE->statusAreaAddress(), 2, reg);
-                    ok();
+                    gdb_ok();
                 } else if (regno == PC) {
                     hex2mem(ptr, reg, 4);
                     theJtagICE->setProgramCounter(b4_to_u32(reg));
-                    ok();
+                    gdb_ok();
                 }
             } catch (jtag_exception &e) {
                 // ignore, error state already set above
@@ -910,7 +885,7 @@ void talkToGdb() {
         // It would appear that we don't need to support this as
         // we have 'P'. Report an error (rather than fail silently,
         // this will make errors in this comment more apparent...)
-        error();
+        gdb_error();
         break;
 
     case 's': // sAA..AA    Step one instruction from AA..AA(optional)
@@ -968,10 +943,10 @@ void talkToGdb() {
         try {
             theJtagICE->resumeProgram();
         } catch (jtag_exception &) {
-            error();
+            gdb_error();
             break;
         }
-        ok();
+        gdb_ok();
         break;
 
     case 'v': {
@@ -992,7 +967,7 @@ void talkToGdb() {
             memset(flashbuf, 0xff,
                    theJtagICE->deviceDef->flash_page_size *
                        theJtagICE->deviceDef->flash_page_count);
-            ok();
+            gdb_ok();
         } else if (strncmp(ptr, "FlashWrite:", 11) == 0) {
             const char *optr = ptr;
             ptr += 11;
@@ -1004,7 +979,7 @@ void talkToGdb() {
             if (offset + amount > maxaddr)
                 maxaddr = offset + amount;
             memcpy(flashbuf + offset, ptr, amount);
-            ok();
+            gdb_ok();
         } else if (strncmp(ptr, "FlashDone", 9) == 0) {
             statusOut("committing to flash\n");
             const auto pagesize = theJtagICE->deviceDef->flash_page_size;
@@ -1013,14 +988,14 @@ void talkToGdb() {
             }
             theJtagICE->disableProgramming();
             delete[] flashbuf;
-            ok();
+            gdb_ok();
         }
         break;
     }
 
     case 'Z':
     case 'z': {
-        error(); // assume the worst.
+        gdb_error(); // assume the worst.
 
         int bp_type;
         int length;
@@ -1057,7 +1032,7 @@ void talkToGdb() {
             } catch (jtag_exception &) {
                 break;
             }
-            ok();
+            gdb_ok();
         }
         break;
     }

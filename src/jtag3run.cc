@@ -266,57 +266,7 @@ void Jtag3::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-void Jtag3::parseEvents(const char *) {
-#if 0
-    memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
-
-    const struct
-    {
-        uchar scope, num;
-        const char *name;
-    } evttable[] =
-        {
-            { SCOPE_AVR, EVT3_BREAK,			"break" },
-            { SCOPE_GENERAL, EVT3_SLEEP,		"sleep" },
-            { SCOPE_GENERAL, EVT3_POWER,                "power" },
-        };
-
-    // parse the given comma-separated string
-    const char *cp1, *cp2;
-    cp1 = evtlist;
-    while (*cp1 != '\0')
-    {
-        while (isspace(*cp1) || *cp1 == ',')
-            cp1++;
-        cp2 = cp1;
-        while (*cp2 != '\0' && *cp2 != ',')
-            cp2++;
-        size_t l = cp2 - cp1;
-        uchar evtval = 0;
-
-        // Now, cp1 points to the name to parse, of length l
-        for (unsigned int i = 0; i < sizeof(evttable) / sizeof(evttable[0]); i++)
-        {
-            if (strncmp(evttable[i].name, cp1, l) == 0)
-            {
-                evtval = evttable[i].num;
-                break;
-            }
-        }
-        if (evtval == 0)
-        {
-            fprintf(stderr, "Warning: event name %.*s not matched\n",
-                    (int)l, cp1);
-        }
-        else
-        {
-            nonbreaking_events[evtval - EVT_BREAK] = true;
-        }
-
-        cp1 = cp2;
-    }
-#endif
-}
+void Jtag3::parseEvents(const char *) { }
 
 bool Jtag3::jtagContinue() {
     updateBreakpoints(); // download new bp configuration

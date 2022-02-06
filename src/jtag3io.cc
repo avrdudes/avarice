@@ -104,7 +104,7 @@ void Jtag3::sendFrame(const uchar *command, int commandSize) {
     memcpy(buf.get() + 4, command, commandSize);
     debugOutBufHex("", buf.get(), commandSize);
 
-    int count = safewrite(buf.get(), commandSize + 4);
+    const auto count = safewrite(buf.get(), commandSize + 4);
     if (count < 0)
         throw jtag_exception();
     else if (count != commandSize + 4)
@@ -183,10 +183,9 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
  * Caller must delete[] the msg after processing it.
  */
 int Jtag3::recv(uchar *&msg) {
-    unsigned short r_seqno;
-    int rv;
-
     for (;;) {
+        unsigned short r_seqno;
+        int rv;
         if ((rv = recvFrame(msg, r_seqno)) <= 0)
             return rv;
         debugOut("\nGot message seqno %d (command_sequence == %d)\n", r_seqno, command_sequence);
@@ -194,8 +193,7 @@ int Jtag3::recv(uchar *&msg) {
             if (++command_sequence == 0xffff)
                 command_sequence = 0;
             return rv;
-        }
-        if (r_seqno == 0xffff) {
+        } else if (r_seqno == 0xffff) {
             debugOut("\ngot asynchronous event: 0x%02x, 0x%02x\n", msg[0], msg[1]);
             if (cached_event == nullptr) {
                 cached_event = msg;
@@ -233,10 +231,7 @@ bool Jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *n
     debugOutBufHex("response: ", msg, msgsize);
 
     const auto c = msg[1];
-    if (c >= RSP3_OK && c < RSP3_FAILED)
-        return true;
-
-    return false;
+    return (c >= RSP3_OK) && (c < RSP3_FAILED);
 }
 
 void Jtag3::doJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&response,

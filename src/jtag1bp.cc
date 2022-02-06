@@ -32,7 +32,10 @@ bool jtag1::codeBreakpointAt(unsigned int address) {
     return false;
 }
 
-void jtag1::deleteAllBreakpoints() { numBreakpointsData = numBreakpointsCode = 0; }
+void jtag1::deleteAllBreakpoints() {
+    numBreakpointsData = 0;
+    numBreakpointsCode = 0;
+}
 
 bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned int) {
     breakpoint *bp;
