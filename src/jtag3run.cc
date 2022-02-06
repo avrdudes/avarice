@@ -19,7 +19,6 @@
  */
 
 #include <cstdio>
-#include <sys/time.h>
 
 #include "jtag3.h"
 #include "remote.h"

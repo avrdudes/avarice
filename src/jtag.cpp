@@ -28,7 +28,7 @@
 #include <algorithm>
 
 #include <fcntl.h>
-#include <sys/time.h>
+#include <ctime>
 #include <termios.h>
 
 #include "jtag.h"
@@ -110,7 +110,7 @@ int Jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
         FD_ZERO(&readfds);
         FD_SET(jtagBox, &readfds);
 
-        struct timeval tmout;
+        timeval tmout;
         tmout.tv_sec = timeout / 1000000;
         tmout.tv_usec = timeout % 1000000;
 
@@ -203,7 +203,7 @@ void Jtag::changeLocalBitRate(int newBitRate) const {
         throw jtag_exception();
 }
 
-void Jtag::jtagWriteFuses(char *fuses) {
+void Jtag::jtagWriteFuses(const char *fuses) {
     if (deviceDef->fusemap > 0x07) {
         fprintf(stderr, "Fuse byte writing not supported on this device.\n");
         return;

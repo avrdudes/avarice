@@ -26,7 +26,6 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <string_view>
 #include <string>
@@ -180,7 +179,7 @@ static int hex(unsigned char ch) {
     Advances '*ptr' to 1st non-hex character found.
     Returns number of characters used in conversion.
  **/
-static int hexToInt(char **ptr, int *intValue, int nMax = 0) {
+static int hexToInt(const char **ptr, int *intValue, int nMax = 0) {
     int numChars = 0;
 
     *intValue = 0;
@@ -203,7 +202,7 @@ static int hexToInt(char **ptr, int *intValue, int nMax = 0) {
     Return a pointer to the last char put in buf (null).
 **/
 static char *mem2hex(uchar *mem, char *buf, int count) {
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
         buf = byteToHex(*mem++, buf);
     *buf = 0;
     return buf;
@@ -212,7 +211,7 @@ static char *mem2hex(uchar *mem, char *buf, int count) {
 /** Convert the hex array pointed to by buf into binary to be placed in mem.
     Return a pointer to the character AFTER the last byte written.
 **/
-static uchar *hex2mem(char *buf, uchar *mem, int count) {
+static uchar *hex2mem(const char *buf, uchar *mem, int count) {
     for (int i = 0; i < count; i++) {
         unsigned char ch = hex(*buf++) << 4;
         ch += hex(*buf++);
@@ -290,7 +289,6 @@ static void reportStatusExtended(int sigval) {
                  pc & 0xff, (pc >> 8) & 0xff, (pc >> 16) & 0xff, (pc >> 24) & 0xff);
 
         delete[] jtagBuffer;
-        jtagBuffer = nullptr;
     } else {
         error(1);
         return;
@@ -586,7 +584,7 @@ void talkToGdb() {
     static char last_cmd = 0;
 
     int plen;
-    char *ptr = getpacket(plen);
+    const char *ptr = getpacket(plen);
 
     if (debugMode) {
         const auto s = makeSafeString(ptr, plen);
@@ -708,7 +706,6 @@ void talkToGdb() {
             memcpy(regBuffer, jtagBuffer, 0x20);
 
             delete[] jtagBuffer;
-            jtagBuffer = nullptr;
         } else {
             error(1);
             break;
@@ -732,7 +729,6 @@ void talkToGdb() {
             regBuffer[0x22] = jtagBuffer[0x01];
 
             delete[] jtagBuffer;
-            jtagBuffer = nullptr;
         } else {
             error(1);
             break;
@@ -791,16 +787,14 @@ void talkToGdb() {
                     // i is the first register to read
                     // j is the number of registers to read
                     while ((j > 0) && (i < regcount)) {
-                        int count = 0;
-                        int offset;
 
                         if ((io_reg_defs[i].name != nullptr) && (io_reg_defs[i].flags != 0x00)) {
                             // Register with special flags set
-                            offset = strlen(remcomOutBuffer);
+                            const auto offset = strlen(remcomOutBuffer);
                             sprintf(&remcomOutBuffer[offset], "[-- %s --],00;",
                                     io_reg_defs[i].name);
-                            i++;
-                            j--;
+                            ++i;
+                            --j;
                         } else {
                             // Get the address of the first io_register to be
                             // read
@@ -809,13 +803,14 @@ void talkToGdb() {
                             // Count the number of consecutive address,
                             // no-side effects, valid registers
 
-                            for (count = 0; count < j; count++) {
+                            int count = 0;
+                            for (count = 0; count < j; ++count) {
                                 if ((io_reg_defs[i + count].name == nullptr) ||
                                     (io_reg_defs[i + count].flags != 0x00) ||
                                     (io_reg_defs[i + count].reg_addr != addr)) {
                                     break;
                                 }
-                                addr++;
+                                ++addr;
                             }
 
                             if (count) {
@@ -827,15 +822,14 @@ void talkToGdb() {
                                     int k = 0;
                                     // successfully read
                                     while (count--) {
-                                        offset = strlen(remcomOutBuffer);
+                                        const auto offset = strlen(remcomOutBuffer);
                                         sprintf(&remcomOutBuffer[offset], "%s,%02x;",
                                                 io_reg_defs[i].name, jtagBuffer[k++]);
-                                        i++;
-                                        j--;
+                                        ++i;
+                                        --j;
                                     }
 
                                     delete[] jtagBuffer;
-                                    jtagBuffer = nullptr;
                                 }
                             }
                         }
@@ -864,7 +858,7 @@ void talkToGdb() {
             char cmdbuf[MONMAX];
             memset(cmdbuf, 0, sizeof(cmdbuf));
             ptr += 5;
-            int length = strlen(ptr);
+            auto length = strlen(ptr);
             for (int i = 0; i < MONMAX && length; i++) {
                 int c;
                 length -= hexToInt(&ptr, &c, 2);
@@ -999,7 +993,7 @@ void talkToGdb() {
                        theJtagICE->deviceDef->flash_page_count);
             ok();
         } else if (strncmp(ptr, "FlashWrite:", 11) == 0) {
-            char *optr = ptr;
+            const char *optr = ptr;
             ptr += 11;
             int offset;
             hexToInt(&ptr, &offset);

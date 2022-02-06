@@ -23,7 +23,6 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
-#include <sys/time.h>
 
 #include "jtag2.h"
 #include "remote.h"

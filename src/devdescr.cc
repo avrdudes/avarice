@@ -24,7 +24,6 @@
 #include "jtag.h"
 
 #include <algorithm>
-#include <cstring>
 #include <cstdio>
 
 const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, std::string_view name) {

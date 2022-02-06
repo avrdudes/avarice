@@ -232,7 +232,7 @@ struct jtag_device_def_type {
                          unsigned int ocden_fuse, unsigned char osccal, unsigned char ocdrev,
                          const jtag1_device_desc_type *jtag1_dev_desc,
                          const jtag2_device_desc_type &jtag2_dev_desc,
-                         const xmega_device_desc_type *xmega_dev_desc)
+                         const xmega_device_desc_type *xmega_dev_desc) noexcept
         : name(dev_name), device_id(device_id), flash_page_size(flash_page_size),
           flash_page_count(flash_page_count), eeprom_page_size(eeprom_page_size),
           eeprom_page_count(eeprom_page_count), vectors_end(vectors_end), tweaks(tweaks),
@@ -800,7 +800,7 @@ class Jtag {
       The input parameter is a string from command-line, as produced by
       printf("%x", 0xaabbcc );
     **/
-    void jtagWriteFuses(char *fuses);
+    void jtagWriteFuses(const char *fuses);
 
     /** Read fuses from target.
 
@@ -876,24 +876,24 @@ static inline uint32_t b4_to_u32(const unsigned char *b) {
     l += (unsigned)(unsigned)b[2] << 16;
     l += (unsigned)b[3] << 24;
     return l;
-};
+}
 
 static inline void u32_to_b4(unsigned char *b, uint32_t l) {
     b[0] = l & 0xff;
     b[1] = (l >> 8) & 0xff;
     b[2] = (l >> 16) & 0xff;
     b[3] = (l >> 24) & 0xff;
-};
+}
 
 static inline uint16_t b2_to_u16(const unsigned char *b) {
     unsigned short l = (unsigned)b[0];
     l += (unsigned)b[1] << 8;
     return l;
-};
+}
 
 static inline void u16_to_b2(unsigned char *b, uint16_t l) {
     b[0] = l & 0xff;
     b[1] = (l >> 8) & 0xff;
-};
+}
 
 #endif

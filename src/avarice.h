@@ -42,6 +42,5 @@ void debugOutBufHex(const char* prefix, const void* data, size_t data_size);
 /** printf 'fmt, ...' to status file descriptor (currently stdout) **/
 void vstatusOut(const char *fmt, va_list args);
 void statusOut(const char *fmt, ...);
-void statusFlush();
 
 #endif // INCLUDE_AVARICE_H

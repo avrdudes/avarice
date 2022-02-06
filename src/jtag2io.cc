@@ -335,12 +335,8 @@ bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
 
     debugOutBufHex("response: ", msg, msgsize);
 
-    unsigned char c = msg[0];
-
-    if (c >= RSP_OK && c < RSP_FAILED)
-        return true;
-
-    return false;
+    const auto c = msg[0];
+    return (c >= RSP_OK) && (c < RSP_FAILED);
 }
 
 void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&response,
@@ -488,7 +484,10 @@ bool Jtag2::synchroniseAt(int bitrate) {
 
                 // Check the S_MCU firmware version to know which format
                 // of the device descriptor to send.
-#define FWVER(maj, min) ((maj << 8) | (min))
+                auto FWVER = [](int major, int minor){
+                    return (major<<8) | minor;
+                };
+
                 if (fwver < FWVER(3, 16)) {
                     devdescrlen -= 2;
                     fprintf(stderr, "Warning: S_MCU firmware version might be "
@@ -496,7 +495,6 @@ bool Jtag2::synchroniseAt(int bitrate) {
                 } else if (fwver < FWVER(4, 0)) {
                     devdescrlen -= 2;
                 }
-#undef FWVER
             }
 
             has_full_xmega_support = (unsigned)signonmsg[8] >= 7;

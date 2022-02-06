@@ -20,7 +20,7 @@
 
 #include <cstdarg>
 #include <cstdio>
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "avarice.h"
 
@@ -56,5 +56,3 @@ void statusOut(const char *fmt, ...) {
     vstatusOut(fmt, args);
     va_end(args);
 }
-
-void statusFlush() { fflush(stdout); }

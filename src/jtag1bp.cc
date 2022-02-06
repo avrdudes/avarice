@@ -165,9 +165,9 @@ void jtag1::updateBreakpoints() {
         // Find next breakpoint
         bp = nullptr;
         if (bpC < numBreakpointsCode)
-            bp = &bpCode[bpC++];
+            bp = &bpCode[bpC];
         else if (bpD < numBreakpointsData)
-            bp = &bpData[bpD++];
+            bp = &bpData[bpD];
 
         // BP 3 (aka breakpoint Y).
         if (bp) {

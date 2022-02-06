@@ -21,30 +21,28 @@
  */
 
 #include <cstdio>
-#include <sys/time.h>
 
 #include "jtag1.h"
 #include "remote.h"
 
 unsigned long jtag1::getProgramCounter() {
     const uchar command[] = {'2', JTAG_EOM};
-    unsigned long result = 0;
 
     auto response = doJtagCommand(command, sizeof(command), 4);
 
     if (Resp{response[3]} != Resp::OK)
-        result = PC_INVALID;
+        return PC_INVALID;
     else {
-        result = decodeAddress(response.get());
+        auto result = decodeAddress(response.get());
 
-        result--; // returned value is PC + 1 as far as GDB is concerned
+        --result; // returned value is PC + 1 as far as GDB is concerned
 
         // The JTAG box sees program memory as 16-bit wide locations. GDB
         // sees bytes. As such, double the PC value.
         result *= 2;
-    }
 
-    return result;
+        return result;
+    }
 }
 
 void jtag1::setProgramCounter(unsigned long pc) {

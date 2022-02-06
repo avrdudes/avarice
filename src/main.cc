@@ -193,13 +193,11 @@ static void usage(const char *progname) {
     fprintf(stderr, "\t%s --jtag /dev/ttyS0 :4242\n", progname);
     fprintf(stderr, "\t%s --dragon :4242\n", progname);
     fprintf(stderr, "\n");
-    exit(0);
 }
 
 static void knownParts() {
     fprintf(stderr, "List of known AVR devices:\n\n");
     jtag_device_def_type::DumpAll();
-    exit(1);
 }
 
 static struct option long_opts[] = {
@@ -224,8 +222,8 @@ std::unique_ptr<Jtag> theJtagICE;
 
 int main(int argc, char **argv) {
     int sock;
-    struct sockaddr_in clientname;
-    struct sockaddr_in name;
+    sockaddr_in clientname;
+    sockaddr_in name;
     char *inFileName = nullptr;
     const char *jtagDeviceName = nullptr;
     const char *eventlist = "none,run,target_power_on,target_sleep,target_wakeup";
@@ -236,7 +234,7 @@ int main(int argc, char **argv) {
     bool program = false;
     bool readFuses = false;
     bool writeFuses = false;
-    char *fuses = nullptr;
+    const char *fuses = nullptr;
     bool readLockBits = false;
     bool writeLockBits = false;
     bool gdbServerMode = false;
@@ -246,7 +244,7 @@ int main(int argc, char **argv) {
     bool verify = false;
     bool apply_nsrst = false;
     bool is_xmega = false;
-    char *progname = argv[0];
+    const char *progname = argv[0];
     Emulator devicetype = Emulator::JTAGICE; // default to mkI devicetype
     Debugproto proto = Debugproto::JTAG;
     int option_index;
@@ -271,10 +269,12 @@ int main(int argc, char **argv) {
             case 'h':
             case '?':
                 usage(progname);
-                [[fallthrough]];
+                exit(0);
+                break;
             case 'k':
                 knownParts();
-                [[fallthrough]];
+                exit(1);
+                break;
             case '1':
                 devicetype = Emulator::JTAGICE;
                 break;
@@ -387,9 +387,9 @@ int main(int argc, char **argv) {
             /* Looks like user has given [[host]:port], so parse out the host and
                port number then enable gdb server mode. */
 
-            int i;
-            char *arg = argv[optind];
-            int len = strlen(arg);
+            size_t i;
+            const char *arg = argv[optind];
+            const auto len = strlen(arg);
             char *host = new char[len + 1];
             memset(host, '\0', len + 1);
 

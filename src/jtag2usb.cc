@@ -230,7 +230,7 @@ static void usb20_cleanup(usb_dev_t *d) {
  * Walk down all USB devices, and see whether we can find our emulator
  * device.
  */
-static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type, int &usb_interface) {
+static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
     char string[256];
 #ifndef HAVE_LIBUSB_2_0
     struct usb_bus *bus;
@@ -1018,9 +1018,9 @@ void Jtag::resetUSB() {
 
 #ifdef HAVE_LIBHIDAPI
 static void *hid_thread(void *data) {
-    struct pollfd fds[1];
     auto hdata = static_cast<struct hid_thread_data *>(data);
 
+    pollfd fds[1];
     fds[0].fd = pype[0];
     fds[0].events = POLLIN | POLLRDNORM;
 
@@ -1084,7 +1084,7 @@ static void *hid_thread(void *data) {
         }
         if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
             // fd is closed
-            pthread_exit((void *)nullptr);
+            pthread_exit(nullptr);
 
         if (fds[0].revents != 0) {
             // something is in the pipe there, presumably a command
@@ -1160,12 +1160,12 @@ static void *hid_thread(void *data) {
                                  thispacket);
                         goto done;
                     }
-                    unsigned int len = buf[offset + 2] * 256 + buf[offset + 3];
-                    if (len < 5 || len > hdata->max_pkt_size) {
-                        debugOut("Querying for response: insane event size %u\n", len);
+                    unsigned int packet_len = buf[offset + 2] * 256 + buf[offset + 3];
+                    if (packet_len < 5 || packet_len > hdata->max_pkt_size) {
+                        debugOut("Querying for response: insane event size %u\n", packet_len);
                         goto done;
                     }
-                    totlength += len;
+                    totlength += packet_len;
                     if (totlength > MAX_MESSAGE) {
                         debugOut("reply size too large: %u\n", totlength);
                         goto done;
@@ -1173,8 +1173,8 @@ static void *hid_thread(void *data) {
                     // Update length field to pass (later) upstream
                     memcpy(buf, &totlength, sizeof(unsigned int));
                     // skip wrapper data in payload
-                    memmove(buf + offset, buf + offset + 4, len);
-                    offset += len;
+                    memmove(buf + offset, buf + offset + 4, packet_len);
+                    offset += packet_len;
                 }
                 // pass reply upstream
                 write(pype[0], buf, totlength + sizeof(unsigned int));
@@ -1222,7 +1222,7 @@ void Jtag::openUSB(const char *jtagDeviceName) {
         throw jtag_exception("EDBG/CMSIS-DAP devices require libhidapi support");
 #endif
     } else {
-        udev = opendev(jtagDeviceName, emu_type, usb_interface);
+        udev = opendev(jtagDeviceName, emu_type);
         if (udev == nullptr)
             throw jtag_exception("cannot open USB device");
 
