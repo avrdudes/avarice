@@ -56,7 +56,7 @@ static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
 
 static void ok();
-static void error(int n);
+static void error();
 
 int gdbFileDescriptor = -1;
 
@@ -290,7 +290,7 @@ static void reportStatusExtended(int sigval) {
 
         delete[] jtagBuffer;
     } else {
-        error(1);
+        error();
         return;
     }
 }
@@ -501,11 +501,12 @@ static void putpacket(const char *buffer) {
 static void ok() { strcpy(remcomOutBuffer, "OK"); }
 
 /** Set remcomOutBuffer to error 'n' response */
-static void error(int n) {
+static void error() {
     char *ptr = remcomOutBuffer;
 
+    const int default_error = 1;
     *ptr++ = 'E';
-    ptr = byteToHex(n, ptr);
+    ptr = byteToHex(default_error, ptr);
     *ptr = '\0';
 }
 
@@ -621,7 +622,7 @@ void talkToGdb() {
         // MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK
         // TRY TO READ '%x,%x:'.  IF SUCCEED, SET PTR = 0
 
-        error(1); // default is error
+        error(); // default is error
         int length;
         int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length)) &&
@@ -679,7 +680,7 @@ void talkToGdb() {
                 mem2hex(jtagBuffer, remcomOutBuffer, length);
                 delete[] jtagBuffer;
             } catch (jtag_exception &) {
-                error(1);
+                error();
             }
         }
         break;
@@ -707,7 +708,7 @@ void talkToGdb() {
 
             delete[] jtagBuffer;
         } else {
-            error(1);
+            error();
             break;
         }
 
@@ -730,7 +731,7 @@ void talkToGdb() {
 
             delete[] jtagBuffer;
         } else {
-            error(1);
+            error();
             break;
         }
 
@@ -743,7 +744,7 @@ void talkToGdb() {
         debugOut("PC = %x\n", newPC);
 
         if (newPC == PC_INVALID)
-            error(1);
+            error();
         else
             mem2hex(regBuffer, remcomOutBuffer, 32 + 1 + 2 + 4);
 
@@ -876,7 +877,7 @@ void talkToGdb() {
     }
 
     case 'P':     // set the value of a single CPU register - return OK
-        error(1); // error by default
+        error(); // error by default
         int regno;
         if (hexToInt(&ptr, &regno) && *ptr++ == '=') {
             uchar reg[4];
@@ -909,7 +910,7 @@ void talkToGdb() {
         // It would appear that we don't need to support this as
         // we have 'P'. Report an error (rather than fail silently,
         // this will make errors in this comment more apparent...)
-        error(1);
+        error();
         break;
 
     case 's': // sAA..AA    Step one instruction from AA..AA(optional)
@@ -967,7 +968,7 @@ void talkToGdb() {
         try {
             theJtagICE->resumeProgram();
         } catch (jtag_exception &) {
-            error(1);
+            error();
             break;
         }
         ok();
@@ -1019,7 +1020,7 @@ void talkToGdb() {
 
     case 'Z':
     case 'z': {
-        error(1); // assume the worst.
+        error(); // assume the worst.
 
         int bp_type;
         int length;
