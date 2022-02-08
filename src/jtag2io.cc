@@ -442,7 +442,7 @@ void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
     try {
         doJtagCommand(dev_desc, devdescrlen, response, respSize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "JTAG ICE: Failed to set device description: %s\n", e.what());
+        debugOut("JTAG ICE: Failed to set device description: %s\n", e.what());
         throw;
     }
 }
@@ -490,8 +490,8 @@ bool Jtag2::synchroniseAt(int bitrate) {
 
                 if (fwver < FWVER(3, 16)) {
                     devdescrlen -= 2;
-                    fprintf(stderr, "Warning: S_MCU firmware version might be "
-                                    "too old to work correctly\n ");
+                    debugOut("Warning: S_MCU firmware version might be "
+                             "too old to work correctly\n ");
                 } else if (fwver < FWVER(4, 0)) {
                     devdescrlen -= 2;
                 }
@@ -502,8 +502,7 @@ bool Jtag2::synchroniseAt(int bitrate) {
                 if (has_full_xmega_support) {
                     devdescrlen = sizeof(xmega_device_desc_type);
                 } else {
-                    fprintf(stderr,
-                            "Warning, S_MCU firmware version (%u.%02u) too old to work "
+                    debugOut("Warning, S_MCU firmware version (%u.%02u) too old to work "
                             "correctly for Xmega devices, >= 7.x required\n",
                             (unsigned)signonmsg[8], (unsigned)signonmsg[7]);
                     softbp_only = true;
@@ -557,7 +556,7 @@ void Jtag2::startJtagLink() {
                 setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
                 debug_active = true;
             } catch (jtag2_io_exception &) {
-                fprintf(stderr, "Failed to activate %s debugging protocol\n", protoName);
+                debugOut( "Failed to activate %s debugging protocol\n", protoName);
                 throw;
             }
 

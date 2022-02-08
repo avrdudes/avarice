@@ -68,7 +68,7 @@ Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view exp
         // CTRL-C.
         jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
         if (jtagBox < 0) {
-            fprintf(stderr, "Failed to open %s", jtagDeviceName);
+            debugOut("Failed to open %s", jtagDeviceName);
             throw jtag_exception();
         }
 
@@ -217,12 +217,12 @@ void Jtag::changeLocalBitRate(int newBitRate) const {
 
 void Jtag::jtagWriteFuses(const char *fuses) {
     if (deviceDef->fusemap > 0x07) {
-        fprintf(stderr, "Fuse byte writing not supported on this device.\n");
+        debugOut("Fuse byte writing not supported on this device.\n");
         return;
     }
 
     if (fuses == nullptr) {
-        fprintf(stderr, "Error: No fuses string given");
+        debugOut("Error: No fuses string given");
         return;
     }
 
@@ -230,7 +230,7 @@ void Jtag::jtagWriteFuses(const char *fuses) {
     int temp[3];
     const auto c = sscanf(fuses, "%02x%02x%02x", temp + 2, temp + 1, temp);
     if (c != 3) {
-        fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
+        debugOut("Error: Fuses specified are not in hexidecimal");
         return;
     }
 
@@ -240,12 +240,12 @@ void Jtag::jtagWriteFuses(const char *fuses) {
     try {
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "Error writing fuses: %s\n", e.what());
+        debugOut("Error writing fuses: %s\n", e.what());
     }
 
     const uchar *readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
     if (memcmp(fuseBits, readfuseBits, 3) != 0) {
-        fprintf(stderr, "Error verifying written fuses");
+        debugOut("Error verifying written fuses");
     }
     delete[] readfuseBits;
 }
@@ -260,7 +260,7 @@ static unsigned int countFuses(unsigned int fusemap) {
         }
     }
     if (nfuses == 0) {
-        fprintf(stderr, "Device has no fuses?  Confused.");
+        debugOut("Device has no fuses?  Confused.");
         throw jtag_exception();
     }
 
@@ -329,12 +329,12 @@ void Jtag::jtagDisplayFuses(const uchar *fuseBits) const {
 
 void Jtag::jtagWriteLockBits(const char *lock) {
     if (!lock) {
-        fprintf(stderr, "Error: No lock bit string given");
+        debugOut("Error: No lock bit string given");
         return;
     }
 
     if (strlen(lock) != 2) {
-        fprintf(stderr, "Error: Fuses must be one byte exactly");
+        debugOut("Error: Fuses must be one byte exactly");
         return;
     }
 
@@ -342,7 +342,7 @@ void Jtag::jtagWriteLockBits(const char *lock) {
     int temp[1];
     const auto c = sscanf(lock, "%02x", temp);
     if (c != 1) {
-        fprintf(stderr, "Error: Fuses specified are not in hexidecimal");
+        debugOut("Error: Fuses specified are not in hexidecimal");
         return;
     }
 
@@ -355,7 +355,7 @@ void Jtag::jtagWriteLockBits(const char *lock) {
     try {
         jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "Error writing lockbits: %s\n", e.what());
+        debugOut("Error writing lockbits: %s\n", e.what());
     }
 
     uchar *readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
@@ -363,7 +363,7 @@ void Jtag::jtagWriteLockBits(const char *lock) {
     disableProgramming();
 
     if (memcmp(lockBits, readlockBits, 1) != 0) {
-        fprintf(stderr, "Error verifying written lock bits");
+        debugOut("Error verifying written lock bits");
     }
 
     delete[] readlockBits;

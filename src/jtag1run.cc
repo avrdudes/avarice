@@ -106,7 +106,7 @@ bool jtag1::jtagContinue() {
 
         int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
         if (numfds < 0) {
-            fprintf(stderr, "GDB/JTAG ICE communications failure");
+            debugOut("GDB/JTAG ICE communications failure");
             throw jtag_exception();
         }
 

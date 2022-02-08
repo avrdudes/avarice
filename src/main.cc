@@ -69,13 +69,13 @@ static int makeSocket(struct sockaddr_in *name) {
 
     if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0) {
         if (errno == EADDRINUSE)
-            fprintf(stderr, "bind() failed: another server is still running on this port\n");
+            debugOut( "bind() failed: another server is still running on this port\n");
         throw jtag_exception("bind() failed");
     }
 
     protoent = getprotobyname("tcp");
     if (protoent == nullptr) {
-        fprintf(stderr, "tcp protocol unknown (oops?)");
+        debugOut( "tcp protocol unknown (oops?)");
         throw jtag_exception();
     }
 
@@ -98,7 +98,7 @@ static void initSocketAddress(struct sockaddr_in *name, const char *hostname,
     if (inet_aton(hostname, &name->sin_addr) == 0) {
         hostInfo = gethostbyname(hostname);
         if (hostInfo == nullptr) {
-            fprintf(stderr, "Unknown host %s", hostname);
+            debugOut( "Unknown host %s", hostname);
             throw jtag_exception();
         }
         name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
@@ -109,7 +109,7 @@ static unsigned long parseJtagBitrate(const char *val) {
     char *endptr, c;
 
     if (*val == '\0') {
-        fprintf(stderr, "invalid number in JTAG bit rate");
+        debugOut( "invalid number in JTAG bit rate");
         throw jtag_exception();
     }
     unsigned long v = strtoul(val, &endptr, 10);
@@ -130,73 +130,73 @@ static unsigned long parseJtagBitrate(const char *val) {
     if (strcmp(endptr, "Hz") == 0)
         return v;
 
-    fprintf(stderr, "invalid number in JTAG bit rate");
+    debugOut( "invalid number in JTAG bit rate");
     throw jtag_exception();
 }
 
 static void usage(const char *progname) {
-    fprintf(stderr, "Usage: %s [OPTION]... [[HOST_NAME]:PORT]\n\n", progname);
-    fprintf(stderr, "Options:\n");
-    fprintf(stderr, "  -h, --help                  Print this message.\n");
-    fprintf(stderr, "  -1, --mkI                   Connect to JTAG ICE mkI (default)\n");
-    fprintf(stderr, "  -2, --mkII                  Connect to JTAG ICE mkII\n");
-    fprintf(stderr, "  -3, --jtag3                 Connect to JTAGICE3 (Firmware 2.x)\n");
-    fprintf(stderr, "  -4, --edbg                  Atmel-ICE, or JTAGICE3 (firmware 3.x), or EDBG "
+    debugOut( "Usage: %s [OPTION]... [[HOST_NAME]:PORT]\n\n", progname);
+    debugOut( "Options:\n");
+    debugOut( "  -h, --help                  Print this message.\n");
+    debugOut( "  -1, --mkI                   Connect to JTAG ICE mkI (default)\n");
+    debugOut( "  -2, --mkII                  Connect to JTAG ICE mkII\n");
+    debugOut( "  -3, --jtag3                 Connect to JTAGICE3 (Firmware 2.x)\n");
+    debugOut( "  -4, --edbg                  Atmel-ICE, or JTAGICE3 (firmware 3.x), or EDBG "
                     "Integrated Debugger\n");
-    fprintf(stderr,
+    debugOut(
             "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
             "                                with the avr target device. This must be less\n"
             "                                than 1/4 of the frequency of the target. Valid\n"
             "                                values are 1000/500/250/125 kHz (mkI),\n"
             "                                or 22 through 6400 kHz (mkII).\n"
             "                                (default: 250 kHz)\n");
-    fprintf(stderr, "  -C, --capture               Capture running program.\n"
+    debugOut( "  -C, --capture               Capture running program.\n"
                     "                                Note: debugging must have been enabled prior\n"
                     "                                to starting the program. (e.g., by running\n"
                     "                                avarice earlier)\n");
-    fprintf(stderr, "  -c, --daisy-chain <ub,ua,bb,ba> Daisy chain settings:\n"
+    debugOut( "  -c, --daisy-chain <ub,ua,bb,ba> Daisy chain settings:\n"
                     "                                <units before, units after,\n"
                     "                                bits before, bits after>\n");
-    fprintf(stderr, "  -D, --detach                Detach once synced with JTAG ICE\n");
-    fprintf(stderr, "  -d, --debug                 Enable printing of debug information.\n");
-    fprintf(stderr, "  -e, --erase                 Erase target.\n");
-    fprintf(stderr, "  -E, --event <eventlist>     List of events that do not interrupt.\n"
+    debugOut( "  -D, --detach                Detach once synced with JTAG ICE\n");
+    debugOut( "  -d, --debug                 Enable printing of debug information.\n");
+    debugOut( "  -e, --erase                 Erase target.\n");
+    debugOut( "  -E, --event <eventlist>     List of events that do not interrupt.\n"
                     "                                JTAG ICE mkII and AVR Dragon only.\n"
                     "                                Default is "
                     "\"none,run,target_power_on,target_sleep,target_wakeup\"\n");
-    fprintf(stderr,
+    debugOut(
             "  -g, --dragon                Connect to an AVR Dragon rather than a JTAG ICE.\n"
             "                                This implies --mkII, but might be required in\n"
             "                                addition to --debugwire when debugWire is to\n"
             "                                be used.\n");
-    fprintf(stderr, "  -I, --ignore-intr           Automatically step over interrupts.\n"
+    debugOut( "  -I, --ignore-intr           Automatically step over interrupts.\n"
                     "                                Note: EXPERIMENTAL. Can not currently handle\n"
                     "                                devices fused for compatibility.\n");
-    fprintf(stderr,
+    debugOut(
             "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
-    fprintf(stderr, "  -k, --known-devices         Print a list of known devices.\n");
-    fprintf(stderr, "  -L, --write-lockbits <ll>   Write lock bits.\n");
-    fprintf(stderr, "  -l, --read-lockbits         Read lock bits.\n");
-    fprintf(stderr, "  -P, --part <name>           Target device name (e.g."
+    debugOut( "  -k, --known-devices         Print a list of known devices.\n");
+    debugOut( "  -L, --write-lockbits <ll>   Write lock bits.\n");
+    debugOut( "  -l, --read-lockbits         Read lock bits.\n");
+    debugOut( "  -P, --part <name>           Target device name (e.g."
                     " atmega16)\n\n");
-    fprintf(stderr, "  -r, --read-fuses            Read fuses bytes.\n");
-    fprintf(stderr, "  -R, --reset-srst            External reset through nSRST signal.\n");
-    fprintf(stderr, "  -V, --version               Print version information.\n");
-    fprintf(stderr, "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
+    debugOut( "  -r, --read-fuses            Read fuses bytes.\n");
+    debugOut( "  -R, --reset-srst            External reset through nSRST signal.\n");
+    debugOut( "  -V, --version               Print version information.\n");
+    debugOut( "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
                     "                                using debugWire protocol rather than JTAG.\n");
-    fprintf(stderr, "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
-    fprintf(stderr, "  -x, --xmega                 AVR part is an ATxmega device, using JTAG.\n");
-    fprintf(stderr, "  -X, --pdi                   AVR part is an ATxmega device, using PDI.\n");
-    fprintf(stderr, "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
+    debugOut( "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
+    debugOut( "  -x, --xmega                 AVR part is an ATxmega device, using JTAG.\n");
+    debugOut( "  -X, --pdi                   AVR part is an ATxmega device, using PDI.\n");
+    debugOut( "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
                     "\":PORT\" is required to put avarice into gdb server mode.\n\n");
-    fprintf(stderr, "Example usage:\n");
-    fprintf(stderr, "\t%s --jtag /dev/ttyS0 :4242\n", progname);
-    fprintf(stderr, "\t%s --dragon :4242\n", progname);
-    fprintf(stderr, "\n");
+    debugOut( "Example usage:\n");
+    debugOut( "\t%s --jtag /dev/ttyS0 :4242\n", progname);
+    debugOut( "\t%s --dragon :4242\n", progname);
+    debugOut( "\n");
 }
 
 static void knownParts() {
-    fprintf(stderr, "List of known AVR devices:\n\n");
+    debugOut( "List of known AVR devices:\n\n");
     jtag_device_def_type::DumpAll();
 }
 
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
                     static_cast<uchar>(units_before), static_cast<uchar>(units_after),
                     static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
                 if (!daisy_chain_info.IsValid()) {
-                    fprintf(stderr,
+                    debugOut(
                             "%s: daisy-chain parameters out of range"
                             " (max. 32 bits before/after)\n",
                             progname);
@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
                 proto = Debugproto::PDI;
                 break;
             default:
-                fprintf(stderr, "getop() did something screwey");
+                debugOut( "getop() did something screwey");
                 exit(1);
             }
         }
@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
 
             if (i >= len) {
                 /* No port was given. */
-                fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+                debugOut( "avarice: %s is not a valid host:port value.\n", arg);
                 exit(1);
             }
 
@@ -418,7 +418,7 @@ int main(int argc, char **argv) {
             hostPortNumber = (int)strtol(arg + i, &endptr, 0);
             if (endptr == arg + i) {
                 /* Invalid convertion. */
-                fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+                debugOut( "avarice: failed to convert port number: %s\n", arg + i);
                 exit(1);
             }
 
@@ -426,7 +426,7 @@ int main(int argc, char **argv) {
                greater than max port value. */
 
             if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
-                fprintf(stderr,
+                debugOut(
                         "avarice: invalid port number: %d (must be >= %d"
                         " and <= %d)\n",
                         hostPortNumber, 1024, 0xffff);
@@ -556,13 +556,13 @@ int main(int argc, char **argv) {
                 int child = fork();
 
                 if (child < 0) {
-                    fprintf(stderr, "Failed to fork");
+                    debugOut( "Failed to fork");
                     throw jtag_exception();
                 }
                 if (child != 0)
                     _exit(0);
                 else if (setsid() < 0) {
-                    fprintf(stderr, "setsid failed - weird bug");
+                    debugOut( "setsid failed - weird bug");
                     throw jtag_exception();
                 }
             }

@@ -295,7 +295,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         }
 
         if (strlen(serno) > 12) {
-            fprintf(stderr, "invalid serial number \"%s\"", serno);
+            debugOut( "invalid serial number \"%s\"", serno);
             delete[] devnamecopy;
             return nullptr;
         }
@@ -323,7 +323,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         if (ddp->idVendor == USB_VENDOR_ATMEL && ddp->idProduct == pid) {
             int rv = libusb20_dev_open(pdev, 3);
             if (rv < 0) {
-                fprintf(stderr, "cannot open device \"%s\"", usb_error(rv));
+                debugOut("cannot open device \"%s\"", usb_error(rv));
                 libusb20_be_free(be);
                 return nullptr;
             }
@@ -332,7 +332,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
             rv = libusb20_dev_req_string_simple_sync(pdev, ddp->iSerialNumber, string,
                                                      sizeof(string));
             if (rv < 0) {
-                fprintf(stderr, "cannot read serial number \"%s\"", usb_error(rv));
+                debugOut("cannot read serial number \"%s\"", usb_error(rv));
                 usb20_cleanup(pdev);
                 return nullptr;
             }
@@ -368,7 +368,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
                     int rv = usb_get_string_simple(pdev, dev->descriptor.iSerialNumber, string,
                                                    sizeof(string));
                     if (rv < 0) {
-                        fprintf(stderr, "cannot read serial number \"%s\"", usb_strerror());
+                        debugOut( "cannot read serial number \"%s\"", usb_strerror());
                         return nullptr;
                     }
 
@@ -408,7 +408,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
     int rv;
 
     if ((rv = libusb20_dev_set_config_index(pdev, 0)) != 0) {
-        fprintf(stderr, "libusb20_dev_set_config_index: %s\n", usb_error(rv));
+        debugOut("libusb20_dev_set_config_index: %s\n", usb_error(rv));
         usb20_cleanup(pdev);
         return nullptr;
     }
@@ -422,7 +422,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         xfr_evt = libusb20_tr_get_pointer(pdev, 2);
 
     if (xfr_in == nullptr || xfr_out == nullptr) {
-        fprintf(stderr, "libusb20_tr_get_pointer: %s\n", usb_error(rv));
+        debugOut("libusb20_tr_get_pointer: %s\n", usb_error(rv));
         usb20_cleanup(pdev);
         return nullptr;
     }
@@ -433,7 +433,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
      * for the JTAGICE3 events.
      */
     if ((rv = libusb20_tr_open(xfr_out, 0, 1, write_ep)) != 0) {
-        fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
+        debugOut( "libusb20_tr_open: %s\n", usb_error(rv));
         usb20_cleanup(pdev);
         return nullptr;
     }
@@ -444,7 +444,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         max_xfer = max_packet_l;
     }
     if ((rv = libusb20_tr_open(xfr_in, 0, 1, read_ep)) != 0) {
-        fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
+        debugOut( "libusb20_tr_open: %s\n", usb_error(rv));
         usb20_cleanup(pdev);
         return nullptr;
     }
@@ -454,7 +454,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         max_xfer = max_packet_l;
     }
     if (event_ep != 0 && (rv = libusb20_tr_open(xfr_evt, 0, 1, event_ep)) != 0) {
-        fprintf(stderr, "libusb20_tr_open: %s\n", usb_error(rv));
+        debugOut( "libusb20_tr_open: %s\n", usb_error(rv));
         usb20_cleanup(pdev);
         return nullptr;
     }
@@ -548,7 +548,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
         serlen = strlen(serno);
         if (serlen > 12) {
-            fprintf(stderr, "invalid serial number \"%s\"", serno);
+            debugOut( "invalid serial number \"%s\"", serno);
             delete[] devnamecopy;
             return nullptr;
         }
@@ -591,7 +591,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
         walk = walk->next;
     }
     if (walk == nullptr) {
-        fprintf(stderr, "No (matching) HID found\n");
+        debugOut( "No (matching) HID found\n");
         hid_free_enumeration(list);
         return nullptr;
     }
@@ -628,7 +628,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
         res = hid_read_timeout(pdev, probebuf, 10, 50);
     }
     if (res <= 0) {
-        fprintf(stderr, "openhid(): device not responding to DAP_Info\n");
+        debugOut( "openhid(): device not responding to DAP_Info\n");
         hid_close(pdev);
         return nullptr;
     }
@@ -691,7 +691,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
             continue;
 
         if ((fds[0].revents & POLLERR) != 0 || (fds[1].revents & POLLERR) != 0) {
-            fprintf(stderr, "poll() returned POLLERR, why?\n");
+            debugOut( "poll() returned POLLERR, why?\n");
             fds[0].revents &= ~POLLERR;
             fds[1].revents &= ~POLLERR;
         }
@@ -720,11 +720,11 @@ static void *usb_thread(void *data __attribute__((unused))) {
                     xfrstatus =
                         libusb20_tr_bulk_intr_sync(xfr_out, buf + offset, amnt, &result, 5000);
                     if (xfrstatus != (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED) {
-                        fprintf(stderr, "USB bulk write error: %s\n", usb_transfer_msg(xfrstatus));
+                        debugOut( "USB bulk write error: %s\n", usb_transfer_msg(xfrstatus));
                         pthread_exit((void *)1);
                     }
                     if (result != amnt) {
-                        fprintf(stderr, "USB bulk short write: %u != %u\n", result, amnt);
+                        debugOut( "USB bulk short write: %u != %u\n", result, amnt);
                         pthread_exit((void *)1);
                     }
                     if (rv == max_xfer) {
@@ -738,7 +738,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                 libusb20_tr_setup_bulk(xfr_in, rbuf + sizeof(unsigned int), max_xfer, 0);
                 libusb20_tr_start(xfr_in);
             } else if (errno != EINTR && errno != EAGAIN) {
-                fprintf(stderr, "read error from AVaRICE: %s\n", strerror(errno));
+                debugOut( "read error from AVaRICE: %s\n", strerror(errno));
                 pthread_exit((void *)1);
             }
         }
@@ -755,7 +755,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                 uint8_t xfrstatus = libusb20_tr_get_status(xfr_in);
 
                 if (xfrstatus != (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED) {
-                    fprintf(stderr, "USB bulk read error: %s\n", usb_transfer_msg(xfrstatus));
+                    debugOut( "USB bulk read error: %s\n", usb_transfer_msg(xfrstatus));
                     pthread_exit((void *)1);
                 }
                 /*
@@ -777,7 +777,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                         xfr_in, rbuf + sizeof(unsigned int) + pkt_len, maxlen, &result, 100);
 
                     if (xfrstatus != (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED) {
-                        fprintf(stderr, "USB bulk read error in continuation block: %s\n",
+                        debugOut( "USB bulk read error in continuation block: %s\n",
                                 usb_transfer_msg(xfrstatus));
                         pthread_exit((void *)1);
                     }
@@ -790,7 +790,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                     pkt_len += rv;
                     if (pkt_len == MAX_MESSAGE) {
                         /* should not happen */
-                        fprintf(stderr, "Message too big in USB receive.\n");
+                        debugOut( "Message too big in USB receive.\n");
                         break;
                     }
                 }
@@ -809,7 +809,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                 }
 
                 if (write(pype[0], writep, writesize) != writesize) {
-                    fprintf(stderr, "short write to AVaRICE: %s\n", strerror(errno));
+                    debugOut( "short write to AVaRICE: %s\n", strerror(errno));
                     pthread_exit((void *)1);
                 }
             }
@@ -820,7 +820,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                 uint8_t xfrstatus = libusb20_tr_get_status(xfr_evt);
 
                 if (xfrstatus != (enum libusb20_transfer_status)LIBUSB20_TRANSFER_COMPLETED) {
-                    fprintf(stderr, "USB bulk read error: %s\n", usb_transfer_msg(xfrstatus));
+                    debugOut( "USB bulk read error: %s\n", usb_transfer_msg(xfrstatus));
                     pthread_exit((void *)1);
                 }
 
@@ -828,8 +828,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
                     /* No partial packet handling needed on the event EP */
 
                     if (ebuf[0] != TOKEN) {
-                        fprintf(
-                            stderr,
+                        debugOut(
                             "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
                             ebuf[0]);
                     } else {
@@ -846,7 +845,7 @@ static void *usb_thread(void *data __attribute__((unused))) {
 
                         if (write(pype[0], ebuf, pkt_len + sizeof(unsigned int)) !=
                             pkt_len + sizeof(unsigned int)) {
-                            fprintf(stderr, "short write to AVaRICE: %s\n", strerror(errno));
+                            debugOut( "short write to AVaRICE: %s\n", strerror(errno));
                             pthread_exit((void *)1);
                         }
                     }
@@ -875,7 +874,7 @@ static void *usb_thread_write(void *) {
                     amnt = rv;
                 result = usb_bulk_write(udev, write_ep, buf + offset, amnt, 5000);
                 if (result != amnt) {
-                    fprintf(stderr, "USB bulk write error: %s\n", usb_strerror());
+                    debugOut( "USB bulk write error: %s\n", usb_strerror());
                     pthread_exit((void *)1);
                 }
                 if (rv == max_xfer) {
@@ -887,7 +886,7 @@ static void *usb_thread_write(void *) {
             }
             continue;
         } else if (errno != EINTR && errno != EAGAIN) {
-            fprintf(stderr, "read error from AVaRICE: %s\n", strerror(errno));
+            debugOut( "read error from AVaRICE: %s\n", strerror(errno));
             pthread_exit((void *)1);
         }
     }
@@ -901,7 +900,7 @@ static void *usb_thread_read(void *) {
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
         } else if (rv < 0) {
-            fprintf(stderr, "USB bulk read error: %s (%d)\n", usb_strerror(), rv);
+            debugOut( "USB bulk read error: %s (%d)\n", usb_strerror(), rv);
             pthread_exit((void *)1);
         } else {
             /*
@@ -928,7 +927,7 @@ static void *usb_thread_read(void *) {
                     break;
                 }
                 if (rv < 0) {
-                    fprintf(stderr, "USB bulk read error in continuation block: %s\n",
+                    debugOut( "USB bulk read error in continuation block: %s\n",
                             usb_strerror());
                     pthread_exit((void *)1);
                 }
@@ -937,7 +936,7 @@ static void *usb_thread_read(void *) {
                 pkt_len += rv;
                 if (pkt_len == MAX_MESSAGE) {
                     /* should not happen */
-                    fprintf(stderr, "Message too big in USB receive.\n");
+                    debugOut( "Message too big in USB receive.\n");
                     break;
                 }
             }
@@ -956,7 +955,7 @@ static void *usb_thread_read(void *) {
             }
 
             if (write(pype[0], writep, writesize) != writesize) {
-                fprintf(stderr, "short write to AVaRICE: %s\n", strerror(errno));
+                debugOut( "short write to AVaRICE: %s\n", strerror(errno));
                 pthread_exit((void *)1);
             }
         }
@@ -976,11 +975,11 @@ static void *usb_thread_event(void *) {
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
         } else if (rv < 0) {
-            fprintf(stderr, "USB event read error: %s (%d)\n", usb_strerror(), rv);
+            debugOut( "USB event read error: %s (%d)\n", usb_strerror(), rv);
             pthread_exit((void *)1);
         } else {
             if (buf[sizeof(unsigned int)] != TOKEN) {
-                fprintf(stderr,
+                debugOut(
                         "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
                         buf[sizeof(unsigned int)]);
             } else {
@@ -996,7 +995,7 @@ static void *usb_thread_event(void *) {
                 buf[sizeof(unsigned int)] = TOKEN_EVT3;
                 if (write(pype[0], buf, pkt_len + sizeof(unsigned int)) !=
                     pkt_len + sizeof(unsigned int)) {
-                    fprintf(stderr, "short write to AVaRICE: %s\n", strerror(errno));
+                    debugOut( "short write to AVaRICE: %s\n", strerror(errno));
                     pthread_exit((void *)1);
                 }
             }
@@ -1079,7 +1078,7 @@ static void *hid_thread(void *data) {
         }
 
         if ((fds[0].revents & POLLERR) != 0) {
-            fprintf(stderr, "poll() returned POLLERR, why?\n");
+            debugOut( "poll() returned POLLERR, why?\n");
             fds[0].revents &= ~POLLERR;
         }
         if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
@@ -1180,7 +1179,7 @@ static void *hid_thread(void *data) {
                 write(pype[0], buf, totlength + sizeof(unsigned int));
             done:;
             } else if (errno != EINTR && errno != EAGAIN) {
-                fprintf(stderr, "read error from AVaRICE: %s\n", strerror(errno));
+                debugOut( "read error from AVaRICE: %s\n", strerror(errno));
                 pthread_exit((void *)1);
             }
         }

@@ -38,7 +38,7 @@ unsigned long Jtag2::getProgramCounter() {
     try {
         doJtagCommand(command, sizeof(command), response, responseSize, true);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "cannot read program counter: %s\n", e.what());
+        debugOut("cannot read program counter: %s\n", e.what());
         throw;
     }
 
@@ -63,7 +63,7 @@ void Jtag2::setProgramCounter(unsigned long pc) {
     try {
         doJtagCommand(command, sizeof(command), response, responseSize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "cannot write program counter: %s\n", e.what());
+        debugOut( "cannot write program counter: %s\n", e.what());
         throw;
     }
 
@@ -330,7 +330,7 @@ void Jtag2::parseEvents(const char *evtlist) {
             }
         }
         if (evtval == 0) {
-            fprintf(stderr, "Warning: event name %.*s not matched\n", (int)l, cp1);
+            debugOut( "Warning: event name %.*s not matched\n", (int)l, cp1);
         } else {
             nonbreaking_events[evtval - EVT_BREAK] = true;
         }

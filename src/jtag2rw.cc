@@ -147,7 +147,7 @@ uchar *Jtag2::jtagRead(unsigned long addr, unsigned int numBytes) {
                 try {
                     doJtagCommand(command, sizeof(command), resp, responseSize, true);
                 } catch (jtag_exception &e) {
-                    fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
+                    debugOut( "Failed to read target memory space: %s\n", e.what());
                     delete[] response;
                     throw;
                 }
@@ -170,7 +170,7 @@ uchar *Jtag2::jtagRead(unsigned long addr, unsigned int numBytes) {
         try {
             doJtagCommand(command, sizeof(command), response, responseSize, true);
         } catch (jtag_exception &e) {
-            fprintf(stderr, "Failed to read target memory space: %s\n", e.what());
+            debugOut( "Failed to read target memory space: %s\n", e.what());
             throw;
         }
         if (offset > 0)
@@ -246,7 +246,7 @@ void Jtag2::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
         try {
             doJtagCommand(command, 10 + chunksize, response, responseSize);
         } catch (jtag_exception &e) {
-            fprintf(stderr, "Failed to write target memory space: %s\n", e.what());
+            debugOut( "Failed to write target memory space: %s\n", e.what());
             throw;
         }
 

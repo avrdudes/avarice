@@ -60,7 +60,7 @@ void Jtag2::eraseProgramMemory() {
         try {
             doJtagCommand(command, sizeof(command), response, respSize);
         } catch (jtag_exception &e) {
-            fprintf(stderr, "Failed to erase Xmega program memory: %s\n", e.what());
+            debugOut("Failed to erase Xmega program memory: %s\n", e.what());
             throw;
         }
         delete[] response;

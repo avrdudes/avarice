@@ -38,7 +38,7 @@ void Jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar
     try {
         doJtagCommand(buf, valSize + 6, "set parameter", resp, respsize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "set parameter command failed: %s\n", e.what());
+        debugOut( "set parameter command failed: %s\n", e.what());
         throw;
     }
 
@@ -56,7 +56,7 @@ void Jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length,
     try {
         doJtagCommand(buf, 6, "get parameter", resp, respsize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "get parameter command failed: %s\n", e.what());
+        debugOut( "get parameter command failed: %s\n", e.what());
         throw;
     }
     if (resp[1] != RSP3_DATA || respsize < 3 + length) {

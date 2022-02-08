@@ -312,7 +312,7 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     try {
         setJtagParameter(SCOPE_AVR, 2, PARM3_DEVICEDESC, param, paramsize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "JTAG ICE: Failed to set device description: %s\n", e.what());
+        debugOut( "JTAG ICE: Failed to set device description: %s\n", e.what());
         throw;
     }
 }
@@ -492,7 +492,7 @@ void Jtag3::initJtagBox() {
 
         statusOut("JTAG config complete.\n");
     } catch (jtag_exception &e) {
-        fprintf(stderr, "initJtagBox() failed: %s\n", e.what());
+        debugOut( "initJtagBox() failed: %s\n", e.what());
         throw;
     }
 }

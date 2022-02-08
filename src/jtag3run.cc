@@ -41,10 +41,10 @@ again:
             interruptProgram();
             goto again;
         }
-        fprintf(stderr, "cannot read program counter: %s\n", e.what());
+        debugOut( "cannot read program counter: %s\n", e.what());
         throw;
     } catch (jtag_exception &e) {
-        fprintf(stderr, "cannot read program counter: %s\n", e.what());
+        debugOut( "cannot read program counter: %s\n", e.what());
         throw;
     }
 
@@ -69,7 +69,7 @@ void Jtag3::setProgramCounter(unsigned long pc) {
     try {
         doJtagCommand(cmd, sizeof(cmd), "write PC", resp, respsize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "cannot write program counter: %s\n", e.what());
+        debugOut( "cannot write program counter: %s\n", e.what());
         throw;
     }
 

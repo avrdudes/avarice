@@ -77,7 +77,7 @@ void Jtag2::updateBreakpoints() {
                 try {
                     doJtagCommand(cmd, 6, response, responseSize);
                 } catch (jtag_exception &e) {
-                    fprintf(stderr, "Failed to clear breakpoint: %s\n", e.what());
+                    debugOut("Failed to clear breakpoint: %s\n", e.what());
                     throw;
                 }
 
@@ -155,7 +155,7 @@ void Jtag2::updateBreakpoints() {
                 try {
                     doJtagCommand(cmd, 8, response, responseSize);
                 } catch (jtag_exception &e) {
-                    fprintf(stderr, "Failed to set breakpoint: %s\n", e.what());
+                    debugOut("Failed to set breakpoint: %s\n", e.what());
                     throw;
                 }
                 delete[] response;
@@ -186,7 +186,7 @@ void Jtag2::xmegaSendBPs() {
     try {
         doJtagCommand(cmdx, 14, response, responseSize);
     } catch (jtag_exception &e) {
-        fprintf(stderr, "Failed to set Xmega breakpoints: %s\n", e.what());
+        debugOut("Failed to set Xmega breakpoints: %s\n", e.what());
         throw;
     }
     delete[] response;

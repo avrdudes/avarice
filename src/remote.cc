@@ -918,7 +918,7 @@ void talkToGdb() {
                     theJtagICE->resetProgram(false);
                     reportStatusExtended(SIGTRAP);
                 } catch (jtag_exception &e) {
-                    fprintf(stderr, "Failed to reset MCU: %s\n", e.what());
+                    debugOut( "Failed to reset MCU: %s\n", e.what());
                 }
             }
         }
