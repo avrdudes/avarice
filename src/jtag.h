@@ -24,7 +24,6 @@
 #define JTAG_H
 
 #include <sys/types.h>
-#include <termios.h>
 
 #include <exception>
 #include <string_view>
@@ -615,11 +614,12 @@ struct DaisyChainInfo {
 };
 static_assert(sizeof(DaisyChainInfo) == 4);
 
+struct termios;
+
 class Jtag {
   protected:
-    // The initial serial port parameters. We restore them on exit.
-    struct termios oldtio;
-    bool oldtioValid = false;
+    // The initial serial port parameters. We restore them on exit. (pimpl)
+    std::unique_ptr<termios> oldtio;
 
     // The file descriptor used while talking to the JTAG ICE
     int jtagBox = 0;
@@ -665,6 +665,8 @@ class Jtag {
     int safewrite(const void *b, int count) const;
     void changeLocalBitRate(int newBitRate) const;
     void restoreSerialPort();
+    void flushSerialPort() const;
+    void waitForSerialPort() const;
 
     virtual void setDeviceDescriptor(const jtag_device_def_type &dev) = 0;
     virtual bool synchroniseAt(int bitrate) = 0;

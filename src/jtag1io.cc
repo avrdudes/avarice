@@ -42,16 +42,14 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
     debugOutBufHex("", command, commandSize);
 
     // before writing, clean up any "unfinished business".
-    if (tcflush(jtagBox, TCIFLUSH) < 0)
-        throw jtag_exception();
+    flushSerialPort();
 
     int count = safewrite(command, commandSize);
     if ((count < 0) || (count != commandSize))
         throw jtag_exception();
 
     // And wait for all characters to go to the JTAG box.... can't hurt!
-    if (tcdrain(jtagBox) < 0)
-        throw jtag_exception();
+    waitForSerialPort();
 
     // We should get JTAG_R_OK, but we might get JTAG_R_INFO too (we just
     // ignore it)
@@ -227,8 +225,7 @@ bool jtag1::synchroniseAt(int bitrate) {
     while (tries < MAX_JTAG_SYNC_ATTEMPS) {
         sendJtagCommand(command, sizeof(command), tries);
         usleep(2 * JTAG_COMM_TIMEOUT); // let rest of response come before we ignore it
-        if (tcflush(jtagBox, TCIFLUSH) < 0)
-            throw jtag_exception();
+        flushSerialPort();
         if (checkForEmulator())
             return true;
     }

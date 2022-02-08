@@ -38,8 +38,18 @@
  */
 
 void Jtag::restoreSerialPort() {
-    if (!is_usb && jtagBox >= 0 && oldtioValid)
-        tcsetattr(jtagBox, TCSANOW, &oldtio);
+    if( oldtio )
+        tcsetattr(jtagBox, TCSANOW, oldtio.get());
+}
+
+void Jtag::flushSerialPort() const {
+    if (tcflush(jtagBox, TCIFLUSH) < 0)
+        throw jtag_exception();
+}
+
+void Jtag::waitForSerialPort() const {
+    if (tcdrain(jtagBox) < 0)
+        throw jtag_exception();
 }
 
 Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view expected_dev, bool nsrst, bool is_xmega)
@@ -63,11 +73,14 @@ Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view exp
         }
 
         // save current serial port settings and plan to restore them on exit
-        if (tcgetattr(jtagBox, &oldtio) < 0)
-            throw jtag_exception();
-        oldtioValid = true;
+        {
+            auto original_tio = std::make_unique<termios>();
+            if (tcgetattr(jtagBox, original_tio.get()) < 0)
+                throw jtag_exception();
+            oldtio.swap(original_tio);
+        }
 
-        struct termios newtio;
+        termios newtio;
         memset(&newtio, 0, sizeof(newtio));
         newtio.c_cflag = CS8 | CLOCAL | CREAD;
 
@@ -168,8 +181,7 @@ void Jtag::changeLocalBitRate(int newBitRate) const {
         return;
 
     // Change the local port bitrate.
-    struct termios tio;
-
+    termios tio;
     if (tcgetattr(jtagBox, &tio) < 0)
         throw jtag_exception();
 
