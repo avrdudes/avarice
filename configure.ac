@@ -39,11 +39,6 @@ AX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS"
 	   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
            CC="$PTHREAD_CC"])
 
-AC_PATH_PROG(pathperl, perl)
-if test -z "$pathperl" ; then
-  AC_MSG_ERROR([I can't find perl]); 
-fi
-
 # Checks for libraries.
 
 ## Some systems need "-lsocket -lnsl" when linking.
