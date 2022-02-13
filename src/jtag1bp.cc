@@ -108,7 +108,6 @@ bool jtag1::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned
 }
 
 void jtag1::updateBreakpoints() {
-    unsigned char bpMode = 0x00;
     int bpC = 0, bpD = 0;
 
     debugOut("updateBreakpoints\n");
@@ -146,7 +145,7 @@ void jtag1::updateBreakpoints() {
         setJtagParameter(JTAG_P_BP_X_HIGH, bp->address >> 8);
         setJtagParameter(JTAG_P_BP_X_LOW, bp->address & 0xff);
 
-        bpMode |= 0x20; // turn on this breakpoint
+        unsigned char bpMode = 0x20; // turn on this breakpoint
         switch (bp->type) {
         case BreakpointType::READ_DATA:
             bpMode |= 0x00;
@@ -166,11 +165,12 @@ void jtag1::updateBreakpoints() {
         }
 
         // Find next breakpoint
-        bp = nullptr;
         if (bpC < numBreakpointsCode)
             bp = &bpCode[bpC];
         else if (bpD < numBreakpointsData)
             bp = &bpData[bpD];
+        else
+            bp = nullptr;
 
         // BP 3 (aka breakpoint Y).
         if (bp) {

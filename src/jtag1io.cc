@@ -291,7 +291,6 @@ void jtag1::initJtagBox() {
 
     deviceAutoConfig();
 
-    // Clear out the breakpoints.
     deleteAllBreakpoints();
 
     statusOut("JTAG config complete.\n");

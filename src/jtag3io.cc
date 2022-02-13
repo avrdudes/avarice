@@ -124,7 +124,7 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     msg = nullptr;
 
     int amnt;
-    int rv = timeout_read((void *)&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
+    int rv = timeout_read(&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
     if (rv == 0) {
         /* timeout */
         debugOut("read() timed out\n");
@@ -487,7 +487,6 @@ void Jtag3::initJtagBox() {
 
         deviceAutoConfig();
 
-        // Clear out the breakpoints.
         deleteAllBreakpoints();
 
         statusOut("JTAG config complete.\n");

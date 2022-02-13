@@ -101,19 +101,17 @@ Jtag2::~Jtag2() {
  * the frame could be written correctly.
  */
 void Jtag2::sendFrame(const uchar *command, int commandSize) {
-    auto *buf = new unsigned char[commandSize + 10];
+    auto buf = std::make_unique<uchar[]>(commandSize + 10);
 
     buf[0] = MESSAGE_START;
-    u16_to_b2(buf + 1, command_sequence);
-    u32_to_b4(buf + 3, commandSize);
+    u16_to_b2(buf.get() + 1, command_sequence);
+    u32_to_b4(buf.get() + 3, commandSize);
     buf[7] = TOKEN;
-    memcpy(buf + 8, command, commandSize);
+    memcpy(buf.get() + 8, command, commandSize);
 
-    crcappend(buf, commandSize + 8);
+    crcappend(buf.get(), commandSize + 8);
 
-    int count = safewrite(buf, commandSize + 10);
-
-    delete[] buf;
+    int count = safewrite(buf.get(), commandSize + 10);
 
     if (count < 0)
         throw jtag_exception();
@@ -147,33 +145,23 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     } state = sSTART;
     unsigned int msglen = 0, l = 0;
     unsigned int headeridx = 0;
-    bool ignorpkt = false;
-    int rv;
-    unsigned char c, *buf = nullptr, header[8];
+    unsigned char c, header[8];
     unsigned short r_seqno = 0;
     unsigned short checksum = 0;
+    std::unique_ptr<uchar[]> buf;
 
     msg = nullptr;
 
     while (state != sDONE) {
         if (state == sDATA) {
             debugOut("sDATA: reading %d bytes\n", msglen);
-            rv = 0;
-            if (ignorpkt) {
-                /* skip packet's contents */
-                for (l = 0; l < msglen; l++) {
-                    rv += timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
-                    debugOut("ign: 0x%02x\n", c);
-                }
-            } else {
-                rv += timeout_read(buf + 8, msglen, JTAG_RESPONSE_TIMEOUT);
-                debugOutBufHex("read: ", buf + 8, msglen);
-            }
+            const auto rv = timeout_read(buf.get() + 8, msglen, JTAG_RESPONSE_TIMEOUT);
+            debugOutBufHex("read: ", buf.get() + 8, msglen);
             if (rv == 0)
                 /* timeout */
                 break;
         } else {
-            rv = timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
+            const auto rv = timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
             if (rv == 0) {
                 /* timeout */
                 debugOut("recv: timeout\n");
@@ -226,8 +214,8 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
                     state = sSTART;
                     headeridx = 0;
                 } else {
-                    buf = new unsigned char[msglen + 10];
-                    memcpy(buf, header, 8);
+                    buf = std::make_unique<uchar[]>(msglen + 10);
+                    memcpy(buf.get(), header, 8);
                 }
             } else {
                 state = sSTART;
@@ -245,24 +233,22 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             break;
         case sCSUM2:
             buf[l++] = c;
-            if (crcverify(buf, msglen + 10)) {
+            if (crcverify(buf.get(), msglen + 10)) {
                 debugOut("CRC OK");
                 state = sDONE;
             } else {
                 debugOut("checksum error");
-                delete[] buf;
                 return -1;
             }
             break;
         default:
             debugOut("unknown state");
-            delete[] buf;
             return -1;
         }
     }
 
     seqno = r_seqno;
-    msg = buf;
+    msg = buf.release();
 
     return (int)msglen;
 }
@@ -631,7 +617,6 @@ void Jtag2::initJtagBox() {
 
     deviceAutoConfig();
 
-    // Clear out the breakpoints.
     deleteAllBreakpoints();
 
     statusOut("JTAG config complete.\n");

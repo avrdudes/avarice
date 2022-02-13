@@ -116,7 +116,7 @@ Jtag::~Jtag() { restoreSerialPort(); }
 
 int Jtag::timeout_read(void *buf, size_t count, unsigned long timeout) {
     char *buffer = (char *)buf;
-    ssize_t actual = 0;
+    size_t actual = 0;
 
     while (actual < count) {
         fd_set readfds;
