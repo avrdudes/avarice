@@ -55,11 +55,6 @@ AC_CHECK_FUNC(socket, , [
 AC_SEARCH_LIBS([inet_aton], [resolv])
 
 AC_CHECK_LIB([usb], [usb_get_string_simple])
-AC_CHECK_LIB([usb], [libusb20_dev_open], [have_libusb_2_0=yes])
-if test x$have_libusb_2_0 = xyes; then
-   AC_DEFINE([HAVE_LIBUSB_2_0], [], [Define if USB support is enabled via FreeBSD's libusb20 API])
-   AC_CHECK_HEADERS([libusb20.h])
-fi
 
 AH_TEMPLATE([HAVE_LIBHIDAPI],
             [Define if HID support is enabled via libhidapi])
