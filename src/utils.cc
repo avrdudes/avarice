@@ -28,7 +28,7 @@ bool debugMode = false;
 
 void vdebugOut(const char *fmt, va_list args) {
     if (!debugMode) return;
-    (void)vfprintf(stderr, fmt, args);
+    vfprintf(stderr, fmt, args);
 }
 
 void debugOut(const char *fmt, ...) {

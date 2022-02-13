@@ -29,7 +29,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <usb.h>
@@ -43,7 +42,8 @@
 
 #include "jtag.h"
 
-#define USB_VENDOR_ATMEL 1003
+namespace {
+constexpr unsigned short USB_VENDOR_ATMEL = 1003;
 #define USB_DEVICE_JTAGICEMKII 0x2103
 #define USB_DEVICE_AVRDRAGON 0x2107
 #define USB_DEVICE_JTAGICE3 0x2110
@@ -74,33 +74,29 @@ struct hid_thread_data {
 };
 #endif
 
-static int read_ep, write_ep, event_ep, max_xfer;
+int read_ep, write_ep, event_ep, max_xfer;
 using usb_dev_t = usb_dev_handle;
 
-static usb_dev_t *udev = nullptr;
+usb_dev_t *udev = nullptr;
 #ifdef HAVE_LIBHIDAPI
-static hid_device *hdev = nullptr;
-static std::thread usb_hid_thread;
+hid_device *hdev = nullptr;
+std::thread usb_hid_thread;
 #endif
-static int pype[2];
+int pype[2];
 
-static std::thread usb_read_thread;
-static std::thread usb_write_thread;
-static std::thread usb_event_thread;
-static int usb_interface;
+std::thread usb_read_thread;
+std::thread usb_write_thread;
+std::thread usb_event_thread;
+int usb_interface_id;
+
+}
 
 /*
  * Walk down all USB devices, and see whether we can find our emulator
  * device.
  */
 static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
-    char string[256];
-    struct usb_bus *bus;
-    struct usb_device *dev;
-    usb_dev_t *pdev;
-    char *serno, *cp2;
     uint16_t pid;
-    size_t x;
 
     switch (emu_type) {
     case Emulator::JTAGICE2:
@@ -132,9 +128,6 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         return nullptr;
     }
 
-    char* devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
-    memcpy(devnamecopy, jtagDeviceName, x);
-
     /*
      * The syntax for usb devices is defined as:
      *
@@ -145,20 +138,27 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
      * right-to-left, so only the least significant nibbles need to be
      * specified.
      */
-    if ((serno = strchr(devnamecopy, ':')) != nullptr) {
-        /* first, drop all colons there if any */
-        cp2 = ++serno;
+    char *serno;
+    std::unique_ptr<char[]> devnamecopy;
+    {
+        size_t x = strlen(jtagDeviceName) + 1;
+        devnamecopy = std::make_unique<char[]>(x);
+        memcpy(devnamecopy.get(), jtagDeviceName, x);
 
-        while ((cp2 = strchr(cp2, ':')) != nullptr) {
-            x = strlen(cp2) - 1;
-            memmove(cp2, cp2 + 1, x);
-            cp2[x] = '\0';
-        }
+        if ((serno = strchr(devnamecopy.get(), ':')) != nullptr) {
+            /* first, drop all colons there if any */
+            char *cp2 = ++serno;
 
-        if (strlen(serno) > 12) {
-            debugOut( "invalid serial number \"%s\"", serno);
-            delete[] devnamecopy;
-            return nullptr;
+            while ((cp2 = strchr(cp2, ':')) != nullptr) {
+                x = strlen(cp2) - 1;
+                memmove(cp2, cp2 + 1, x);
+                cp2[x] = '\0';
+            }
+
+            if (strlen(serno) > 12) {
+                debugOut("invalid serial number \"%s\"", serno);
+                return nullptr;
+            }
         }
     }
 
@@ -167,15 +167,18 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
     usb_find_busses();
     usb_find_devices();
 
-    pdev = nullptr;
+    struct usb_device *dev;
+    usb_bus *bus;
+    usb_dev_handle *pdev = nullptr;
     bool found = false;
     for (bus = usb_get_busses(); !found && bus; bus = bus->next) {
-        for (dev = bus->devices; !found && dev; dev = dev->next) {
+        for (dev = bus->devices; dev; dev = dev->next) {
             pdev = usb_open(dev);
             if (pdev) {
                 if (dev->descriptor.idVendor == USB_VENDOR_ATMEL &&
                     dev->descriptor.idProduct == pid) {
                     /* yeah, we found something */
+                    char string[256];
                     int rv = usb_get_string_simple(pdev, dev->descriptor.iSerialNumber, string,
                                                    sizeof(string));
                     if (rv < 0) {
@@ -183,14 +186,14 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
                         return nullptr;
                     }
 
-                    debugOut("Found JTAG ICE, serno: %s\n", string);
-                    if (serno != nullptr) {
+                    statusOut("Found JTAG ICE, serno: %s\n", string);
+                    if (serno) {
                         /*
                          * See if the serial number requested by the
                          * user matches what we found, matching
                          * right-to-left.
                          */
-                        x = strlen(string) - strlen(serno);
+                        const size_t x = strlen(string) - strlen(serno);
                         if (strcasecmp(string + x, serno) != 0) {
                             debugOut("serial number doesn't match\n");
                             usb_close(pdev);
@@ -207,31 +210,30 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
         }
     }
 
-    delete[] devnamecopy;
     if (!found) {
-        printf("did not find any%s USB device \"%s\"\n", serno ? " (matching)" : "",
+        debugOut("did not find any%s USB device \"%s\"\n", serno ? " (matching)" : "",
                jtagDeviceName);
         return nullptr;
     }
 
     if (dev->config == nullptr) {
-        statusOut("USB device has no configuration\n");
+        debugOut("USB device has no configuration\n");
     fail:
         usb_close(pdev);
         return nullptr;
     }
     if (usb_set_configuration(pdev, dev->config[0].bConfigurationValue)) {
-        statusOut("error setting configuration %d: %s\n", dev->config[0].bConfigurationValue,
+        debugOut("error setting configuration %d: %s\n", dev->config[0].bConfigurationValue,
                   usb_strerror());
         goto fail;
     }
-    usb_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
-    if (usb_claim_interface(pdev, usb_interface)) {
-        statusOut("error claiming interface %d: %s\n", usb_interface, usb_strerror());
+    usb_interface_id = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
+    if (usb_claim_interface(pdev, usb_interface_id)) {
+        debugOut("error claiming interface %d: %s\n", usb_interface_id, usb_strerror());
         goto fail;
     }
-    struct usb_endpoint_descriptor *epp = dev->config[0].interface[0].altsetting[0].endpoint;
-    for (int i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; i++) {
+    usb_endpoint_descriptor *epp = dev->config[0].interface[0].altsetting[0].endpoint;
+    for (int i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; ++i) {
         if ((epp[i].bEndpointAddress == read_ep || epp[i].bEndpointAddress == write_ep) &&
             epp[i].wMaxPacketSize < max_xfer) {
             statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
@@ -255,9 +257,9 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
      * instead.
      */
     if (event_ep != 0 && max_xfer < USBDEV_MAX_XFER_3) {
-        statusOut("Sorry, the JTAGICE3's firmware is broken on USB 1.1 connections\n");
+        debugOut("Sorry, the JTAGICE3's firmware is broken on USB 1.1 connections\n");
         usb_close(pdev);
-        return nullptr;
+        pdev = nullptr;
     }
 
     return pdev;
@@ -268,13 +270,6 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
  * Open HID, used for CMSIS-DAP (EDBG) devices
  */
 static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_size) {
-    size_t x;
-    wchar_t wserno[15];
-    size_t serlen = 0;
-
-    char *devnamecopy = new char[x = strlen(jtagDeviceName) + 1];
-    memcpy(devnamecopy, jtagDeviceName, x);
-
     /*
      * The syntax for usb devices is defined as:
      *
@@ -285,26 +280,32 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
      * right-to-left, so only the least significant nibbles need to be
      * specified.
      */
-    char *serno = strchr(devnamecopy, ':');
-    if (serno != nullptr) {
-        /* first, drop all colons there if any */
-        char *cp2 = ++serno;
+    wchar_t wserno[15];
+    size_t serlen = 0;
+    {
+        size_t x = strlen(jtagDeviceName) + 1;
+        auto devnamecopy = std::make_unique<char[]>(x);
+        memcpy(devnamecopy.get(), jtagDeviceName, x);
 
-        while ((cp2 = strchr(cp2, ':')) != nullptr) {
-            x = strlen(cp2) - 1;
-            memmove(cp2, cp2 + 1, x);
-            cp2[x] = '\0';
-        }
+        char *serno = strchr(devnamecopy.get(), ':');
+        if (serno) {
+            /* first, drop all colons there if any */
+            char *cp2 = ++serno;
 
-        serlen = strlen(serno);
-        if (serlen > 12) {
-            debugOut( "invalid serial number \"%s\"", serno);
-            delete[] devnamecopy;
-            return nullptr;
+            while ((cp2 = strchr(cp2, ':')) != nullptr) {
+                x = strlen(cp2) - 1;
+                memmove(cp2, cp2 + 1, x);
+                cp2[x] = '\0';
+            }
+
+            serlen = strlen(serno);
+            if (serlen > 12) {
+                debugOut("invalid serial number \"%s\"", serno);
+                return nullptr;
+            }
+            mbstowcs(wserno, serno, 15);
         }
-        mbstowcs(wserno, serno, 15);
     }
-    delete[] devnamecopy;
 
     /*
      * Find any Atmel device which is a HID.  Then, look at the product
@@ -340,15 +341,15 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
         }
         walk = walk->next;
     }
-    if (walk == nullptr) {
+    if (!walk) {
         debugOut( "No (matching) HID found\n");
         hid_free_enumeration(list);
         return nullptr;
     }
 
-    hid_device *pdev = hid_open_path(walk->path);
+    auto *pdev = hid_open_path(walk->path);
     hid_free_enumeration(list);
-    if (pdev == nullptr)
+    if (!pdev)
         // can't happen?
         return nullptr;
 
@@ -401,24 +402,19 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
 
 /* USB writer thread */
-static void *usb_write_handler(void *) {
+static void usb_write_handler() {
     while (true) {
         char buf[MAX_MESSAGE];
-        auto rv = read(pype[0], buf, MAX_MESSAGE);
+        int rv = static_cast<int>(read(pype[0], buf, MAX_MESSAGE));
         if (rv > 0) {
             int offset = 0;
 
             while (rv != 0) {
-                int amnt, result;
-
-                if (rv > max_xfer)
-                    amnt = max_xfer;
-                else
-                    amnt = rv;
-                result = usb_bulk_write(udev, write_ep, buf + offset, amnt, 5000);
+                auto amnt = (rv > max_xfer)?max_xfer:rv;
+                auto result = usb_bulk_write(udev, write_ep, buf + offset, amnt, 5000);
                 if (result != amnt) {
                     debugOut( "USB bulk write error: %s\n", usb_strerror());
-                    pthread_exit((void *)1);
+                    return;
                 }
                 if (rv == max_xfer) {
                     /* send ZLP */
@@ -430,13 +426,13 @@ static void *usb_write_handler(void *) {
             continue;
         } else if (errno != EINTR && errno != EAGAIN) {
             debugOut( "read error from AVaRICE: %s\n", strerror(errno));
-            pthread_exit((void *)1);
+            return;
         }
     }
 }
 
 /* USB event reader thread (JTAGICE3 only) */
-static void *usb_read_handler(void *) {
+static void usb_read_handler() {
     while (true) {
         char buf[MAX_MESSAGE + sizeof(unsigned int)];
         int rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int), max_xfer, 0);
@@ -444,7 +440,7 @@ static void *usb_read_handler(void *) {
             /* OK, try again */
         } else if (rv < 0) {
             debugOut( "USB bulk read error: %s (%d)\n", usb_strerror(), rv);
-            pthread_exit((void *)1);
+            return;
         } else {
             /*
              * We read a packet from USB.  If it's been a partial
@@ -472,7 +468,7 @@ static void *usb_read_handler(void *) {
                 if (rv < 0) {
                     debugOut( "USB bulk read error in continuation block: %s\n",
                             usb_strerror());
-                    pthread_exit((void *)1);
+                    return;
                 }
 
                 needmore = rv == max_xfer;
@@ -499,14 +495,14 @@ static void *usb_read_handler(void *) {
 
             if (write(pype[0], writep, writesize) != writesize) {
                 debugOut( "short write to AVaRICE: %s\n", strerror(errno));
-                pthread_exit((void *)1);
+                return;
             }
         }
     }
 }
 
 /* USB reader thread */
-static void *usb_event_handler(void *) {
+static void usb_event_handler() {
     while (true) {
         /*
          * Events are shorter than regular data packets, so no
@@ -519,7 +515,7 @@ static void *usb_event_handler(void *) {
             /* OK, try again */
         } else if (rv < 0) {
             debugOut( "USB event read error: %s (%d)\n", usb_strerror(), rv);
-            pthread_exit((void *)1);
+            return;
         } else {
             if (buf[sizeof(unsigned int)] != TOKEN) {
                 debugOut(
@@ -539,7 +535,7 @@ static void *usb_event_handler(void *) {
                 if (write(pype[0], buf, pkt_len + sizeof(unsigned int)) !=
                     pkt_len + sizeof(unsigned int)) {
                     debugOut( "short write to AVaRICE: %s\n", strerror(errno));
-                    pthread_exit((void *)1);
+                    return;
                 }
             }
         }
@@ -556,9 +552,7 @@ void Jtag::resetUSB() {
 }
 
 #ifdef HAVE_LIBHIDAPI
-static void *hid_handler(void *data) {
-    auto hdata = static_cast<struct hid_thread_data *>(data);
-
+static void hid_handler(hid_thread_data const &hdata) {
     pollfd fds[1];
     fds[0].fd = pype[0];
     fds[0].events = POLLIN | POLLRDNORM;
@@ -585,11 +579,11 @@ static void *hid_handler(void *data) {
             // timed out, so just ping for event
             buf[0] = 0;
             buf[1] = EDBG_VENDOR_AVR_EVT;
-            rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
+            rv = hid_write(hdev, buf, hdata.max_pkt_size + 1);
             if (rv < 0)
                 throw jtag_exception("Querying for event: hid_write() failed");
 
-            rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 200);
+            rv = hid_read_timeout(hdev, buf, hdata.max_pkt_size + 1, 200);
             if (rv <= 0) {
                 debugOut("Querying for event: hid_read() failed (%d)\n", rv);
                 continue;
@@ -623,7 +617,7 @@ static void *hid_handler(void *data) {
         }
         if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
             // fd is closed
-            pthread_exit(nullptr);
+            return;
 
         if (fds[0].revents != 0) {
             // something is in the pipe there, presumably a command
@@ -635,7 +629,7 @@ static void *hid_handler(void *data) {
                 }
 
                 // used in both, request and reply data
-                unsigned int npackets = (rv + hdata->max_pkt_size - 1) / hdata->max_pkt_size;
+                unsigned int npackets = (rv + hdata.max_pkt_size - 1) / hdata.max_pkt_size;
                 unsigned int thispacket = 1;
                 unsigned int len = rv;
                 // used in reassembling reply data
@@ -644,23 +638,23 @@ static void *hid_handler(void *data) {
 
                 while (thispacket <= npackets) {
                     if (thispacket != 1)
-                        memmove(buf + 5, buf + (hdata->max_pkt_size - 4) + 5, len);
+                        memmove(buf + 5, buf + (hdata.max_pkt_size - 4) + 5, len);
 
                     buf[0] = 0; // libhidapi: no report ID
                     buf[1] = EDBG_VENDOR_AVR_CMD;
                     buf[2] = (thispacket << 4) | npackets;
                     unsigned int cursize =
-                        (len > hdata->max_pkt_size - 4) ? hdata->max_pkt_size - 4 : len;
+                        (len > hdata.max_pkt_size - 4) ? hdata.max_pkt_size - 4 : len;
                     buf[3] = cursize >> 8;
                     buf[4] = cursize;
-                    rv = hid_write(hdev, buf, hdata->max_pkt_size + 1);
-                    if ((unsigned)rv != hdata->max_pkt_size + 1) {
-                        debugOut("hid_write: short write, %u vs. %d\n", hdata->max_pkt_size + 1,
+                    rv = hid_write(hdev, buf, hdata.max_pkt_size + 1);
+                    if ((unsigned)rv != hdata.max_pkt_size + 1) {
+                        debugOut("hid_write: short write, %u vs. %d\n", hdata.max_pkt_size + 1,
                                  rv);
                         goto done;
                     }
 
-                    rv = hid_read_timeout(hdev, buf, hdata->max_pkt_size + 1, 200);
+                    rv = hid_read_timeout(hdev, buf, hdata.max_pkt_size + 1, 200);
                     if (rv < 0)
                         throw jtag_exception("Error reading HID");
 
@@ -672,11 +666,11 @@ static void *hid_handler(void *data) {
                 for (npackets = 0, thispacket = 0; thispacket <= npackets; thispacket++) {
                     buf[offset] = 0;
                     buf[offset + 1] = EDBG_VENDOR_AVR_RSP;
-                    rv = hid_write(hdev, buf + offset, hdata->max_pkt_size + 1);
+                    rv = hid_write(hdev, buf + offset, hdata.max_pkt_size + 1);
                     if (rv < 0)
                         throw jtag_exception("Querying for response: hid_write() failed");
 
-                    rv = hid_read_timeout(hdev, buf + offset, hdata->max_pkt_size + 1, 500);
+                    rv = hid_read_timeout(hdev, buf + offset, hdata.max_pkt_size + 1, 500);
                     if (rv <= 0) {
                         debugOut("Querying for response: hid_read() failed (%d)\n", rv);
                         goto done;
@@ -700,7 +694,7 @@ static void *hid_handler(void *data) {
                         goto done;
                     }
                     unsigned int packet_len = buf[offset + 2] * 256 + buf[offset + 3];
-                    if (packet_len < 5 || packet_len > hdata->max_pkt_size) {
+                    if (packet_len < 5 || packet_len > hdata.max_pkt_size) {
                         debugOut("Querying for response: insane event size %u\n", packet_len);
                         goto done;
                     }
@@ -720,7 +714,7 @@ static void *hid_handler(void *data) {
             done:;
             } else if (errno != EINTR && errno != EAGAIN) {
                 debugOut( "read error from AVaRICE: %s\n", strerror(errno));
-                pthread_exit((void *)1);
+                return;
             }
         }
     }
@@ -733,7 +727,7 @@ static void cleanup_hid() {
 #endif
 
 static void cleanup_usb() {
-    usb_release_interface(udev, usb_interface);
+    usb_release_interface(udev, usb_interface_id);
     usb_close(udev);
 }
 
@@ -743,25 +737,25 @@ void Jtag::openUSB(const char *jtagDeviceName) {
 
     if (emu_type == Emulator::EDBG) {
 #ifdef HAVE_LIBHIDAPI
-        static struct hid_thread_data hdata;
+        static hid_thread_data hdata;
         hdev = openhid(jtagDeviceName, hdata.max_pkt_size = 512);
-        if (hdev == nullptr)
+        if (!hdev)
             throw jtag_exception("cannot open HID");
 
-        usb_hid_thread = std::thread(hid_handler, &hdata);
+        usb_hid_thread = std::thread(hid_handler, hdata);
         atexit(cleanup_hid);
 #else // !HAVE_LIBHIDAPI
         throw jtag_exception("EDBG/CMSIS-DAP devices require libhidapi support");
 #endif
     } else {
         udev = opendev(jtagDeviceName, emu_type);
-        if (udev == nullptr)
+        if (!udev)
             throw jtag_exception("cannot open USB device");
 
-        usb_read_thread = std::thread(usb_read_handler, nullptr);
-        usb_write_thread = std::thread( usb_write_handler, nullptr);
+        usb_read_thread = std::thread(usb_read_handler);
+        usb_write_thread = std::thread( usb_write_handler);
         if (event_ep != 0)
-            usb_event_thread = std::thread( usb_event_handler, nullptr);
+            usb_event_thread = std::thread( usb_event_handler);
 
         atexit(cleanup_usb);
     }
