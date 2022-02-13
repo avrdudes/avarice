@@ -66,7 +66,7 @@ constexpr unsigned short USB_VENDOR_ATMEL = 1003;
 #define USBDEV_INTERRUPT_EP_READ_EDBG 0X82
 #define USBDEV_MAX_XFER_EDBG 512
 
-#define MAX_MESSAGE 512
+constexpr size_t MAX_USB_MESSAGE = 512;
 
 #ifdef HAVE_LIBHIDAPI
 struct hid_thread_data {
@@ -404,8 +404,8 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 /* USB writer thread */
 static void usb_write_handler() {
     while (true) {
-        char buf[MAX_MESSAGE];
-        int rv = static_cast<int>(read(pype[0], buf, MAX_MESSAGE));
+        char buf[MAX_USB_MESSAGE];
+        int rv = static_cast<int>(read(pype[0], buf, MAX_USB_MESSAGE));
         if (rv > 0) {
             int offset = 0;
 
@@ -434,7 +434,7 @@ static void usb_write_handler() {
 /* USB event reader thread (JTAGICE3 only) */
 static void usb_read_handler() {
     while (true) {
-        char buf[MAX_MESSAGE + sizeof(unsigned int)];
+        char buf[MAX_USB_MESSAGE + sizeof(unsigned int)];
         int rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int), max_xfer, 0);
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
@@ -452,7 +452,7 @@ static void usb_read_handler() {
 
             /* OK, if there is more to read, do so. */
             while (needmore) {
-                int maxlen = MAX_MESSAGE - pkt_len;
+                int maxlen = MAX_USB_MESSAGE - pkt_len;
                 if (maxlen > max_xfer)
                     maxlen = max_xfer;
                 rv =
@@ -473,7 +473,7 @@ static void usb_read_handler() {
 
                 needmore = rv == max_xfer;
                 pkt_len += rv;
-                if (pkt_len == MAX_MESSAGE) {
+                if (pkt_len == MAX_USB_MESSAGE) {
                     /* should not happen */
                     debugOut( "Message too big in USB receive.\n");
                     break;
@@ -562,7 +562,7 @@ static void hid_handler(hid_thread_data const &hdata) {
     while (true) {
         // One additional byte is for libhidapi to tell we don't use HID
         // report numbers.  Four bytes are wrapping overhead.
-        unsigned char buf[MAX_MESSAGE + 5];
+        unsigned char buf[MAX_USB_MESSAGE + 5];
 
         // Poll for data from main thread.
         // Wait for at most 50 ms, so we can regularly
@@ -597,7 +597,7 @@ static void hid_handler(hid_thread_data const &hdata) {
                 // nothing returned
                 continue;
             unsigned int len = buf[1] * 256 + buf[2];
-            if (len > MAX_MESSAGE - 10) {
+            if (len > MAX_USB_MESSAGE - 10) {
                 debugOut("Querying for event: insane event size %u\n", len);
                 continue;
             }
@@ -622,7 +622,7 @@ static void hid_handler(hid_thread_data const &hdata) {
         if (fds[0].revents != 0) {
             // something is in the pipe there, presumably a command
             // read to offset 5 to leave room for the wrapper
-            if ((rv = read(pype[0], buf + 5, MAX_MESSAGE)) > 0) {
+            if ((rv = read(pype[0], buf + 5, MAX_USB_MESSAGE)) > 0) {
                 if (rv < 6) {
                     debugOut("Reading command from AVaRICE failed\n");
                     continue;
@@ -643,7 +643,7 @@ static void hid_handler(hid_thread_data const &hdata) {
                     buf[0] = 0; // libhidapi: no report ID
                     buf[1] = EDBG_VENDOR_AVR_CMD;
                     buf[2] = (thispacket << 4) | npackets;
-                    unsigned int cursize =
+                    const unsigned int cursize =
                         (len > hdata.max_pkt_size - 4) ? hdata.max_pkt_size - 4 : len;
                     buf[3] = cursize >> 8;
                     buf[4] = cursize;
@@ -699,7 +699,7 @@ static void hid_handler(hid_thread_data const &hdata) {
                         goto done;
                     }
                     totlength += packet_len;
-                    if (totlength > MAX_MESSAGE) {
+                    if (totlength > MAX_USB_MESSAGE) {
                         debugOut("reply size too large: %u\n", totlength);
                         goto done;
                     }
