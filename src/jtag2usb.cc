@@ -39,11 +39,7 @@
 #include <poll.h>
 #endif
 
-#include <pthread.h>
-
-#ifdef __FreeBSD__
-#include <pthread_np.h>
-#endif
+#include <thread>
 
 #include "jtag.h"
 
@@ -84,11 +80,13 @@ using usb_dev_t = usb_dev_handle;
 static usb_dev_t *udev = nullptr;
 #ifdef HAVE_LIBHIDAPI
 static hid_device *hdev = nullptr;
-static pthread_t htid;
+static std::thread usb_hid_thread;
 #endif
 static int pype[2];
 
-static pthread_t rtid, wtid, etid;
+static std::thread usb_read_thread;
+static std::thread usb_write_thread;
+static std::thread usb_event_thread;
 static int usb_interface;
 
 /*
@@ -403,7 +401,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
 
 /* USB writer thread */
-static void *usb_thread_write(void *) {
+static void *usb_write_handler(void *) {
     while (true) {
         char buf[MAX_MESSAGE];
         auto rv = read(pype[0], buf, MAX_MESSAGE);
@@ -438,7 +436,7 @@ static void *usb_thread_write(void *) {
 }
 
 /* USB event reader thread (JTAGICE3 only) */
-static void *usb_thread_read(void *) {
+static void *usb_read_handler(void *) {
     while (true) {
         char buf[MAX_MESSAGE + sizeof(unsigned int)];
         int rv = usb_bulk_read(udev, read_ep, buf + sizeof(unsigned int), max_xfer, 0);
@@ -508,7 +506,7 @@ static void *usb_thread_read(void *) {
 }
 
 /* USB reader thread */
-static void *usb_thread_event(void *) {
+static void *usb_event_handler(void *) {
     while (true) {
         /*
          * Events are shorter than regular data packets, so no
@@ -558,7 +556,7 @@ void Jtag::resetUSB() {
 }
 
 #ifdef HAVE_LIBHIDAPI
-static void *hid_thread(void *data) {
+static void *hid_handler(void *data) {
     auto hdata = static_cast<struct hid_thread_data *>(data);
 
     pollfd fds[1];
@@ -750,10 +748,7 @@ void Jtag::openUSB(const char *jtagDeviceName) {
         if (hdev == nullptr)
             throw jtag_exception("cannot open HID");
 
-        pthread_create(&htid, nullptr, hid_thread, &hdata);
-#ifdef __FreeBSD__
-        pthread_set_name_np(htid, "HID thread");
-#endif
+        usb_hid_thread = std::thread(hid_handler, &hdata);
         atexit(cleanup_hid);
 #else // !HAVE_LIBHIDAPI
         throw jtag_exception("EDBG/CMSIS-DAP devices require libhidapi support");
@@ -763,16 +758,10 @@ void Jtag::openUSB(const char *jtagDeviceName) {
         if (udev == nullptr)
             throw jtag_exception("cannot open USB device");
 
-        pthread_create(&rtid, nullptr, usb_thread_read, nullptr);
-        pthread_create(&wtid, nullptr, usb_thread_write, nullptr);
+        usb_read_thread = std::thread(usb_read_handler, nullptr);
+        usb_write_thread = std::thread( usb_write_handler, nullptr);
         if (event_ep != 0)
-            pthread_create(&etid, nullptr, usb_thread_event, nullptr);
-#ifdef __FreeBSD__
-        pthread_set_name_np(rtid, "USB reader thread");
-        pthread_set_name_np(wtid, "USB writer thread");
-        if (event_ep != 0)
-            pthread_set_name_np(etid, "USB event thread");
-#endif
+            usb_event_thread = std::thread( usb_event_handler, nullptr);
 
         atexit(cleanup_usb);
     }
