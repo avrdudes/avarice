@@ -200,7 +200,7 @@ void jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt)
       // The bits do not fully match that description but to
       // a good degree.
       case (SCOPE_AVR << 8) | EVT3_BREAK:
-          if ((!is_xmega && evtbuf[7] != 0) ||
+          if ((!is_xmega && (evtbuf[6] != 0 || evtbuf[7] != 0)) ||
               (is_xmega && evtbuf[7] != 0x40))
           {
               // program breakpoint
