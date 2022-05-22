@@ -21,8 +21,6 @@
 
 #include "avarice.h"
 
-#ifdef HAVE_LIBUSB
-
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
@@ -33,10 +31,8 @@
 
 #include <usb.h>
 
-#ifdef HAVE_LIBHIDAPI
 #include <hidapi/hidapi.h>
 #include <poll.h>
-#endif
 
 #include <thread>
 
@@ -68,20 +64,16 @@ constexpr unsigned short USB_VENDOR_ATMEL = 1003;
 
 constexpr size_t MAX_USB_MESSAGE = 512;
 
-#ifdef HAVE_LIBHIDAPI
 struct hid_thread_data {
     unsigned int max_pkt_size;
 };
-#endif
 
 int read_ep, write_ep, event_ep, max_xfer;
 using usb_dev_t = usb_dev_handle;
 
 usb_dev_t *udev = nullptr;
-#ifdef HAVE_LIBHIDAPI
 hid_device *hdev = nullptr;
 std::thread usb_hid_thread;
-#endif
 int pype[2];
 
 std::thread usb_read_thread;
@@ -265,7 +257,6 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
     return pdev;
 }
 
-#ifdef HAVE_LIBHIDAPI
 /*
  * Open HID, used for CMSIS-DAP (EDBG) devices
  */
@@ -398,7 +389,6 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
     return pdev;
 }
-#endif // HAVE_LIBHIDAPI
 
 
 /* USB writer thread */
@@ -551,7 +541,6 @@ void Jtag::resetUSB() {
     }
 }
 
-#ifdef HAVE_LIBHIDAPI
 static void hid_handler(hid_thread_data const &hdata) {
     pollfd fds[1];
     fds[0].fd = pype[0];
@@ -724,7 +713,6 @@ static void cleanup_hid() {
     hid_close(hdev);
     hdev = nullptr;
 }
-#endif
 
 static void cleanup_usb() {
     usb_release_interface(udev, usb_interface_id);
@@ -736,7 +724,6 @@ void Jtag::openUSB(const char *jtagDeviceName) {
         throw jtag_exception("cannot create pipe");
 
     if (emu_type == Emulator::EDBG) {
-#ifdef HAVE_LIBHIDAPI
         static hid_thread_data hdata;
         hdev = openhid(jtagDeviceName, hdata.max_pkt_size = 512);
         if (!hdev)
@@ -744,9 +731,6 @@ void Jtag::openUSB(const char *jtagDeviceName) {
 
         usb_hid_thread = std::thread(hid_handler, hdata);
         atexit(cleanup_hid);
-#else // !HAVE_LIBHIDAPI
-        throw jtag_exception("EDBG/CMSIS-DAP devices require libhidapi support");
-#endif
     } else {
         udev = opendev(jtagDeviceName, emu_type);
         if (!udev)
@@ -762,5 +746,3 @@ void Jtag::openUSB(const char *jtagDeviceName) {
 
     jtagBox = pype[1];
 }
-
-#endif /* HAVE_LIBUSB */

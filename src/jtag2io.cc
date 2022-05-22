@@ -350,13 +350,11 @@ void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&respons
             code = response[0];
         }
 
-#ifdef HAVE_LIBUSB
         if (tryCount == 4 && responseSize == 0 && is_usb) {
             /* signal the USB daemon to reset the EPs */
             debugOut("Resetting EPs...\n");
             resetUSB();
         }
-#endif
     }
     if (sizeseen > 0)
         throw jtag2_io_exception(code);

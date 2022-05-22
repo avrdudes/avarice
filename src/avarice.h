@@ -24,8 +24,6 @@
 #include <cstdarg>
 #include <cstddef>
 
-#include "autoconf.h"
-
 using uchar = unsigned char;
 
 /** true iff --debug option specified **/

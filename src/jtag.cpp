@@ -56,12 +56,8 @@ Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view exp
     : emu_type(emul), apply_nSRST(nsrst), is_xmega(is_xmega), expected_dev(expected_dev) {
 
     if (strncmp(jtagDeviceName, "usb", 3) == 0) {
-#ifdef HAVE_LIBUSB
         is_usb = true;
         openUSB(jtagDeviceName);
-#else
-        throw jtag_exception("avarice has not been compiled with libusb support\n");
-#endif
     } else {
         // Open modem device for reading and writing and not as controlling
         // tty because we don't want to get killed if linenoise sends
