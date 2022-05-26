@@ -224,7 +224,7 @@ struct jtag_device_def_type {
                                       // Xmega devices in new (7+) firmware
                                       // JTAGICE mkII and AVR Dragon
 
-    constexpr jtag_device_def_type(const char *dev_name, unsigned int device_id, unsigned int flash_page_size,
+    jtag_device_def_type(const char *dev_name, unsigned int device_id, unsigned int flash_page_size,
                          unsigned int flash_page_count, unsigned char eeprom_page_size,
                          unsigned int eeprom_page_count, unsigned int vectors_end, Tweaks tweaks,
                          const gdb_io_reg_def_type *io_reg_defs, unsigned int fusemap,
