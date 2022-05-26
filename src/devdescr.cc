@@ -35,20 +35,24 @@ const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, st
     const jtag_device_def_type *found_id = nullptr;
     if (id) {
         statusOut("Reported device ID: 0x%0X\n", id);
-        found_id = *std::find_if(jtag_device_def_type::devices.cbegin(),
+        const auto found_id_it = std::find_if(jtag_device_def_type::devices.cbegin(),
                                 jtag_device_def_type::devices.cend(),
                                 [&](const auto *dev) { return dev->device_id == id; });
-        if( found_id == *jtag_device_def_type::devices.cend() )
+        if( found_id_it != jtag_device_def_type::devices.cend() )
+            found_id = *found_id_it;
+        else
             found_id = nullptr;
     }
 
     const jtag_device_def_type *found_name = nullptr;
     if (!lowercase_name.empty()) {
         debugOut("Looking for device: %s\n", lowercase_name.data());
-        found_name = *std::find_if(jtag_device_def_type::devices.cbegin(),
+        const auto found_name_it = std::find_if(jtag_device_def_type::devices.cbegin(),
                                   jtag_device_def_type::devices.cend(),
                                   [&](const auto *dev) { return dev->name == lowercase_name; });
-        if( found_name == *jtag_device_def_type::devices.cend() )
+        if( found_name_it != jtag_device_def_type::devices.cend() )
+            found_name = *found_name_it;
+        else
             found_name = nullptr;
     }
 
@@ -81,10 +85,10 @@ void jtag_device_def_type::DumpAll() {
         const unsigned eesize = dev->eeprom_page_size * dev->eeprom_page_count;
 
         if (eesize != 0 && eesize < 1024)
-            fprintf(stderr, "%-17s      0x%04X  %4d KiB  %4.1f KiB\n", dev->name, dev->device_id,
+            fprintf(stderr, "%-17s      0x%04X  %4u KiB  %4.1f KiB\n", dev->name, dev->device_id,
                     dev->flash_page_size * dev->flash_page_count / 1024, eesize / 1024.0);
         else
-            fprintf(stderr, "%-17s      0x%04X  %4d KiB  %4d KiB\n", dev->name, dev->device_id,
+            fprintf(stderr, "%-17s      0x%04X  %4u KiB  %4u KiB\n", dev->name, dev->device_id,
                     dev->flash_page_size * dev->flash_page_count / 1024, eesize / 1024);
     }
 }

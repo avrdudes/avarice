@@ -111,6 +111,16 @@ class jtag1 : public Jtag {
         POWER = 'I',
     };
 
+    /*
+     * Max message size we are willing to accept.  Prevents us from trying
+     * to allocate too much VM in case we received a nonsensical packet
+     * length.  We have to allocate the buffer as soon as we've got the
+     * length information (and thus have to trust that information by that
+     * time at first), as the final CRC check can only be done once the
+     * entire packet came it.
+     */
+    static inline constexpr size_t MAX_MESSAGE = 100000;
+
   private:
     /** Decode 3-byte big-endian address **/
     static unsigned long decodeAddress(const uchar *buf) { return buf[0] << 16 | buf[1] << 8 | buf[2]; };

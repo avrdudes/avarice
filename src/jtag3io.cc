@@ -135,12 +135,12 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         debugOut("read() error %d\n", rv);
         throw jtag_exception("read error");
     }
-    if (amnt <= 0 || amnt > MAX_MESSAGE_SIZE_JTAGICE3) {
+    if (amnt <= 0 || amnt > MAX_MESSAGE) {
         debugOut("unexpected message size from pipe: %d\n", amnt);
         return 0;
     }
 
-    uchar tempbuf[MAX_MESSAGE_SIZE_JTAGICE3];
+    uchar tempbuf[MAX_MESSAGE];
     rv = timeout_read(tempbuf, amnt, JTAG3_PIPE_TIMEOUT);
     if (rv > 0) {
         bool istoken = tempbuf[0] == TOKEN_EVT3;

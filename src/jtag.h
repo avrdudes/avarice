@@ -249,6 +249,7 @@ struct jtag_device_def_type {
     static void DumpAll();
 };
 
+
 // various enums
 enum {
     // Constants common to both mkI and mkII
@@ -356,14 +357,6 @@ enum {
     // a received event into this so the upper layers can tell an event
     // message apart from a normal response message.
     TOKEN_EVT3 = 'T',
-
-    // Max message size we are willing to accept.  Prevents us from trying
-    // to allocate too much VM in case we received a nonsensical packet
-    // length.  We have to allocate the buffer as soon as we've got the
-    // length information (and thus have to trust that information by that
-    // time at first), as the final CRC check can only be done once the
-    // entire packet came it.
-    MAX_MESSAGE = 100000,
 
     // ICE command codes
     CMND_CHIP_ERASE = 0x13,

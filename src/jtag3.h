@@ -167,8 +167,6 @@ enum jtag3consts {
     XMEGA_ERASE_BOOT_PAGE = 0x05,
     XMEGA_ERASE_EEPROM_PAGE = 0x06,
     XMEGA_ERASE_USERSIG = 0x07,
-
-    MAX_MESSAGE_SIZE_JTAGICE3 = 512,
 };
 
 // JTAGICE3 megaAVR parameter structure
@@ -225,6 +223,8 @@ class Jtag3 : public Jtag {
     unsigned char *cached_event = nullptr;
 
   public:
+    static inline constexpr size_t MAX_MESSAGE = 512;
+
     Jtag3(Emulator emul, const char *dev, std::string_view expected_dev, bool nsrst, bool xmega, Debugproto prot)
         : Jtag(emul, dev, expected_dev, nsrst, xmega), proto(prot) {};
     ~Jtag3() override;

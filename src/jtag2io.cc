@@ -143,9 +143,11 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         sCSUM2,
         sDONE
     } state = sSTART;
-    unsigned int msglen = 0, l = 0;
+    size_t msglen = 0;
+    unsigned int l = 0;
     unsigned int headeridx = 0;
-    unsigned char c, header[8];
+    unsigned char c = 0;
+    unsigned char header[8];
     unsigned short r_seqno = 0;
     unsigned short checksum = 0;
     std::unique_ptr<uchar[]> buf;
@@ -154,7 +156,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
 
     while (state != sDONE) {
         if (state == sDATA) {
-            debugOut("sDATA: reading %d bytes\n", msglen);
+            debugOut("sDATA: reading %u bytes\n", msglen);
             const auto rv = timeout_read(buf.get() + 8, msglen, JTAG_RESPONSE_TIMEOUT);
             debugOutBufHex("read: ", buf.get() + 8, msglen);
             if (rv == 0)
@@ -405,6 +407,7 @@ void Jtag2::changeBitRate(int newBitRate) {
         jtagrate = PAR_BAUD_57600;
         break;
     case 115200:
+    default:
         jtagrate = PAR_BAUD_115200;
         break;
     }
@@ -421,9 +424,9 @@ void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
             return reinterpret_cast<const uchar*>(&dev.jtag2_dev_desc2);
     }();
 
-    uchar *response;
-    int respSize;
     try {
+        uchar *response;
+        int respSize;
         doJtagCommand(dev_desc, devdescrlen, response, respSize);
     } catch (jtag_exception &e) {
         debugOut("JTAG ICE: Failed to set device description: %s\n", e.what());

@@ -57,16 +57,6 @@
 #define MESSAGE_START 0x1b
 #define TOKEN 0x0e
 
-/*
- * Max message size we are willing to accept.  Prevents us from trying
- * to allocate too much VM in case we received a nonsensical packet
- * length.  We have to allocate the buffer as soon as we've got the
- * length information (and thus have to trust that information by that
- * time at first), as the final CRC check can only be done once the
- * entire packet came it.
- */
-#define MAX_MESSAGE 100000
-
 /* ICE command codes */
 #define CMND_CHIP_ERASE 0x13
 #define CMND_CLEAR_EVENTS 0x22
@@ -250,6 +240,16 @@ class Jtag2 : public Jtag {
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
 
   public:
+    /*
+     * Max message size we are willing to accept.  Prevents us from trying
+     * to allocate too much VM in case we received a nonsensical packet
+     * length.  We have to allocate the buffer as soon as we've got the
+     * length information (and thus have to trust that information by that
+     * time at first), as the final CRC check can only be done once the
+     * entire packet came it.
+      */
+    static inline constexpr size_t MAX_MESSAGE = 100000;
+
     Jtag2(Emulator emul, const char *dev, std::string_view expected_dev, Debugproto prot, bool nsrst, bool xmega)
         : Jtag(emul, dev, expected_dev, nsrst, xmega), proto(prot) {};
     ~Jtag2() override;
