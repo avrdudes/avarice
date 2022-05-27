@@ -12,8 +12,6 @@ add_executable(avarice
         src/remote.cc
         src/utils.cc
         src/crc16.c
-        src/gnu_getopt1.c
-        src/gnu_getopt.c
         src/jtag1bp.cc
         src/jtag1io.cc
         src/jtag1misc.cc
@@ -40,8 +38,9 @@ add_executable(avarice
 target_compile_features(avarice PRIVATE cxx_std_17)
 target_compile_definitions(avarice PRIVATE PACKAGE_VERSION=\"${PROJECT_VERSION}\")
 
+find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(LibUSB REQUIRED)
 find_package(HIDAPI REQUIRED)
 find_package(Threads REQUIRED)
-target_link_libraries(avarice PRIVATE ${LibUSB_LIBRARIES} HIDAPI::hidapi Threads::Threads)
-target_include_directories(avarice PRIVATE ${LibUSB_INCLUDE_DIRS})
+target_link_libraries(avarice PRIVATE  ${Boost_LIBRARIES} ${LibUSB_LIBRARIES} HIDAPI::hidapi Threads::Threads)
+target_include_directories(avarice PRIVATE ${Boost_INCLUDE_DIRS} ${LibUSB_INCLUDE_DIRS})

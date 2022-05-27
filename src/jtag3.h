@@ -235,7 +235,7 @@ class Jtag3 : public Jtag {
     void deleteAllBreakpoints() override;
     void updateBreakpoints() override;
     bool codeBreakpointAt(unsigned int address) override;
-    void parseEvents(const char *) override;
+    void parseEvents(const char *) override {};
 
     void enableProgramming() override;
     void disableProgramming() override;

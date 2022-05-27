@@ -154,7 +154,9 @@ class jtag1 : public Jtag {
     bool addBreakpoint(unsigned int address, BreakpointType type, unsigned int length) override;
     void updateBreakpoints() override;
     bool codeBreakpointAt(unsigned int address) override;
-    void parseEvents(const char *) override;
+
+    // current no event name parsing in mkI
+    void parseEvents(const char *) override {};
 
     void enableProgramming() override;
     void disableProgramming() override;

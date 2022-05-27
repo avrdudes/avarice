@@ -76,10 +76,6 @@ void jtag1::resumeProgram() { doSimpleJtagCommand('G', 0); }
 
 void jtag1::jtagSingleStep() { doSimpleJtagCommand('1', 1); }
 
-void jtag1::parseEvents(const char *) {
-    // current no event name parsing in mkI
-}
-
 bool jtag1::jtagContinue() {
     updateBreakpoints(); // download new bp configuration
 

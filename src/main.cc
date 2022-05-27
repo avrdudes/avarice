@@ -22,6 +22,9 @@
  * This file contains the main() & support for avrjtagd.
  */
 
+#include <iostream>
+#include <string>
+
 #include <arpa/inet.h>
 #include <cctype>
 #include <cerrno>
@@ -32,19 +35,17 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-#include <algorithm>
-#include <string>
-
 #include "avarice.h"
-#include "gnu_getopt.h"
 #include "jtag.h"
 #include "jtag1.h"
 #include "jtag2.h"
 #include "jtag3.h"
 #include "remote.h"
+
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
 
 bool ignoreInterrupts;
 
@@ -134,261 +135,124 @@ static unsigned long parseJtagBitrate(const char *val) {
     throw jtag_exception();
 }
 
-static void usage(const char *progname) {
-    printf( "Usage: %s [OPTION]... [[HOST_NAME]:PORT]\n\n", progname);
-    printf( "Options:\n");
-    printf( "  -h, --help                  Print this message.\n");
-    printf( "  -1, --mkI                   Connect to JTAG ICE mkI (default)\n");
-    printf( "  -2, --mkII                  Connect to JTAG ICE mkII\n");
-    printf( "  -3, --jtag3                 Connect to JTAGICE3 (Firmware 2.x)\n");
-    printf( "  -4, --edbg                  Atmel-ICE, or JTAGICE3 (firmware 3.x), or EDBG "
-                    "Integrated Debugger\n");
-    printf(
-            "  -B, --jtag-bitrate <rate>   Set the bitrate that the JTAG box communicates\n"
-            "                                with the avr target device. This must be less\n"
-            "                                than 1/4 of the frequency of the target. Valid\n"
-            "                                values are 1000/500/250/125 kHz (mkI),\n"
-            "                                or 22 through 6400 kHz (mkII).\n"
-            "                                (default: 250 kHz)\n");
-    printf( "  -C, --capture               Capture running program.\n"
-                    "                                Note: debugging must have been enabled prior\n"
-                    "                                to starting the program. (e.g., by running\n"
-                    "                                avarice earlier)\n");
-    printf( "  -c, --daisy-chain <ub,ua,bb,ba> Daisy chain settings:\n"
-                    "                                <units before, units after,\n"
-                    "                                bits before, bits after>\n");
-    printf( "  -D, --detach                Detach once synced with JTAG ICE\n");
-    printf( "  -d, --debug                 Enable printing of debug information.\n");
-    printf( "  -e, --erase                 Erase target.\n");
-    printf( "  -E, --event <eventlist>     List of events that do not interrupt.\n"
-                    "                                JTAG ICE mkII and AVR Dragon only.\n"
-                    "                                Default is "
-                    "\"none,run,target_power_on,target_sleep,target_wakeup\"\n");
-    printf(
-            "  -g, --dragon                Connect to an AVR Dragon rather than a JTAG ICE.\n"
-            "                                This implies --mkII, but might be required in\n"
-            "                                addition to --debugwire when debugWire is to\n"
-            "                                be used.\n");
-    printf( "  -I, --ignore-intr           Automatically step over interrupts.\n"
-                    "                                Note: EXPERIMENTAL. Can not currently handle\n"
-                    "                                devices fused for compatibility.\n");
-    printf(
-            "  -j, --jtag <devname>        Port attached to JTAG box (default: /dev/avrjtag).\n");
-    printf( "  -k, --known-devices         Print a list of known devices.\n");
-    printf( "  -L, --write-lockbits <ll>   Write lock bits.\n");
-    printf( "  -l, --read-lockbits         Read lock bits.\n");
-    printf( "  -P, --part <name>           Target device name (e.g."
-                    " atmega16)\n\n");
-    printf( "  -r, --read-fuses            Read fuses bytes.\n");
-    printf( "  -R, --reset-srst            External reset through nSRST signal.\n");
-    printf( "  -V, --version               Print version information.\n");
-    printf( "  -w, --debugwire             For the JTAG ICE mkII, connect to the target\n"
-                    "                                using debugWire protocol rather than JTAG.\n");
-    printf( "  -W, --write-fuses <eehhll>  Write fuses bytes.\n");
-    printf( "  -x, --xmega                 AVR part is an ATxmega device, using JTAG.\n");
-    printf( "  -X, --pdi                   AVR part is an ATxmega device, using PDI.\n");
-    printf( "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
-                    "\":PORT\" is required to put avarice into gdb server mode.\n\n");
-    printf( "Example usage:\n");
-    printf( "\t%s --jtag /dev/ttyS0 :4242\n", progname);
-    printf( "\t%s --dragon :4242\n", progname);
-    printf( "\n");
-}
-
-static void knownParts() {
-    printf( "List of known AVR devices:\n\n");
-    jtag_device_def_type::DumpAll();
-}
-
-static struct option long_opts[] = {
-    /* name,                 has_arg, flag,   val */
-    {"mkI", 0, nullptr, '1'},           {"mkII", 0, nullptr, '2'},
-    {"jtag3", 0, nullptr, '3'},         {"edbg", 0, nullptr, '4'},
-    {"jtag-bitrate", 1, nullptr, 'B'},  {"capture", 0, nullptr, 'C'},
-    {"daisy-chain", 1, nullptr, 'c'},   {"detach", 0, nullptr, 'D'},
-    {"debug", 0, nullptr, 'd'},         {"erase", 0, nullptr, 'e'},
-    {"event", 1, nullptr, 'E'},         {"file", 1, nullptr, 'f'},
-    {"dragon", 0, nullptr, 'g'},        {"help", 0, nullptr, 'h'},
-    {"ignore-intr", 0, nullptr, 'I'},   {"jtag", 1, nullptr, 'j'},
-    {"known-devices", 0, nullptr, 'k'}, {"write-lockbits", 1, nullptr, 'L'},
-    {"read-lockbits", 0, nullptr, 'l'}, {"part", 1, nullptr, 'P'},
-    {"program", 0, nullptr, 'p'},       {"reset-srst", 0, nullptr, 'R'},
-    {"read-fuses", 0, nullptr, 'r'},    {"version", 0, nullptr, 'V'},
-    {"verify", 0, nullptr, 'v'},        {"debugwire", 0, nullptr, 'w'},
-    {"write-fuses", 1, nullptr, 'W'},   {"xmega", 0, nullptr, 'x'},
-    {"pdi", 0, nullptr, 'X'},           {nullptr, 0, nullptr, 0}};
-
 std::unique_ptr<Jtag> theJtagICE;
 
 int main(int argc, char **argv) {
-    int sock;
-    sockaddr_in clientname;
-    sockaddr_in name;
-    char *inFileName = nullptr;
-    const char *jtagDeviceName = nullptr;
-    const char *eventlist = "none,run,target_power_on,target_sleep,target_wakeup";
-    unsigned long jtagBitrate = 0;
-    const char *hostName = "0.0.0.0"; /* INADDR_ANY */
-    int hostPortNumber = 0;
-    bool erase = false;
-    bool program = false;
-    bool readFuses = false;
-    bool writeFuses = false;
-    const char *fuses = nullptr;
-    bool readLockBits = false;
-    bool writeLockBits = false;
-    bool gdbServerMode = false;
-    char *lockBits = nullptr;
-    bool detach = false;
-    bool capture = false;
-    bool verify = false;
-    bool apply_nsrst = false;
-    bool is_xmega = false;
-    const char *progname = argv[0];
-    Emulator devicetype = Emulator::JTAGICE; // default to mkI devicetype
-    Debugproto proto = Debugproto::JTAG;
-    int option_index;
-    DaisyChainInfo daisy_chain_info{};
-
     statusOut("AVaRICE version %s, %s %s\n\n", PACKAGE_VERSION, __DATE__, __TIME__);
-
-    std::string_view device_name;
-
-    opterr = 0; /* disable default error message */
 
     int rv = 0; // return value from main()
 
     try {
-        while (true) {
-            int c = getopt_long(argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX", long_opts,
-                                &option_index);
-            if (c == -1)
-                break; /* no more options */
+        // printf( "Example usage:\n");
+        // printf( "\t%s --jtag /dev/ttyS0 :4242\n", progname);
+        // printf( "\t%s --dragon :4242\n", progname);
 
-            switch (c) {
-            case 'h':
-            case '?':
-                usage(progname);
-                exit(0);
-                break;
-            case 'k':
-                knownParts();
-                exit(1);
-                break;
-            case '1':
-                devicetype = Emulator::JTAGICE;
-                break;
-            case '2':
-                devicetype = Emulator::JTAGICE2;
-                break;
-            case '3':
-                devicetype = Emulator::JTAGICE3;
-                break;
-            case '4':
-                devicetype = Emulator::EDBG;
-                break;
-            case 'g':
-                devicetype = Emulator::DRAGON;
-                break;
-            case 'B':
-                jtagBitrate = parseJtagBitrate(optarg);
-                break;
-            case 'C':
-                capture = true;
-                break;
-            case 'c': {
-                unsigned int units_before = 0;
-                unsigned int units_after = 0;
-                unsigned int bits_before = 0;
-                unsigned int bits_after = 0;
+        // TODO: add '?'
 
-                if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
-                           &bits_after) != 4)
-                    usage(progname);
+        po::options_description desc("Allowed options");
+        // clang-format off
+        desc.add_options()
+            ("help,h", "produce help message")
+            ("version,V", "Print version information.")
+            ("mkI,1", "Connect to JTAG ICE mkI (default)")
+            ("mkII,2", "Connect to JTAG ICE mkII")
+            ("jtag3,3", "Connect to JTAGICE3 (Firmware 2.x)")
+            ("edbg,4", "Atmel-ICE, or JTAGICE3 (firmware 3.x),"
+                                         "or EDBG Integrated Debugger")
+            ("dragon,g", "Connect to an AVR Dragon rather than a JTAG ICE."
+                "This implies --mkII, but might be required in"
+                "addition to --debugwire when debugWire is to be used.")
+            ("known-devices,k", "Print a list of known devices")
+            ("xmega,x", "AVR part is an ATxmega device, using JTAG")
+            ("pdi,X", "AVR part is an ATxmega device, using PDI.")
+            ("debug,d", "Enable printing of debug information.")
+            ("erase,e", "Erase target")
+            ("detach,D", "Detach once synced with JTAG ICE")
+            ("ignore-intr,I", "Automatically step over interrupts."
+                "Note: EXPERIMENTAL. Can not currently handle devices fused for compatibility.")
+            ("read-fuses,r", "Read fuses bytes.")
+            ("capture,C", "Capture running program."
+                "Note: debugging must have been enabled prior"
+                "to starting the program. (e.g., by running avarice earlier)")
+            ("debugwire,w", "For the JTAG ICE mkII, connect to the target"
+                "using debugWire protocol rather than JTAG.")
+            ( "read-lockbits,l", "Read lock bits")
+            ( "reset-srst,R", "External reset through nSRST signal.")
+            ("jtag,j", po::value<std::string>(), "Port attached to JTAG box")
+            ( "part,P", po::value<std::string>(), "Target device name (e.g. atmega16)")
+            ("jtag-bitrate,B", po::value<std::string>()->default_value("250 kHz"),
+                "Set the bitrate that the JTAG box communicates with the avr target device."
+                "This must be less than 1/4 of the frequency of the target. Valid"
+                "values are 1000/500/250/125 kHz (mkI), or 22 through 6400 kHz (mkII).")
+            ("daisy-chain,c", po::value<std::string>(), "<ub,ua,bb,ba> Daisy chain settings:"
+                "<units before, units after,bits before, bits after>")
+            ("write-lockbits,L", po::value<std::string>(), "<ll> Write lock bits.")
+            ("write-fuses,W", po::value<std::string>(), "<eehhll>  Write fuses bytes.")
+            ("event,E", po::value<std::string>()->default_value("none,run,target_power_on,target_sleep,target_wakeup"),
+                "<eventlist>  List of events that do not interrupt. JTAG ICE mkII and AVR Dragon only.")
+            ("server", po::value<std::string>(), "[[HOST_NAME]:PORT]\n"
+                "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
+                ":PORT is required to put avarice into gdb server mode.");
+        // clang-format on
 
-                daisy_chain_info = DaisyChainInfo{
-                    static_cast<uchar>(units_before), static_cast<uchar>(units_after),
-                    static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
-                if (!daisy_chain_info.IsValid()) {
-                    fprintf(stderr,
-                            "%s: daisy-chain parameters out of range"
-                            " (max. 32 bits before/after)\n",
-                            progname);
-                    exit(1);
-                }
-                break;
-            }
-            case 'D':
-                detach = true;
-                break;
-            case 'd':
-                debugMode = true;
-                break;
-            case 'e':
-                erase = true;
-                break;
-            case 'E':
-                eventlist = optarg;
-                break;
-            case 'f':
-                inFileName = optarg;
-                break;
-            case 'I':
-                ignoreInterrupts = true;
-                break;
-            case 'j':
-                jtagDeviceName = optarg;
-                break;
-            case 'L':
-                lockBits = optarg;
-                writeLockBits = true;
-                break;
-            case 'l':
-                readLockBits = true;
-                break;
-            case 'P':
-                device_name = optarg;
-                break;
-            case 'p':
-                program = true;
-                break;
-            case 'R':
-                apply_nsrst = true;
-                break;
-            case 'r':
-                readFuses = true;
-                break;
-            case 'V':
-                exit(0);
-            case 'v':
-                verify = true;
-                break;
-            case 'w':
-                proto = Debugproto::DW;
-                break;
-            case 'W':
-                fuses = optarg;
-                writeFuses = true;
-                break;
-            case 'x':
-                is_xmega = true;
-                break;
-            case 'X':
-                is_xmega = true;
-                proto = Debugproto::PDI;
-                break;
-            default:
-                fprintf(stderr, "getop() did something screwey");
-                exit(1);
-            }
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("help")) {
+            std::cout << desc << "\n";
+            exit(0);
+        }
+        if (vm.count("version")) {
+            // We already print the version at the start of the program
+            exit(0);
+        }
+        if (vm.count("known-devices")) {
+            std::cout << "List of known AVR devices:\n\n";
+            jtag_device_def_type::DumpAll();
+            exit(1);
         }
 
-        if ((optind + 1) == argc) {
+        Debugproto proto = Debugproto::JTAG;
+        bool is_xmega = false;
+        if (vm.count("xmega")) {
+            is_xmega = true;
+        }
+        if (vm.count("pdi")) {
+            is_xmega = true;
+            proto = Debugproto::PDI;
+        }
+        if( vm.count("debugwire")) {
+            proto = Debugproto::DW;
+        }
+
+        const Emulator devicetype = [&vm] {
+            if (vm.count("mkII")) {
+                return Emulator::JTAGICE2;
+            } else if( vm.count("jtag3")) {
+                return Emulator::JTAGICE3;
+            } else if( vm.count("edbg")) {
+                return Emulator::EDBG;
+            } else if( vm.count("dragon")) {
+                return Emulator::DRAGON;
+            } else {
+                return Emulator::JTAGICE; // default to mkI devicetype
+            }
+        }();
+
+        if( vm.count("ignore-intr")) {
+            ignoreInterrupts = true;
+        }
+
+        const char *hostName = "0.0.0.0"; /* INADDR_ANY */
+        int hostPortNumber = 0;
+        bool gdbServerMode = false;
+        if( vm.count("server")) {
             /* Looks like user has given [[host]:port], so parse out the host and
                port number then enable gdb server mode. */
 
             size_t i;
-            const char *arg = argv[optind];
+            const char* arg = vm["server"].as<std::string>().c_str();
             const auto len = strlen(arg);
             char *host = new char[len + 1];
             memset(host, '\0', len + 1);
@@ -434,65 +298,88 @@ int main(int argc, char **argv) {
             }
 
             gdbServerMode = true;
-        } else if (optind != argc) {
-            usage(progname);
-        }
-
-        if (jtagBitrate == 0 && (proto == Debugproto::JTAG)) {
-            printf( "Defaulting JTAG bitrate to 250 kHz.\n\n");
-
-            jtagBitrate = 250000;
         }
 
         // Use a default device name to connect to if not specified on the
         // command-line.  If the JTAG_DEV environment variable is set, use
         // the name given there.  As the AVR Dragon can only be talked to
         // through USB, default it to USB, but use a generic name else.
-        if (jtagDeviceName == nullptr) {
-            char *cp = getenv("JTAG_DEV");
+        const std::string jtagDeviceName = [&] {
+            if (vm.count("jtag")) {
+                return vm["jtag"].as<std::string>();
+            } else {
+                const char *cp = getenv("JTAG_DEV");
+                if (cp != nullptr)
+                    return std::string{cp};
+                else if (devicetype == Emulator::DRAGON || devicetype == Emulator::JTAGICE3 ||
+                         devicetype == Emulator::EDBG || devicetype == Emulator::JTAGICE2)
+                    return std::string{"usb"};
+                else
+                    return std::string{"/dev/avrjtag"};
+            }
+        }();
 
-            if (cp != nullptr)
-                jtagDeviceName = cp;
-            else if (devicetype == Emulator::DRAGON || devicetype == Emulator::JTAGICE3 ||
-                     devicetype == Emulator::EDBG || devicetype == Emulator::JTAGICE2)
-                jtagDeviceName = "usb";
-            else
-                jtagDeviceName = "/dev/avrjtag";
+        if (vm.count("debug")) {
+            setvbuf(stderr, nullptr, _IOLBF, 0);
         }
 
-        if (debugMode)
-            setvbuf(stderr, nullptr, _IOLBF, 0);
+        const bool apply_nsrst = vm.count("reset-srst");
 
+        const std::string device_name = vm["part"].as<std::string>();
         // And say hello to the JTAG box
         switch (devicetype) {
         case Emulator::JTAGICE:
             theJtagICE =
-                std::make_unique<jtag1>(devicetype, jtagDeviceName, device_name, apply_nsrst);
+                std::make_unique<jtag1>(devicetype, jtagDeviceName.c_str(), device_name, apply_nsrst);
             break;
 
         case Emulator::JTAGICE2:
         case Emulator::DRAGON:
-            theJtagICE = std::make_unique<Jtag2>(devicetype, jtagDeviceName, device_name, proto,
+            theJtagICE = std::make_unique<Jtag2>(devicetype, jtagDeviceName.c_str(), device_name, proto,
                                                  apply_nsrst, is_xmega);
             break;
 
         case Emulator::JTAGICE3:
         case Emulator::EDBG:
-            theJtagICE = std::make_unique<Jtag3>(devicetype, jtagDeviceName, device_name,
+            theJtagICE = std::make_unique<Jtag3>(devicetype, jtagDeviceName.c_str(), device_name,
                                                  apply_nsrst, is_xmega, proto);
             break;
         }
 
         // Set Daisy-chain variables
-        theJtagICE->dchain = daisy_chain_info;
+        theJtagICE->dchain = [&] {
+            DaisyChainInfo daisy_chain_info{};
+            if (vm.count("daisy-chain")) {
+                unsigned int units_before = 0;
+                unsigned int units_after = 0;
+                unsigned int bits_before = 0;
+                unsigned int bits_after = 0;
+
+                const char *daisy_chain = vm["daisy_chain"].as<std::string>().c_str();
+                if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
+                           &bits_after) != 4)
+                    exit(1);
+
+                daisy_chain_info = DaisyChainInfo{
+                    static_cast<uchar>(units_before), static_cast<uchar>(units_after),
+                    static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
+                if (!daisy_chain_info.IsValid()) {
+                    fprintf(stderr, "daisy-chain parameters out of range"
+                                    " (max. 32 bits before/after)\n");
+                    exit(1);
+                }
+            }
+            return daisy_chain_info;
+        }();
 
         // Tell which events to ignore.
+        const char* eventlist = vm["event"].as<std::string>().c_str();
         theJtagICE->parseEvents(eventlist);
 
         // Init JTAG box.
         theJtagICE->initJtagBox();
 
-        if (erase) {
+        if( vm.count("erase")) {
             if (proto == Debugproto::DW) {
                 statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
             } else {
@@ -504,55 +391,46 @@ int main(int argc, char **argv) {
             }
         }
 
-        if (readFuses) {
+        if( vm.count("read-fuses")) {
             theJtagICE->jtagReadFuses();
         }
 
-        if (readLockBits) {
+        if( vm.count("read-lockbits")) {
             theJtagICE->jtagReadLockBits();
         }
 
-        if (writeFuses)
+        if( vm.count("write-fuses")) {
+            const char* fuses = vm["write-fuses"].as<std::string>().c_str();
             theJtagICE->jtagWriteFuses(fuses);
+        }
 
         // Init JTAG debugger for initial use.
         //   - If we're attaching to a running target, we cannot do this.
         //   - If we're running as a standalone programmer, we don't want
         //     this.
-        if (gdbServerMode && (!capture))
+        if (gdbServerMode && !vm.count("capture")) {
+            const unsigned long jtagBitrate = parseJtagBitrate(vm["jtag-bitrate"].as<std::string>().c_str());
             theJtagICE->initJtagOnChipDebugging(jtagBitrate);
-
-        if (inFileName != (char *)nullptr) {
-            statusOut("\n\n"
-                      "AVaRICE has not been configured for target programming\n"
-                      "through the --program option.  Target programming in\n"
-                      "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
-            rv = 1;
-        } else {
-            if ((program) || (verify)) {
-                statusOut("\n\n"
-                          "AVaRICE has not been configured for target programming\n"
-                          "through the --program option.  Target programming in\n"
-                          "AVaRICE is a deprecated feature; use AVRDUDE instead.\n");
-                rv = 1;
-            }
         }
 
         // Write fuses after all programming parts have completed.
-        if (writeLockBits)
+        if( vm.count("write-lockbits")) {
+            const char* lockBits = vm["write-lockbits"].as<std::string>().c_str();
             theJtagICE->jtagWriteLockBits(lockBits);
+        }
 
         // Quit & resume mote for operations that don't interact with gdb.
         if (!gdbServerMode)
             theJtagICE->resumeProgram();
         else {
+            sockaddr_in name;
             initSocketAddress(&name, hostName, hostPortNumber);
-            sock = makeSocket(&name);
+            int sock = makeSocket(&name);
             statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
             if (listen(sock, 1) < 0)
                 throw jtag_exception();
 
-            if (detach) {
+            if( vm.count("detach")) {
                 int child = fork();
 
                 if (child < 0) {
@@ -568,6 +446,7 @@ int main(int argc, char **argv) {
             }
 
             // Connection request on original socket.
+            sockaddr_in clientname;
             auto size = static_cast<socklen_t>(sizeof(clientname));
             int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
             if (gfd < 0)

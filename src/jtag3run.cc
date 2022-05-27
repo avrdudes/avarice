@@ -266,8 +266,6 @@ void Jtag3::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-void Jtag3::parseEvents(const char *) { }
-
 bool Jtag3::jtagContinue() {
     updateBreakpoints(); // download new bp configuration
 
