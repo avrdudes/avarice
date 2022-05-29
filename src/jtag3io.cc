@@ -128,7 +128,6 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     if (rv == 0) {
         /* timeout */
         debugOut("read() timed out\n");
-
         return 0;
     } else if (rv < 0) {
         /* error */

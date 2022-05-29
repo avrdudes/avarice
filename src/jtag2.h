@@ -113,32 +113,32 @@
 
 /* ICE events */
 #define EVT_BREAK 0xE0
-#define EVT_DEBUG 0xE6
+#define EVT_RUN 0xE1
 #define EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT 0xE2
-#define EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF 0xED
-#define EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT 0xF9
-#define EVT_ERROR_PHY_OPT_RECEIVED_BREAK 0xFA
-#define EVT_ERROR_PHY_RECEIVED_BREAK 0xF8
-#define EVT_ERROR_PHY_RECEIVE_TIMEOUT 0xF7
 #define EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT 0xE3
-#define EVT_ERROR_PHY_SYNC_OUT_OF_RANGE 0xF5
-#define EVT_ERROR_PHY_SYNC_TIMEOUT 0xF0
-#define EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD 0xF4
-#define EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT 0xF6
-#define EVT_RESULT_PHY_NO_ACTIVITY 0xFB
+#define EVT_TARGET_POWER_ON 0xE4
+#define EVT_TARGET_POWER_OFF 0xE5
+#define EVT_DEBUG 0xE6
 #define EVT_EXT_RESET 0xE7
+#define EVT_TARGET_SLEEP 0xE8
+#define EVT_TARGET_WAKEUP 0xE9
 #define EVT_ICE_POWER_ERROR_STATE 0xEA
 #define EVT_ICE_POWER_OK 0xEB
 #define EVT_IDR_DIRTY 0xEC
+#define EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF 0xED
 #define EVT_NONE 0xEF
+#define EVT_ERROR_PHY_SYNC_TIMEOUT 0xF0
+#define EVT_PROGRAM_BREAK 0xF1
 #define EVT_PDSB_BREAK 0xF2
 #define EVT_PDSMB_BREAK 0xF3
-#define EVT_PROGRAM_BREAK 0xF1
-#define EVT_RUN 0xE1
-#define EVT_TARGET_POWER_OFF 0xE5
-#define EVT_TARGET_POWER_ON 0xE4
-#define EVT_TARGET_SLEEP 0xE8
-#define EVT_TARGET_WAKEUP 0xE9
+#define EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD 0xF4
+#define EVT_ERROR_PHY_SYNC_OUT_OF_RANGE 0xF5
+#define EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT 0xF6
+#define EVT_ERROR_PHY_RECEIVE_TIMEOUT 0xF7
+#define EVT_ERROR_PHY_RECEIVED_BREAK 0xF8
+#define EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT 0xF9
+#define EVT_ERROR_PHY_OPT_RECEIVED_BREAK 0xFA
+#define EVT_RESULT_PHY_NO_ACTIVITY 0xFB
 #define EVT_MAX 0xFF
 
 /* memory types for CMND_{READ,WRITE}_MEMORY */
@@ -260,7 +260,7 @@ class Jtag2 : public Jtag {
     void deleteAllBreakpoints() override;
     void updateBreakpoints() override;
     bool codeBreakpointAt(unsigned int address) override;
-    void parseEvents(const char *) override;
+    void parseEvents(std::string_view const &) override;
 
     void enableProgramming() override;
     void disableProgramming() override;

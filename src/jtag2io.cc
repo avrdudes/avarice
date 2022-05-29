@@ -211,7 +211,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             if (c == TOKEN) {
                 state = sDATA;
                 if (msglen > MAX_MESSAGE) {
-                    printf("msglen %u exceeds max message size %u, ignoring message\n", msglen,
+                    printf("msglen %lu exceeds max message size %lu, ignoring message\n", msglen,
                            MAX_MESSAGE);
                     state = sSTART;
                     headeridx = 0;

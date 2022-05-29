@@ -721,7 +721,7 @@ class Jtag {
     virtual bool codeBreakpointAt(unsigned int address) = 0;
 
     /** Parse a list of event names to *not* cause a break. */
-    virtual void parseEvents(const char *) = 0;
+    virtual void parseEvents(std::string_view const &) {};
 
     // Writing to program memory
     // -------------------------

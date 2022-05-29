@@ -89,15 +89,13 @@ static int makeSocket(struct sockaddr_in *name) {
 
 static void initSocketAddress(struct sockaddr_in *name, const char *hostname,
                               unsigned short int port) {
-    struct hostent *hostInfo;
-
     memset(name, 0, sizeof(*name));
     name->sin_family = AF_INET;
     name->sin_port = htons(port);
     // Try numeric interpretation (1.2.3.4) first, then
     // hostname resolution if that failed.
     if (inet_aton(hostname, &name->sin_addr) == 0) {
-        hostInfo = gethostbyname(hostname);
+        hostent *hostInfo = gethostbyname(hostname);
         if (hostInfo == nullptr) {
             fprintf(stderr, "Unknown host %s", hostname);
             throw jtag_exception();
@@ -356,7 +354,7 @@ int main(int argc, char **argv) {
                 unsigned int bits_after = 0;
 
                 const char *daisy_chain = vm["daisy_chain"].as<std::string>().c_str();
-                if (sscanf(optarg, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
+                if (sscanf(daisy_chain, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
                            &bits_after) != 4)
                     exit(1);
 
@@ -373,8 +371,7 @@ int main(int argc, char **argv) {
         }();
 
         // Tell which events to ignore.
-        const char* eventlist = vm["event"].as<std::string>().c_str();
-        theJtagICE->parseEvents(eventlist);
+        theJtagICE->parseEvents(vm["event"].as<std::string>());
 
         // Init JTAG box.
         theJtagICE->initJtagBox();
@@ -423,7 +420,7 @@ int main(int argc, char **argv) {
         if (!gdbServerMode)
             theJtagICE->resumeProgram();
         else {
-            sockaddr_in name;
+            sockaddr_in name {};
             initSocketAddress(&name, hostName, hostPortNumber);
             int sock = makeSocket(&name);
             statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
@@ -446,7 +443,7 @@ int main(int argc, char **argv) {
             }
 
             // Connection request on original socket.
-            sockaddr_in clientname;
+            sockaddr_in clientname {};
             auto size = static_cast<socklen_t>(sizeof(clientname));
             int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
             if (gfd < 0)

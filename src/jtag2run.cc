@@ -274,7 +274,7 @@ void Jtag2::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-void Jtag2::parseEvents(const char *evtlist) {
+void Jtag2::parseEvents(std::string_view const &evtlist) {
     memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
     constexpr struct {
@@ -312,7 +312,7 @@ void Jtag2::parseEvents(const char *evtlist) {
 
     // parse the given comma-separated string
     const char *cp2;
-    const char *cp1 = evtlist;
+    const char *cp1 = evtlist.data();
     while (*cp1 != '\0') {
         while (isspace(*cp1) || *cp1 == ',')
             cp1++;

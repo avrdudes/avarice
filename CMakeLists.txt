@@ -36,6 +36,7 @@ add_executable(avarice
         ${SUPPORTED_DEVICES}
         )
 target_compile_features(avarice PRIVATE cxx_std_17)
+target_compile_options(avarice PRIVATE -Wall -Wextra)
 target_compile_definitions(avarice PRIVATE PACKAGE_VERSION=\"${PROJECT_VERSION}\")
 
 find_package(Boost COMPONENTS program_options REQUIRED)
