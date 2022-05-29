@@ -105,12 +105,12 @@ static void initSocketAddress(struct sockaddr_in *name, const char *hostname,
 }
 
 static unsigned long parseJtagBitrate(const char *val) {
-    char *endptr, c;
-
     if (*val == '\0') {
         fprintf(stderr, "invalid number in JTAG bit rate");
         throw jtag_exception();
     }
+
+    char *endptr, c;
     unsigned long v = strtoul(val, &endptr, 10);
     if (*endptr == '\0')
         return v;
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
         // TODO: add '?'
 
-        po::options_description desc("Allowed options");
+        po::options_description desc("avarice [Options] [[HOST_NAME]:PORT]\n\nOptions");
         // clang-format off
         desc.add_options()
             ("help,h", "produce help message")
@@ -173,17 +173,17 @@ int main(int argc, char **argv) {
                 "Note: debugging must have been enabled prior"
                 "to starting the program. (e.g., by running avarice earlier)")
             ("debugwire,w", "For the JTAG ICE mkII, connect to the target"
-                "using debugWire protocol rather than JTAG.")
+                " using debugWire protocol rather than JTAG.")
             ( "read-lockbits,l", "Read lock bits")
             ( "reset-srst,R", "External reset through nSRST signal.")
             ("jtag,j", po::value<std::string>(), "Port attached to JTAG box")
             ( "part,P", po::value<std::string>(), "Target device name (e.g. atmega16)")
             ("jtag-bitrate,B", po::value<std::string>()->default_value("250 kHz"),
                 "Set the bitrate that the JTAG box communicates with the avr target device."
-                "This must be less than 1/4 of the frequency of the target. Valid"
-                "values are 1000/500/250/125 kHz (mkI), or 22 through 6400 kHz (mkII).")
+                " This must be less than 1/4 of the frequency of the target. Valid"
+                " values are 1000/500/250/125 kHz (mkI), or 22 through 6400 kHz (mkII).")
             ("daisy-chain,c", po::value<std::string>(), "<ub,ua,bb,ba> Daisy chain settings:"
-                "<units before, units after,bits before, bits after>")
+                " <units before, units after,bits before, bits after>")
             ("write-lockbits,L", po::value<std::string>(), "<ll> Write lock bits.")
             ("write-fuses,W", po::value<std::string>(), "<eehhll>  Write fuses bytes.")
             ("event,E", po::value<std::string>()->default_value("none,run,target_power_on,target_sleep,target_wakeup"),
@@ -191,10 +191,13 @@ int main(int argc, char **argv) {
             ("server", po::value<std::string>(), "[[HOST_NAME]:PORT]\n"
                 "HOST_NAME defaults to 0.0.0.0 (listen on any interface).\n"
                 ":PORT is required to put avarice into gdb server mode.");
+
+        po::positional_options_description p;
+        p.add("server", 1);
         // clang-format on
 
         po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::store(po::command_line_parser(argc, argv). options(desc).positional(p).run(), vm);
         po::notify(vm);
 
         if (vm.count("help")) {
@@ -208,7 +211,7 @@ int main(int argc, char **argv) {
         if (vm.count("known-devices")) {
             std::cout << "List of known AVR devices:\n\n";
             jtag_device_def_type::DumpAll();
-            exit(1);
+            exit(0);
         }
 
         Debugproto proto = Debugproto::JTAG;
@@ -238,66 +241,6 @@ int main(int argc, char **argv) {
             }
         }();
 
-        if( vm.count("ignore-intr")) {
-            ignoreInterrupts = true;
-        }
-
-        const char *hostName = "0.0.0.0"; /* INADDR_ANY */
-        int hostPortNumber = 0;
-        bool gdbServerMode = false;
-        if( vm.count("server")) {
-            /* Looks like user has given [[host]:port], so parse out the host and
-               port number then enable gdb server mode. */
-
-            size_t i;
-            const char* arg = vm["server"].as<std::string>().c_str();
-            const auto len = strlen(arg);
-            char *host = new char[len + 1];
-            memset(host, '\0', len + 1);
-
-            for (i = 0; i < len; i++) {
-                if ((arg[i] == '\0') || (arg[i] == ':'))
-                    break;
-
-                host[i] = arg[i];
-            }
-
-            if (strlen(host)) {
-                hostName = host;
-            }
-
-            if (arg[i] == ':') {
-                i++;
-            }
-
-            if (i >= len) {
-                /* No port was given. */
-                fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
-                exit(1);
-            }
-
-            char *endptr;
-            hostPortNumber = (int)strtol(arg + i, &endptr, 0);
-            if (endptr == arg + i) {
-                /* Invalid convertion. */
-                fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
-                exit(1);
-            }
-
-            /* Make sure the the port value is not a priviledged port and is not
-               greater than max port value. */
-
-            if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
-                fprintf(stderr,
-                        "avarice: invalid port number: %d (must be >= %d"
-                        " and <= %d)\n",
-                        hostPortNumber, 1024, 0xffff);
-                exit(1);
-            }
-
-            gdbServerMode = true;
-        }
-
         // Use a default device name to connect to if not specified on the
         // command-line.  If the JTAG_DEV environment variable is set, use
         // the name given there.  As the AVR Dragon can only be talked to
@@ -318,6 +261,7 @@ int main(int argc, char **argv) {
         }();
 
         if (vm.count("debug")) {
+            debugMode = true;
             setvbuf(stderr, nullptr, _IOLBF, 0);
         }
 
@@ -401,6 +345,8 @@ int main(int argc, char **argv) {
             theJtagICE->jtagWriteFuses(fuses);
         }
 
+        const bool gdbServerMode = vm.count("server");
+
         // Init JTAG debugger for initial use.
         //   - If we're attaching to a running target, we cannot do this.
         //   - If we're running as a standalone programmer, we don't want
@@ -417,17 +363,70 @@ int main(int argc, char **argv) {
         }
 
         // Quit & resume mote for operations that don't interact with gdb.
-        if (!gdbServerMode)
-            theJtagICE->resumeProgram();
-        else {
-            sockaddr_in name {};
+        if (gdbServerMode) {
+            if( vm.count("ignore-intr")) {
+                ignoreInterrupts = true;
+            }
+
+            // Parse out host and port [[host]:port]
+            const char *hostName = "0.0.0.0"; /* INADDR_ANY */
+            int hostPortNumber = 0;
+            {
+                size_t i;
+                const char *arg = vm["server"].as<std::string>().c_str();
+                const auto len = strlen(arg);
+                char *host = new char[len + 1];
+                memset(host, '\0', len + 1);
+
+                for (i = 0; i < len; i++) {
+                    if ((arg[i] == '\0') || (arg[i] == ':'))
+                        break;
+
+                    host[i] = arg[i];
+                }
+
+                if (strlen(host)) {
+                    hostName = host;
+                }
+
+                if (arg[i] == ':') {
+                    i++;
+                }
+
+                if (i >= len) {
+                    /* No port was given. */
+                    fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+                    exit(1);
+                }
+
+                char *endptr;
+                hostPortNumber = (int)strtol(arg + i, &endptr, 0);
+                if (endptr == arg + i) {
+                    /* Invalid convertion. */
+                    fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+                    exit(1);
+                }
+
+                /* Make sure the the port value is not a priviledged port and is not
+                   greater than max port value. */
+
+                if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
+                    fprintf(stderr,
+                            "avarice: invalid port number: %d (must be >= %d"
+                            " and <= %d)\n",
+                            hostPortNumber, 1024, 0xffff);
+                    exit(1);
+                }
+            }
+
+            sockaddr_in name{};
             initSocketAddress(&name, hostName, hostPortNumber);
             int sock = makeSocket(&name);
             statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
             if (listen(sock, 1) < 0)
                 throw jtag_exception();
 
-            if( vm.count("detach")) {
+            if (vm.count("detach")) {
                 int child = fork();
 
                 if (child < 0) {
@@ -458,6 +457,8 @@ int main(int argc, char **argv) {
             // gdb connection
             for (;;)
                 talkToGdb();
+        } else {
+            theJtagICE->resumeProgram();
         }
     } catch (jtag_exception &) {
         // ignored; guarantee theJtagICE object will be deleted

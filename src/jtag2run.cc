@@ -116,19 +116,19 @@ void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     uchar *evtbuf;
     unsigned short seqno;
 
-    int evtSize = recvFrame(evtbuf, seqno);
+    const int evtSize = recvFrame(evtbuf, seqno);
     if (evtSize >= 0) {
         // XXX if not event, should push frame back into queue...
         // We really need a queue of received frames.
         if (seqno != 0xffff)
             debugOut("Expected event packet, got other response");
-        else if (!nonbreaking_events[evtbuf[8] - EVT_BREAK]) {
-            switch (evtbuf[8]) {
+        else if (const auto event = static_cast<Event>(evtbuf[8]); IsBreakingEvent(event)) {
+            switch (event) {
             // Program stopped at some kind of breakpoint.
             case EVT_BREAK:
                 cached_pc = 2 * b4_to_u32(evtbuf + 9);
                 cached_pc_is_valid = true;
-                /* FALLTHROUGH */
+                [[fallthrough]];
             case EVT_EXT_RESET:
             case EVT_PDSB_BREAK:
             case EVT_PDSMB_BREAK:
@@ -156,7 +156,7 @@ void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
             case EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD:
             case EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT:
                 gdbInterrupt = true;
-                printf("\nFatal debugWIRE communication event: 0x%02x\n", evtbuf[8]);
+                printf("\nFatal debugWIRE communication event: 0x%02x\n", event);
                 break;
 
                 // Other fatal errors, user could mask them off
@@ -192,7 +192,7 @@ void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
 
             default:
                 gdbInterrupt = true;
-                printf("\nUnhandled JTAG ICE mkII event: 0x%0x2\n", evtbuf[8]);
+                printf("\nUnhandled JTAG ICE mkII event: 0x%0x2\n", event);
             }
         }
         delete[] evtbuf;
@@ -278,7 +278,7 @@ void Jtag2::parseEvents(std::string_view const &evtlist) {
     memset(nonbreaking_events, 0, sizeof(nonbreaking_events));
 
     constexpr struct {
-        uchar num;
+        Event num;
         const char *name;
     } evttable[] = {
         {EVT_BREAK, "break"},
@@ -320,7 +320,7 @@ void Jtag2::parseEvents(std::string_view const &evtlist) {
         while (*cp2 != '\0' && *cp2 != ',')
             cp2++;
         size_t l = cp2 - cp1;
-        uchar evtval = 0;
+        Event evtval = EVT_NA;
 
         // Now, cp1 points to the name to parse, of length l
         for (const auto& evt : evttable) {
@@ -329,10 +329,10 @@ void Jtag2::parseEvents(std::string_view const &evtlist) {
                 break;
             }
         }
-        if (evtval == 0) {
-            debugOut( "Warning: event name %.*s not matched\n", (int)l, cp1);
+        if (evtval != EVT_NA) {
+            MarkNonBreaking(evtval);
         } else {
-            nonbreaking_events[evtval - EVT_BREAK] = true;
+            debugOut( "Warning: event name %.*s not matched\n", (int)l, cp1);
         }
 
         cp1 = cp2;

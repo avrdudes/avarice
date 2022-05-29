@@ -112,34 +112,37 @@
 #define RSP_SPI_DATA 0x88
 
 /* ICE events */
-#define EVT_BREAK 0xE0
-#define EVT_RUN 0xE1
-#define EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT 0xE2
-#define EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT 0xE3
-#define EVT_TARGET_POWER_ON 0xE4
-#define EVT_TARGET_POWER_OFF 0xE5
-#define EVT_DEBUG 0xE6
-#define EVT_EXT_RESET 0xE7
-#define EVT_TARGET_SLEEP 0xE8
-#define EVT_TARGET_WAKEUP 0xE9
-#define EVT_ICE_POWER_ERROR_STATE 0xEA
-#define EVT_ICE_POWER_OK 0xEB
-#define EVT_IDR_DIRTY 0xEC
-#define EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF 0xED
-#define EVT_NONE 0xEF
-#define EVT_ERROR_PHY_SYNC_TIMEOUT 0xF0
-#define EVT_PROGRAM_BREAK 0xF1
-#define EVT_PDSB_BREAK 0xF2
-#define EVT_PDSMB_BREAK 0xF3
-#define EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD 0xF4
-#define EVT_ERROR_PHY_SYNC_OUT_OF_RANGE 0xF5
-#define EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT 0xF6
-#define EVT_ERROR_PHY_RECEIVE_TIMEOUT 0xF7
-#define EVT_ERROR_PHY_RECEIVED_BREAK 0xF8
-#define EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT 0xF9
-#define EVT_ERROR_PHY_OPT_RECEIVED_BREAK 0xFA
-#define EVT_RESULT_PHY_NO_ACTIVITY 0xFB
-#define EVT_MAX 0xFF
+enum Event {
+    EVT_NA = 0x00,
+    EVT_BREAK = 0xE0,
+    EVT_RUN = 0xE1,
+    EVT_ERROR_PHY_FORCE_BREAK_TIMEOUT = 0xE2,
+    EVT_ERROR_PHY_RELEASE_BREAK_TIMEOUT = 0xE3,
+    EVT_TARGET_POWER_ON = 0xE4,
+    EVT_TARGET_POWER_OFF = 0xE5,
+    EVT_DEBUG = 0xE6,
+    EVT_EXT_RESET = 0xE7,
+    EVT_TARGET_SLEEP = 0xE8,
+    EVT_TARGET_WAKEUP = 0xE9,
+    EVT_ICE_POWER_ERROR_STATE = 0xEA,
+    EVT_ICE_POWER_OK = 0xEB,
+    EVT_IDR_DIRTY = 0xEC,
+    EVT_ERROR_PHY_MAX_BIT_LENGTH_DIFF = 0xED,
+    EVT_NONE = 0xEF,
+    EVT_ERROR_PHY_SYNC_TIMEOUT = 0xF0,
+    EVT_PROGRAM_BREAK = 0xF1,
+    EVT_PDSB_BREAK = 0xF2,
+    EVT_PDSMB_BREAK = 0xF3,
+    EVT_ERROR_PHY_SYNC_TIMEOUT_BAUD = 0xF4,
+    EVT_ERROR_PHY_SYNC_OUT_OF_RANGE = 0xF5,
+    EVT_ERROR_PHY_SYNC_WAIT_TIMEOUT = 0xF6,
+    EVT_ERROR_PHY_RECEIVE_TIMEOUT = 0xF7,
+    EVT_ERROR_PHY_RECEIVED_BREAK = 0xF8,
+    EVT_ERROR_PHY_OPT_RECEIVE_TIMEOUT = 0xF9,
+    EVT_ERROR_PHY_OPT_RECEIVED_BREAK = 0xFA,
+    EVT_RESULT_PHY_NO_ACTIVITY = 0xFB,
+    EVT_MAX = 0xFF
+};
 
 /* memory types for CMND_{READ,WRITE}_MEMORY */
 #define MTYPE_IO_SHADOW 0x30   /* cached IO registers? */
@@ -238,6 +241,12 @@ class Jtag2 : public Jtag {
     unsigned int eepromCachePageAddr = (unsigned short)-1;
 
     bool nonbreaking_events[EVT_MAX - EVT_BREAK + 1];
+
+    void MarkNonBreaking(Event event) { nonbreaking_events[event - EVT_BREAK] = true; }
+
+    [[nodiscard]] bool IsBreakingEvent(Event event) const {
+        return !nonbreaking_events[event - EVT_BREAK];
+    }
 
   public:
     /*

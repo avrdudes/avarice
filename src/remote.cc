@@ -486,7 +486,7 @@ static void gdb_error() {
 }
 
 /** reply to a "monitor" command */
-static bool monitor(const std::string_view cmd) {
+static bool monitor(std::string_view const &cmd) {
 
     // put "s" into remcomOutBuffer, obeying the packet size limit
     auto replyString = [](const char *s) {
@@ -590,7 +590,6 @@ void talkToGdb() {
         break;
 
     case 'M': {
-        int lead = 0;
         static bool last_orphan_pending = false;
         static uchar last_orphan = 0xff;
 
@@ -610,6 +609,7 @@ void talkToGdb() {
             // more than avarice users. This hack will make the gdb 'load'
             // command less prone to failure.
 
+            int lead = 0;
             if (addr & 1) {
                 // odd addr means there may be a byte from last 'M' to write
                 if ((last_cmd == 'M') && (last_orphan_pending)) {
