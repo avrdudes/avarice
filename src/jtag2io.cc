@@ -109,7 +109,7 @@ void Jtag2::sendFrame(const uchar *command, int commandSize) {
     buf[7] = TOKEN;
     memcpy(buf.get() + 8, command, commandSize);
 
-    crcappend(buf.get(), commandSize + 8);
+    Crc16::AppendChecksum(buf.get(), commandSize + 8);
 
     int count = safewrite(buf.get(), commandSize + 10);
 
@@ -235,7 +235,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             break;
         case sCSUM2:
             buf[l++] = c;
-            if (crcverify(buf.get(), msglen + 10)) {
+            if (Crc16::VerifyChecksum(buf.get(), msglen + 10)) {
                 debugOut("CRC OK");
                 state = sDONE;
             } else {
