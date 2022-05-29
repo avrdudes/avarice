@@ -21,7 +21,6 @@
 #include <cstdio>
 
 #include "jtag3.h"
-#include "remote.h"
 
 unsigned long Jtag3::getProgramCounter() {
     if (cached_pc_is_valid)
@@ -197,7 +196,7 @@ void Jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
     delete[] evtbuf;
 }
 
-bool Jtag3::eventLoop() {
+bool Jtag3::eventLoop(Server &server) {
     int maxfd;
     fd_set readfds;
     bool breakpoint = false, gdbInterrupt = false;
@@ -211,11 +210,11 @@ bool Jtag3::eventLoop() {
         // Check for input from JTAG ICE (breakpoint, sleep, info, power)
         // or gdb (user break)
         FD_ZERO(&readfds);
-        if (gdbFileDescriptor != -1)
-            FD_SET(gdbFileDescriptor, &readfds);
+        if (server.GetHandle() != -1)
+            FD_SET(server.GetHandle(), &readfds);
         FD_SET(jtagBox, &readfds);
-        if (gdbFileDescriptor != -1)
-            maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+        if (server.GetHandle() != -1)
+            maxfd = jtagBox > server.GetHandle() ? jtagBox : server.GetHandle();
         else
             maxfd = jtagBox;
 
@@ -223,8 +222,8 @@ bool Jtag3::eventLoop() {
         if (numfds < 0)
             throw jtag_exception("GDB/JTAG ICE communications failure");
 
-        if (gdbFileDescriptor != -1 && FD_ISSET(gdbFileDescriptor, &readfds)) {
-            const auto c = getDebugChar();
+        if (server.GetHandle() != -1 && FD_ISSET(server.GetHandle(), &readfds)) {
+            const auto c = server.getDebugChar();
             if (c == 3) // interrupt
             {
                 debugOut("interrupted by GDB\n");
@@ -266,7 +265,7 @@ void Jtag3::jtagSingleStep() {
     expectEvent(bp, gdb);
 }
 
-bool Jtag3::jtagContinue() {
+bool Jtag3::jtagContinue(Server &server) {
     updateBreakpoints(); // download new bp configuration
 
     xmegaSendBPs();
@@ -278,5 +277,5 @@ bool Jtag3::jtagContinue() {
 
     doSimpleJtagCommand(CMD3_GO, "go");
 
-    return eventLoop();
+    return eventLoop(server);
 }

@@ -29,9 +29,6 @@ using uchar = unsigned char;
 /** true iff --debug option specified **/
 extern bool debugMode;
 
-/** true if interrupts should be stepped over when stepping */
-extern bool ignoreInterrupts;
-
 /** printf 'fmt, ...' if debugMode **/
 void vdebugOut(const char *fmt, va_list args);
 void debugOut(const char *fmt, ...);

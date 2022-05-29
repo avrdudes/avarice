@@ -296,7 +296,7 @@ void jtag1::initJtagBox() {
     statusOut("JTAG config complete.\n");
 }
 
-void jtag1::initJtagOnChipDebugging(const unsigned long bitrate) {
+void jtag1::initJtagOnChipDebugging(unsigned long bitrate) {
     statusOut("Preparing the target device for On Chip Debugging.\n");
 
     uchar br;

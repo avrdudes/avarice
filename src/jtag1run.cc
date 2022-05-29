@@ -20,10 +20,7 @@
  * This file contains functions for interfacing with the JTAG box.
  */
 
-#include <cstdio>
-
 #include "jtag1.h"
-#include "remote.h"
 
 unsigned long jtag1::getProgramCounter() {
     const uchar command[] = {'2', JTAG_EOM};
@@ -76,11 +73,11 @@ void jtag1::resumeProgram() { doSimpleJtagCommand('G', 0); }
 
 void jtag1::jtagSingleStep() { doSimpleJtagCommand('1', 1); }
 
-bool jtag1::jtagContinue() {
+bool jtag1::jtagContinue(Server &server) {
     updateBreakpoints(); // download new bp configuration
 
     if (!doSimpleJtagCommand('G', 0)) {
-        gdbOut("Failed to continue\n");
+        server.Out("Failed to continue\n");
         return true;
     }
 
@@ -96,9 +93,9 @@ bool jtag1::jtagContinue() {
         // Check for input from JTAG ICE (breakpoint, sleep, info, power)
         // or gdb (user break)
         FD_ZERO(&readfds);
-        FD_SET(gdbFileDescriptor, &readfds);
+        FD_SET(server.GetHandle(), &readfds);
         FD_SET(jtagBox, &readfds);
-        const int maxfd = jtagBox > gdbFileDescriptor ? jtagBox : gdbFileDescriptor;
+        const int maxfd = jtagBox > server.GetHandle() ? jtagBox : server.GetHandle();
 
         int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
         if (numfds < 0) {
@@ -106,8 +103,8 @@ bool jtag1::jtagContinue() {
             throw jtag_exception();
         }
 
-        if (FD_ISSET(gdbFileDescriptor, &readfds)) {
-            const auto c = getDebugChar();
+        if (FD_ISSET(server.GetHandle(), &readfds)) {
+            const auto c = server.getDebugChar();
             if (c == 3) // interrupt
             {
                 debugOut("interrupted by GDB\n");

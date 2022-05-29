@@ -25,93 +25,31 @@
 #include <iostream>
 #include <string>
 
-#include <arpa/inet.h>
 #include <cctype>
-#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 #include "avarice.h"
+#include "gdb_server.h"
 #include "jtag.h"
 #include "jtag1.h"
 #include "jtag2.h"
 #include "jtag3.h"
-#include "remote.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-bool ignoreInterrupts;
-
-static int makeSocket(struct sockaddr_in *name) {
-    int sock;
-    int tmp;
-    struct protoent *protoent;
-
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (sock < 0)
-        throw jtag_exception();
-
-    // Allow rapid reuse of this port.
-    tmp = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&tmp, sizeof(tmp)) < 0)
-        throw jtag_exception();
-
-    // Enable TCP keep alive process.
-    tmp = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&tmp, sizeof(tmp)) < 0)
-        throw jtag_exception();
-
-    if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0) {
-        if (errno == EADDRINUSE)
-            fprintf(stderr, "bind() failed: another server is still running on this port\n");
-        throw jtag_exception("bind() failed");
-    }
-
-    protoent = getprotobyname("tcp");
-    if (protoent == nullptr) {
-        fprintf(stderr, "tcp protocol unknown (oops?)");
-        throw jtag_exception();
-    }
-
-    tmp = 1;
-    if (setsockopt(sock, protoent->p_proto, TCP_NODELAY, (char *)&tmp, sizeof(tmp)) < 0)
-        throw jtag_exception();
-
-    return sock;
-}
-
-static void initSocketAddress(struct sockaddr_in *name, const char *hostname,
-                              unsigned short int port) {
-    memset(name, 0, sizeof(*name));
-    name->sin_family = AF_INET;
-    name->sin_port = htons(port);
-    // Try numeric interpretation (1.2.3.4) first, then
-    // hostname resolution if that failed.
-    if (inet_aton(hostname, &name->sin_addr) == 0) {
-        hostent *hostInfo = gethostbyname(hostname);
-        if (hostInfo == nullptr) {
-            fprintf(stderr, "Unknown host %s", hostname);
-            throw jtag_exception();
-        }
-        name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
-    }
-}
-
-static unsigned long parseJtagBitrate(const char *val) {
-    if (*val == '\0') {
+static unsigned long parseJtagBitrate(std::string_view const &val) {
+    if (val.empty()) {
         fprintf(stderr, "invalid number in JTAG bit rate");
         throw jtag_exception();
     }
 
     char *endptr, c;
-    unsigned long v = strtoul(val, &endptr, 10);
+    const char* val_ptr = val.data();
+    unsigned long v = strtoul(val_ptr, &endptr, 10);
     if (*endptr == '\0')
         return v;
     while (isspace((unsigned char)(c = *endptr)))
@@ -352,7 +290,7 @@ int main(int argc, char **argv) {
         //   - If we're running as a standalone programmer, we don't want
         //     this.
         if (gdbServerMode && !vm.count("capture")) {
-            const unsigned long jtagBitrate = parseJtagBitrate(vm["jtag-bitrate"].as<std::string>().c_str());
+            const auto jtagBitrate = parseJtagBitrate(vm["jtag-bitrate"].as<std::string>());
             theJtagICE->initJtagOnChipDebugging(jtagBitrate);
         }
 
@@ -364,67 +302,9 @@ int main(int argc, char **argv) {
 
         // Quit & resume mote for operations that don't interact with gdb.
         if (gdbServerMode) {
-            if( vm.count("ignore-intr")) {
-                ignoreInterrupts = true;
-            }
-
-            // Parse out host and port [[host]:port]
-            const char *hostName = "0.0.0.0"; /* INADDR_ANY */
-            int hostPortNumber = 0;
-            {
-                size_t i;
-                const char *arg = vm["server"].as<std::string>().c_str();
-                const auto len = strlen(arg);
-                char *host = new char[len + 1];
-                memset(host, '\0', len + 1);
-
-                for (i = 0; i < len; i++) {
-                    if ((arg[i] == '\0') || (arg[i] == ':'))
-                        break;
-
-                    host[i] = arg[i];
-                }
-
-                if (strlen(host)) {
-                    hostName = host;
-                }
-
-                if (arg[i] == ':') {
-                    i++;
-                }
-
-                if (i >= len) {
-                    /* No port was given. */
-                    fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
-                    exit(1);
-                }
-
-                char *endptr;
-                hostPortNumber = (int)strtol(arg + i, &endptr, 0);
-                if (endptr == arg + i) {
-                    /* Invalid convertion. */
-                    fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
-                    exit(1);
-                }
-
-                /* Make sure the the port value is not a priviledged port and is not
-                   greater than max port value. */
-
-                if ((hostPortNumber < 1024) || (hostPortNumber > 0xffff)) {
-                    fprintf(stderr,
-                            "avarice: invalid port number: %d (must be >= %d"
-                            " and <= %d)\n",
-                            hostPortNumber, 1024, 0xffff);
-                    exit(1);
-                }
-            }
-
-            sockaddr_in name{};
-            initSocketAddress(&name, hostName, hostPortNumber);
-            int sock = makeSocket(&name);
-            statusOut("Waiting for connection on port %hu.\n", hostPortNumber);
-            if (listen(sock, 1) < 0)
-                throw jtag_exception();
+            const bool ignore_interrupts = vm.count("ignore-intr");
+            GdbServer server(vm["server"].as<std::string>(), ignore_interrupts);
+            server.listen();
 
             if (vm.count("detach")) {
                 int child = fork();
@@ -441,22 +321,13 @@ int main(int argc, char **argv) {
                 }
             }
 
-            // Connection request on original socket.
-            sockaddr_in clientname {};
-            auto size = static_cast<socklen_t>(sizeof(clientname));
-            int gfd = accept(sock, (struct sockaddr *)&clientname, &size);
-            if (gfd < 0)
-                throw jtag_exception();
-            statusOut("Connection opened by host %s, port %hu.\n", inet_ntoa(clientname.sin_addr),
-                      ntohs(clientname.sin_port));
-
-            setGdbFile(gfd);
+            server.accept(); // blocks until a client connects
 
             // Now do the actual processing of GDB messages
             // We stay here until exiting because of error of EOF on the
             // gdb connection
             for (;;)
-                talkToGdb();
+                server.handle();
         } else {
             theJtagICE->resumeProgram();
         }

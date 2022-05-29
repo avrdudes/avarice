@@ -165,7 +165,7 @@ class jtag1 : public Jtag {
     void interruptProgram() override;
     void resumeProgram() override;
     void jtagSingleStep() override;
-    bool jtagContinue() override;
+    bool jtagContinue(Server &) override;
 
     uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
 
@@ -186,7 +186,7 @@ class jtag1 : public Jtag {
     bool synchroniseAt(int bitrate) override;
     void startJtagLink() override;
     void deviceAutoConfig() override;
-    virtual void configDaisyChain();
+    void configDaisyChain();
 
     std::unique_ptr<uchar[]> getJtagResponse(int responseSize);
 

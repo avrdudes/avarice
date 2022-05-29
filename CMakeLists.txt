@@ -9,7 +9,7 @@ file(GLOB SUPPORTED_DEVICES src/devices/*.cpp)
 
 add_executable(avarice
         src/main.cc
-        src/remote.cc
+        src/gdb_server.cc
         src/utils.cc
         src/crc16.c
         src/jtag1bp.cc

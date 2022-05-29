@@ -609,6 +609,13 @@ static_assert(sizeof(DaisyChainInfo) == 4);
 
 struct termios;
 
+class Server {
+  public:
+    virtual int GetHandle() = 0;
+    virtual unsigned char getDebugChar() = 0;
+    virtual void Out(const char *fmt, ...) = 0;
+};
+
 class Jtag {
   protected:
     // The initial serial port parameters. We restore them on exit. (pimpl)
@@ -763,7 +770,7 @@ class Jtag {
     /** Send the program on it's merry way, and wait for a breakpoint or
         input from gdb.
         Return true for a breakpoint, false for gdb input. **/
-    virtual bool jtagContinue() = 0;
+    virtual bool jtagContinue(Server &) = 0;
 
     // R/W memory
     // ----------

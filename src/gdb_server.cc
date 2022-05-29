@@ -31,8 +31,7 @@
 #include <string>
 
 #include "avarice.h"
-#include "jtag.h"
-#include "remote.h"
+#include "gdb_server.h"
 
 enum {
     /** BUFMAX defines the maximum number of characters in
@@ -54,6 +53,133 @@ enum {
 
 static char remcomOutBuffer[BUFMAX];
 
+GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
+    :m_ignoreInterrupts(ignore_interrupts){
+    const char *hostName = "0.0.0.0"; /* INADDR_ANY */
+
+    size_t i;
+        const char *arg = listen.data();
+        const auto len = strlen(arg);
+        char *host = new char[len + 1];
+        memset(host, '\0', len + 1);
+
+        for (i = 0; i < len; i++) {
+            if ((arg[i] == '\0') || (arg[i] == ':'))
+                break;
+
+            host[i] = arg[i];
+        }
+
+        if (strlen(host)) {
+            hostName = host;
+        }
+
+        if (arg[i] == ':') {
+            i++;
+        }
+
+        if (i >= len) {
+            /* No port was given. */
+            fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+            exit(1);
+        }
+
+        char *endptr;
+        m_listen_port = (int)strtol(arg + i, &endptr, 0);
+        if (endptr == arg + i) {
+            /* Invalid convertion. */
+            fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+            exit(1);
+        }
+
+        /* Make sure the the port value is not a priviledged port and is not
+           greater than max port value. */
+
+        if ((m_listen_port < 1024) || (m_listen_port > 0xffff)) {
+            fprintf(stderr,
+                    "avarice: invalid port number: %d (must be >= %d"
+                    " and <= %d)\n",
+                    m_listen_port, 1024, 0xffff);
+            exit(1);
+        }
+
+    auto initSocketAddress = [&](struct sockaddr_in *name, const char *hostname,
+                                  unsigned short int port) {
+        memset(name, 0, sizeof(*name));
+        name->sin_family = AF_INET;
+        name->sin_port = htons(port);
+        // Try numeric interpretation (1.2.3.4) first, then
+        // hostname resolution if that failed.
+        if (inet_aton(hostname, &name->sin_addr) == 0) {
+            hostent *hostInfo = gethostbyname(hostname);
+            if (hostInfo == nullptr) {
+                fprintf(stderr, "Unknown host %s", hostname);
+                throw jtag_exception();
+                }
+                name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
+            }
+        };
+
+    initSocketAddress(&m_name, hostName, m_listen_port);
+
+    auto makeSocket = [&](struct sockaddr_in *name) -> int {
+        int sock;
+        int tmp;
+        struct protoent *protoent;
+
+        sock = socket(PF_INET, SOCK_STREAM, 0);
+        if (sock < 0)
+            throw jtag_exception();
+
+        // Allow rapid reuse of this port.
+        tmp = 1;
+        if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&tmp, sizeof(tmp)) < 0)
+            throw jtag_exception();
+
+        // Enable TCP keep alive process.
+        tmp = 1;
+        if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&tmp, sizeof(tmp)) < 0)
+            throw jtag_exception();
+
+        if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0) {
+            if (errno == EADDRINUSE)
+                fprintf(stderr, "bind() failed: another server is still running on this port\n");
+            throw jtag_exception("bind() failed");
+        }
+
+        protoent = getprotobyname("tcp");
+        if (protoent == nullptr) {
+            fprintf(stderr, "tcp protocol unknown (oops?)");
+            throw jtag_exception();
+        }
+
+        tmp = 1;
+        if (setsockopt(sock, protoent->p_proto, TCP_NODELAY, (char *)&tmp, sizeof(tmp)) < 0)
+            throw jtag_exception();
+
+        return sock;
+    };
+
+    m_sock = makeSocket(&m_name);
+}
+
+void GdbServer::listen() {
+    statusOut("Waiting for connection on port %hu.\n", m_listen_port);
+        if (::listen(m_sock, 1) < 0)
+            throw jtag_exception();
+}
+
+void GdbServer::accept() {
+    // Connection request on original socket.
+    sockaddr_in clientname{};
+    auto size = static_cast<socklen_t>(sizeof(clientname));
+    m_fd = ::accept(m_sock, (struct sockaddr *)&clientname, &size);
+    if (m_fd < 0)
+        throw jtag_exception();
+    statusOut("Connection opened by host %s, port %hu.\n", inet_ntoa(clientname.sin_addr),
+              ntohs(clientname.sin_port));
+}
+
 static void gdb_ok();
 static void gdb_error();
 
@@ -66,7 +192,7 @@ void setGdbFile(int fd) {
         throw jtag_exception();
 }
 
-static void waitForGdbOutput() {
+void GdbServer::waitForOutput() {
     fd_set writefds;
 
     FD_ZERO(&writefds);
@@ -78,7 +204,7 @@ static void waitForGdbOutput() {
 }
 
 /** Send single char to gdb. Abort in case of problem. **/
-static void putDebugChar(char c) {
+void GdbServer::putDebugChar(char c) {
     // This loop busy waits when it cannot write to gdb.
     // But that shouldn't happen
     for (;;) {
@@ -93,7 +219,7 @@ static void putDebugChar(char c) {
         if (errno != EAGAIN && ret < 0)
             throw jtag_exception();
 
-        waitForGdbOutput();
+        waitForOutput();
     }
 }
 
@@ -110,7 +236,7 @@ static void waitForGdbInput() {
 
 /** Return single char read from gdb. Abort in case of problem,
     exit cleanly if EOF detected on gdbFileDescriptor. **/
-unsigned char getDebugChar() {
+unsigned char GdbServer::getDebugChar() {
     uchar c = 0;
     ssize_t result;
 
@@ -198,9 +324,7 @@ static uchar *hex2mem(const char *buf, uchar *mem, int count) {
     return mem;
 }
 
-static void putpacket(const char *buffer);
-
-void vgdbOut(const char *fmt, va_list args) {
+void GdbServer::vOut(const char *fmt, va_list args) {
     // We protect against reentry because putpacket could try and report
     // an error which would lead to a call back to vgdbOut
     static bool reentered = false;
@@ -223,10 +347,10 @@ void vgdbOut(const char *fmt, va_list args) {
     }
 }
 
-void gdbOut(const char *fmt, ...) {
+void GdbServer::Out(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    vgdbOut(fmt, args);
+    vOut(fmt, args);
     va_end(args);
 }
 
@@ -313,7 +437,7 @@ static unsigned int readBWord(unsigned int address) {
 
 static unsigned int readSP() { return readLWord(0x5d); }
 
-static bool handleInterrupt() {
+bool GdbServer::handleInterrupt() {
     bool result;
 
     // Set a breakpoint at return address
@@ -336,7 +460,7 @@ static bool handleInterrupt() {
             if (!theJtagICE->addBreakpoint(retPC, BreakpointType::CODE, 0))
                 return false;
         }
-        result = theJtagICE->jtagContinue();
+        result = theJtagICE->jtagContinue(*this);
         if (needBP)
             theJtagICE->deleteBreakpoint(retPC, BreakpointType::CODE, 0);
 
@@ -351,18 +475,18 @@ static bool handleInterrupt() {
     return result;
 }
 
-static bool singleStep() {
+bool GdbServer::singleStep() {
     try {
         theJtagICE->jtagSingleStep();
     } catch (jtag_exception &e) {
-        gdbOut("Failed to single-step");
+        Out("Failed to single-step");
     }
 
     unsigned int newPC = theJtagICE->getProgramCounter();
     if (theJtagICE->codeBreakpointAt(newPC))
         return true;
     // assume interrupt when PC goes into interrupt table
-    if (ignoreInterrupts && newPC < theJtagICE->deviceDef->vectors_end)
+    if (m_ignoreInterrupts && newPC < theJtagICE->deviceDef->vectors_end)
         return handleInterrupt();
 
     return true;
@@ -373,7 +497,7 @@ static bool singleStep() {
     Return pointer to null-terminated, actual packet data (without $, #,
     the checksum)
 **/
-static char *getpacket(int &len) {
+char *GdbServer::getpacket(int &len) {
     static char remcomInBuffer[BUFMAX];
     char *buffer = remcomInBuffer;
 
@@ -425,10 +549,10 @@ static char *getpacket(int &len) {
                 char buf[16];
 
                 mem2hex(&checksum, buf, 4);
-                gdbOut("Bad checksum: my count = %s, ", buf);
+                Out("Bad checksum: my count = %s, ", buf);
                 mem2hex(&xmitcsum, buf, 4);
-                gdbOut("sent count = %s\n", buf);
-                gdbOut(" -- Bad buffer: \"%s\"\n", buffer);
+                Out("sent count = %s\n", buf);
+                Out(" -- Bad buffer: \"%s\"\n", buffer);
 
                 putDebugChar('-'); // failed checksum
             } else {
@@ -452,7 +576,7 @@ static char *getpacket(int &len) {
 }
 
 /** Send packet 'buffer' to gdb. Adds $, # and checksum wrappers. **/
-static void putpacket(const char *buffer) {
+void GdbServer::putpacket(const char *buffer) {
     char ch;
 
     //  $<packet info>#<checksum>.
@@ -555,7 +679,7 @@ static std::string makeSafeString(const char *s, int inLength) {
     return r;
 }
 
-void talkToGdb() {
+void GdbServer::handle() {
     bool dontSendReply = false;
     static char last_cmd = 0;
 
@@ -580,7 +704,7 @@ void talkToGdb() {
         try {
             theJtagICE->resetProgram(false);
         } catch (jtag_exception &e) {
-            gdbOut("reset failed\n");
+            Out("reset failed\n");
         }
         dontSendReply = true;
         break;
@@ -895,7 +1019,7 @@ void talkToGdb() {
             try {
                 theJtagICE->setProgramCounter(addr);
             } catch (jtag_exception &) {
-                gdbOut("Failed to set PC");
+                Out("Failed to set PC");
             }
         }
         repStatus(singleStep());
@@ -931,10 +1055,10 @@ void talkToGdb() {
             try {
                 theJtagICE->setProgramCounter(addr);
             } catch (jtag_exception &) {
-                gdbOut("Failed to set PC");
+                Out("Failed to set PC");
             }
         }
-        repStatus(theJtagICE->jtagContinue());
+        repStatus(theJtagICE->jtagContinue(*this));
         break;
 
     case 'D':

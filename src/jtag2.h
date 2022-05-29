@@ -281,7 +281,7 @@ class Jtag2 : public Jtag {
     void interruptProgram() override;
     void resumeProgram() override;
     void jtagSingleStep() override;
-    bool jtagContinue() override;
+    bool jtagContinue(Server &) override;
 
     uchar *jtagRead(unsigned long addr, unsigned int numBytes) override;
     void jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[]) override;
@@ -344,7 +344,7 @@ class Jtag2 : public Jtag {
         the heart of jtagContinue for the mkII, it returns true when a
         breakpoint was reached, and false for GDB input.
      **/
-    bool eventLoop();
+    bool eventLoop(Server &);
 
     /** Expect an ICE event in the input stream.
      **/
