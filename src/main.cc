@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
                 unsigned int bits_before = 0;
                 unsigned int bits_after = 0;
 
-                const char *daisy_chain = vm["daisy_chain"].as<std::string>().c_str();
+                const char *daisy_chain = vm["daisy-chain"].as<std::string>().c_str();
                 if (sscanf(daisy_chain, "%u,%u,%u,%u", &units_before, &units_after, &bits_before,
                            &bits_after) != 4)
                     exit(1);
