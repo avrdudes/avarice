@@ -40,8 +40,6 @@ const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, st
                                 [&](const auto *dev) { return dev->device_id == id; });
         if( found_id_it != jtag_device_def_type::devices.cend() )
             found_id = *found_id_it;
-        else
-            found_id = nullptr;
     }
 
     const jtag_device_def_type *found_name = nullptr;
@@ -52,8 +50,6 @@ const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, st
                                   [&](const auto *dev) { return dev->name == lowercase_name; });
         if( found_name_it != jtag_device_def_type::devices.cend() )
             found_name = *found_name_it;
-        else
-            found_name = nullptr;
     }
 
     if( !found_id && !found_name ) {

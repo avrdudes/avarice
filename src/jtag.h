@@ -218,7 +218,7 @@ struct jtag_device_def_type {
 
     const jtag1_device_desc_type *jtag1_dev_desc1; // Device descriptor to download to
                                       // mkI device
-    const jtag2_device_desc_type &jtag2_dev_desc2; // Device descriptor to download to
+    const jtag2_device_desc_type jtag2_dev_desc2; // Device descriptor to download to
                                       // mkII device
     const xmega_device_desc_type *xmega_dev_desc; // Device descriptor to download for
                                       // Xmega devices in new (7+) firmware

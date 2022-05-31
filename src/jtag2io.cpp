@@ -430,7 +430,7 @@ void Jtag2::changeBitRate(int newBitRate) {
 /** Set the JTAG ICE device descriptor data for specified device type **/
 void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
     const auto *dev_desc = [&]{
-        if (is_xmega && has_full_xmega_support)
+        if (is_xmega && has_full_xmega_support && dev.xmega_dev_desc)
             return reinterpret_cast<const uchar*>(dev.xmega_dev_desc);
         else
             return reinterpret_cast<const uchar*>(&dev.jtag2_dev_desc2);
