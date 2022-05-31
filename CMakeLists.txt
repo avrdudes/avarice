@@ -11,7 +11,6 @@ add_executable(avarice
         src/main.cpp
         src/gdb_server.cpp
         src/utils.cpp
-        src/crc16.cpp
         src/jtag1bp.cpp
         src/jtag1io.cpp
         src/jtag1misc.cpp

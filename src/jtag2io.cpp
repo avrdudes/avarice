@@ -23,8 +23,11 @@
 #include <cstdio>
 #include <cstring>
 
-#include "crc16.h"
 #include "jtag2.h"
+
+#include <boost/crc.hpp>
+// Based on boost::crc_ccitt_true_t but with a different start value
+using Crc16 = boost::crc_optimal< 16, 0x1021, 0xffff, 0, true, true >;
 
 jtag2_io_exception::jtag2_io_exception(unsigned int code) {
     static char buffer[50];
@@ -109,7 +112,11 @@ void Jtag2::sendFrame(const uchar *command, int commandSize) {
     buf[7] = TOKEN;
     memcpy(buf.get() + 8, command, commandSize);
 
-    Crc16::AppendChecksum(buf.get(), commandSize + 8);
+    Crc16 crc;
+    crc.process_bytes(buf.get(), commandSize + 8);
+    const auto calculated_cs = crc.checksum();
+    auto& msg_cs = *reinterpret_cast<uint16_t*>(buf.get() + commandSize + 8);
+    msg_cs = calculated_cs;
 
     int count = safewrite(buf.get(), commandSize + 10);
 
@@ -233,9 +240,13 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             buf[l++] = c;
             state = sCSUM2;
             break;
-        case sCSUM2:
+        case sCSUM2: {
             buf[l++] = c;
-            if (Crc16::VerifyChecksum(buf.get(), msglen + 10)) {
+            Crc16 crc;
+            crc.process_bytes(buf.get(), msglen + 8);
+            const auto calculated_cs = crc.checksum();
+            const auto& received_cs = *reinterpret_cast<uint16_t*>(buf.get() + msglen + 8);
+            if (calculated_cs == received_cs) {
                 debugOut("CRC OK");
                 state = sDONE;
             } else {
@@ -243,6 +254,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
                 return -1;
             }
             break;
+        }
         default:
             debugOut("unknown state");
             return -1;
