@@ -42,6 +42,7 @@ class GdbServer : public Server {
     void handle();
     void waitForOutput();
 
+    void waitForGdbInput();
     /** Return single char read from gdb. Abort in case of problem,
         exit cleanly if EOF detected on gdbFileDescriptor. **/
     unsigned char getDebugChar() override;

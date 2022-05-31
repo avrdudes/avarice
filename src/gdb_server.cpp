@@ -26,9 +26,9 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
-#include <unistd.h>
-#include <string_view>
 #include <string>
+#include <string_view>
+#include <unistd.h>
 
 #include "avarice.h"
 #include "gdb_server.h"
@@ -54,57 +54,57 @@ enum {
 static char remcomOutBuffer[BUFMAX];
 
 GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
-    :m_ignoreInterrupts(ignore_interrupts){
+    : m_ignoreInterrupts(ignore_interrupts) {
     const char *hostName = "0.0.0.0"; /* INADDR_ANY */
 
     size_t i;
-        const char *arg = listen.data();
-        const auto len = strlen(arg);
-        char *host = new char[len + 1];
-        memset(host, '\0', len + 1);
+    const char *arg = listen.data();
+    const auto len = strlen(arg);
+    char *host = new char[len + 1];
+    memset(host, '\0', len + 1);
 
-        for (i = 0; i < len; i++) {
-            if ((arg[i] == '\0') || (arg[i] == ':'))
-                break;
+    for (i = 0; i < len; i++) {
+        if ((arg[i] == '\0') || (arg[i] == ':'))
+            break;
 
-            host[i] = arg[i];
-        }
+        host[i] = arg[i];
+    }
 
-        if (strlen(host)) {
-            hostName = host;
-        }
+    if (strlen(host)) {
+        hostName = host;
+    }
 
-        if (arg[i] == ':') {
-            i++;
-        }
+    if (arg[i] == ':') {
+        i++;
+    }
 
-        if (i >= len) {
-            /* No port was given. */
-            fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
-            exit(1);
-        }
+    if (i >= len) {
+        /* No port was given. */
+        fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+        exit(1);
+    }
 
-        char *endptr;
-        m_listen_port = (int)strtol(arg + i, &endptr, 0);
-        if (endptr == arg + i) {
-            /* Invalid convertion. */
-            fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
-            exit(1);
-        }
+    char *endptr;
+    m_listen_port = (int)strtol(arg + i, &endptr, 0);
+    if (endptr == arg + i) {
+        /* Invalid convertion. */
+        fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+        exit(1);
+    }
 
-        /* Make sure the the port value is not a priviledged port and is not
-           greater than max port value. */
+    /* Make sure the the port value is not a priviledged port and is not
+       greater than max port value. */
 
-        if ((m_listen_port < 1024) || (m_listen_port > 0xffff)) {
-            fprintf(stderr,
-                    "avarice: invalid port number: %d (must be >= %d"
-                    " and <= %d)\n",
-                    m_listen_port, 1024, 0xffff);
-            exit(1);
-        }
+    if ((m_listen_port < 1024) || (m_listen_port > 0xffff)) {
+        fprintf(stderr,
+                "avarice: invalid port number: %d (must be >= %d"
+                " and <= %d)\n",
+                m_listen_port, 1024, 0xffff);
+        exit(1);
+    }
 
     auto initSocketAddress = [&](struct sockaddr_in *name, const char *hostname,
-                                  unsigned short int port) {
+                                 unsigned short int port) {
         memset(name, 0, sizeof(*name));
         name->sin_family = AF_INET;
         name->sin_port = htons(port);
@@ -115,10 +115,10 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
             if (hostInfo == nullptr) {
                 fprintf(stderr, "Unknown host %s", hostname);
                 throw jtag_exception();
-                }
-                name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
             }
-        };
+            name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
+        }
+    };
 
     initSocketAddress(&m_name, hostName, m_listen_port);
 
@@ -165,8 +165,8 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
 
 void GdbServer::listen() {
     statusOut("Waiting for connection on port %hu.\n", m_listen_port);
-        if (::listen(m_sock, 1) < 0)
-            throw jtag_exception();
+    if (::listen(m_sock, 1) < 0)
+        throw jtag_exception();
 }
 
 void GdbServer::accept() {
@@ -176,6 +176,9 @@ void GdbServer::accept() {
     m_fd = ::accept(m_sock, (struct sockaddr *)&clientname, &size);
     if (m_fd < 0)
         throw jtag_exception();
+    int ret = fcntl(m_fd, F_SETFL, O_NONBLOCK);
+    if (ret < 0)
+        throw jtag_exception();
     statusOut("Connection opened by host %s, port %hu.\n", inet_ntoa(clientname.sin_addr),
               ntohs(clientname.sin_port));
 }
@@ -183,22 +186,13 @@ void GdbServer::accept() {
 static void gdb_ok();
 static void gdb_error();
 
-int gdbFileDescriptor = -1;
-
-void setGdbFile(int fd) {
-    gdbFileDescriptor = fd;
-    int ret = fcntl(gdbFileDescriptor, F_SETFL, O_NONBLOCK);
-    if (ret < 0)
-        throw jtag_exception();
-}
-
 void GdbServer::waitForOutput() {
     fd_set writefds;
 
     FD_ZERO(&writefds);
-    FD_SET(gdbFileDescriptor, &writefds);
+    FD_SET(m_fd, &writefds);
 
-    int numfds = select(gdbFileDescriptor + 1, nullptr, &writefds, nullptr, nullptr);
+    int numfds = select(m_fd + 1, nullptr, &writefds, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -208,7 +202,7 @@ void GdbServer::putDebugChar(char c) {
     // This loop busy waits when it cannot write to gdb.
     // But that shouldn't happen
     for (;;) {
-        const auto ret = write(gdbFileDescriptor, &c, 1);
+        const auto ret = write(m_fd, &c, 1);
 
         if (ret == 1)
             return;
@@ -223,13 +217,13 @@ void GdbServer::putDebugChar(char c) {
     }
 }
 
-static void waitForGdbInput() {
+void GdbServer::waitForGdbInput() {
     fd_set readfds;
 
     FD_ZERO(&readfds);
-    FD_SET(gdbFileDescriptor, &readfds);
+    FD_SET(m_fd, &readfds);
 
-    int numfds = select(gdbFileDescriptor + 1, &readfds, nullptr, nullptr, nullptr);
+    int numfds = select(m_fd + 1, &readfds, nullptr, nullptr, nullptr);
     if (numfds < 0)
         throw jtag_exception();
 }
@@ -242,7 +236,7 @@ unsigned char GdbServer::getDebugChar() {
 
     do {
         waitForGdbInput();
-        result = read(gdbFileDescriptor, &c, 1);
+        result = read(m_fd, &c, 1);
     } while (result < 0 && errno == EAGAIN);
 
     if (result < 0)
@@ -329,16 +323,16 @@ void GdbServer::vOut(const char *fmt, va_list args) {
     // an error which would lead to a call back to vgdbOut
     static bool reentered = false;
 
-    if (gdbFileDescriptor >= 0 && !reentered) {
+    if (m_fd >= 0 && !reentered) {
         char textbuf[BUFMAX], hexbuf[2 * BUFMAX];
 
         reentered = true;
 
         vsnprintf(textbuf, BUFMAX, fmt, args);
 
-        char* hexscan = hexbuf;
+        char *hexscan = hexbuf;
         *hexscan++ = 'O';
-        for (const char* textscan = textbuf; *textscan; textscan++)
+        for (const char *textscan = textbuf; *textscan; textscan++)
             hexscan = byteToHex(*textscan, hexscan);
         *hexscan = '\0';
         putpacket(hexbuf);
@@ -540,9 +534,9 @@ char *GdbServer::getpacket(int &len) {
 
         if (ch == '#') {
             const auto xmitcsum = [&]() -> uchar {
-              const auto high_nibble = getDebugChar();
-              const auto low_nibble = getDebugChar();
-              return (hex(high_nibble) << 4) + hex(low_nibble);
+                const auto high_nibble = getDebugChar();
+                const auto low_nibble = getDebugChar();
+                return (hex(high_nibble) << 4) + hex(low_nibble);
             }();
 
             if (checksum != xmitcsum) {
@@ -975,7 +969,7 @@ void GdbServer::handle() {
         break;
     }
 
-    case 'P':     // set the value of a single CPU register - return OK
+    case 'P':        // set the value of a single CPU register - return OK
         gdb_error(); // error by default
         int regno;
         if (hexToInt(&ptr, &regno) && *ptr++ == '=') {
@@ -1042,7 +1036,7 @@ void GdbServer::handle() {
                     theJtagICE->resetProgram(false);
                     reportStatusExtended(SIGTRAP);
                 } catch (jtag_exception &e) {
-                    debugOut( "Failed to reset MCU: %s\n", e.what());
+                    debugOut("Failed to reset MCU: %s\n", e.what());
                 }
             }
         }
