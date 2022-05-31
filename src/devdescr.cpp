@@ -29,8 +29,8 @@
 const jtag_device_def_type &jtag_device_def_type::Find(const unsigned int id, std::string_view name) {
 
     // So we can do a case insensitive search in our database
-    std::string lowercase_name;
-    std::transform(name.begin(), name.end(), lowercase_name.begin(), ::tolower);
+    std::string lowercase_name{name};
+    std::transform(lowercase_name.begin(), lowercase_name.end(), lowercase_name.begin(), ::tolower);
 
     const jtag_device_def_type *found_id = nullptr;
     if (id) {

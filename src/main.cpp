@@ -331,9 +331,10 @@ int main(int argc, char **argv) {
         } else {
             theJtagICE->resumeProgram();
         }
-    } catch (jtag_exception &) {
+    } catch (std::exception &e) {
         // ignored; guarantee theJtagICE object will be deleted
         // correctly, as this says "good-bye" to the JTAG ICE mkII
+        std::cerr << "Error: " << e.what() << std::endl;
         rv = 1;
     } catch (...) {
         // Fatal error?
