@@ -151,11 +151,12 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 	unsigned int chunksize = numBytes;
 	unsigned int targetOffset = 0;
 
-	if (addr + chunksize >= pageAddr + pageSize)
+	offset = addr & mask;
+	if (offset + chunksize > pageSize) {
 	    // Chunk would cross a page boundary, reduce it
 	    // appropriately.
-	    chunksize -= (addr + numBytes - (pageAddr + pageSize));
-	offset = addr - pageAddr;
+	    chunksize = pageSize - offset;
+	}
 
 	while (numBytes > 0)
 	{
@@ -193,6 +194,7 @@ uchar *jtag2::jtagRead(unsigned long addr, unsigned int numBytes)
 
 	    numBytes -= chunksize;
 	    targetOffset += chunksize;
+	    offset = 0;
 
 	    chunksize = numBytes > pageSize? pageSize: numBytes;
 	    pageAddr += pageSize;
