@@ -36,7 +36,7 @@
 
 #include <thread>
 
-#include "jtag.h"
+#include "jtag2.h"
 
 namespace {
 constexpr unsigned short USB_VENDOR_ATMEL = 1003;
@@ -81,7 +81,7 @@ std::thread usb_write_thread;
 std::thread usb_event_thread;
 int usb_interface_id;
 
-}
+} // namespace
 
 /*
  * Walk down all USB devices, and see whether we can find our emulator
@@ -148,7 +148,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
             }
 
             if (strlen(serno) > 12) {
-                debugOut("invalid serial number \"%s\"", serno);
+                BOOST_LOG_TRIVIAL(error) << "invalid serial number " << serno;
                 return nullptr;
             }
         }
@@ -174,11 +174,11 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
                     int rv = usb_get_string_simple(pdev, dev->descriptor.iSerialNumber, string,
                                                    sizeof(string));
                     if (rv < 0) {
-                        debugOut( "cannot read serial number \"%s\"", usb_strerror());
+                        BOOST_LOG_TRIVIAL(error) << "cannot read serial number " << usb_strerror();
                         return nullptr;
                     }
 
-                    statusOut("Found JTAG ICE, serno: %s\n", string);
+                    BOOST_LOG_TRIVIAL(debug) << "Found JTAG ICE, serno: " << string;
                     if (serno) {
                         /*
                          * See if the serial number requested by the
@@ -187,7 +187,7 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
                          */
                         const size_t x = strlen(string) - strlen(serno);
                         if (strcasecmp(string + x, serno) != 0) {
-                            debugOut("serial number doesn't match\n");
+                            BOOST_LOG_TRIVIAL(error) << "serial number doesn't match";
                             usb_close(pdev);
                             continue;
                         }
@@ -203,33 +203,35 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
     }
 
     if (!found) {
-        debugOut("did not find any%s USB device \"%s\"\n", serno ? " (matching)" : "",
-               jtagDeviceName);
+        BOOST_LOG_TRIVIAL(warning) << "Did not find any" << (serno ? " (matching)" : "")
+                                   << " USB device \"" << jtagDeviceName << "\"";
         return nullptr;
     }
 
     if (dev->config == nullptr) {
-        debugOut("USB device has no configuration\n");
+        BOOST_LOG_TRIVIAL(error) << "USB device has no configuration";
     fail:
         usb_close(pdev);
         return nullptr;
     }
     if (usb_set_configuration(pdev, dev->config[0].bConfigurationValue)) {
-        debugOut("error setting configuration %d: %s\n", dev->config[0].bConfigurationValue,
-                  usb_strerror());
+        BOOST_LOG_TRIVIAL(debug) << format{"error setting configuration %d: %s"} %
+                                        dev->config[0].bConfigurationValue % usb_strerror();
         goto fail;
     }
     usb_interface_id = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
     if (usb_claim_interface(pdev, usb_interface_id)) {
-        debugOut("error claiming interface %d: %s\n", usb_interface_id, usb_strerror());
+        BOOST_LOG_TRIVIAL(debug) << format{"error claiming interface %d: %s"} % usb_interface_id %
+                                        usb_strerror();
         goto fail;
     }
     usb_endpoint_descriptor *epp = dev->config[0].interface[0].altsetting[0].endpoint;
     for (int i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; ++i) {
         if ((epp[i].bEndpointAddress == read_ep || epp[i].bEndpointAddress == write_ep) &&
             epp[i].wMaxPacketSize < max_xfer) {
-            statusOut("downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize\n",
-                      max_xfer, epp[i].wMaxPacketSize, epp[i].bEndpointAddress);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"downgrading max_xfer from %d to %d due to EP 0x%02x's wMaxPacketSize"} %
+                       max_xfer % epp[i].wMaxPacketSize % epp[i].bEndpointAddress;
             max_xfer = epp[i].wMaxPacketSize;
         }
     }
@@ -249,7 +251,8 @@ static usb_dev_t *opendev(const char *jtagDeviceName, Emulator emu_type) {
      * instead.
      */
     if (event_ep != 0 && max_xfer < USBDEV_MAX_XFER_3) {
-        debugOut("Sorry, the JTAGICE3's firmware is broken on USB 1.1 connections\n");
+        BOOST_LOG_TRIVIAL(debug)
+            << "Sorry, the JTAGICE3's firmware is broken on USB 1.1 connections";
         usb_close(pdev);
         pdev = nullptr;
     }
@@ -291,7 +294,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
 
             serlen = strlen(serno);
             if (serlen > 12) {
-                debugOut("invalid serial number \"%s\"", serno);
+                BOOST_LOG_TRIVIAL(error) << "invalid serial number " << serno;
                 return nullptr;
             }
             mbstowcs(wserno, serno, 15);
@@ -313,8 +316,9 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
     auto walk = list;
     while (walk) {
         if (wcsstr(walk->product_string, L"CMSIS-DAP") != nullptr) {
-            debugOut("Found HID PID:VID 0x%04x:0x%04x, serno %ls\n", walk->vendor_id,
-                     walk->product_id, walk->serial_number);
+            BOOST_LOG_TRIVIAL(debug) << format{"Found HID PID:VID 0x%04x:0x%04x, serno %ls"} %
+                                            walk->vendor_id % walk->product_id %
+                                            walk->serial_number;
             // Atmel CMSID-DAP device found
             // If no serial number requested, we are done.
             if (serlen == 0)
@@ -324,7 +328,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
             if (slen >= serlen) {
                 if (wcscmp(walk->serial_number + slen - serlen, wserno) == 0) {
                     // found matching serial number
-                    debugOut("...matched\n");
+                    BOOST_LOG_TRIVIAL(debug) << "...matched";
                     break;
                 }
             }
@@ -333,7 +337,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
         walk = walk->next;
     }
     if (!walk) {
-        debugOut( "No (matching) HID found\n");
+        BOOST_LOG_TRIVIAL(warning) << "No (matching) HID found";
         hid_free_enumeration(list);
         return nullptr;
     }
@@ -354,7 +358,7 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
      * response, provide another 448 bytes to complete the 512-byte
      * packet (JTAGICE3, Atmel-ICE, full EDBG).
      */
-    debugOut("Probing for HID max. packet size\n");
+    BOOST_LOG_TRIVIAL(debug) << "Probing for HID max. packet size";
     max_pkt_size = 64; // first guess
     unsigned char probebuf[512 + 1] = {
         0,    // no HID report number used
@@ -370,26 +374,28 @@ static hid_device *openhid(const char *jtagDeviceName, unsigned int &max_pkt_siz
         res = hid_read_timeout(pdev, probebuf, 10, 50);
     }
     if (res <= 0) {
-        debugOut( "openhid(): device not responding to DAP_Info\n");
+        BOOST_LOG_TRIVIAL(error) << "openhid(): device not responding to DAP_Info";
         hid_close(pdev);
         return nullptr;
     }
     if (probebuf[0] != 0 || probebuf[1] != 2) {
-        debugOut("Unexpected DAP_Info response 0x%02x 0x%02x\n", probebuf[0], probebuf[1]);
+        BOOST_LOG_TRIVIAL(debug) << format{"Unexpected DAP_Info response 0x%02x 0x%02x"} %
+                                        probebuf[0] % probebuf[1];
     } else {
         unsigned int probesize = probebuf[2] + (probebuf[3] << 8);
         if (probesize != 64 && probesize != 512) {
-            debugOut("Unexpected max. packet size %u, proceeding with %u\n", probesize,
-                     max_pkt_size);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"Unexpected max. packet size %u, proceeding with %u"} % probesize %
+                       max_pkt_size;
         } else {
-            debugOut("Setting max. packet size to %u from DAP_Info\n", probesize);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"Setting max. packet size to %u from DAP_Info"} % probesize;
             max_pkt_size = probesize;
         }
     }
 
     return pdev;
 }
-
 
 /* USB writer thread */
 static void usb_write_handler() {
@@ -400,10 +406,10 @@ static void usb_write_handler() {
             int offset = 0;
 
             while (rv != 0) {
-                auto amnt = (rv > max_xfer)?max_xfer:rv;
+                auto amnt = (rv > max_xfer) ? max_xfer : rv;
                 auto result = usb_bulk_write(udev, write_ep, buf + offset, amnt, 5000);
                 if (result != amnt) {
-                    debugOut( "USB bulk write error: %s\n", usb_strerror());
+                    BOOST_LOG_TRIVIAL(error) << "USB bulk write error: " << usb_strerror();
                     return;
                 }
                 if (rv == max_xfer) {
@@ -415,7 +421,7 @@ static void usb_write_handler() {
             }
             continue;
         } else if (errno != EINTR && errno != EAGAIN) {
-            debugOut( "read error from AVaRICE: %s\n", strerror(errno));
+            BOOST_LOG_TRIVIAL(error) << "read error from AVaRICE: " << strerror(errno);
             return;
         }
     }
@@ -429,7 +435,7 @@ static void usb_read_handler() {
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
         } else if (rv < 0) {
-            debugOut( "USB bulk read error: %s (%d)\n", usb_strerror(), rv);
+            BOOST_LOG_TRIVIAL(error) << "USB bulk read: " << usb_strerror() << "(" << rv << ")";
             return;
         } else {
             /*
@@ -456,8 +462,8 @@ static void usb_read_handler() {
                     break;
                 }
                 if (rv < 0) {
-                    debugOut( "USB bulk read error in continuation block: %s\n",
-                            usb_strerror());
+                    BOOST_LOG_TRIVIAL(error)
+                        << "USB bulk read error in continuation block: " << usb_strerror();
                     return;
                 }
 
@@ -465,7 +471,7 @@ static void usb_read_handler() {
                 pkt_len += rv;
                 if (pkt_len == MAX_USB_MESSAGE) {
                     /* should not happen */
-                    debugOut( "Message too big in USB receive.\n");
+                    BOOST_LOG_TRIVIAL(error) << "Message too big in USB receive.";
                     break;
                 }
             }
@@ -484,7 +490,7 @@ static void usb_read_handler() {
             }
 
             if (write(pype[0], writep, writesize) != writesize) {
-                debugOut( "short write to AVaRICE: %s\n", strerror(errno));
+                BOOST_LOG_TRIVIAL(error) << "short write to AVaRICE: " << strerror(errno);
                 return;
             }
         }
@@ -500,17 +506,19 @@ static void usb_event_handler() {
          */
         char buf[USBDEV_MAX_EVT_3 + sizeof(unsigned int)];
 
-        const auto rv = usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int), USBDEV_MAX_EVT_3, 0);
+        const auto rv =
+            usb_bulk_read(udev, event_ep, buf + sizeof(unsigned int), USBDEV_MAX_EVT_3, 0);
         if (rv == 0 || rv == -EINTR || rv == -EAGAIN || rv == -ETIMEDOUT) {
             /* OK, try again */
         } else if (rv < 0) {
-            debugOut( "USB event read error: %s (%d)\n", usb_strerror(), rv);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"USB event read error: %s (%d)"} % usb_strerror() % rv;
             return;
         } else {
             if (buf[sizeof(unsigned int)] != TOKEN) {
-                debugOut(
-                        "usb_daemon(): first byte of event message is not TOKEN but 0x%02x\n",
-                        buf[sizeof(unsigned int)]);
+                BOOST_LOG_TRIVIAL(debug)
+                    << format{"usb_daemon(): first byte of event message is not TOKEN but 0x%02x"} %
+                           buf[sizeof(unsigned int)];
             } else {
                 unsigned int pkt_len = rv;
 
@@ -524,7 +532,7 @@ static void usb_event_handler() {
                 buf[sizeof(unsigned int)] = TOKEN_EVT3;
                 if (write(pype[0], buf, pkt_len + sizeof(unsigned int)) !=
                     pkt_len + sizeof(unsigned int)) {
-                    debugOut( "short write to AVaRICE: %s\n", strerror(errno));
+                    BOOST_LOG_TRIVIAL(error) << "short write to AVaRICE: " << strerror(errno);
                     return;
                 }
             }
@@ -546,7 +554,7 @@ static void hid_handler(hid_thread_data const &hdata) {
     fds[0].fd = pype[0];
     fds[0].events = POLLIN | POLLRDNORM;
 
-    debugOut("HID thread started\n");
+    BOOST_LOG_TRIVIAL(debug) << "HID thread started";
 
     while (true) {
         // One additional byte is for libhidapi to tell we don't use HID
@@ -574,12 +582,14 @@ static void hid_handler(hid_thread_data const &hdata) {
 
             rv = hid_read_timeout(hdev, buf, hdata.max_pkt_size + 1, 200);
             if (rv <= 0) {
-                debugOut("Querying for event: hid_read() failed (%d)\n", rv);
+                BOOST_LOG_TRIVIAL(debug)
+                    << format{"Querying for event: hid_read() failed (%d)"} % rv;
                 continue;
             }
             // Now examine whether the reply actually contained an event.
             if (buf[0] != EDBG_VENDOR_AVR_EVT) {
-                debugOut("Querying for event: unexpected response (0x%02x)\n", buf[0]);
+                BOOST_LOG_TRIVIAL(debug)
+                    << format{"Querying for event: unexpected response (0x%02x)"} % buf[0];
                 continue;
             }
             if (buf[1] == 0 && buf[2] == 0)
@@ -587,7 +597,8 @@ static void hid_handler(hid_thread_data const &hdata) {
                 continue;
             unsigned int len = buf[1] * 256 + buf[2];
             if (len > MAX_USB_MESSAGE - 10) {
-                debugOut("Querying for event: insane event size %u\n", len);
+                BOOST_LOG_TRIVIAL(debug)
+                    << format{"Querying for event: insane event size %u"} % len;
                 continue;
             }
             // tag this as an event packet
@@ -601,7 +612,7 @@ static void hid_handler(hid_thread_data const &hdata) {
         }
 
         if ((fds[0].revents & POLLERR) != 0) {
-            debugOut( "poll() returned POLLERR, why?\n");
+            BOOST_LOG_TRIVIAL(warning) << "poll() returned POLLERR, why?";
             fds[0].revents &= ~POLLERR;
         }
         if ((fds[0].revents & (POLLNVAL | POLLHUP)) != 0)
@@ -613,7 +624,7 @@ static void hid_handler(hid_thread_data const &hdata) {
             // read to offset 5 to leave room for the wrapper
             if ((rv = read(pype[0], buf + 5, MAX_USB_MESSAGE)) > 0) {
                 if (rv < 6) {
-                    debugOut("Reading command from AVaRICE failed\n");
+                    BOOST_LOG_TRIVIAL(error) << "Reading command from AVaRICE failed";
                     continue;
                 }
 
@@ -638,8 +649,8 @@ static void hid_handler(hid_thread_data const &hdata) {
                     buf[4] = cursize;
                     rv = hid_write(hdev, buf, hdata.max_pkt_size + 1);
                     if ((unsigned)rv != hdata.max_pkt_size + 1) {
-                        debugOut("hid_write: short write, %u vs. %d\n", hdata.max_pkt_size + 1,
-                                 rv);
+                        BOOST_LOG_TRIVIAL(debug) << format{"hid_write: short write, %u vs. %d"} %
+                                                        (hdata.max_pkt_size + 1) % rv;
                         goto done;
                     }
 
@@ -661,15 +672,16 @@ static void hid_handler(hid_thread_data const &hdata) {
 
                     rv = hid_read_timeout(hdev, buf + offset, hdata.max_pkt_size + 1, 500);
                     if (rv <= 0) {
-                        debugOut("Querying for response: hid_read() failed (%d)\n", rv);
+                        BOOST_LOG_TRIVIAL(debug)
+                            << format{"Querying for response: hid_read() failed (%d)"} % rv;
                         goto done;
                     }
-                    debugOut("Received 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n", buf[offset],
-                             buf[offset + 1], buf[offset + 2], buf[offset + 3], buf[offset + 4],
-                             buf[offset + 5]);
+                    BOOST_LOG_TRIVIAL(debug) << "Received " << logging::dump(buf + offset, 6);
                     // Now examine whether the reply actually contained a response.
                     if (buf[offset] != EDBG_VENDOR_AVR_RSP) {
-                        debugOut("Querying for response: unexpected response (0x%02x)\n", buf[0]);
+                        BOOST_LOG_TRIVIAL(debug)
+                            << format{"Querying for response: unexpected response (0x%02x)"} %
+                                   buf[0];
                         goto done;
                     }
                     if (npackets == 0) {
@@ -678,18 +690,19 @@ static void hid_handler(hid_thread_data const &hdata) {
                         thispacket = 1;
                     }
                     if ((buf[offset + 1] >> 4) != thispacket) {
-                        debugOut("Wrong fragment: got %d, expected %d\n", (buf[offset + 1] >> 4),
-                                 thispacket);
+                        BOOST_LOG_TRIVIAL(debug) << format{"Wrong fragment: got %d, expected %d"} %
+                                                        (buf[offset + 1] >> 4) % thispacket;
                         goto done;
                     }
                     unsigned int packet_len = buf[offset + 2] * 256 + buf[offset + 3];
                     if (packet_len < 5 || packet_len > hdata.max_pkt_size) {
-                        debugOut("Querying for response: insane event size %u\n", packet_len);
+                        BOOST_LOG_TRIVIAL(debug)
+                            << format{"Querying for response: insane event size %u"} % packet_len;
                         goto done;
                     }
                     totlength += packet_len;
                     if (totlength > MAX_USB_MESSAGE) {
-                        debugOut("reply size too large: %u\n", totlength);
+                        BOOST_LOG_TRIVIAL(debug) << format{"reply size too large: %u"} % totlength;
                         goto done;
                     }
                     // Update length field to pass (later) upstream
@@ -702,7 +715,7 @@ static void hid_handler(hid_thread_data const &hdata) {
                 write(pype[0], buf, totlength + sizeof(unsigned int));
             done:;
             } else if (errno != EINTR && errno != EAGAIN) {
-                debugOut( "read error from AVaRICE: %s\n", strerror(errno));
+                BOOST_LOG_TRIVIAL(error) << "read error from AVaRICE: " << strerror(errno);
                 return;
             }
         }
@@ -737,9 +750,9 @@ void Jtag::openUSB(const char *jtagDeviceName) {
             throw jtag_exception("cannot open USB device");
 
         usb_read_thread = std::thread(usb_read_handler);
-        usb_write_thread = std::thread( usb_write_handler);
+        usb_write_thread = std::thread(usb_write_handler);
         if (event_ep != 0)
-            usb_event_thread = std::thread( usb_event_handler);
+            usb_event_thread = std::thread(usb_event_handler);
 
         atexit(cleanup_usb);
     }

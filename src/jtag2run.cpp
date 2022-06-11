@@ -37,7 +37,7 @@ unsigned long Jtag2::getProgramCounter() {
     try {
         doJtagCommand(command, sizeof(command), response, responseSize, true);
     } catch (jtag_exception &e) {
-        debugOut("cannot read program counter: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "cannot read program counter: " << e.what();
         throw;
     }
 
@@ -62,7 +62,7 @@ void Jtag2::setProgramCounter(unsigned long pc) {
     try {
         doJtagCommand(command, sizeof(command), response, responseSize);
     } catch (jtag_exception &e) {
-        debugOut( "cannot write program counter: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "cannot write program counter: " << e.what();
         throw;
     }
 
@@ -120,7 +120,7 @@ void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
         // XXX if not event, should push frame back into queue...
         // We really need a queue of received frames.
         if (seqno != 0xffff)
-            debugOut("Expected event packet, got other response");
+            BOOST_LOG_TRIVIAL(warning) << "Expected event packet, got other response";
         else if (const auto event = static_cast<Event>(evtbuf[8]); IsBreakingEvent(event)) {
             switch (event) {
             // Program stopped at some kind of breakpoint.
@@ -161,27 +161,27 @@ void Jtag2::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
                 // Other fatal errors, user could mask them off
             case EVT_ICE_POWER_ERROR_STATE:
                 gdbInterrupt = true;
-                printf("\nJTAG ICE mkII power failure\n");
+                BOOST_LOG_TRIVIAL(warning) << "JTAG ICE mkII power failure";
                 break;
 
             case EVT_TARGET_POWER_OFF:
                 gdbInterrupt = true;
-                printf("\nTarget power turned off\n");
+                BOOST_LOG_TRIVIAL(debug) << "Target power turned off";
                 break;
 
             case EVT_TARGET_POWER_ON:
                 gdbInterrupt = true;
-                printf("\nTarget power returned\n");
+                BOOST_LOG_TRIVIAL(debug) << "Target power returned";
                 break;
 
             case EVT_TARGET_SLEEP:
                 gdbInterrupt = true;
-                printf("\nTarget went to sleep\n");
+                BOOST_LOG_TRIVIAL(debug) << "Target went to sleep";
                 break;
 
             case EVT_TARGET_WAKEUP:
                 gdbInterrupt = true;
-                printf("\nTarget went out of sleep\n");
+                BOOST_LOG_TRIVIAL(debug) << "Target went out of sleep";
                 break;
 
                 // Events where we want to continue
@@ -207,7 +207,7 @@ bool Jtag2::eventLoop(Server &server) {
     // box or a nudge from GDB.
 
     for (;;) {
-        debugOut("Waiting for input.\n");
+        BOOST_LOG_TRIVIAL(debug) << "Waiting for input.";
 
         // Check for input from JTAG ICE (breakpoint, sleep, info, power)
         // or gdb (user break)
@@ -228,10 +228,10 @@ bool Jtag2::eventLoop(Server &server) {
             const auto c = server.getDebugChar();
             if (c == 3) // interrupt
             {
-                debugOut("interrupted by GDB\n");
+                BOOST_LOG_TRIVIAL(debug) << "interrupted by GDB";
                 gdbInterrupt = true;
             } else
-                debugOut("Unexpected GDB input `%02x'\n", c);
+                BOOST_LOG_TRIVIAL(error) << format{"Unexpected GDB input `%02x'"} % c;
         }
 
         if (FD_ISSET(jtagBox, &readfds)) {
@@ -331,7 +331,7 @@ void Jtag2::parseEvents(std::string_view const &evtlist) {
         if (evtval != EVT_NA) {
             MarkNonBreaking(evtval);
         } else {
-            debugOut( "Warning: event name %.*s not matched\n", (int)l, cp1);
+            BOOST_LOG_TRIVIAL(warning) << format{"event name %.*s not matched"} % (int)l % cp1;
         }
 
         cp1 = cp2;

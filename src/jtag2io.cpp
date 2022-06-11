@@ -163,9 +163,9 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
 
     while (state != sDONE) {
         if (state == sDATA) {
-            debugOut("sDATA: reading %u bytes\n", msglen);
+            BOOST_LOG_TRIVIAL(debug) << "sDATA: reading " << msglen << " bytes";
             const auto rv = timeout_read(buf.get() + 8, msglen, JTAG_RESPONSE_TIMEOUT);
-            debugOutBufHex("read: ", buf.get() + 8, msglen);
+            BOOST_LOG_TRIVIAL(debug) << "read: " << logging::dump(buf.get() + 8, msglen);
             if (rv == 0)
                 /* timeout */
                 break;
@@ -173,10 +173,9 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             const auto rv = timeout_read(&c, 1, JTAG_RESPONSE_TIMEOUT);
             if (rv == 0) {
                 /* timeout */
-                debugOut("recv: timeout\n");
+                BOOST_LOG_TRIVIAL(warning) << "recv: timeout";
                 break;
             }
-            debugOut("recv: 0x%02x\n", c);
         }
         checksum ^= c;
 
@@ -218,8 +217,7 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             if (c == TOKEN) {
                 state = sDATA;
                 if (msglen > MAX_MESSAGE) {
-                    printf("msglen %lu exceeds max message size %lu, ignoring message\n", msglen,
-                           MAX_MESSAGE);
+                    BOOST_LOG_TRIVIAL(warning) << "Message too long " << msglen << " ignoring";
                     state = sSTART;
                     headeridx = 0;
                 } else {
@@ -246,17 +244,17 @@ int Jtag2::recvFrame(unsigned char *&msg, unsigned short &seqno) {
             crc.process_bytes(buf.get(), msglen + 8);
             const auto calculated_cs = crc.checksum();
             const auto& received_cs = *reinterpret_cast<uint16_t*>(buf.get() + msglen + 8);
+            BOOST_LOG_TRIVIAL(trace) << "recv " << logging::dump(buf.get(), msglen + 8);
             if (calculated_cs == received_cs) {
-                debugOut("CRC OK");
                 state = sDONE;
             } else {
-                debugOut("checksum error");
+                BOOST_LOG_TRIVIAL(warning) << "checksum error";
                 return -1;
             }
             break;
         }
         default:
-            debugOut("unknown state");
+            BOOST_LOG_TRIVIAL(warning) << "unknown state";
             return -1;
         }
     }
@@ -278,7 +276,7 @@ int Jtag2::recv(uchar *&msg) {
     for (;;) {
         if ((rv = recvFrame(msg, r_seqno)) <= 0)
             return rv;
-        debugOut("\nGot message seqno %d (command_sequence == %d)\n", r_seqno, command_sequence);
+        BOOST_LOG_TRIVIAL(debug) << format{"Got message seqno %d (command_sequence == %d)"} % r_seqno % command_sequence;
         if (r_seqno == command_sequence) {
             if (++command_sequence == 0xffff)
                 command_sequence = 0;
@@ -291,14 +289,14 @@ int Jtag2::recv(uchar *&msg) {
             return rv;
         }
         if (r_seqno == 0xffff) {
-            debugOut("\ngot asynchronous event: 0x%02x\n", msg[8]);
+            BOOST_LOG_TRIVIAL(debug) << format{"Got asynchronous event: 0x%02x"} % unsigned{msg[8]};
             // XXX should we queue that event up somewhere?
             // How to process it?  Register event handlers
             // for interesting events?
             // For now, the only place that cares is jtagContinue
             // and it just calls recvFrame and handles events directly.
         } else {
-            debugOut("\ngot wrong sequence number, %u != %u\n", r_seqno, command_sequence);
+            BOOST_LOG_TRIVIAL(warning) << format{"got wrong sequence number, %u != %u"} % r_seqno % command_sequence;
         }
         delete[] msg;
     }
@@ -322,8 +320,8 @@ bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
     if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
         throw jtag_exception("JTAG communication failed");
 
-    debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
-    debugOutBufHex("", command, commandSize);
+    BOOST_LOG_TRIVIAL(debug) << format{"command[%02x, %d]: "} % static_cast<int>(command[0]) % tries
+        << logging::dump(command, commandSize);
 
     sendFrame(command, commandSize);
 
@@ -333,7 +331,7 @@ bool Jtag2::sendJtagCommand(const uchar *command, int commandSize, int &tries, u
     else if (msgsize < 1)
         return false;
 
-    debugOutBufHex("response: ", msg, msgsize);
+    BOOST_LOG_TRIVIAL(debug) << "response: " << logging::dump(msg, msgsize);
 
     const auto c = msg[0];
     return (c >= RSP_OK) && (c < RSP_FAILED);
@@ -366,7 +364,7 @@ void Jtag2::doJtagCommand(const uchar *command, int commandSize, uchar *&respons
 
         if (tryCount == 4 && responseSize == 0 && is_usb) {
             /* signal the USB daemon to reset the EPs */
-            debugOut("Resetting EPs...\n");
+            BOOST_LOG_TRIVIAL(debug) << "Resetting EPs...";
             resetUSB();
         }
     }
@@ -441,14 +439,14 @@ void Jtag2::setDeviceDescriptor(const jtag_device_def_type &dev) {
         int respSize;
         doJtagCommand(dev_desc, devdescrlen, response, respSize);
     } catch (jtag_exception &e) {
-        debugOut("JTAG ICE: Failed to set device description: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "JTAG ICE: Failed to set device description: " << e.what();
         throw;
     }
 }
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
 bool Jtag2::synchroniseAt(int bitrate) {
-    debugOut("Attempting synchronisation at bitrate %d\n", bitrate);
+    BOOST_LOG_TRIVIAL(debug) << "Attempting synchronisation at bitrate " << bitrate;
 
     changeLocalBitRate(bitrate);
 
@@ -461,21 +459,27 @@ bool Jtag2::synchroniseAt(int bitrate) {
             if (signonmsg[0] != RSP_SIGN_ON || msgsize <= 17)
                 throw jtag_exception("Unexpected response to sign-on command");
             signonmsg[msgsize - 1] = '\0';
-            statusOut("Found a device: %s\n", signonmsg + 16);
-            statusOut("Serial number:  %02x:%02x:%02x:%02x:%02x:%02x\n", signonmsg[10],
-                      signonmsg[11], signonmsg[12], signonmsg[13], signonmsg[14], signonmsg[15]);
-            debugOut("JTAG ICE mkII sign-on message:\n");
-            debugOut("Communications protocol version: %u\n", (unsigned)signonmsg[1]);
-            debugOut("M_MCU:\n");
-            debugOut("  boot-loader FW version:        %u\n", (unsigned)signonmsg[2]);
-            debugOut("  firmware version:              %u.%02u\n", (unsigned)signonmsg[4],
-                     (unsigned)signonmsg[3]);
-            debugOut("  hardware version:              %u\n", (unsigned)signonmsg[5]);
-            debugOut("S_MCU:\n");
-            debugOut("  boot-loader FW version:        %u\n", (unsigned)signonmsg[6]);
-            debugOut("  firmware version:              %u.%02u\n", (unsigned)signonmsg[8],
-                     (unsigned)signonmsg[7]);
-            debugOut("  hardware version:              %u\n", (unsigned)signonmsg[9]);
+            BOOST_LOG_TRIVIAL(debug) << "Found a device: " << signonmsg + 16;
+            BOOST_LOG_TRIVIAL(info) << format{"Serial number:  %02x:%02x:%02x:%02x:%02x:%02x"} %
+                                           signonmsg[10] % signonmsg[11] % signonmsg[12] %
+                                           signonmsg[13] % signonmsg[14] % signonmsg[15];
+            BOOST_LOG_TRIVIAL(debug) << "JTAG ICE mkII sign-on message:";
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"Communications protocol version: %u"} % (unsigned)signonmsg[1];
+            BOOST_LOG_TRIVIAL(debug) << "M_MCU:";
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"  boot-loader FW version:        %u"} % (unsigned)signonmsg[2];
+            BOOST_LOG_TRIVIAL(debug) << format{"  firmware version:              %u.%02u"} %
+                                            (unsigned)signonmsg[4] % (unsigned)signonmsg[3];
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"  hardware version:              %u"} % (unsigned)signonmsg[5];
+            BOOST_LOG_TRIVIAL(debug) << "S_MCU:";
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"  boot-loader FW version:        %u"} % (unsigned)signonmsg[6];
+            BOOST_LOG_TRIVIAL(debug) << format{"  firmware version:              %u.%02u"} %
+                                            (unsigned)signonmsg[8] % (unsigned)signonmsg[7];
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"  hardware version:              %u"} % (unsigned)signonmsg[9];
 
             // The AVR Dragon always uses the full device descriptor.
             if (emu_type == Emulator::JTAGICE2) {
@@ -489,8 +493,8 @@ bool Jtag2::synchroniseAt(int bitrate) {
 
                 if (fwver < FWVER(3, 16)) {
                     devdescrlen -= 2;
-                    debugOut("Warning: S_MCU firmware version might be "
-                             "too old to work correctly\n ");
+                    BOOST_LOG_TRIVIAL(warning) << "S_MCU firmware version might be "
+                             "too old to work correctly";
                 } else if (fwver < FWVER(4, 0)) {
                     devdescrlen -= 2;
                 }
@@ -501,9 +505,9 @@ bool Jtag2::synchroniseAt(int bitrate) {
                 if (has_full_xmega_support) {
                     devdescrlen = sizeof(xmega_device_desc_type);
                 } else {
-                    debugOut("Warning, S_MCU firmware version (%u.%02u) too old to work "
-                            "correctly for Xmega devices, >= 7.x required\n",
-                            (unsigned)signonmsg[8], (unsigned)signonmsg[7]);
+                    BOOST_LOG_TRIVIAL(warning) << format{"S_MCU firmware version (%u.%02u) "
+                        "too old to work correctly for Xmega devices, >= 7.x required"}
+                          % (unsigned)signonmsg[8] % (unsigned)signonmsg[7];
                     softbp_only = true;
                 }
             }
@@ -555,7 +559,7 @@ void Jtag2::startJtagLink() {
                 setJtagParameter(PAR_EMULATOR_MODE, &val, 1);
                 debug_active = true;
             } catch (jtag2_io_exception &) {
-                debugOut( "Failed to activate %s debugging protocol\n", protoName);
+                BOOST_LOG_TRIVIAL(warning) << "Failed to activate " << protoName << " debugging protocol";
                 throw;
             }
 
@@ -578,7 +582,7 @@ void Jtag2::deviceAutoConfig() {
     int respSize;
 
     // Auto config
-    debugOut("Automatic device detection: ");
+    BOOST_LOG_TRIVIAL(debug) << "Automatic device detection:";
 
     /* Set daisy chain information */
     configDaisyChain();
@@ -602,9 +606,10 @@ void Jtag2::deviceAutoConfig() {
         device_id = resp[1] | (resp[2] << 8) | (resp[3] << 16) | resp[4] << 24;
         delete[] resp;
 
-        debugOut("JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n", device_id,
-                 (device_id & 0xF0000000) >> 28, (device_id & 0x0FFFF000) >> 12,
-                 (device_id & 0x00000FFE) >> 1);
+        BOOST_LOG_TRIVIAL(debug)
+            << format{"JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x"} %
+                   device_id % ((device_id & 0xF0000000) >> 28) % ((device_id & 0x0FFFF000) >> 12) %
+                   ((device_id & 0x00000FFE) >> 1);
 
         device_id = (device_id & 0x0FFFF000) >> 12;
     }
@@ -614,7 +619,7 @@ void Jtag2::deviceAutoConfig() {
 }
 
 void Jtag2::initJtagBox() {
-    statusOut("JTAG config starting.\n");
+    BOOST_LOG_TRIVIAL(debug) << "JTAG config starting.";
 
     if (!expected_dev.empty()) {
         const auto &pDevice = jtag_device_def_type::Find(0, expected_dev);
@@ -632,11 +637,11 @@ void Jtag2::initJtagBox() {
 
     deleteAllBreakpoints();
 
-    statusOut("JTAG config complete.\n");
+    BOOST_LOG_TRIVIAL(debug) << "JTAG config complete.";
 }
 
 void Jtag2::initJtagOnChipDebugging(unsigned long bitrate) {
-    statusOut("Preparing the target device for On Chip Debugging.\n");
+    BOOST_LOG_TRIVIAL(debug) << "Preparing the target device for On Chip Debugging.";
 
     if (proto == Debugproto::JTAG) {
         uchar br;

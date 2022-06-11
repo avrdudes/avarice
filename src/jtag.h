@@ -33,6 +33,14 @@
 
 #include "avarice.h"
 
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/utility/manipulators/dump.hpp>
+#include <boost/format.hpp>
+namespace logging = boost::log;
+using format = boost::format;
+
 // Little endian
 struct Word {
     uint8_t bytes[sizeof(uint16_t)];
@@ -315,43 +323,6 @@ enum {
 
     // JTAG commands
     JTAG_C_SET_DEVICE_DESCRIPTOR = 0xA0,
-
-    // JTAG ICE mkII stuff goes here.  Most of this is straight from
-    // AppNote AVR067.
-
-    // Communication with the JTAG ICE works in frames.  The protocol
-    // somewhat resembles the STK500v2 protocol, yet it is sufficiently
-    // different to prevent a direct code reuse. :-(
-    //
-    // Frame format:
-    //
-    //  +---------------------------------------------------------------+
-    //  |   0   |  1  .  2  |  3 . 4 . 5 . 6  |   7   | ... | N-1 .  N  |
-    //  |       |           |                 |       |     |           |
-    //  | start | LSB   MSB | LSB ....... MSB | token | msg | LSB   MSB |
-    //  | 0x1B  | sequence# | message size    | 0x0E  |     |   CRC16   |
-    //  +---------------------------------------------------------------+
-    //
-    // Each request message will be returned by a response with a matching
-    // sequence #.  Sequence # 0xffff is reserved for asynchronous event
-    // notifications that will be sent by the ICE without a request
-    // message (e.g. when the target hit a breakpoint).
-    //
-    // The message size excludes the framing overhead (10 bytes).
-    //
-    // The first byte of the message is always the request or response
-    // code, which is roughly classified as:
-    //
-    // . Messages (commands) use 0x00 through 0x3f.  (The documentation
-    //   claims that messages start at 0x01, but actually CMND_SIGN_OFF is
-    //   0x00.)
-    // . Internal commands use 0x40 through 0x7f (not documented).
-    // . Success responses use 0x80 through 0x9f.
-    // . Failure responses use 0xa0 through 0xbf.
-    // . Events use 0xe0 through 0xff.
-
-    MESSAGE_START = 0x1b,
-    TOKEN = 0x0e,
 
     // On the JTAGICE3, the USB reader framework modifies the token of
     // a received event into this so the upper layers can tell an event

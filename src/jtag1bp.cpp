@@ -40,7 +40,7 @@ void jtag1::deleteAllBreakpoints() {
 bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned int) {
     breakpoint *bp;
 
-    debugOut("BP ADD type: %d  addr: 0x%x ", type, address);
+    BOOST_LOG_TRIVIAL(debug) << format{"BP ADD type: %d addr: 0x%2x"} % static_cast<int>(type) % address;
 
     // Respect overall breakpoint limit
     if (numBreakpointsCode + numBreakpointsData == MAX_BREAKPOINTS)
@@ -50,7 +50,7 @@ bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned in
     // available?
     if (type == BreakpointType::CODE) {
         if (numBreakpointsCode == MAX_BREAKPOINTS_CODE) {
-            debugOut("FAILED\n");
+            BOOST_LOG_TRIVIAL(debug) << "FAILED";
             return false;
         }
 
@@ -62,7 +62,7 @@ bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned in
     } else // data breakpoint
     {
         if (numBreakpointsData == MAX_BREAKPOINTS_DATA) {
-            debugOut("FAILED\n");
+            BOOST_LOG_TRIVIAL(debug) << "FAILED";
             return false;
         }
 
@@ -72,7 +72,7 @@ bool jtag1::addBreakpoint(unsigned int address, BreakpointType type, unsigned in
     bp->address = address;
     bp->type = type;
 
-    debugOut(" ADDED\n");
+    BOOST_LOG_TRIVIAL(debug) << "ADDED";
     return true;
 }
 
@@ -80,7 +80,8 @@ bool jtag1::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned
     breakpoint *bp;
     int *numBp;
 
-    debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
+    BOOST_LOG_TRIVIAL(debug) << format{"BP DEL type: %d  addr: 0x%x"} % static_cast<unsigned>(type)
+                                    % address;
 
     if (type == BreakpointType::CODE) {
         bp = bpCode;
@@ -97,20 +98,20 @@ bool jtag1::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned
     // Find and squash the removed breakpoint
     for (int i = 0; i < *numBp; i++) {
         if (bp[i].type == type && bp[i].address == address) {
-            debugOut("REMOVED %d\n", i);
+            BOOST_LOG_TRIVIAL(debug) << "REMOVED " << i;
             (*numBp)--;
             memmove(&bp[i], &bp[i + 1], (*numBp - i) * sizeof(breakpoint));
             return true;
         }
     }
-    debugOut("FAILED\n");
+    BOOST_LOG_TRIVIAL(warning) << "FAILED";
     return false;
 }
 
 void jtag1::updateBreakpoints() {
     int bpC = 0, bpD = 0;
 
-    debugOut("updateBreakpoints\n");
+    BOOST_LOG_TRIVIAL(debug) << "updateBreakpoints";
 
     // BP 0 (aka breakpoint Z0).
     // Send breakpoint array down to the target.

@@ -38,7 +38,7 @@ void Jtag3::setJtagParameter(uchar scope, uchar section, uchar item, const uchar
     try {
         doJtagCommand(buf, valSize + 6, "set parameter", resp, respsize);
     } catch (jtag_exception &e) {
-        debugOut( "set parameter command failed: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "set parameter command failed: " << e.what();
         throw;
     }
 
@@ -56,11 +56,11 @@ void Jtag3::getJtagParameter(uchar scope, uchar section, uchar item, int length,
     try {
         doJtagCommand(buf, 6, "get parameter", resp, respsize);
     } catch (jtag_exception &e) {
-        debugOut( "get parameter command failed: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "get parameter command failed: " << e.what();
         throw;
     }
     if (resp[1] != RSP3_DATA || respsize < 3 + length) {
-        debugOut("unexpected response to get parameter command: 0x%02x\n", resp[1]);
+        BOOST_LOG_TRIVIAL(error) << format{"unexpected response to get parameter command: 0x%02x"} % unsigned{resp[1]};
         delete[] resp;
         throw jtag_exception("unexpected response to get parameter command");
     }

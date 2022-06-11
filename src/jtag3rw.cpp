@@ -77,7 +77,7 @@ uchar *Jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
         return response;
     }
 
-    debugOut("jtagRead ");
+    BOOST_LOG_TRIVIAL(debug) << "jtagRead";
     uchar whichSpace = memorySpace(addr);
     bool needProgmode = whichSpace >= MTYPE_FLASH_PAGE && whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
@@ -145,7 +145,7 @@ uchar *Jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
                 try {
                     doJtagCommand(cmd, sizeof(cmd), "read memory", resp, responsesize);
                 } catch (jtag_exception &e) {
-                    debugOut( "Failed to read target memory space: %s\n", e.what());
+                    BOOST_LOG_TRIVIAL(warning) << "Failed to read target memory space: " << e.what();
                     delete[] response;
                     throw;
                 }
@@ -175,10 +175,10 @@ uchar *Jtag3::jtagRead(unsigned long addr, unsigned int numBytes) {
                 interruptProgram();
                 goto again;
             }
-            debugOut( "Failed to read target memory space: %s\n", e.what());
+            BOOST_LOG_TRIVIAL(warning) << "Failed to read target memory space: " << e.what();
             throw;
         } catch (jtag_exception &e) {
-            debugOut( "Failed to read target memory space: %s\n", e.what());
+            BOOST_LOG_TRIVIAL(warning) << "Failed to read target memory space: " << e.what();
             throw;
         }
         if (offset > 0)
@@ -197,7 +197,7 @@ void Jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     if (numBytes == 0)
         return;
 
-    debugOut("jtagWrite ");
+    BOOST_LOG_TRIVIAL(debug) << "jtagWrite";
     const auto whichSpace = memorySpace(addr);
 
     // Hack to detect the start of a GDB "load" command.  Iff this
@@ -207,7 +207,7 @@ void Jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     // programming mode to speed up things (drastically).
 
     if (proto != Debugproto::DW && whichSpace == MTYPE_SPM && addr == 0 && numBytes > 4) {
-        debugOut("Detected GDB \"load\" command, erasing flash.\n");
+        BOOST_LOG_TRIVIAL(debug) << "Detected GDB \"load\" command, erasing flash.";
         // whichSpace = MTYPE_FLASH_PAGE; // this will turn on progmode
         eraseProgramMemory();
     }
@@ -254,7 +254,7 @@ void Jtag3::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     try {
         doJtagCommand(cmd, 14 + numBytes, "write memory", response, responsesize);
     } catch (jtag_exception &e) {
-        debugOut( "Failed to write target memory space: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "Failed to write target memory space: " << e.what();
         throw;
     }
     delete[] response;

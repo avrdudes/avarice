@@ -38,8 +38,8 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
     if (tries++ >= MAX_JTAG_COMM_ATTEMPS)
         throw jtag_exception("JTAG communication failed");
 
-    debugOut("\ncommand[0x%02x, %d]: ", command[0], tries);
-    debugOutBufHex("", command, commandSize);
+    BOOST_LOG_TRIVIAL(debug) << format{"command[%02x, %d]: "} % static_cast<int>(command[0]) % tries
+                             << logging::dump(command, commandSize);
 
     // before writing, clean up any "unfinished business".
     flushSerialPort();
@@ -61,7 +61,7 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
 
         // timed out
         if (count == 0) {
-            debugOut("Timed out.\n");
+            BOOST_LOG_TRIVIAL(warning) << "Timed out.";
             return send_failed;
         }
 
@@ -73,14 +73,15 @@ jtag1::SendResult jtag1::sendJtagCommand(const uchar *command, int commandSize, 
 
             /* An info ("IDR dirty") response. Ignore it. */
             count = timeout_read(infobuf, 2, JTAG_RESPONSE_TIMEOUT);
-            debugOutBufHex("Info response: ", infobuf, count);
+            BOOST_LOG_TRIVIAL(debug) << "Info response: " << logging::dump(infobuf, count);
             if (count != 2 || Resp{infobuf[1]} != Resp::OK)
                 return send_failed;
             else
                 return (SendResult)(mcu_data + infobuf[0]);
         }
         default:
-            debugOut("Out of sync, reponse was `%02x'\n", ok);
+            BOOST_LOG_TRIVIAL(warning) << format{"Out of sync, reponse was `%02x'"}
+                                              % static_cast<unsigned>(ok);
             return send_failed;
         }
     }
@@ -103,11 +104,11 @@ std::unique_ptr<uchar[]> jtag1::getJtagResponse(int responseSize) {
     if (numCharsRead < 0)
         throw jtag_exception();
 
-    debugOutBufHex("response: ", response.get(), numCharsRead);
+    BOOST_LOG_TRIVIAL(debug) << "response: " << logging::dump(response.get(), numCharsRead);
 
     if (numCharsRead < responseSize) // timeout problem
     {
-        debugOut("Timed Out (partial response)\n");
+        BOOST_LOG_TRIVIAL(warning) << "Timed Out (partial response)";
         response.reset();
     }
 
@@ -211,7 +212,7 @@ bool jtag1::checkForEmulator() {
 
 /** Attempt to synchronise with JTAG at specified bitrate **/
 bool jtag1::synchroniseAt(int bitrate) {
-    debugOut("Attempting synchronisation at bitrate %d\n", bitrate);
+    BOOST_LOG_TRIVIAL(debug) << "Attempting synchronisation at bitrate " << bitrate;
 
     changeLocalBitRate(bitrate);
 
@@ -252,7 +253,7 @@ void jtag1::startJtagLink() {
 */
 void jtag1::deviceAutoConfig() {
     // Auto config
-    debugOut("Automatic device detection: ");
+    BOOST_LOG_TRIVIAL(debug) << "Automatic device detection:";
 
     /* Set daisy chain information */
     configDaisyChain();
@@ -265,9 +266,10 @@ void jtag1::deviceAutoConfig() {
                  (getJtagParameter(JTAG_P_JTAGID_BYTE2) << 16) +
                  (getJtagParameter(JTAG_P_JTAGID_BYTE3) << 24);
 
-    debugOut("JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n", device_id,
-             (device_id & 0xF0000000) >> 28, (device_id & 0x0FFFF000) >> 12,
-             (device_id & 0x00000FFE) >> 1);
+    BOOST_LOG_TRIVIAL(debug)
+        << format{"JTAG id = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x"} % device_id %
+               ((device_id & 0xF0000000) >> 28) % ((device_id & 0x0FFFF000) >> 12) %
+               ((device_id & 0x00000FFE) >> 1);
 
     device_id = (device_id & 0x0FFFF000) >> 12;
 
@@ -276,16 +278,16 @@ void jtag1::deviceAutoConfig() {
 }
 
 void jtag1::initJtagBox() {
-    statusOut("JTAG config starting.\n");
+    BOOST_LOG_TRIVIAL(debug) << "JTAG config starting.";
 
     startJtagLink();
     changeBitRate(115200);
 
     const uchar hw_ver = getJtagParameter(JTAG_P_HW_VERSION);
-    statusOut("Hardware Version: 0x%02x\n", hw_ver);
+    BOOST_LOG_TRIVIAL(debug) << format{"Hardware Version: 0x%02x"} % hw_ver;
 
     const uchar sw_ver = getJtagParameter(JTAG_P_SW_VERSION);
-    statusOut("Software Version: 0x%02x\n", sw_ver);
+    BOOST_LOG_TRIVIAL(debug) << format{"Software Version: 0x%02x"} % sw_ver;
 
     interruptProgram();
 
@@ -293,11 +295,11 @@ void jtag1::initJtagBox() {
 
     deleteAllBreakpoints();
 
-    statusOut("JTAG config complete.\n");
+    BOOST_LOG_TRIVIAL(debug) << "JTAG config complete.";
 }
 
 void jtag1::initJtagOnChipDebugging(unsigned long bitrate) {
-    statusOut("Preparing the target device for On Chip Debugging.\n");
+    BOOST_LOG_TRIVIAL(debug) << "Preparing the target device for On Chip Debugging.";
 
     uchar br;
     if (bitrate >= 1000000UL)

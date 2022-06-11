@@ -56,8 +56,9 @@ void Jtag3::updateBreakpoints() {
     int bp_i = 0;
     while (!bp[bp_i].last) {
         if (bp[bp_i].toremove) {
-            debugOut("Breakpoint deleted in ICE. slot: %d  type: %d  addr: 0x%x\n", bp[bp_i].bpnum,
-                     bp[bp_i].type, bp[bp_i].address);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"Breakpoint deleted in ICE. slot: %d  type: %d  addr: 0x%x"} %
+                       bp[bp_i].bpnum % static_cast<unsigned>(bp[bp_i].type) % bp[bp_i].address;
 
             if (is_xmega && bp[bp_i].type == BreakpointType::CODE && bp[bp_i].bpnum != 0x00) {
                 // no action needed on this one, has been auto-removed
@@ -85,7 +86,7 @@ void Jtag3::updateBreakpoints() {
                 try {
                     doJtagCommand(cmd, cmdlen, "clear BP", resp, respsize);
                 } catch (jtag_exception &e) {
-                    debugOut( "Failed to clear breakpoint: %s\n", e.what());
+                    BOOST_LOG_TRIVIAL(error) << "Failed to clear breakpoint: " << e.what();
                     throw;
                 }
 
@@ -104,8 +105,9 @@ void Jtag3::updateBreakpoints() {
     bp_i = 0;
     while (!bp[bp_i].last) {
         if (bp[bp_i].toadd && bp[bp_i].enabled) {
-            debugOut("Breakpoint added in ICE. slot: %d  type: %d  addr: 0x%x\n", bp[bp_i].bpnum,
-                     bp[bp_i].type, bp[bp_i].address);
+            BOOST_LOG_TRIVIAL(debug)
+                << format{"Breakpoint added in ICE. slot: %d  type: %d  addr: 0x%x"} %
+                       bp[bp_i].bpnum % static_cast<unsigned>(bp[bp_i].type) % bp[bp_i].address;
 
             if (is_xmega && bp[bp_i].type == BreakpointType::CODE && bp[bp_i].bpnum != 0x00) {
                 if (xmega_n_bps >= 2)
@@ -176,7 +178,7 @@ void Jtag3::updateBreakpoints() {
                 try {
                     doJtagCommand(cmd, cmdlen, "set BP", resp, respsize);
                 } catch (jtag_exception &e) {
-                    debugOut( "Failed to set breakpoint: %s\n", e.what());
+                    BOOST_LOG_TRIVIAL(warning) << "Failed to set breakpoint: " << e.what();
                     throw;
                 }
                 delete[] resp;
@@ -216,7 +218,7 @@ void Jtag3::xmegaSendBPs() {
     try {
         doJtagCommand(cmd, 16, "set BP Xmega", resp, respsize);
     } catch (jtag_exception &e) {
-        debugOut( "Failed to set Xmega breakpoints: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "Failed to set Xmega breakpoints: " << e.what();
         throw;
     }
     delete[] resp;

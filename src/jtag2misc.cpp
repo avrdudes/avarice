@@ -39,7 +39,7 @@ void Jtag2::setJtagParameter(uchar item, const uchar *newValue, int valSize) {
         int respsize;
         doJtagCommand(buf, valSize + 2, resp, respsize);
     } catch (jtag_exception &e) {
-        debugOut("set parameter command failed: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "set parameter command failed: " << e.what();
         throw;
     }
 
@@ -60,7 +60,7 @@ void Jtag2::getJtagParameter(const uchar item, uchar *&resp, int &respSize) {
     try {
         doJtagCommand(buf, 2, resp, respSize);
     } catch (jtag_exception &e) {
-        debugOut("get parameter command failed: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "get parameter command failed: " << e.what();
         throw;
     }
     if (resp[0] != RSP_PARAMETER || respSize <= 1)

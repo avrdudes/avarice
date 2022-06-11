@@ -30,7 +30,7 @@
 void jtag1::enableProgramming() {
     programmingEnabled = true;
     if (!doSimpleJtagCommand(0xa3, 1)) {
-        debugOut("JTAG ICE: Failed to enable programming\n");
+        BOOST_LOG_TRIVIAL(warning) << "JTAG ICE: Failed to enable programming";
         throw jtag_exception();
     }
 }
@@ -38,7 +38,7 @@ void jtag1::enableProgramming() {
 void jtag1::disableProgramming() {
     programmingEnabled = false;
     if (!doSimpleJtagCommand(0xa4, 1)) {
-        debugOut("JTAG ICE: Failed to disable programming\n");
+        BOOST_LOG_TRIVIAL(warning) << "JTAG ICE: Failed to disable programming";
         throw jtag_exception();
     }
 }
@@ -47,7 +47,7 @@ void jtag1::disableProgramming() {
 // (unless the save-eeprom fuse is set).
 void jtag1::eraseProgramMemory() {
     if (!doSimpleJtagCommand(0xa5, 1)) {
-        debugOut("JTAG ICE: Failed to erase program memory\n");
+        BOOST_LOG_TRIVIAL(warning) << "JTAG ICE: Failed to erase program memory";
         throw jtag_exception();
     }
 }

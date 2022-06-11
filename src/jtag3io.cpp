@@ -23,6 +23,8 @@
 
 #include "jtag3.h"
 
+#define TOKEN 0x0e
+
 jtag3_io_exception::jtag3_io_exception(unsigned int code) {
     static char buffer[50];
     response_code = code;
@@ -102,7 +104,7 @@ void Jtag3::sendFrame(const uchar *command, int commandSize) {
     buf[1] = 0;
     u16_to_b2(buf.get() + 2, command_sequence);
     memcpy(buf.get() + 4, command, commandSize);
-    debugOutBufHex("", buf.get(), commandSize);
+    BOOST_LOG_TRIVIAL(debug) << logging::dump(buf.get(), commandSize);
 
     const auto count = safewrite(buf.get(), commandSize + 4);
     if (count < 0)
@@ -127,15 +129,15 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
     int rv = timeout_read(&amnt, sizeof(amnt), JTAG_RESPONSE_TIMEOUT);
     if (rv == 0) {
         /* timeout */
-        debugOut("read() timed out\n");
+        BOOST_LOG_TRIVIAL(warning) << "read() timed out";
         return 0;
     } else if (rv < 0) {
         /* error */
-        debugOut("read() error %d\n", rv);
+        BOOST_LOG_TRIVIAL(warning) << "read() error " << rv;
         throw jtag_exception("read error");
     }
     if (amnt <= 0 || amnt > MAX_MESSAGE) {
-        debugOut("unexpected message size from pipe: %d\n", amnt);
+        BOOST_LOG_TRIVIAL(warning) << "unexpected message size from pipe: " << amnt;
         return 0;
     }
 
@@ -146,11 +148,11 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         if (istoken)
             tempbuf[0] = TOKEN;
 
-        debugOutBufHex("read: ", tempbuf, rv);
+        BOOST_LOG_TRIVIAL(debug) << "read: " << logging::dump(tempbuf, rv);
 
         if (istoken) {
             unsigned int serial = tempbuf[2] + (tempbuf[3] << 8);
-            debugOut("Event serial 0x%04x\n", serial);
+            BOOST_LOG_TRIVIAL(debug) << format{"Event serial 0x%04x"} % serial;
 
             rv -= 4;
             msg = new unsigned char[rv];
@@ -168,11 +170,11 @@ int Jtag3::recvFrame(unsigned char *&msg, unsigned short &seqno) {
         }
     } else if (rv == 0) {
         /* timeout */
-        debugOut("read() timed out\n");
+        BOOST_LOG_TRIVIAL(warning) << "read() timed out";
         return 0;
     } else {
         /* error */
-        debugOut("read() error %d\n", rv);
+        BOOST_LOG_TRIVIAL(error) << "read() error " << rv;
         throw jtag_exception("read error");
     }
 }
@@ -187,20 +189,20 @@ int Jtag3::recv(uchar *&msg) {
         int rv;
         if ((rv = recvFrame(msg, r_seqno)) <= 0)
             return rv;
-        debugOut("\nGot message seqno %d (command_sequence == %d)\n", r_seqno, command_sequence);
+        BOOST_LOG_TRIVIAL(debug) << format{"Got message seqno %d (command_sequence == %d)"} % r_seqno % command_sequence;
         if (r_seqno == command_sequence) {
             if (++command_sequence == 0xffff)
                 command_sequence = 0;
             return rv;
         } else if (r_seqno == 0xffff) {
-            debugOut("\ngot asynchronous event: 0x%02x, 0x%02x\n", msg[0], msg[1]);
+            BOOST_LOG_TRIVIAL(debug) << format{"got asynchronous event: 0x%02x, 0x%02x"} % msg[0] % msg[1];
             if (cached_event == nullptr) {
                 cached_event = msg;
                 // do *not* delete[] it here
                 continue;
             }
         } else {
-            debugOut("\ngot wrong sequence number, %u != %u\n", r_seqno, command_sequence);
+            BOOST_LOG_TRIVIAL(error) << format{"got wrong sequence number, %u != %u"} % r_seqno % command_sequence;
         }
         delete[] msg;
     }
@@ -219,7 +221,8 @@ int Jtag3::recv(uchar *&msg) {
 
 bool Jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *name, uchar *&msg,
                             int &msgsize) {
-    debugOut("\ncommand \"%s\" [0x%02x, 0x%02x]\n", name, command[0], command[1]);
+    BOOST_LOG_TRIVIAL(debug) << format{"command %s [%02x, %02x]: "} % name
+                                    % static_cast<int>(command[0]) % static_cast<int>(command[1]);
 
     sendFrame(command, commandSize);
 
@@ -227,7 +230,7 @@ bool Jtag3::sendJtagCommand(const uchar *command, int commandSize, const char *n
     if (msgsize < 1)
         return false;
 
-    debugOutBufHex("response: ", msg, msgsize);
+    BOOST_LOG_TRIVIAL(debug) << "response: " << logging::dump(msg, msgsize);
 
     const auto c = msg[1];
     return (c >= RSP3_OK) && (c < RSP3_FAILED);
@@ -311,7 +314,7 @@ void Jtag3::setDeviceDescriptor(const jtag_device_def_type &dev) {
     try {
         setJtagParameter(SCOPE_AVR, 2, PARM3_DEVICEDESC, param, paramsize);
     } catch (jtag_exception &e) {
-        debugOut( "JTAG ICE: Failed to set device description: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "JTAG ICE: Failed to set device description: " << e.what();
         throw;
     }
 }
@@ -329,21 +332,21 @@ void Jtag3::startJtagLink() {
     doJtagCommand(get_info_cmd, sizeof(get_info_cmd), "get info (serial number)", resp, respsize);
 
     if (resp[1] != RSP3_INFO)
-        debugOut("Unexpected positive response to get info: 0x%02x\n", resp[1]);
+        BOOST_LOG_TRIVIAL(debug) << format{"Unexpected positive response to get info: 0x%02x"} % resp[1];
     else if (respsize < 4)
-        debugOut("Unexpected response size to get info: %d\n", respsize);
+        BOOST_LOG_TRIVIAL(warning) << "Unexpected response size to get info: " << respsize;
     else {
         memmove(resp, resp + 3, respsize - 3);
         resp[respsize - 3] = 0;
-        statusOut("Found a device, serial number: %s\n", resp);
+        BOOST_LOG_TRIVIAL(debug) << "Found a device, serial number: " << resp;
     }
     delete[] resp;
 
     getJtagParameter(SCOPE_GENERAL, 0, PARM3_HW_VER, 5, resp);
 
-    debugOut("ICE hardware version: %d\n", resp[3]);
-    debugOut("ICE firmware version: %d.%02d (rel. %d)\n", resp[4], resp[5],
-             (resp[6] | (resp[7] << 8)));
+    BOOST_LOG_TRIVIAL(debug) << "ICE hardware version: " << unsigned{resp[3]};
+    BOOST_LOG_TRIVIAL(debug) << format{"ICE firmware version: %d.%02d (rel. %d)"} % resp[4] % resp[5] %
+             (resp[6] | (resp[7] << 8));
 
     delete[] resp;
 
@@ -388,15 +391,15 @@ void Jtag3::startJtagLink() {
         delete[] resp;
 
         if (proto == Debugproto::JTAG) {
-            debugOut("AVR sign-on responded with device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x "
-                     ": Manuf = 0x%0x\n",
-                     did, (did & 0xF0000000) >> 28, (did & 0x0FFFF000) >> 12,
-                     (did & 0x00000FFE) >> 1);
+            BOOST_LOG_TRIVIAL(debug) << format{"AVR sign-on responded with device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x "
+                     ": Manuf = 0x%0x"} %
+                     did % ((did & 0xF0000000) >> 28) % ((did & 0x0FFFF000) >> 12) %
+                                            ((did & 0x00000FFE) >> 1);
 
             device_id = (did & 0x0FFFF000) >> 12;
         } else // debugWIRE
         {
-            debugOut("AVR sign-on responded with device ID = 0x%0X\n", did);
+            BOOST_LOG_TRIVIAL(debug) << format{"AVR sign-on responded with device ID = 0x%0X"} % did;
             device_id = did;
         }
     } else {
@@ -410,8 +413,8 @@ void Jtag3::startJtagLink() {
             unsigned int did = resp[3] | (resp[4] << 8) | (resp[5] << 16) | resp[6] << 24;
             delete[] resp;
 
-            debugOut("Device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x\n", did,
-                     (did & 0xF0000000) >> 28, (did & 0x0FFFF000) >> 12, (did & 0x00000FFE) >> 1);
+            BOOST_LOG_TRIVIAL(debug) << format{"Device ID = 0x%0X : Ver = 0x%0x : Device = 0x%0x : Manuf = 0x%0x"} % did %
+                                            ((did & 0xF0000000) >> 28) % ((did & 0x0FFFF000) >> 12) % ((did & 0x00000FFE) >> 1);
 
             device_id = (did & 0x0FFFF000) >> 12;
         } catch (jtag_exception &) {
@@ -433,7 +436,7 @@ void Jtag3::deviceAutoConfig() {
     uchar *resp;
 
     // Auto config
-    debugOut("Automatic device detection: ");
+    BOOST_LOG_TRIVIAL(debug) << "Automatic device detection:";
 
     if (device_id == 0) {
         /* Read in the JTAG device ID to determine device */
@@ -470,7 +473,7 @@ void Jtag3::deviceAutoConfig() {
 }
 
 void Jtag3::initJtagBox() {
-    statusOut("JTAG config starting.\n");
+    BOOST_LOG_TRIVIAL(debug) << "JTAG config starting.";
 
     if (!expected_dev.empty()) {
         const auto &pDevice = jtag_device_def_type::Find(0, expected_dev);
@@ -488,15 +491,15 @@ void Jtag3::initJtagBox() {
 
         deleteAllBreakpoints();
 
-        statusOut("JTAG config complete.\n");
+        BOOST_LOG_TRIVIAL(debug) << "JTAG config complete.";
     } catch (jtag_exception &e) {
-        debugOut( "initJtagBox() failed: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(warning) << "initJtagBox() failed: " << e.what();
         throw;
     }
 }
 
 void Jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
-    statusOut("Preparing the target device for On Chip Debugging.\n");
+    BOOST_LOG_TRIVIAL(debug) << "Preparing the target device for On Chip Debugging.";
 
     bitrate /= 1000; // JTAGICE3 always uses kHz
 
@@ -538,7 +541,7 @@ void Jtag3::initJtagOnChipDebugging(unsigned long bitrate) {
     try {
         resetProgram(false);
     } catch (jtag_exception &e) {
-        debugOut("retrying reset ...\n");
+        BOOST_LOG_TRIVIAL(debug) << "retrying reset ...";
         resetProgram(false);
     }
 

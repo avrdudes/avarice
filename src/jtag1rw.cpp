@@ -73,7 +73,7 @@ uchar *jtag1::jtagRead(unsigned long addr, unsigned int numBytes) {
         return response.release(); // TODO: be compatible with other jtagRead()
     }
 
-    debugOut("jtagRead ");
+    BOOST_LOG_TRIVIAL(debug) << "jtagRead";
     uchar command[] = {'R', 0, 0, 0, 0, 0, JTAG_EOM};
 
     int whichSpace = memorySpace(&addr);
@@ -129,7 +129,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
     if (numBytes == 0)
         return;
 
-    debugOut("jtagWrite ");
+    BOOST_LOG_TRIVIAL(debug) << "jtagWrite";
     unsigned int numLocations;
     int whichSpace = memorySpace(&addr);
     if (whichSpace)
@@ -144,7 +144,7 @@ void jtag1::jtagWrite(unsigned long addr, unsigned int numBytes, uchar buffer[])
 
         // Odd length: Write one more byte.
         if ((numBytes & 1)) {
-            debugOut("\nOdd pgm wr length\n");
+            BOOST_LOG_TRIVIAL(warning) << "Odd pgm wr length";
             numBytes += 1;
         }
 

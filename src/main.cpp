@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 
 static unsigned long parseJtagBitrate(std::string_view const &val) {
     if (val.empty()) {
-        fprintf(stderr, "invalid number in JTAG bit rate");
+        BOOST_LOG_TRIVIAL(error) << "invalid number in JTAG bit rate";
         throw jtag_exception();
     }
 
@@ -67,14 +67,15 @@ static unsigned long parseJtagBitrate(std::string_view const &val) {
     if (strcmp(endptr, "Hz") == 0)
         return v;
 
-    fprintf(stderr, "invalid number in JTAG bit rate");
+    BOOST_LOG_TRIVIAL(error) << "invalid number in JTAG bit rate";
     throw jtag_exception();
 }
 
 std::unique_ptr<Jtag> theJtagICE;
 
 int main(int argc, char **argv) {
-    statusOut("AVaRICE version %s, %s %s\n\n", PACKAGE_VERSION, __DATE__, __TIME__);
+    BOOST_LOG_TRIVIAL(info) << "AVaRICE version " << PACKAGE_VERSION << ',' << __DATE__ << ','
+                            << __TIME__;
 
     int rv = 0; // return value from main()
 
@@ -198,10 +199,8 @@ int main(int argc, char **argv) {
             }
         }();
 
-        if (vm.count("debug")) {
-            debugMode = true;
-            setvbuf(stderr, nullptr, _IOLBF, 0);
-        }
+        if (!vm.count("debug"))
+            logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::info);
 
         const bool apply_nsrst = vm.count("reset-srst");
 
@@ -244,9 +243,8 @@ int main(int argc, char **argv) {
                     static_cast<uchar>(units_before), static_cast<uchar>(units_after),
                     static_cast<uchar>(bits_before), static_cast<uchar>(bits_after)};
                 if (!daisy_chain_info.IsValid()) {
-                    fprintf(stderr, "daisy-chain parameters out of range"
-                                    " (max. 32 bits before/after)\n");
-                    exit(1);
+                    throw jtag_exception("daisy-chain parameters out of range"
+                                    " (max. 32 bits before/after)");
                 }
             }
             return daisy_chain_info;
@@ -260,12 +258,12 @@ int main(int argc, char **argv) {
 
         if( vm.count("erase")) {
             if (proto == Debugproto::DW) {
-                statusOut("WARNING: Chip erase not possible in debugWire mode; ignored\n");
+                BOOST_LOG_TRIVIAL(warning) << "Chip erase not possible in debugWire mode; ignored";
             } else {
                 theJtagICE->enableProgramming();
-                statusOut("Erasing program memory.\n");
+                BOOST_LOG_TRIVIAL(debug) << "Erasing program memory.";
                 theJtagICE->eraseProgramMemory();
-                statusOut("Erase complete.\n");
+                BOOST_LOG_TRIVIAL(debug) << "Erase complete.";
                 theJtagICE->disableProgramming();
             }
         }
@@ -310,14 +308,12 @@ int main(int argc, char **argv) {
                 int child = fork();
 
                 if (child < 0) {
-                    fprintf(stderr, "Failed to fork");
-                    throw jtag_exception();
+                    throw jtag_exception("Failed to fork");
                 }
                 if (child != 0)
                     _exit(0);
                 else if (setsid() < 0) {
-                    fprintf(stderr, "setsid failed - weird bug");
-                    throw jtag_exception();
+                    throw jtag_exception("setsid failed - weird bug");
                 }
             }
 
@@ -334,7 +330,7 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         // ignored; guarantee theJtagICE object will be deleted
         // correctly, as this says "good-bye" to the JTAG ICE mkII
-        std::cerr << "Error: " << e.what() << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << e.what();
         rv = 1;
     } catch (...) {
         // Fatal error?

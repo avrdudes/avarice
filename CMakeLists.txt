@@ -10,7 +10,6 @@ file(GLOB SUPPORTED_DEVICES src/devices/*.cpp)
 add_executable(avarice
         src/main.cpp
         src/gdb_server.cpp
-        src/utils.cpp
         src/jtag1bp.cpp
         src/jtag1io.cpp
         src/jtag1misc.cpp
@@ -38,7 +37,7 @@ target_compile_features(avarice PRIVATE cxx_std_17)
 target_compile_options(avarice PRIVATE -Wall -Wextra)
 target_compile_definitions(avarice PRIVATE PACKAGE_VERSION=\"${PROJECT_VERSION}\")
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options log REQUIRED)
 find_package(LibUSB REQUIRED)
 find_package(HIDAPI REQUIRED)
 find_package(Threads REQUIRED)

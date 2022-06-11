@@ -80,7 +80,7 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
 
     if (i >= len) {
         /* No port was given. */
-        fprintf(stderr, "avarice: %s is not a valid host:port value.\n", arg);
+        BOOST_LOG_TRIVIAL(error) << "'" << arg << "' is not a valid host:port value.";
         exit(1);
     }
 
@@ -88,7 +88,7 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
     m_listen_port = (int)strtol(arg + i, &endptr, 0);
     if (endptr == arg + i) {
         /* Invalid convertion. */
-        fprintf(stderr, "avarice: failed to convert port number: %s\n", arg + i);
+        BOOST_LOG_TRIVIAL(error) << "failed to convert port number: " << arg + i;
         exit(1);
     }
 
@@ -96,10 +96,8 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
        greater than max port value. */
 
     if ((m_listen_port < 1024) || (m_listen_port > 0xffff)) {
-        fprintf(stderr,
-                "avarice: invalid port number: %d (must be >= %d"
-                " and <= %d)\n",
-                m_listen_port, 1024, 0xffff);
+        BOOST_LOG_TRIVIAL(error) << format{"invalid port number: %d (must be >= 1024 and <= %d)"} %
+                m_listen_port % 0xffff;
         exit(1);
     }
 
@@ -113,7 +111,7 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
         if (inet_aton(hostname, &name->sin_addr) == 0) {
             hostent *hostInfo = gethostbyname(hostname);
             if (hostInfo == nullptr) {
-                fprintf(stderr, "Unknown host %s", hostname);
+                BOOST_LOG_TRIVIAL(error) << "Unknown host " << hostname;
                 throw jtag_exception();
             }
             name->sin_addr = *(struct in_addr *)hostInfo->h_addr;
@@ -143,13 +141,13 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
 
         if (bind(sock, (struct sockaddr *)name, sizeof(*name)) < 0) {
             if (errno == EADDRINUSE)
-                fprintf(stderr, "bind() failed: another server is still running on this port\n");
+                BOOST_LOG_TRIVIAL(error) << "bind() failed: another server is still running on this port";
             throw jtag_exception("bind() failed");
         }
 
         protoent = getprotobyname("tcp");
         if (protoent == nullptr) {
-            fprintf(stderr, "tcp protocol unknown (oops?)");
+            BOOST_LOG_TRIVIAL(error) << "tcp protocol unknown (oops?)";
             throw jtag_exception();
         }
 
@@ -164,7 +162,7 @@ GdbServer::GdbServer(std::string_view const &listen, bool ignore_interrupts)
 }
 
 void GdbServer::listen() {
-    statusOut("Waiting for connection on port %hu.\n", m_listen_port);
+    BOOST_LOG_TRIVIAL(info) << "Waiting for connection on port " << m_listen_port;
     if (::listen(m_sock, 1) < 0)
         throw jtag_exception();
 }
@@ -179,8 +177,8 @@ void GdbServer::accept() {
     int ret = fcntl(m_fd, F_SETFL, O_NONBLOCK);
     if (ret < 0)
         throw jtag_exception();
-    statusOut("Connection opened by host %s, port %hu.\n", inet_ntoa(clientname.sin_addr),
-              ntohs(clientname.sin_port));
+    BOOST_LOG_TRIVIAL(info) << format{"Connection opened by host %s, port %hu."} %
+        inet_ntoa(clientname.sin_addr) % ntohs(clientname.sin_port);
 }
 
 static void gdb_ok();
@@ -244,7 +242,6 @@ unsigned char GdbServer::getDebugChar() {
 
     if (result == 0) // gdb exited
     {
-        statusOut("gdb exited.\n");
         theJtagICE->resumeProgram();
         throw jtag_exception("gdb exited");
     }
@@ -435,10 +432,10 @@ bool GdbServer::handleInterrupt() {
     bool result;
 
     // Set a breakpoint at return address
-    debugOut("INTERRUPT\n");
+    BOOST_LOG_TRIVIAL(debug) << "INTERRUPT";
     unsigned int intrSP = readSP();
     unsigned int retPC = readBWord(intrSP + 1) << 1;
-    debugOut("INT SP = %x, retPC = %x\n", intrSP, retPC);
+    BOOST_LOG_TRIVIAL(debug) << format{"INT SP = %x, retPC = %x"} % intrSP % retPC;
 
     bool needBP = !theJtagICE->codeBreakpointAt(retPC);
 
@@ -680,10 +677,7 @@ void GdbServer::handle() {
     int plen;
     const char *ptr = getpacket(plen);
 
-    if (debugMode) {
-        const auto s = makeSafeString(ptr, plen);
-        debugOut("GDB: <%s>\n", s.c_str());
-    }
+    BOOST_LOG_TRIVIAL(debug) << "GDB: <" << makeSafeString(ptr, plen) << ">";
 
     // default empty response
     remcomOutBuffer[0] = '\0';
@@ -719,7 +713,7 @@ void GdbServer::handle() {
         int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length)) &&
             (*(ptr++) == ':') && (length > 0)) {
-            debugOut("\nGDB: Write %d bytes to 0x%X\n", length, addr);
+            BOOST_LOG_TRIVIAL(debug) << format{"GDB: Write %d bytes to 0x%X"} % length % addr;
 
             // There is no gaurantee that gdb will send a word aligned stream
             // of bytes, so we need to try and catch that here. This ugly, but
@@ -767,7 +761,7 @@ void GdbServer::handle() {
         int length;
         int addr;
         if ((hexToInt(&ptr, &addr)) && (*(ptr++) == ',') && (hexToInt(&ptr, &length))) {
-            debugOut("\nGDB: Read %d bytes from 0x%X\n", length, addr);
+            BOOST_LOG_TRIVIAL(debug) << format{"GDB: Read %d bytes from 0x%X"} % length % addr;
             try {
                 uchar *jtagBuffer = theJtagICE->jtagRead(addr, length);
                 mem2hex(jtagBuffer, remcomOutBuffer, length);
@@ -792,8 +786,8 @@ void GdbServer::handle() {
         // R0..R31 are at locations 0..31
         // SP is at 0x5D & 0x5E
         // SREG is at 0x5F
-        debugOut("\nGDB: (Registers)Read %d bytes from 0x%X\n", 0x20,
-                 theJtagICE->cpuRegisterAreaAddress());
+        BOOST_LOG_TRIVIAL(debug) << format{"GDB: (Registers)Read %d bytes from 0x%X"} % 0x20 %
+                 theJtagICE->cpuRegisterAreaAddress();
         uchar *jtagBuffer = theJtagICE->jtagRead(theJtagICE->cpuRegisterAreaAddress(), 0x20);
         if (jtagBuffer) {
             // Put GPRs into the first 32 locations
@@ -834,7 +828,7 @@ void GdbServer::handle() {
         regBuffer[36] = (unsigned char)((newPC & 0xff00) >> 8);
         regBuffer[37] = (unsigned char)((newPC & 0xff0000) >> 16);
         regBuffer[38] = (unsigned char)((newPC & 0xff000000) >> 24);
-        debugOut("PC = %x\n", newPC);
+        BOOST_LOG_TRIVIAL(debug) << format{"PC = %x"} % newPC;
 
         if (newPC == PC_INVALID)
             gdb_error();
@@ -849,7 +843,8 @@ void GdbServer::handle() {
         if (strncmp(ptr, "Ravr.io_reg", strlen("Ravr.io_reg")) == 0) {
             int i, j, regcount;
 
-            debugOut("\nGDB: (io registers) Read %d bytes from 0x%X\n", 0x40, 0x20);
+            BOOST_LOG_TRIVIAL(debug) << format{"GDB: (io registers) Read %d bytes from 0x%X"} %
+                0x40 % 0x20;
 
             /* If there is an io_reg_defs for this device then respond */
 
@@ -958,7 +953,7 @@ void GdbServer::handle() {
                 length -= hexToInt(&ptr, &c, 2);
                 cmdbuf[i] = static_cast<char>(c);
             }
-            debugOut("\nGDB: (monitor) %s\n", cmdbuf);
+            BOOST_LOG_TRIVIAL(debug) << "GDB: (monitor) " << cmdbuf;
 
             // when creating a response, minde the BUFMAX bytes per
             // packet limit above
@@ -1036,7 +1031,7 @@ void GdbServer::handle() {
                     theJtagICE->resetProgram(false);
                     reportStatusExtended(SIGTRAP);
                 } catch (jtag_exception &e) {
-                    debugOut("Failed to reset MCU: %s\n", e.what());
+                    BOOST_LOG_TRIVIAL(error) << "Failed to reset MCU: " << e.what();
                 }
             }
         }
@@ -1076,7 +1071,7 @@ void GdbServer::handle() {
             hexToInt(&ptr, &offset);
             ++ptr;
             hexToInt(&ptr, &length);
-            statusOut("erasing %d bytes @ 0x%0x\n", length, offset);
+            BOOST_LOG_TRIVIAL(debug) << format{"erasing %d bytes @ 0x%0x"} % length % offset;
             theJtagICE->enableProgramming();
             theJtagICE->eraseProgramMemory();
             flashbuf = new unsigned char[theJtagICE->deviceDef->flash_page_size *
@@ -1093,13 +1088,13 @@ void GdbServer::handle() {
             hexToInt(&ptr, &offset);
             ++ptr; // past ":"
             const unsigned int amount = plen - 1 - (ptr - optr);
-            statusOut("buffering data, %d bytes @ 0x%x\n", amount, offset);
+            BOOST_LOG_TRIVIAL(debug) << format{"buffering data, %d bytes @ 0x%x"} % amount % offset;
             if (offset + amount > maxaddr)
                 maxaddr = offset + amount;
             memcpy(flashbuf + offset, ptr, amount);
             gdb_ok();
         } else if (strncmp(ptr, "FlashDone", 9) == 0) {
-            statusOut("committing to flash\n");
+            BOOST_LOG_TRIVIAL(debug) << "committing to flash";
             const auto pagesize = theJtagICE->deviceDef->flash_page_size;
             for (unsigned int offset = 0; offset < maxaddr; offset += pagesize) {
                 theJtagICE->jtagWrite(offset, pagesize, flashbuf + offset);
@@ -1137,7 +1132,7 @@ void GdbServer::handle() {
                 mode = BreakpointType::ACCESS_DATA;
                 break;
             default:
-                debugOut("Unknown breakpoint type from GDB.\n");
+                BOOST_LOG_TRIVIAL(warning) << "Unknown breakpoint type from GDB.";
                 throw jtag_exception();
             }
 
@@ -1162,7 +1157,7 @@ void GdbServer::handle() {
 
     // reply to the request
     if (!dontSendReply) {
-        debugOut("->GDB: %s\n", remcomOutBuffer);
+        BOOST_LOG_TRIVIAL(trace) << "->GDB: " << remcomOutBuffer;
         putpacket(remcomOutBuffer);
     }
 }

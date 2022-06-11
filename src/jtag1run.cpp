@@ -88,7 +88,7 @@ bool jtag1::jtagContinue(Server &server) {
 
         // Now that we are "going", wait for either a response from the JTAG
         // box or a nudge from GDB.
-        debugOut("Waiting for input.\n");
+        BOOST_LOG_TRIVIAL(debug) << "Waiting for input.";
 
         // Check for input from JTAG ICE (breakpoint, sleep, info, power)
         // or gdb (user break)
@@ -99,7 +99,7 @@ bool jtag1::jtagContinue(Server &server) {
 
         int numfds = select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
         if (numfds < 0) {
-            debugOut("GDB/JTAG ICE communications failure");
+            BOOST_LOG_TRIVIAL(warning) << "GDB/JTAG ICE communications failure";
             throw jtag_exception();
         }
 
@@ -107,10 +107,10 @@ bool jtag1::jtagContinue(Server &server) {
             const auto c = server.getDebugChar();
             if (c == 3) // interrupt
             {
-                debugOut("interrupted by GDB\n");
+                BOOST_LOG_TRIVIAL(debug) << "interrupted by GDB";
                 gdbInterrupt = true;
             } else
-                debugOut("Unexpected GDB input `%02x'\n", c);
+                BOOST_LOG_TRIVIAL(error) << format{"Unexpected GDB input `%02x'"} % c;
         }
 
         // Read all extant responses (there's a small chance there could
@@ -133,7 +133,7 @@ bool jtag1::jtagContinue(Server &server) {
         // systems don't seem to honor the O_NONBLOCK flag on file
         // descriptors.
         while (timeout_read(&response, 1, 1) == 1) {
-            debugOut("JTAG box sent %c", response);
+            BOOST_LOG_TRIVIAL(debug) << format{"JTAG box sent %c"} % static_cast<uchar>(response);
             switch (response) {
             case Resp::BREAK: {
                 uchar buf[2];
@@ -141,7 +141,7 @@ bool jtag1::jtagContinue(Server &server) {
                 if (count < 2)
                     throw jtag_exception();
                 breakpoint = true;
-                debugOut(": Break Status Register = 0x%02x%02x\n", buf[0], buf[1]);
+                BOOST_LOG_TRIVIAL(debug) << format{": Break Status Register = 0x%02x%02x"} % buf[0] % buf[1];
                 break;
             }
             case Resp::INFO:
@@ -151,15 +151,14 @@ bool jtag1::jtagContinue(Server &server) {
                 const auto count = timeout_read(buf, 2, JTAG_RESPONSE_TIMEOUT);
                 if (count < 2)
                     throw jtag_exception();
-                debugOut(": 0x%02, 0x%02\n", buf[0], buf[1]);
+                BOOST_LOG_TRIVIAL(debug) << format{": 0x%02, 0x%02"} % buf[0] % buf[1];
                 break;
             }
             case Resp::POWER:
                 // apparently no args?
-                debugOut("\n");
                 break;
             default:
-                debugOut(": Unknown response\n");
+                BOOST_LOG_TRIVIAL(error) << ": Unknown response";
                 break;
             }
         }

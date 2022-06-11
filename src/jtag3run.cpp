@@ -40,10 +40,10 @@ again:
             interruptProgram();
             goto again;
         }
-        debugOut( "cannot read program counter: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "cannot read program counter: " << e.what();
         throw;
     } catch (jtag_exception &e) {
-        debugOut( "cannot read program counter: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "cannot read program counter: " << e.what();
         throw;
     }
 
@@ -68,7 +68,7 @@ void Jtag3::setProgramCounter(unsigned long pc) {
     try {
         doJtagCommand(cmd, sizeof(cmd), "write PC", resp, respsize);
     } catch (jtag_exception &e) {
-        debugOut( "cannot write program counter: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "cannot write program counter: " << e.what();
         throw;
     }
 
@@ -130,11 +130,11 @@ void Jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
             // XXX if not event, should push frame back into queue...
             // We really need a queue of received frames.
             if (seqno != 0xffff) {
-                debugOut("Expected event packet, got other response");
+                BOOST_LOG_TRIVIAL(debug) << "Expected event packet, got other response";
                 return;
             }
         } else {
-            debugOut("Timed out waiting for an event");
+            BOOST_LOG_TRIVIAL(debug) << "Timed out waiting for an event";
             return;
         }
     }
@@ -159,38 +159,38 @@ void Jtag3::expectEvent(bool &breakpoint, bool &gdbInterrupt) {
             cached_pc = 2 * b4_to_u32(evtbuf + 2);
             cached_pc_is_valid = true;
             breakpoint = true;
-            debugOut("caching PC: 0x%04x\n", cached_pc);
+            BOOST_LOG_TRIVIAL(debug) << format{"caching PC: 0x%04x"} % cached_pc;
         } else {
-            debugOut("ignoring break event\n");
+            BOOST_LOG_TRIVIAL(debug) << "ignoring break event";
         }
         break;
 
     case (SCOPE_AVR << 8) | EVT3_IDR:
-        statusOut("IDR dirty: 0x%02x\n", evtbuf[3]);
+        BOOST_LOG_TRIVIAL(debug) << format{"IDR dirty: 0x%02x"} % evtbuf[3];
         break;
 
     case (SCOPE_GENERAL << 8) | EVT3_POWER:
         if (evtbuf[3] == 0) {
             gdbInterrupt = true;
-            statusOut("\nTarget power turned off\n");
+            BOOST_LOG_TRIVIAL(debug) << "Target power turned off";
         } else {
-            statusOut("\nTarget power returned\n");
+            BOOST_LOG_TRIVIAL(debug) << "Target power returned";
         }
         break;
 
     case (SCOPE_GENERAL << 8) | EVT3_SLEEP:
         if (evtbuf[3] == 0) {
             // gdbInterrupt = true;
-            statusOut("\nTarget went to sleep\n");
+            BOOST_LOG_TRIVIAL(debug) << "Target went to sleep";
         } else {
             // gdbInterrupt = true;
-            statusOut("\nTarget went out of sleep\n");
+            BOOST_LOG_TRIVIAL(debug) << "Target went out of sleep";
         }
         break;
 
     default:
         gdbInterrupt = true;
-        statusOut("\nUnhandled JTAGICE3 event: 0x%02x, 0x%02x\n", evtbuf[0], evtbuf[1]);
+        BOOST_LOG_TRIVIAL(warning) << format{"Unhandled JTAGICE3 event: 0x%02x, 0x%02x"} % evtbuf[0] % evtbuf[1];
     }
 
     delete[] evtbuf;
@@ -205,7 +205,7 @@ bool Jtag3::eventLoop(Server &server) {
     // box or a nudge from GDB.
 
     for (;;) {
-        debugOut("Waiting for input.\n");
+        BOOST_LOG_TRIVIAL(debug) << "Waiting for input.";
 
         // Check for input from JTAG ICE (breakpoint, sleep, info, power)
         // or gdb (user break)
@@ -226,10 +226,10 @@ bool Jtag3::eventLoop(Server &server) {
             const auto c = server.getDebugChar();
             if (c == 3) // interrupt
             {
-                debugOut("interrupted by GDB\n");
+                BOOST_LOG_TRIVIAL(debug) << "interrupted by GDB";
                 gdbInterrupt = true;
             } else
-                debugOut("Unexpected GDB input `%02x'\n", c);
+                BOOST_LOG_TRIVIAL(warning) << format{"Unexpected GDB input `%02x'"} % c;
         }
 
         if (FD_ISSET(jtagBox, &readfds)) {

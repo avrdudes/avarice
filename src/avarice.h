@@ -26,16 +26,4 @@
 
 using uchar = unsigned char;
 
-/** true iff --debug option specified **/
-extern bool debugMode;
-
-/** printf 'fmt, ...' if debugMode **/
-void vdebugOut(const char *fmt, va_list args);
-void debugOut(const char *fmt, ...);
-void debugOutBufHex(const char* prefix, const void* data, size_t data_size);
-
-/** printf 'fmt, ...' to status file descriptor (currently stdout) **/
-void vstatusOut(const char *fmt, va_list args);
-void statusOut(const char *fmt, ...);
-
 #endif // INCLUDE_AVARICE_H

@@ -64,7 +64,7 @@ Jtag::Jtag(Emulator emul, const char *jtagDeviceName, const std::string_view exp
         // CTRL-C.
         jtagBox = open(jtagDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK);
         if (jtagBox < 0) {
-            debugOut("Failed to open %s", jtagDeviceName);
+            BOOST_LOG_TRIVIAL(error) << "Failed to open " << jtagDeviceName;
             throw jtag_exception();
         }
 
@@ -200,7 +200,7 @@ void Jtag::changeLocalBitRate(int newBitRate) const {
         newPortSpeed = B115200;
         break;
     default:
-        debugOut("unsupported bitrate: %d\n", newBitRate);
+        BOOST_LOG_TRIVIAL(error) << "unsupported bitrate: " << newBitRate;
         throw jtag_exception("unsupported bitrate");
     }
 
@@ -213,12 +213,12 @@ void Jtag::changeLocalBitRate(int newBitRate) const {
 
 void Jtag::jtagWriteFuses(const char *fuses) {
     if (deviceDef->fusemap > 0x07) {
-        debugOut("Fuse byte writing not supported on this device.\n");
+        BOOST_LOG_TRIVIAL(warning) << "Fuse byte writing not supported on this device.";
         return;
     }
 
     if (fuses == nullptr) {
-        debugOut("Error: No fuses string given");
+        BOOST_LOG_TRIVIAL(error) << "No fuses string given";
         return;
     }
 
@@ -226,22 +226,22 @@ void Jtag::jtagWriteFuses(const char *fuses) {
     int temp[3];
     const auto c = sscanf(fuses, "%02x%02x%02x", temp + 2, temp + 1, temp);
     if (c != 3) {
-        debugOut("Error: Fuses specified are not in hexidecimal");
+        BOOST_LOG_TRIVIAL(error) << "Fuses specified are not in hexidecimal";
         return;
     }
 
-    statusOut("\nWriting Fuse Bytes:\n");
+    BOOST_LOG_TRIVIAL(debug) << "Writing Fuse Bytes:";
     uchar fuseBits[3] = {(uchar)temp[0], (uchar)temp[1], (uchar)temp[2]};
     jtagDisplayFuses(fuseBits);
     try {
         jtagWrite(FUSE_SPACE_ADDR_OFFSET + 0, 3, fuseBits);
     } catch (jtag_exception &e) {
-        debugOut("Error writing fuses: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "writing fuses: " << e.what();
     }
 
     const uchar *readfuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
     if (memcmp(fuseBits, readfuseBits, 3) != 0) {
-        debugOut("Error verifying written fuses");
+        BOOST_LOG_TRIVIAL(error) << "verifying written fuses";
     }
     delete[] readfuseBits;
 }
@@ -256,7 +256,7 @@ static unsigned int countFuses(unsigned int fusemap) {
         }
     }
     if (nfuses == 0) {
-        debugOut("Device has no fuses?  Confused.");
+        BOOST_LOG_TRIVIAL(warning) << "Device has no fuses?  Confused.";
         throw jtag_exception();
     }
 
@@ -264,7 +264,7 @@ static unsigned int countFuses(unsigned int fusemap) {
 }
 
 void Jtag::jtagReadFuses() {
-    statusOut("\nReading Fuse Bytes:\n");
+    BOOST_LOG_TRIVIAL(debug) << "Reading Fuse Bytes";
     uchar *fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, countFuses(deviceDef->fusemap));
 
     jtagDisplayFuses(fuseBits);
@@ -279,16 +279,15 @@ void Jtag::jtagActivateOcdenFuse() {
     unsigned int nfuses = countFuses(deviceDef->fusemap);
 
     if (nfuses > 3)
-        statusOut("jtag::jtagActivateOcdenFuse(): "
-                  "Device has more than 3 fuses: %d, cannot handle\n",
-                  nfuses);
+        BOOST_LOG_TRIVIAL(warning) << "jtag::jtagActivateOcdenFuse(): "
+            "Device has more than 3 fuses: " << nfuses << ", cannot handle";
 
     uchar *fuseBits = jtagRead(FUSE_SPACE_ADDR_OFFSET + 0, 3);
 
     unsigned int fusevect = (fuseBits[2] << 16) | (fuseBits[1] << 8) | fuseBits[0];
 
     if ((fusevect & deviceDef->ocden_fuse) != 0) {
-        statusOut("\nEnabling on-chip debugging:\n");
+        BOOST_LOG_TRIVIAL(debug) << "Enabling on-chip debugging:";
 
         fusevect &= ~deviceDef->ocden_fuse; // clear bit
         fuseBits[2] = fusevect >> 16;
@@ -312,25 +311,25 @@ void Jtag::jtagDisplayFuses(const uchar *fuseBits) const {
         const char *fusenames[3] = {"       Low", "      High", "  Extended"};
         for (unsigned int i = 2, mask = 0x04; mask != 0; i--, mask >>= 1) {
             if ((deviceDef->fusemap & mask) != 0)
-                statusOut("%s Fuse byte -> 0x%02x\n", fusenames[i], fuseBits[i]);
+                BOOST_LOG_TRIVIAL(debug) << format{"%s Fuse byte -> 0x%02x"} % fusenames[i] % fuseBits[i];
         }
     } else {
         // Xmega: fuse0 ... fuse7 (or just some of them)
         for (unsigned int i = 7, mask = 0x80; mask != 0; i--, mask >>= 1) {
             if ((deviceDef->fusemap & mask) != 0)
-                statusOut("  Fuse byte %d -> 0x%02x\n", i, fuseBits[i]);
+                BOOST_LOG_TRIVIAL(debug) << format{"  Fuse byte %d -> 0x%02x"} % i % fuseBits[i];
         }
     }
 }
 
 void Jtag::jtagWriteLockBits(const char *lock) {
     if (!lock) {
-        debugOut("Error: No lock bit string given");
+        BOOST_LOG_TRIVIAL(error) << "No lock bit string given";
         return;
     }
 
     if (strlen(lock) != 2) {
-        debugOut("Error: Fuses must be one byte exactly");
+        BOOST_LOG_TRIVIAL(error) << "Fuses must be one byte exactly";
         return;
     }
 
@@ -338,20 +337,20 @@ void Jtag::jtagWriteLockBits(const char *lock) {
     int temp[1];
     const auto c = sscanf(lock, "%02x", temp);
     if (c != 1) {
-        debugOut("Error: Fuses specified are not in hexidecimal");
+        BOOST_LOG_TRIVIAL(error) << "Fuses specified are not in hexidecimal";
         return;
     }
 
     uchar lockBits[1] = {(uchar)temp[0]};
 
-    statusOut("\nWriting Lock Bits -> 0x%02x\n", lockBits[0]);
+    BOOST_LOG_TRIVIAL(debug) << format{"Writing Lock Bits -> 0x%02x"} % lockBits[0];
 
     enableProgramming();
 
     try {
         jtagWrite(LOCK_SPACE_ADDR_OFFSET + 0, 1, lockBits);
     } catch (jtag_exception &e) {
-        debugOut("Error writing lockbits: %s\n", e.what());
+        BOOST_LOG_TRIVIAL(error) << "writing lockbits: " << e.what();
     }
 
     uchar *readlockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
@@ -359,7 +358,7 @@ void Jtag::jtagWriteLockBits(const char *lock) {
     disableProgramming();
 
     if (memcmp(lockBits, readlockBits, 1) != 0) {
-        debugOut("Error verifying written lock bits");
+        BOOST_LOG_TRIVIAL(error) << "verifying written lock bits";
     }
 
     delete[] readlockBits;
@@ -367,7 +366,7 @@ void Jtag::jtagWriteLockBits(const char *lock) {
 
 void Jtag::jtagReadLockBits() {
     enableProgramming();
-    statusOut("\nReading Lock Bits:\n");
+    BOOST_LOG_TRIVIAL(debug) << "Reading Lock Bits:";
     uchar *lockBits = jtagRead(LOCK_SPACE_ADDR_OFFSET + 0, 1);
     disableProgramming();
 
@@ -377,20 +376,20 @@ void Jtag::jtagReadLockBits() {
 }
 
 void Jtag::jtagDisplayLockBits(uchar *lockBits) {
-    statusOut("Lock bits -> 0x%02x\n\n", lockBits[0]);
+    BOOST_LOG_TRIVIAL(debug) << format{"Lock bits -> 0x%02x"} % lockBits[0];
 
-    statusOut("    Bit 7 [ Reserved ] -> %d\n", (lockBits[0] >> 7) & 1);
-    statusOut("    Bit 6 [ Reserved ] -> %d\n", (lockBits[0] >> 6) & 1);
-    statusOut("    Bit 5 [ BLB12    ] -> %d\n", (lockBits[0] >> 5) & 1);
-    statusOut("    Bit 4 [ BLB11    ] -> %d\n", (lockBits[0] >> 4) & 1);
-    statusOut("    Bit 3 [ BLB02    ] -> %d\n", (lockBits[0] >> 3) & 1);
-    statusOut("    Bit 2 [ BLB01    ] -> %d\n", (lockBits[0] >> 2) & 1);
-    statusOut("    Bit 1 [ LB2      ] -> %d\n", (lockBits[0] >> 1) & 1);
-    statusOut("    Bit 0 [ LB1      ] -> %d\n", (lockBits[0] >> 0) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 7 [ Reserved ] -> %d"} % ((lockBits[0] >> 7) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 6 [ Reserved ] -> %d"} % ((lockBits[0] >> 6) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 5 [ BLB12    ] -> %d"} % ((lockBits[0] >> 5) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 4 [ BLB11    ] -> %d"} % ((lockBits[0] >> 4) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 3 [ BLB02    ] -> %d"} % ((lockBits[0] >> 3) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 2 [ BLB01    ] -> %d"} % ((lockBits[0] >> 2) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 1 [ LB2      ] -> %d"} % ((lockBits[0] >> 1) & 1);
+    BOOST_LOG_TRIVIAL(debug) << format{"    Bit 0 [ LB1      ] -> %d"} % ((lockBits[0] >> 0) & 1);
 }
 
 bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int length) {
-    debugOut("BP ADD type: %d  addr: 0x%x ", type, address);
+    BOOST_LOG_TRIVIAL(debug) << format{"BP ADD type: %d  addr: 0x%x"} % static_cast<unsigned>(type) % address;
 
     // Perhaps we have already set this breakpoint, and it is just
     // marked as disabled In that case we don't need to make a new
@@ -399,7 +398,7 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
     while (!bp[bp_i].last) {
         if ((bp[bp_i].address == address) && (bp[bp_i].type == type)) {
             bp[bp_i].enabled = true;
-            debugOut("ENABLED\n");
+            BOOST_LOG_TRIVIAL(debug) << "ENABLED";
             break;
         }
         bp_i++;
@@ -422,7 +421,7 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
 
         // Sorry.. out of room :(
         if ((bp_i + 1) == MAX_TOTAL_BREAKPOINTS2) {
-            debugOut("FAILED\n");
+            BOOST_LOG_TRIVIAL(debug) << "FAILED";
             return false;
         }
 
@@ -449,14 +448,14 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
             int bitno = ffs((int)length);
             unsigned int mask = 1 << (bitno - 1);
             if (mask != length) {
-                debugOut("FAILED: length not power of 2 in range BP\n");
+                BOOST_LOG_TRIVIAL(warning) << "FAILED: length not power of 2 in range BP";
                 bp[bp_i].last = true;
                 bp[bp_i].enabled = false;
                 return false;
             }
             mask--;
             if ((address & mask) != 0) {
-                debugOut("FAILED: address in range BP is not base-aligned\n");
+                BOOST_LOG_TRIVIAL(warning) << "FAILED: address in range BP is not base-aligned";
                 bp[bp_i].last = true;
                 bp[bp_i].enabled = false;
                 return false;
@@ -466,7 +465,7 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
             // add the breakpoint as a data mask.. only thing is we
             // need to find it afterwards
             if (!addBreakpoint(mask, BreakpointType::DATA_MASK, 1)) {
-                debugOut("FAILED\n");
+                BOOST_LOG_TRIVIAL(warning) << "FAILED";
                 bp[bp_i].last = true;
                 bp[bp_i].enabled = false;
                 bp[bp_i].has_mask = true;
@@ -481,7 +480,7 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
 
             bp[bp_i].mask_pointer = j;
 
-            debugOut("range BP ADDED: 0x%x/0x%x\n", address, mask);
+            BOOST_LOG_TRIVIAL(debug) << format{"range BP ADDED: 0x%x/0x%x"} % address % mask;
         }
     }
 
@@ -496,7 +495,7 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
     }
 
     if (!layoutBreakpoints()) {
-        debugOut("Not enough room in ICE for breakpoint. FAILED.\n");
+        BOOST_LOG_TRIVIAL(warning) << "Not enough room in ICE for breakpoint. FAILED.";
         bp[bp_i].enabled = false;
         bp[bp_i].toadd = false;
 
@@ -514,13 +513,13 @@ bool Jtag::addBreakpoint(unsigned int address, BreakpointType type, unsigned int
 }
 
 bool Jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned int) {
-    debugOut("BP DEL type: %d  addr: 0x%x ", type, address);
+    BOOST_LOG_TRIVIAL(debug) << format{"BP DEL type: %d  addr: 0x%x "} % static_cast<unsigned>(type) % address;
 
     int bp_i = 0;
     while (!bp[bp_i].last) {
         if ((bp[bp_i].address == address) && (bp[bp_i].type == type)) {
             bp[bp_i].enabled = false;
-            debugOut("DISABLED\n");
+            BOOST_LOG_TRIVIAL(debug) << "DISABLED";
             break;
         }
         bp_i++;
@@ -528,7 +527,7 @@ bool Jtag::deleteBreakpoint(unsigned int address, BreakpointType type, unsigned 
 
     // If it somehow failed, got to tell..
     if (bp[bp_i].enabled || (bp[bp_i].address != address) || (bp[bp_i].type != type)) {
-        debugOut("FAILED\n");
+        BOOST_LOG_TRIVIAL(warning) << "FAILED";
         return false;
     }
 
@@ -596,7 +595,7 @@ bool Jtag::layoutBreakpoints() {
         if (bp[bp_i].enabled && bp[bp_i].toadd && bp[bp_i].type == BreakpointType::DATA_MASK) {
             // Check if we have the mask slot available
             if (!remaining_bps[BREAKPOINT2_DATA_MASK]) {
-                debugOut("Not enough room to store range breakpoint\n");
+                BOOST_LOG_TRIVIAL(warning) << "Not enough room to store range breakpoint";
                 bp[bp[bp_i].mask_pointer].enabled = false;
                 bp[bp[bp_i].mask_pointer].toadd = false;
                 bp[bp_i].enabled = false;
@@ -616,7 +615,7 @@ bool Jtag::layoutBreakpoints() {
              (bp[bp_i].type == BreakpointType::ACCESS_DATA))) {
             // Check if we have one of both slots available
             if (!remaining_bps[BREAKPOINT2_DATA_MASK] && !remaining_bps[BREAKPOINT2_FIRST_DATA]) {
-                debugOut("Not enough room to store range breakpoint\n");
+                BOOST_LOG_TRIVIAL(warning) << "Not enough room to store range breakpoint";
                 bp[bp_i].enabled = false;
                 bp[bp_i].toadd = false;
                 hadroom = false;
@@ -630,7 +629,7 @@ bool Jtag::layoutBreakpoints() {
             }
 
             if (bpnum > MAX_BREAKPOINTS2) {
-                debugOut("No more room for data breakpoints.\n");
+                BOOST_LOG_TRIVIAL(warning) << "No more room for data breakpoints.";
                 hadroom = false;
                 break;
             }
@@ -647,7 +646,7 @@ bool Jtag::layoutBreakpoints() {
         // Find the next spot to live in.
         uchar bpnum = 0x00;
         while (!remaining_bps[bpnum] && (bpnum <= MAX_BREAKPOINTS2)) {
-            // debugOut("Slot %d full\n", bpnum);
+            // BOOST_LOG_TRIVIAL(debug) << format{"Slot %d full\n", bpnum);
             bpnum++;
         }
 
@@ -662,7 +661,7 @@ bool Jtag::layoutBreakpoints() {
         // Find the next breakpoint that needs somewhere to live
         if (bp[bp_i].enabled && bp[bp_i].toadd && (bp[bp_i].type == BreakpointType::CODE)) {
             if (bpnum == 0xFF) {
-                debugOut("No more room for code breakpoints.\n");
+                BOOST_LOG_TRIVIAL(warning) << "No more room for code breakpoints.";
                 hadroom = false;
                 break;
             }
