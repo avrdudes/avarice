@@ -57,7 +57,7 @@ jobs:
           avarice_installed/usr/bin/avarice --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
-          name: Windows 64-bit
+          name: AVaRICE Windows 64-bit
           path: avarice_installed
   build-lin64:
     runs-on: ubuntu-latest
@@ -80,7 +80,7 @@ jobs:
         run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
       - uses: actions/upload-artifact@v3
         with:
-          name: Linux 64-bit
+          name: AVaRICE Linux 64-bit
           path: avarice.tar.gz
   build-darwin-x64:
     runs-on: macos-latest
@@ -92,14 +92,14 @@ jobs:
       - name: Build AVaRICE
         run: |
           ./Bootstrap
-          ./configure --enable-target-programming
+          ./configure
           make -j4
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
           ls -R avarice_installed
       - name: Tar files
-        run: tar -cvf simavr.tar.gz -C simavr_installed .
+        run: tar -cvf avarice.tar.gz -C avarice_installed .
       - uses: actions/upload-artifact@v3
         with:
-          name: Mac OS Intel 64-bit
-          path: simavr.tar.gz
+          name: AVaRICE Mac OS Intel 64-bit
+          path: avarice.tar.gz
