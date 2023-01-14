@@ -13,12 +13,15 @@ jobs:
         with:
           msystem: MSYS
           update: false
-          install: git make gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils
-      - name: Install libusb-compat-0.1
+          install: git make unzip gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils
+      - name: Build libusb-compat-0.1
         run: |
-          wget https://github.com/Florin-Popescu/libusb-compat-0.1/releases/download/v0.1.7/libusb-compat-0.1_msys_x86_64.zip -O libusb-compat-0.1_msys_x86_64.zip
-          unzip -o libusb-compat-0.1_msys_x86_64.zip
-          cp -r libusb-compat-0.1_msys2_x86_64/* /
+          git clone https://github.com/libusb/libusb-compat-0.1.git
+          cd ./libusb-compat-0.1
+          ./bootstrap.sh
+          ./configure
+          make -j$NUMBER_OF_PROCESSORS
+          make install
       - name: Build libusb
         run: |
           git clone https://github.com/libusb/libusb.git
