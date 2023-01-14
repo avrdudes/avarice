@@ -49,10 +49,11 @@ jobs:
           ldd avarice_installed/usr/bin/avarice
           cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-2.0.dll avarice_installed/usr/bin/.
-          cp /usr/bin/msys-stdc++-cd /6.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-stdc++-6.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-gcc_s-seh-1.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-usb-0-1-4.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-hidapi-0.dll avarice_installed/usr/bin/.
+          avarice_installed/usr/bin/avarice --version || true
           avarice_installed/usr/bin/avarice --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
@@ -73,6 +74,7 @@ jobs:
           make install DESTDIR=$(pwd)/avarice_installed/
           file avarice_installed/usr/local/bin/*
           ldd avarice_installed/usr/local/bin/avarice
+          avarice_installed/usr/bin/avarice --version || true
           avarice_installed/usr/local/bin/avarice --known-devices || true
       - name: Tar files
         run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
