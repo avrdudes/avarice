@@ -20,9 +20,10 @@ jobs:
           ./configure
           make -j4
           make install DESTDIR=$(pwd)/avarice_installed/
-          file avarice_installed/usr/local/bin/*
-          ldd avarice_installed/usr/local/bin/avarice
-          cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/local/bin/.
+          ls -R avarice_installed
+          file avarice_installed/usr/bin/*
+          ldd avarice_installed/usr/bin/avarice
+          cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/bin/.
           avarice_installed/usr/local --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
