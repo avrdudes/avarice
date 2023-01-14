@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: | 
-          brew install gcc autoconf automake mk-configure libusb libusb-compat hidapi
+          brew install gcc binutils autoconf automake mk-configure libusb libusb-compat hidapi
       - name: Build AVaRICE
         run: |
           ./Bootstrap
