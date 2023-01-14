@@ -16,7 +16,7 @@ jobs:
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
           file avarice_installed/usr/local/bin/*
-          ldd avarice_installed/usr/local/bin/*
+          ldd avarice_installed/usr/local/bin/avarice
           avarice_installed/usr/local --known-devices || true
       - name: Tar files
         run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
