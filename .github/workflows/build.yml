@@ -81,7 +81,7 @@ jobs:
           avarice_installed/usr/local/bin/avarice --version
           avarice_installed/usr/local/bin/avarice --known-devices || true
       - name: Tar files
-        run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
+        run: tar -cvf avarice.tar.gz -C avarice_installed .
       - uses: actions/upload-artifact@v3
         with:
           name: AVaRICE Linux 64-bit
