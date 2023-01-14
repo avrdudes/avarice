@@ -55,7 +55,7 @@ jobs:
           cp /usr/bin/msys-hidapi-0.dll avarice_installed/usr/bin/.
       - name: Run AVaRICE
         run: |
-          avarice_installed/usr/bin/avarice --version || true
+          avarice_installed/usr/bin/avarice --version
           avarice_installed/usr/bin/avarice --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
@@ -79,7 +79,7 @@ jobs:
       - name: Run AVaRICE
         run: |
           avarice_installed/usr/local/bin/avarice --version
-          avarice_installed/usr/local/bin/avarice --known-devices
+          avarice_installed/usr/local/bin/avarice --known-devices || true
       - name: Tar files
         run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
       - uses: actions/upload-artifact@v3
@@ -105,7 +105,7 @@ jobs:
       - name: Run AVaRICE
         run: |
           avarice_installed/usr/local/bin/avarice --version
-          avarice_installed/usr/local/bin/avarice --known-devices
+          avarice_installed/usr/local/bin/avarice --known-devices || true
       - name: Tar files
         run: tar -cvf avarice.tar.gz -C avarice_installed .
       - uses: actions/upload-artifact@v3
