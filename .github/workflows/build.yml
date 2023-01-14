@@ -2,6 +2,32 @@ name: Build Binaries
 on: [push, pull_request]
 
 jobs:
+  build-win64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          update: false
+          install: git make libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb mingw-w64-x86_64-libusb-win32 mingw-w64-x86_64-hidapi
+      - name: CI-Build
+        run: |
+          ./Bootstrap
+          ./configure
+          make -j4
+          make install DESTDIR=$(pwd)/avarice_installed/
+          file avarice_installed/usr/local/bin/*
+          ldd avarice_installed/usr/local/bin/avarice
+          cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/local/bin/.
+          avarice_installed/usr/local --known-devices || true
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Windows 64-bit
+          path: avarice_installed
   build-lin64:
     runs-on: ubuntu-latest
     steps:
