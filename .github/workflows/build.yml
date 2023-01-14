@@ -8,12 +8,33 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
           update: false
-          install: git make gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb mingw-w64-x86_64-libusb-win32 mingw-w64-x86_64-hidapi
+          install: git make gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils
+      - name: Install libusb-compat-0.1
+        run: |
+          wget https://github.com/Florin-Popescu/libusb-compat-0.1/releases/download/v0.1.7/libusb-compat-0.1_msys_x86_64.zip -O libusb-compat-0.1_msys_x86_64.zip
+          unzip -o libusb-compat-0.1_msys_x86_64.zip
+          cp -r libusb-compat-0.1_msys2_x86_64/* /
+      - name: Build libusb
+        run: |
+          git clone https://github.com/libusb/libusb.git
+          cd ./libusb
+          ./bootstrap.sh
+          ./configure
+          make -j$NUMBER_OF_PROCESSORS
+          make install
+      - name: Build hidapi
+        run: |
+          git clone https://github.com/libusb/hidapi.git
+          cd ./hidapi
+          ./bootstrap
+          ./configure
+          make all -j$NUMBER_OF_PROCESSORS
+          make install
       - name: CI-Build
         run: |
           ./Bootstrap
@@ -24,7 +45,10 @@ jobs:
           file avarice_installed/usr/bin/*
           ldd avarice_installed/usr/bin/avarice
           cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/bin/.
-          avarice_installed/usr/local --known-devices || true
+          cp /usr/bin/msys-2.0.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-stdc++-6.dll avarice_installed/usr/bin/.         
+          cp /usr/bin/msys-gcc_s-seh-1.dll avarice_installed/usr/bin/.         
+          avarice_installed/usr/bin/avarice --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
           name: Windows 64-bit
@@ -32,7 +56,7 @@ jobs:
   build-lin64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Dependenncies
         run: sudo apt-get install -y build-essential make autotools-dev automake binutils-dev libusb-dev libhidapi-dev
       - name: CI-Build
@@ -44,7 +68,7 @@ jobs:
           make install DESTDIR=$(pwd)/avarice_installed/
           file avarice_installed/usr/local/bin/*
           ldd avarice_installed/usr/local/bin/avarice
-          avarice_installed/usr/local --known-devices || true
+          avarice_installed/usr/local/bin/avarice --known-devices || true
       - name: Tar files
         run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
       - uses: actions/upload-artifact@v3
