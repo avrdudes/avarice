@@ -42,7 +42,7 @@ jobs:
         run: |
           ./Bootstrap
           ./configure
-          make -j4
+          make -j$NUMBER_OF_PROCESSORS
           make install DESTDIR=$(pwd)/avarice_installed/
           ls -R avarice_installed
           file avarice_installed/usr/bin/*
@@ -71,7 +71,7 @@ jobs:
         run: |
           ./Bootstrap
           ./configure --enable-target-programming
-          make -j4
+          make -j$NUMBER_OF_PROCESSORS
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
           file avarice_installed/usr/local/bin/*
@@ -97,7 +97,7 @@ jobs:
         run: |
           ./Bootstrap
           ./configure
-          make -j4
+          make -j3
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
           ls -R avarice_installed
