@@ -1,0 +1,26 @@
+name: Build Binaries
+on: [push, pull_request]
+
+jobs:
+  build-lin64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependenncies
+        run: sudo apt-get install -y build-essential make autotools-dev automake binutils-dev
+      - name: CI-Build
+        run: |
+          ./Bootstrap
+          ./configure --enable-target-programming
+          make -j4
+          mkdir avarice_installed
+          make install DESTDIR=$(pwd)/avarice_installed/
+          file avarice_installed/usr/local/bin/*
+          ldd avarice_installed/usr/local/bin/*
+          avarice_installed/usr/local --known-devices || true
+      - name: Tar files
+        run: tar -cvf avarice.tar.gz -C avarice_installed/usr/local/bin .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Linux 64-bit
+          path: avarice.tar.gz
