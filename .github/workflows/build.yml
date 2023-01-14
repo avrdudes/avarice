@@ -13,7 +13,7 @@ jobs:
         with:
           msystem: MSYS
           update: false
-          install: git make libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb mingw-w64-x86_64-libusb-win32 mingw-w64-x86_64-hidapi
+          install: git make gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb mingw-w64-x86_64-libusb-win32 mingw-w64-x86_64-hidapi
       - name: CI-Build
         run: |
           ./Bootstrap
