@@ -13,7 +13,7 @@ jobs:
         with:
           msystem: MSYS
           update: false
-          install: git make unzip gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils
+          install: git make unzip gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb
       - name: Build libusb
         run: |
           git clone https://github.com/libusb/libusb.git
@@ -38,7 +38,7 @@ jobs:
           ./configure
           make all -j$NUMBER_OF_PROCESSORS
           make install
-      - name: CI-Build
+      - name: Build AVaRICE
         run: |
           ./Bootstrap
           ./configure
@@ -49,9 +49,10 @@ jobs:
           ldd avarice_installed/usr/bin/avarice
           cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-2.0.dll avarice_installed/usr/bin/.
-          cp /usr/bin/msys-stdc++-6.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-stdc++-cd /6.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-gcc_s-seh-1.dll avarice_installed/usr/bin/.
           cp /usr/bin/msys-usb-0-1-4.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-hidapi-0.dll avarice_installed/usr/bin/.
           avarice_installed/usr/bin/avarice --known-devices || true
       - uses: actions/upload-artifact@v3
         with:
@@ -61,9 +62,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install Dependenncies
+      - name: Install Dependencies
         run: sudo apt-get install -y build-essential make autotools-dev automake binutils-dev libusb-dev libhidapi-dev
-      - name: CI-Build
+      - name: Build AVaRICE
         run: |
           ./Bootstrap
           ./configure --enable-target-programming
