@@ -101,7 +101,7 @@ jobs:
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
           ls -R avarice_installed
-          ldd avarice_installed/usr/local/bin/avarice
+          otool -L avarice_installed/usr/local/bin/avarice
       - name: Run AVaRICE
         run: |
           avarice_installed/usr/local/bin/avarice --version
