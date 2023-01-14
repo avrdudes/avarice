@@ -82,3 +82,24 @@ jobs:
         with:
           name: Linux 64-bit
           path: avarice.tar.gz
+  build-darwin-x64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: | 
+          brew install gcc make autoconf automake mk-configure binutils libusb libusb-compat hidapi  
+      - name: Build AVaRICE
+        run: |
+          ./Bootstrap
+          ./configure --enable-target-programming
+          make -j4
+          mkdir avarice_installed
+          make install DESTDIR=$(pwd)/avarice_installed/
+          ls -R avarice_installed
+      - name: Tar files
+        run: tar -cvf simavr.tar.gz -C simavr_installed .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Mac OS Intel 64-bit
+          path: simavr.tar.gz
