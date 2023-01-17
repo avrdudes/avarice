@@ -1,0 +1,114 @@
+name: Build Binaries
+on: [push, pull_request]
+
+jobs:
+  build-win64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          update: false
+          install: git make unzip gcc libtool msys/autotools msys/autoconf-wrapper automake cmake msys/binutils mingw-w64-x86_64-libusb
+      - name: Build libusb
+        run: |
+          git clone https://github.com/libusb/libusb.git
+          cd ./libusb
+          ./bootstrap.sh
+          ./configure
+          make -j$NUMBER_OF_PROCESSORS
+          make install
+      - name: Build libusb-compat-0.1
+        run: |
+          git clone https://github.com/libusb/libusb-compat-0.1.git
+          cd ./libusb-compat-0.1
+          ./bootstrap.sh
+          ./configure
+          make -j$NUMBER_OF_PROCESSORS
+          make install
+      - name: Build hidapi
+        run: |
+          git clone https://github.com/libusb/hidapi.git
+          cd ./hidapi
+          ./bootstrap
+          ./configure
+          make all -j$NUMBER_OF_PROCESSORS
+          make install
+      - name: Build AVaRICE
+        run: |
+          ./Bootstrap
+          ./configure
+          make -j$NUMBER_OF_PROCESSORS
+          make install DESTDIR=$(pwd)/avarice_installed/
+          ls -R avarice_installed
+          file avarice_installed/usr/bin/*
+          ldd avarice_installed/usr/bin/avarice
+          cp /mingw64/bin/libusb-1.0.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-2.0.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-stdc++-6.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-gcc_s-seh-1.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-usb-0-1-4.dll avarice_installed/usr/bin/.
+          cp /usr/bin/msys-hidapi-0.dll avarice_installed/usr/bin/.
+      - name: Run AVaRICE
+        run: |
+          avarice_installed/usr/bin/avarice --version
+          avarice_installed/usr/bin/avarice --known-devices || true
+      - uses: actions/upload-artifact@v3
+        with:
+          name: AVaRICE Windows 64-bit
+          path: avarice_installed
+  build-lin64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential make autotools-dev automake binutils-dev libusb-dev libhidapi-dev
+      - name: Build AVaRICE
+        run: |
+          ./Bootstrap
+          ./configure --enable-target-programming
+          make -j$NUMBER_OF_PROCESSORS
+          mkdir avarice_installed
+          make install DESTDIR=$(pwd)/avarice_installed/
+          file avarice_installed/usr/local/bin/*
+          ldd avarice_installed/usr/local/bin/avarice
+      - name: Run AVaRICE
+        run: |
+          avarice_installed/usr/local/bin/avarice --version
+          avarice_installed/usr/local/bin/avarice --known-devices || true
+      - name: Tar files
+        run: tar -cvf avarice.tar.gz -C avarice_installed .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: AVaRICE Linux 64-bit
+          path: avarice.tar.gz
+  build-darwin-x64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: | 
+          brew install gcc binutils autoconf automake mk-configure libusb libusb-compat hidapi
+      - name: Build AVaRICE
+        run: |
+          ./Bootstrap
+          ./configure
+          make -j3
+          mkdir avarice_installed
+          make install DESTDIR=$(pwd)/avarice_installed/
+          ls -R avarice_installed
+          otool -L avarice_installed/usr/local/bin/avarice
+      - name: Run AVaRICE
+        run: |
+          avarice_installed/usr/local/bin/avarice --version
+          avarice_installed/usr/local/bin/avarice --known-devices || true
+      - name: Tar files
+        run: tar -cvf avarice.tar.gz -C avarice_installed .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: AVaRICE Mac OS Intel 64-bit
+          path: avarice.tar.gz
