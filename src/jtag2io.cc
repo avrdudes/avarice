@@ -605,6 +605,8 @@ void jtag2::startJtagLink(void)
 		    val = EMULATOR_MODE_PDI;
 		    protoName = "PDI";
 		    break;
+		default:
+			break;
 	    }
 	    try
 	    {

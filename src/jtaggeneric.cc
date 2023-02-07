@@ -468,7 +468,7 @@ static unsigned int countFuses(unsigned int fusemap)
 {
     unsigned int nfuses = 0;
 
-    for (unsigned int i = 7, mask = 0x80;
+    for (unsigned int i = 15, mask = 0x8000;
          mask != 0;
          i--, mask >>= 1)
     {
@@ -560,8 +560,8 @@ void jtag::jtagDisplayFuses(uchar *fuseBits)
     }
     else
     {
-        // Xmega: fuse0 ... fuse7 (or just some of them)
-        for (unsigned int i = 7, mask = 0x80;
+        // Xmega: fuse0 ... fuse15 (or just some of them)
+        for (unsigned int i = 15, mask = 0x8000;
              mask != 0;
              i--, mask >>= 1)
         {
