@@ -363,7 +363,12 @@ void jtag3::setDeviceDescriptor(jtag_device_def_type *dev)
   uchar *param, paramsize;
   jtag3_device_desc_type d3;
 
-  if (is_xmega)
+  if (proto == PROTO_UPDI)
+  {
+    param = (uchar *)&dev->dev_desc4;
+	paramsize = sizeof dev->dev_desc4;
+  }
+  else if (is_xmega)
   {
     param = (uchar *)&dev->dev_desc3 + 4;
     paramsize = sizeof dev->dev_desc3 - 4;
@@ -456,6 +461,8 @@ void jtag3::startJtagLink(void)
     paramdata[0] = PARM3_ARCH_XMEGA;
   else if (proto == PROTO_DW)
     paramdata[0] = PARM3_ARCH_TINY;
+  else if (proto == PROTO_UPDI)
+	paramdata[0] = PARM3_ARCH_UPDI;
   else
     paramdata[0] = PARM3_ARCH_MEGA;
   setJtagParameter(SCOPE_AVR, 0, PARM3_ARCH, paramdata, 1);
@@ -477,11 +484,36 @@ void jtag3::startJtagLink(void)
     case PROTO_PDI:
       paramdata[0] = PARM3_CONN_PDI;
       break;
+
+    case PROTO_UPDI:
+      paramdata[0] = PARM3_CONN_UPDI;
+      break;
   }
   setJtagParameter(SCOPE_AVR, 1, PARM3_CONNECTION, paramdata, 1);
 
   if (proto == PROTO_JTAG)
     configDaisyChain();
+
+  if (proto == PROTO_UPDI)
+  {
+	/*
+	* Unfortunately, for Xmega devices on UPDI, it's necessary
+	* to send the device descriptor before sign-on.  However,
+	* in order to do this, the JTAGICE3 needs a valid device
+	* descriptor already.
+	*
+	* Hopefully, the values below will remain constant for all
+	* Xmega devices ...
+	*/
+	jtag_device_def_type desc = { "dummy", 0 };
+
+	u16_to_b2(desc.dev_desc4.prog_base, 0x4000);
+	desc.dev_desc4.flash_page_size = 128;
+	desc.dev_desc4.eeprom_page_size = 64;
+	u16_to_b2(desc.dev_desc4.nvm_base_addr, 0x1000);
+	u16_to_b2(desc.dev_desc4.ocd_base_addr, 0x0F80);
+	setDeviceDescriptor(&desc);
+  }
 
   cmd[0] = SCOPE_AVR;
   cmd[1] = CMD3_SIGN_ON;
@@ -505,6 +537,15 @@ void jtag3::startJtagLink(void)
 
       device_id = (did & 0x0FFFF000) >> 12;
     }
+	else if (proto == PROTO_UPDI)
+	{
+      debugOut("AVR sign-on responded with %c%c%c%c\n",
+	    (did & 0x000000FF) >> 0,
+	    (did & 0x0000FF00) >> 8,
+	    (did & 0x00FF0000) >> 16,
+	    (did & 0xFF000000) >> 24);
+	  device_id = 0;
+	}
     else // debugWIRE
     {
       debugOut("AVR sign-on responded with device ID = 0x%0X\n", did);

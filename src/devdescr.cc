@@ -783,9 +783,71 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1F),	// EECRAddress
 	},
 	{ 0 },			// Xmega device descr.
-    },
-    // DEV_ATMEGA644
-    {
+	},
+	// DEV_ATMEGA324PB
+	{
+	"atmega324pb",
+	0x9517,
+	128, 256,	// 32768 bytes flash
+	4, 256,	// 1024 bytes EEPROM
+	0x60,		// First flash address which is not an interrupt vector
+	DEVFL_NONE,
+	atmega324pb_io_registers,
+	false,
+	0x07, 0x8000, // fuses
+	0x66, // osccal
+	3, // OCD revision
+	{
+		0	// no mkI support
+	},
+	{
+		CMND_SET_DEVICE_DESCRIPTOR,
+		{ 0xFF,0x0F,0xE0,0xF8,0xFF,0x3D,0xB9,0xE8 }, // ucReadIO
+		{ 0X00,0X00,0X00,0X00,0X01,0X00,0X00,0X00 }, // ucReadIOShadow
+		{ 0xB6,0x0D,0x00,0xE0,0xFF,0x1D,0xB8,0xE8 }, // ucWriteIO
+		{ 0X00,0X00,0X00,0X00,0X01,0X00,0X00,0X00 }, // ucWriteIOShadow
+		{ 0x53,0xFB,0x09,0xDF,0xF3,0x0F,0x00,0x00,
+		  0x00,0x00,0x5F,0x3F,0x37,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucReadExtIO
+		{ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucReadIOExtShadow
+		{ 0x51,0xFB,0x09,0xD8,0xF3,0x0F,0x00,0x00,
+		  0x00,0x00,0x5F,0x2F,0x36,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucWriteExtIO
+		{ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucWriteIOExtShadow
+		0x31,	// ucIDRAddress
+		0x37,	// ucSPMCRAddress
+		0x3B,	// ucRAMPZAddress
+		fill_b2(128),	// uiFlashPageSize
+		4,	// ucEepromPageSize
+		fill_b4(0x3f00),	// ulBootAddress
+		fill_b2(0x00C6),	// uiUpperExtIOLoc
+		fill_b4(32768),	// ulFlashSize
+		{ 0x00 },	// ucEepromInst
+		{ 0x00 },	// ucFlashInst
+		0x3E,	// ucSPHaddr
+		0x3D,	// ucSPLaddr
+		fill_b2(32768 / 128),	// uiFlashpages
+		0x00,	// ucDWDRAddress
+		0x00,	// ucDWBasePC
+		0x00,	// ucAllowFullPageBitstream
+		fill_b2(0x00),	// uiStartSmallestBootLoaderSection
+		1,	// EnablePageProgramming
+		0,	// ucCacheType
+		fill_b2(0x100),	// uiSramStartAddr
+		0,	// ucResetType
+		0,	// ucPCMaskExtended
+		0,	// ucPCMaskHigh
+		0,	// ucEindAddress
+		fill_b2(0x1F),	// EECRAddress
+	},
+	{ 0 },			// Xmega device descr.
+	},
+	// DEV_ATMEGA644
+	{
 	"atmega644",
 	0x9609,
 	256, 256,    // 64K flash
@@ -3012,9 +3074,69 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1C),	// EECRAddress
 	},
 	{ 0 },			// Xmega device descr.
-    },
-    // DEV_ATTINY461
-    {
+	},
+	// DEV_ATTINY402
+	{
+		"attiny402",
+		0x9227,
+		64, 64,	// flash
+		32, 4,	// EEPROM
+		(31 + 1) * 2,	// First flash address which is not an interrupt vector
+		DEVFL_NONE,
+		attiny402_io_registers,
+		false,
+		0x5E7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0	// no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x8000),	// Start address of Program memory
+			64,					// Page size of flash in bytes
+			32,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATTINY412
+	{
+		"attiny412",
+		0x9223,
+		64, 64,	// flash
+		32, 4,	// EEPROM
+		(26 + 1) * 2,	// First flash address which is not an interrupt vector
+		DEVFL_NONE,
+		attiny412_io_registers,
+		false,
+		0x5F7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0	// no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x8000),	// Start address of Program memory
+			64,					// Page size of flash in bytes
+			32,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATTINY461
+	{
 	"attiny461",
 	0x9208,
 	64, 64,	// 4096 bytes flash
@@ -3076,9 +3198,39 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1C),	// EECRAddress
 	},
 	{ 0 },			// Xmega device descr.
-    },
-    // DEV_ATTINY861
-    {
+	},
+	// DEV_ATTINY814
+	{
+		"attiny814",
+		0x9322,
+		64, 128,	// flash
+		32, 4,	// EEPROM
+		26 * 2,	// interrupt vectors
+		DEVFL_NONE,
+		attiny814_io_registers,
+		false,
+		0x5F7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0	// no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x8000),	// Start address of Program memory
+			64,					// Page size of flash in bytes
+			32,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATTINY861
+	{
 	"attiny861",
 	0x930D,
 	64, 128,	// 8192 bytes flash
@@ -5319,9 +5471,92 @@ jtag_device_def_type deviceDefinitions[] = {
 	    fill_b2(0x1c0),	// IO space base address of NVM controller
 	    fill_b2(0x90),	// IO space address of MCU control
 	},
-    },
-    // DEV_ATXMEGA128A3
-    {
+	},
+	// DEV_ATXMEGA16A4U
+	{
+	"atxmega16a4u",
+	0x9441,
+	256, 80,	// 20480 bytes flash
+	32, 32, 	// 1024 bytes EEPROM
+	94 * 4, 	// 94 interrupt vectors?
+	DEVFL_MKII_ONLY,
+	atxmega16a4u_io_registers,	// registers
+	true,
+	0x37, 0x0000, // fuses
+	0, // osccal
+	0, // OCD revision
+	{
+		0	// no mkI support
+	},
+	{
+		CMND_SET_DEVICE_DESCRIPTOR,
+		{ 0xFF,0xFF,0xFF,0xF9,0xFF,0x3D,0xB9,0xF8 }, // ucReadIO
+		{ 0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00 }, // ucReadIOShadow
+		{ 0xFF,0xFF,0x1F,0xE0,0xFF,0x1D,0xA9,0xF8 }, // ucWriteIO
+		{ 0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00 }, // ucWriteIOShadow
+		{ 0x73,0xFF,0x3F,0xFF,0xF7,0x3F,0xF7,0x3F,
+		  0xF7,0x3F,0x5F,0x3F,0x37,0x37,0x36,0x00,
+		  0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+		  0xF7,0x3F,0x36,0x00 }, // ucReadExtIO
+		{ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucReadIOExtShadow
+		{ 0x73,0xFF,0x3F,0xF8,0xF7,0x3F,0xF7,0x3F,
+		  0xF7,0x3F,0x5F,0x2F,0x36,0x36,0x36,0x00,
+		  0x00,0x00,0x00,0x00,0xFF,0x0F,0x00,0x00,
+		  0xF7,0x3F,0x36,0x00 }, // ucWriteExtIO
+		{ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		  0x00,0x00,0x00,0x00 }, // ucWriteIOExtShadow
+		0x31,	// ucIDRAddress
+		0x57,	// ucSPMCRAddress
+		0,	// ucRAMPZAddress
+		fill_b2(256),	// uiFlashPageSize
+		32,	// ucEepromPageSize
+		fill_b4(0x4000),	// ulBootAddress -- byte address
+		fill_b2(0x136),	// uiUpperExtIOLoc
+		fill_b4(256 * 80),	// ulFlashSize (page size * pages)
+		{ 0x00 },	// ucEepromInst
+		{ 0x00 },	// ucFlashInst
+		0x3E,	// ucSPHaddr
+		0x3D,	// ucSPLaddr
+		fill_b2(80),	// uiFlashpages (64 application + 16 boot)
+		0x00,	// ucDWDRAddress
+		0x00,	// ucDWBasePC
+		0x00,	// ucAllowFullPageBitstream
+		fill_b2(0x00),	// uiStartSmallestBootLoaderSection
+		1,	// EnablePageProgramming
+		0x02,	// ucCacheType
+		fill_b2(8192),	// uiSramStartAddr
+		0,	// ucResetType
+		0,	// ucPCMaskExtended
+		0,	// ucPCMaskHigh
+		0,	// ucEindAddress
+		fill_b2(0),	// EECRAddress
+	},
+	{
+		CMND_SET_XMEGA_PARAMS, // cmd
+		fill_b2(2),		// whatever
+		47,			// length of following data
+		fill_b4(0x800000),	// NVM offset for application flash
+		fill_b4(0x804000),	// NVM offset for boot flash
+		fill_b4(0x8c0000),	// NVM offset for EEPROM
+		fill_b4(0x8f0020),	// NVM offset for fuses
+		fill_b4(0x8f0027),	// NVM offset for lock bits
+		fill_b4(0x8e0400),	// NVM offset for user signature row
+		fill_b4(0x8e0200),	// NVM offset for production sig. row
+		fill_b4(0x1000000), // NVM offset for data memory
+		fill_b4(20480),	// size of application flash
+		fill_b2(4096),	// size of boot flash
+		fill_b2(256),	// flash page size
+		fill_b2(1024),	// size of EEPROM
+		32,			// EEPROM page size
+		fill_b2(0x1c0),	// IO space base address of NVM controller
+		fill_b2(0x90),	// IO space address of MCU control
+	},
+	},
+	// DEV_ATXMEGA128A3
+	{
 	"atxmega128a3",
 	0x9742,
 	512, 272,	// 139264 bytes flash
@@ -6308,8 +6543,98 @@ jtag_device_def_type deviceDefinitions[] = {
             fill_b2(0x90),      // IO space address of MCU control
         },
     },
-    // DEV_ATXMEGA64A3
-    {
+	// DEV_ATMEGA3208
+	{
+		"atmega3208",
+		0x9552,
+		128, 256,	   // 32768 bytes flash (page size. # pages)
+		64, 4, // 256 bytes EEPROM
+		0x50,		// First flash address which is not an interrupt vector
+		DEVFL_NONE,
+		atmega3208_io_registers,
+		false,
+		0x5E7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0   // no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x4000),	// Start address of Program memory
+			128,				// Page size of flash in bytes
+			64,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATMEGA4808
+	{
+		"atmega4808",
+		0x9650,
+		128, 384,	   // 49152 bytes flash (page size. # pages)
+		64, 4, // 256 bytes EEPROM
+		0x50,		// First flash address which is not an interrupt vector
+		DEVFL_NONE,
+		atmega4808_io_registers,
+		false,
+		0x5E7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0   // no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x4000),	// Start address of Program memory
+			128,				// Page size of flash in bytes
+			64,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATMEGA4809
+	{
+		"atmega4809",
+		0x9651,
+		128, 384,	   // 49152 bytes flash (page size. # pages)
+		64, 4, // 256 bytes EEPROM
+		0x50,		// First flash address which is not an interrupt vector
+		DEVFL_NONE,
+		atmega4809_io_registers,
+		false,
+		0x5E7, 0, // fuses
+		0, // osccal
+		0, // OCD revision
+		{
+			0   // no mkI support
+		},
+		{
+			0   // no mkII JTAG support
+		},
+		{
+			0   // no Xmega support
+		},
+		{
+			fill_b2(0x4000),	// Start address of Program memory
+			128,				// Page size of flash in bytes
+			64,					// Page size of EEPROM
+			fill_b2(0x1000),	// Address of NVMCTRL module
+			fill_b2(0x0F80),	// Address of OCD module
+		},
+	},
+	// DEV_ATXMEGA64A3
+	{
 	"atxmega64a3",
 	0x9642,
         256, 272,       // 69,632 bytes flash (page size. # pages)

@@ -1024,7 +1024,7 @@ void talkToGdb(void)
         }
 	else if (strncmp(ptr, "Supported:", 10) == 0)
 	{
-	    strcpy(remcomOutBuffer, "qXfer:memory-map:read+");
+	    strcpy(remcomOutBuffer, "PacketSize=40;qXfer:memory-map:read+");
 	}
 	else if (strncmp(ptr, "Xfer:memory-map:read::", 22) == 0)
 	{

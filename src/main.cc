@@ -227,6 +227,8 @@ static void usage(const char *progname)
     fprintf(stderr,
             "  -R, --reset-srst            External reset through nSRST signal.\n");
     fprintf(stderr,
+            "  -u, --updi                  AVR part is an ATxmega device, using UPDI.\n");
+    fprintf(stderr,
 	    "  -V, --version               Print version information.\n");
 #if ENABLE_TARGET_PROGRAMMING
     fprintf(stderr,
@@ -332,6 +334,7 @@ static struct option long_opts[] = {
     { "program",             0,       0,     'p' },
     { "reset-srst",          0,       0,     'R' },
     { "read-fuses",          0,       0,     'r' },
+    { "updi",                0,       0,     'u' },
     { "version",             0,       0,     'V' },
     { "verify",              0,       0,     'v' },
     { "debugwire",           0,       0,     'w' },
@@ -389,7 +392,7 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        int c = getopt_long (argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRrVvwW:xX",
+        int c = getopt_long (argc, argv, "1234B:Cc:DdeE:f:ghIj:kL:lP:pRruVvwW:xX",
                              long_opts, &option_index);
         if (c == -1)
             break;              /* no more options */
@@ -475,6 +478,9 @@ int main(int argc, char **argv)
             case 'r':
                 readFuses = true;
                 break;
+            case 'u':
+		proto = PROTO_UPDI;
+		break;
             case 'V':
                 exit(0);
             case 'v':
