@@ -53,6 +53,12 @@ void jtag3::disableProgramming(void)
     {
 	programmingEnabled = false;
 	doSimpleJtagCommand(CMD3_LEAVE_PROGMODE, "leave progmode");
+	// Leaving progmode with OCD active can produce a BREAK
+	if (debug_active)
+	{
+	    bool bp, intr;
+	    expectEvent(bp, intr);
+	}
     }
 }
 

@@ -56,6 +56,9 @@ jtag3_io_exception::jtag3_io_exception(unsigned int code)
     case RSP3_FAIL_NO_TARGET_POWER:
       reason = "No target power present"; break;
 
+    case RSP3_FAIL_NOT_ATTACHED:
+      reason = "Must run attach command first"; break;
+
     case RSP3_FAIL_WRONG_MODE:
       reason = "wrong mode"; break;
 
@@ -64,6 +67,12 @@ jtag3_io_exception::jtag3_io_exception(unsigned int code)
 
     case RSP3_FAIL_WRONG_LENGTH:
       reason = "wrong length for memory access"; break;
+
+    case RSP3_FAIL_TIMEOUT:
+      reason = "A timeout occurred"; break;
+
+    case RSP3_FAIL_WRONG_OCD_STATUS:
+      reason = "wrong OCD status (check OCDEN fuse)"; break;
 
     case RSP3_FAIL_NOT_UNDERSTOOD:
       reason = "command not understood"; break;
@@ -537,8 +546,6 @@ void jtag3::startJtagLink(void)
       // ignore
     }
   }
-
-  debug_active = true;
 }
 
 /** Device automatic configuration
@@ -651,6 +658,22 @@ void jtag3::deviceAutoConfig(void)
 }
 
 
+// Attach to target and stop program
+void jtag3::attach(void)
+{
+    uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
+    uchar *resp;
+    int respsize;
+    bool bp, intr;
+
+    doJtagCommand(cmd, sizeof cmd, "start debugging", resp, respsize);
+    delete [] resp;
+    expectEvent(bp, intr);
+
+    debug_active = true;
+}
+
+
 void jtag3::initJtagBox(void)
 {
     statusOut("JTAG config starting.\n");
@@ -683,6 +706,30 @@ void jtag3::initJtagBox(void)
 
       deviceAutoConfig();
 
+      // Unconditionally try to attach. Some physical interfaces (DebugWire)
+      // implicitly attach, but the EDBG reference implies it's always
+      // necessary.
+      try
+      {
+        attach();
+      }
+      catch (jtag_io_exception& e)
+      {
+        bool bp, intr;
+
+        if (e.get_response() != RSP3_FAIL_WRONG_OCD_STATUS)
+        {
+          throw;
+        }
+        // failed attach can still generate a BREAK
+        expectEvent(bp, intr);
+
+        // If not doing capture, ignore failure, because
+        // initJtagOnChipDebugging might take care of it
+        if (is_capture) {
+          throw;
+        }
+      }
       // Clear out the breakpoints.
       deleteAllBreakpoints();
 
@@ -728,18 +775,16 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
     // Ensure on-chip debug enable fuse is enabled ie '0'
     jtagActivateOcdenFuse();
 
+    if (proto != PROTO_DW && !debug_active)
+    {
+        // Absorb BREAK from leaving progmode
+        bool bp, gdb;
+        expectEvent(bp, gdb);
+    }
+    debug_active = true;
+
     uchar timers = 0;		// stopped
     setJtagParameter(SCOPE_AVR, 3, PARM3_TIMERS_RUNNING, &timers, 1);
-
-    if (proto == PROTO_DW || is_xmega)
-    {
-        uchar cmd[] = { SCOPE_AVR, CMD3_START_DEBUG, 0, 1 };
-        uchar *resp;
-        int respsize;
-
-        doJtagCommand(cmd, sizeof cmd, "start debugging", resp, respsize);
-        delete [] resp;
-    }
 
     // Sometimes (like, after just enabling the OCDEN fuse), the first
     // resetProgram() runs into an error code 0x32.  Just retry it once.
@@ -749,6 +794,9 @@ void jtag3::initJtagOnChipDebugging(unsigned long bitrate)
       }
     catch (jtag_exception &e)
       {
+	// Absorb BREAK from failed reset
+	bool bp, gdb;
+	expectEvent(bp, gdb);
 	debugOut("retrying reset ...\n");
 	resetProgram();
       }
