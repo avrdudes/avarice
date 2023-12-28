@@ -192,6 +192,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
 
 	    numBytes -= chunksize;
 	    targetOffset += chunksize;
+	    offset = 0;
 
 	    chunksize = numBytes > pageSize? pageSize: numBytes;
 	    pageAddr += pageSize;
