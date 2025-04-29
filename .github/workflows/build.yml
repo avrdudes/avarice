@@ -96,7 +96,7 @@ jobs:
       - name: Build AVaRICE
         run: |
           ./Bootstrap
-          ./configure
+          ./configure CFLAGS="--ggdb3" CXXFLAGS="--ggdb3"
           make -j3
           mkdir avarice_installed
           make install DESTDIR=$(pwd)/avarice_installed/
