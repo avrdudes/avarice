@@ -89,9 +89,12 @@ enum jtag3consts
     RSP3_FAIL_PDI = 0x1B,
     RSP3_FAIL_NO_ANSWER = 0x20,
     RSP3_FAIL_NO_TARGET_POWER = 0x22,
-    RSP3_FAIL_WRONG_MODE = 0x32,    /* CPU running vs. stopped */
-    RSP3_FAIL_UNSUPP_MEMORY = 0x34, /* unsupported memory type */
-    RSP3_FAIL_WRONG_LENGTH = 0x35,  /* wrong lenth for mem access */
+    RSP3_FAIL_NOT_ATTACHED = 0x23,     /* Must run attach command first */
+    RSP3_FAIL_WRONG_MODE = 0x32,       /* CPU running vs. stopped */
+    RSP3_FAIL_UNSUPP_MEMORY = 0x34,    /* unsupported memory type */
+    RSP3_FAIL_WRONG_LENGTH = 0x35,     /* wrong length for mem access */
+    RSP3_FAIL_TIMEOUT = 0x3C,          /* A timeout occurred */
+    RSP3_FAIL_WRONG_OCD_STATUS = 0x3D, /* wrong OCD status */
     RSP3_FAIL_NOT_UNDERSTOOD = 0x91,
 
     /* ICE events */
@@ -187,6 +190,7 @@ class jtag3: public jtag
     unsigned long cached_pc;
     bool cached_pc_is_valid;
     bool is_edbg;
+    bool is_capture;
 
     unsigned char flashCache[MAX_FLASH_PAGE_SIZE];
     unsigned int flashCachePageAddr;
@@ -202,7 +206,8 @@ class jtag3: public jtag
     jtag3(const char *dev, char *name, enum debugproto prot = PROTO_JTAG,
 	  bool nsrst = false,
           bool xmega = false,
-          bool edbg = false):
+          bool edbg = false,
+          bool capture = false):
         jtag(dev, name, edbg? EMULATOR_EDBG: EMULATOR_JTAGICE3) {
 	signedIn = debug_active = false;
 	command_sequence = 0;
@@ -220,6 +225,7 @@ class jtag3: public jtag
         device_id = 0;
         cached_event = NULL;
         is_edbg = edbg;
+        is_capture = capture;
     };
     virtual ~jtag3(void);
 
@@ -353,6 +359,8 @@ class jtag3: public jtag
     /** Update Xmega breakpoints on target
      **/
     void xmegaSendBPs(void);
+
+    void attach(void);
 };
 
 class jtag3_io_exception: public jtag_io_exception

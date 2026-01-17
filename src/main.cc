@@ -600,12 +600,12 @@ int main(int argc, char **argv)
 
 	case JTAG3:
 	    theJtagICE = new jtag3(jtagDeviceName, device_name, proto,
-				   apply_nsrst, is_xmega);
+				   apply_nsrst, is_xmega, false, capture);
 	    break;
 
 	case EDBG:
 	    theJtagICE = new jtag3(jtagDeviceName, device_name, proto,
-				   apply_nsrst, is_xmega, true);
+				   apply_nsrst, is_xmega, true, capture);
 	    break;
 	}
 
