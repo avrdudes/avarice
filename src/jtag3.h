@@ -139,6 +139,7 @@ enum jtag3consts
     PARM3_ARCH_TINY = 1,     /* also small megaAVR with ISP/DW only */
     PARM3_ARCH_MEGA = 2,
     PARM3_ARCH_XMEGA = 3,
+    PARM3_ARCH_UPDI = 5,
 
     PARM3_SESS_PURPOSE = 0x01, /* section 0, AVR scope, 1 byte */
     PARM3_SESS_PROGRAMMING = 1,
@@ -149,6 +150,7 @@ enum jtag3consts
     PARM3_CONN_JTAG = 4,
     PARM3_CONN_DW = 5,
     PARM3_CONN_PDI = 6,
+	  PARM3_CONN_UPDI = 8,
 
     PARM3_JTAGCHAIN = 0x01,     /* JTAG chain info, AVR scope (units
                                  * before/after, bits before/after),
