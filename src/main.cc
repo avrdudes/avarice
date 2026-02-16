@@ -583,6 +583,9 @@ int main(int argc, char **argv)
     if (debugMode)
       setvbuf(stderr, NULL, _IOLBF, 0);
 
+    // Be nicer to debug engines running us through pipes
+    setvbuf(stdout, NULL, _IOLBF, 0);
+
     int rv = 0;			// return value from main()
 
     try {
