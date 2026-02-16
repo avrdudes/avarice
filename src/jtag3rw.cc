@@ -76,7 +76,7 @@ uchar jtag3::memorySpace(unsigned long &addr)
     case DATA_SPACE_ADDR_OFFSET:
 	return MTYPE_SRAM;
     default:
-	if (is_xmega)
+	if (is_xmega || proto == PROTO_UPDI)
 	    return MTYPE_XMEGA_APP_FLASH;
 	else if (proto == PROTO_DW || programmingEnabled)
 	    return MTYPE_FLASH_PAGE;
@@ -103,6 +103,7 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
         whichSpace < MTYPE_XMEGA_REG;
     unsigned int pageSize = 0;
     unsigned int offset = 0;
+	unsigned int alignSize = 0;
     bool wasProgmode = programmingEnabled;
     if (needProgmode && !programmingEnabled)
        enableProgramming();
@@ -112,6 +113,12 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
 
     switch (whichSpace)
     {
+	case MTYPE_SIGN_JTAG:
+	// The signature needs to be read from its exact address,
+	// not just the signature space with address 0.
+		if (proto == PROTO_UPDI)
+			addr = 0x1100;
+	break;
 	// Pad to even byte count for flash memory.
 	// Even MTYPE_SPM appears to cause a RSP_FAILED
 	// otherwise.
@@ -131,6 +138,12 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
 	pageSize = deviceDef->eeprom_page_size;
 	cachePtr = eepromCache;
 	cacheBaseAddr = &eepromCachePageAddr;
+	break;
+
+	case MTYPE_XMEGA_APP_FLASH:
+		// Flash for UPDI devices can only be accessed in word (16bit) chunks
+		if (proto == PROTO_UPDI)
+			alignSize = 2;
 	break;
     }
 
@@ -197,8 +210,37 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
 	    pageAddr += pageSize;
 	}
     } else {
-	u32_to_b4(cmd + 8, numBytes);
-	u32_to_b4(cmd + 4, addr);
+		unsigned int addrAdj = addr;
+		unsigned int numBytesAdj = numBytes;
+		// Access to some memories may only be allowed in chunks aligned
+		// to a certain size. If that is the case, properly align what is
+		// read from the device (thus reading more than asked), then only
+		// return to GDB the requested data.
+		if (alignSize != 0)
+		{
+			// Get address adjustment by rounding down to alignment size
+			// e.g. For alignmentSize of 10
+			// 39 becomes 30 => adjustment of 9
+			addrAdj = (addr / alignSize) * alignSize;
+			// Get length adjustment by rounding up to number of bytes
+			// e.g. For alignmentSize of 10
+			// 39 becomes 40 => adjustment of 1
+			numBytesAdj = ((numBytes + alignSize - 1) / alignSize) * alignSize;
+
+			if (addr + numBytes > addrAdj + numBytesAdj)
+			{
+				// If both address and length are not aligned in request, our
+				// alignment may make us read less than requested range.
+				// Add alignmentSize to correct for this.
+				// e.g. For alignmentSize of 10
+				// 39 bytes from address 39 => bytes #39-77 requested
+				// but 40 bytes from address 30 => bytes #30-69 read.
+				// Adding 10 => bytes #30-79 read which covers expected range
+				numBytesAdj += alignSize;
+			}
+		}
+	u32_to_b4(cmd + 8, numBytesAdj);
+	u32_to_b4(cmd + 4, addrAdj);
 
         int cnt = 0;
       again:
@@ -225,6 +267,8 @@ uchar *jtag3::jtagRead(unsigned long addr, unsigned int numBytes)
                     e.what());
             throw;
         }
+	responsesize -= (addr - addrAdj) + (numBytesAdj - numBytes);
+	offset = (addr - addrAdj);
 	if (offset > 0)
 	    memmove(response, response + 3 + offset, responsesize - 1 - offset);
 	else
