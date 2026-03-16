@@ -49,7 +49,7 @@ re_mem8 = re.compile (base_regx % ('_SFR_MEM8'))
 try:
     in_file_name = sys.argv[1]
 except:
-    print 'Usage: %s <io_header>' % (os.path.basename (sys.argv[0]))
+    print('Usage: %s <io_header>' % (os.path.basename (sys.argv[0])))
     sys.exit (1)
 
 f = open (in_file_name).read ()
@@ -70,12 +70,11 @@ for name, addr_str in re_mem8.findall (f):
 
 # Print the field initializer to stdout.
 
-addrs = register.keys ()
-addrs.sort ()
-print 'gdb_io_reg_def_type [PUT DEVICE NAME HERE]_io_registers[] ='
-print '{'
+addrs = sorted(register)
+print('gdb_io_reg_def_type [PUT DEVICE NAME HERE]_io_registers[] =')
+print('{')
 for addr in addrs:
-    print '    { %-12s, 0x%X, 0x00 },' % ('"%s"' %(register[addr]), addr)
-print '    /* May need to add SREG, SPL, SPH, and eeprom registers. */'
-print '    { 0, 0, 0}'
-print '}'
+    print('    { %-12s, 0x%X, 0x00 },' % ('"%s"' %(register[addr]), addr))
+print('    /* May need to add SREG, SPL, SPH, and eeprom registers. */')
+print('    { 0, 0, 0}')
+print('}')
