@@ -763,10 +763,11 @@ int main(int argc, char **argv)
 	fprintf(stderr, "%s\n", msg);
 	return 1;
       }
-    catch (jtag_exception&)
+    catch (jtag_exception& e)
     {
-        // ignored; guarantee theJtagICE object will be deleted
-        // correctly, as this says "good-bye" to the JTAG ICE mkII
+        // report, then fall through so theJtagICE is deleted correctly,
+        // as this says "good-bye" to the JTAG ICE mkII
+        fprintf(stderr, "JTAG exception: %s\n", e.what());
         rv = 1;
     }
 
