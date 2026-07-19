@@ -99,7 +99,15 @@ jtag2::~jtag2(void)
 	  {
 	      // just proceed with the sign-off
 	  }
-	  doSimpleJtagCommand(CMND_SIGN_OFF);
+	  try
+	  {
+	      doSimpleJtagCommand(CMND_SIGN_OFF);
+	  }
+	  catch (jtag_exception&)
+	  {
+	      // never throw from a destructor: a failing sign-off during
+	      // exception unwinding would call std::terminate()
+	  }
 	  signedIn = false;
       }
 }
@@ -425,6 +433,16 @@ void jtag2::doSimpleJtagCommand(uchar command)
 		throw jtag_io_exception(replydummy[0]);
 	    delete [] replydummy;
 	    return;
+	}
+	if (dummy >= 1)
+	{
+	    // The ICE answered with a definitive failure; re-sending
+	    // the same command cannot change its mind, so retrying
+	    // only converts the real response code into a generic
+	    // "JTAG communication failed".
+	    uchar code = replydummy[0];
+	    delete [] replydummy;
+	    throw jtag_io_exception(code);
 	}
     }
 }

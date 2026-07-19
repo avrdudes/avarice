@@ -1057,6 +1057,12 @@ static void *usb_thread_read(void *data)
       {
 	/* OK, try again */
       }
+      else if (rv == -EBADF || rv == -ENODEV)
+      {
+	/* The device is being closed by the main thread on shutdown;
+	   not an error worth reporting. */
+	pthread_exit((void *)0);
+      }
       else if (rv < 0)
       {
 	fprintf(stderr, "USB bulk read error: %s (%d)\n",

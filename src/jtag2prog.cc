@@ -218,7 +218,26 @@ void jtag2::disableProgramming(void)
     if (proto != PROTO_DW)
     {
 	programmingEnabled = false;
-	doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
+	try
+	{
+	    doSimpleJtagCommand(CMND_LEAVE_PROGMODE);
+	}
+	catch (jtag_io_exception&)
+	{
+	    // The ICE couples leaving progmode with re-attaching the
+	    // on-chip debug system; with the OCDEN fuse unprogrammed that
+	    // attach cannot succeed and the ICE answers RSP_FAILED even
+	    // though every memory operation completed. A reset releases
+	    // the target; only a failure of that too is a real error.
+	    uchar cmd[2] = { CMND_RESET, 0x01 };
+	    uchar *resp;
+	    int respSize;
+
+	    doJtagCommand(cmd, 2, resp, respSize);
+	    delete [] resp;
+	    statusOut("leave progmode declined by ICE, target reset "
+		      "instead (expected with OCDEN unprogrammed)\n");
+	}
     }
 }
 
